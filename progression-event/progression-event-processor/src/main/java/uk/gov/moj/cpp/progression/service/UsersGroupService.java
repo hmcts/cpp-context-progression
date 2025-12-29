@@ -4,7 +4,7 @@ import static java.lang.String.join;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -54,7 +54,7 @@ public class UsersGroupService {
     public Optional<DefenceOrganisationVO> getDefenceOrganisationDetails(final UUID organisationId, final Metadata metadata) {
         log.info("Getting defence organisation details for organisation id {} " + organisationId.toString());
 
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ORGANISATION_ID, organisationId.toString()).build();
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(ORGANISATION_ID, organisationId.toString()).build();
         final Metadata metadataWithActionName = metadataWithNewActionName(metadata, "usersgroups.get-organisation-details");
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
         final JsonEnvelope response = requester.requestAsAdmin(requestEnvelope);
@@ -75,7 +75,7 @@ public class UsersGroupService {
     }
 
     public String getGroupIdForDefenceLawyers() {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(GROUP_NAME, "Defence Lawyers").build();
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(GROUP_NAME, "Defence Lawyers").build();
         final Metadata metadata = metadataBuilder().withName("usersgroups.get-group-details-byname")
                 .withClientCorrelationId(randomUUID().toString())
                 .withId(randomUUID())
@@ -120,7 +120,7 @@ public class UsersGroupService {
     }
 
     public JsonObject getGroupsWithOrganisation(final JsonEnvelope event) {
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelop(payload)
                 .withName("usersgroups.get-groups-with-organisation")

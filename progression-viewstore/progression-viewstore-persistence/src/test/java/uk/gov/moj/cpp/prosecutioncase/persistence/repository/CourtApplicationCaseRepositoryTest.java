@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
@@ -49,8 +49,8 @@ public class CourtApplicationCaseRepositoryTest {
 
         prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(CASE_ID);
-        prosecutionCaseEntity.setPayload(Json.createObjectBuilder()
-                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder()
+                .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
                                 .add("id", randomUUID().toString()).build())
                         .build()).add("caseStatus", "INACTIVE")
                 .build().toString());
@@ -58,7 +58,7 @@ public class CourtApplicationCaseRepositoryTest {
 
 
         courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setPayload(Json.createObjectBuilder().build().toString());
+        courtApplicationEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
 
         courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID);

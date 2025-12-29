@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -665,7 +665,7 @@ public class ListHearingRequestedProcessorTest {
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
+        return JsonObjects.createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")

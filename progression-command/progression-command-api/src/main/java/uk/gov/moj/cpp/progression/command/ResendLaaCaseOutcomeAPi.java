@@ -9,7 +9,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -32,7 +32,7 @@ public class ResendLaaCaseOutcomeAPi {
         for (int i = 0; i < jsonArrayOfCaseIds.size(); i++) {
             final String caseId = jsonArrayOfCaseIds.getJsonString(i).getString();
 
-            sender.send(envelop(Json.createObjectBuilder().add("caseId", caseId).build())
+            sender.send(envelop(JsonObjects.createObjectBuilder().add("caseId", caseId).build())
                     .withName("progression.command.handler.resend-laa-outcome-concluded")
                     .withMetadataFrom(envelope));
 

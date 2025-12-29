@@ -18,7 +18,7 @@ import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ public class ListingServiceTest {
                 .with(metadataBuilder)
                 .build();
 
-        final JsonObject listingPayload = Json.createObjectBuilder()
+        final JsonObject listingPayload = JsonObjects.createObjectBuilder()
                 .add("key", "value")
                 .build();
 

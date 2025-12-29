@@ -15,7 +15,7 @@ import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
@@ -99,7 +99,7 @@ public class ProsecutionCaseQueryApi {
 
         if (nonNull(prosecutionCase)) {
             final JsonArray defendants = prosecutionCase.getJsonArray(DEFENDANTS);
-            final JsonArrayBuilder activeCourtOrdersArrayBuilder = Json.createArrayBuilder();
+            final JsonArrayBuilder activeCourtOrdersArrayBuilder = JsonObjects.createArrayBuilder();
 
             final Set<UUID> uniqueMasterDefendantIds = defendants.stream()
                     .map(defendant -> UUID.fromString(((JsonObject) defendant).getString(MASTER_DEFENDANT_ID)))
@@ -110,7 +110,7 @@ public class ProsecutionCaseQueryApi {
                 if (nonNull(courtOrders) && courtOrders.containsKey(COURT_ORDERS)) {
                     final JsonArray activeCourtOrders = courtOrders.getJsonArray(COURT_ORDERS);
                     if (!activeCourtOrders.isEmpty()) {
-                        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
+                        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder()
                                 .add(MASTER_DEFENDANT_ID, masterDefendantId.toString())
                                 .add(COURT_ORDERS, activeCourtOrders);
                         activeCourtOrdersArrayBuilder.add(objectBuilder.build());
@@ -136,7 +136,7 @@ public class ProsecutionCaseQueryApi {
         final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query);
         final JsonObject payload = appQueryResponse.payloadAsJsonObject();
         final JsonArray defendants = payload.getJsonArray(DEFENDANTS);
-        final JsonArrayBuilder caagDefendantsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder caagDefendantsBuilder = JsonObjects.createArrayBuilder();
         if (nonNull(defendants)) {
             final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(query, payload.getString(CASE_ID), requester);
             final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
@@ -293,8 +293,8 @@ public class ProsecutionCaseQueryApi {
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {
 
         final JsonObject address = completeOrganisationDetails.getJsonObject(ORGANISATION_ADDRESS);
-        return Json.createObjectBuilder().add(ORGANISATION_NAME, completeOrganisationDetails.getString("organisationName"))
-                .add("address", Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder().add(ORGANISATION_NAME, completeOrganisationDetails.getString("organisationName"))
+                .add("address", JsonObjects.createObjectBuilder()
                         .add(ADDRESS_LINE_1, address.getString("address1"))
                         .add(ADDRESS_LINE_2, address.getString("address2"))
                         .add(ADDRESS_LINE_3, address.getString("address3"))

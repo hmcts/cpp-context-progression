@@ -38,7 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -116,7 +116,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")
@@ -151,7 +151,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")
@@ -176,7 +176,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")

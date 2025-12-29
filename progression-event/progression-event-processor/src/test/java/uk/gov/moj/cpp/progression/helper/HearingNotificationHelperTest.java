@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -199,7 +199,7 @@ public class HearingNotificationHelperTest {
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(TEMPLATE_ID);
         jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
-                objectToJsonObjectConverter.convert(Json.createObjectBuilder().build()));
+                objectToJsonObjectConverter.convert(JsonObjects.createObjectBuilder().build()));
 
     }
 
@@ -620,7 +620,7 @@ public class HearingNotificationHelperTest {
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
+        return JsonObjects.createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")

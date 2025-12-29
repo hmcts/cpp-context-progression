@@ -15,7 +15,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.Optional;
 import java.util.UUID;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,11 +53,11 @@ public class CourtApplicationServiceTest {
     @Test
     public void shouldReturnCourtApplicationPartyWhenProsecutingAuthorityDataExists() {
         // Mocking the JSON response from referenceDataService
-        JsonObject prosecutorJson = Json.createObjectBuilder()
+        JsonObject prosecutorJson = JsonObjects.createObjectBuilder()
                 .add("fullName", "John Doe")
                 .add("nameWelsh", "Ioan Dda")
                 .add("contactEmailAddress", "john.doe@test.com")
-                .add("address", Json.createObjectBuilder()
+                .add("address", JsonObjects.createObjectBuilder()
                         .add("line1", "123 Main St")
                         .add("line2", "Apt 4B")
                         .add("postcode", "SW1A 1AA")

@@ -43,7 +43,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -142,9 +142,9 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
-        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(Json.createObjectBuilder().build());
+        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(JsonObjects.createObjectBuilder().build());
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+                JsonObjects.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 

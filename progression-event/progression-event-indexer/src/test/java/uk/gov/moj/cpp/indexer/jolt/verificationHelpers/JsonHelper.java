@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

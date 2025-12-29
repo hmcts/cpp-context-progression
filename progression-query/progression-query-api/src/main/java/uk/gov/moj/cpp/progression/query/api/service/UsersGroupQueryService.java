@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 public class UsersGroupQueryService {
@@ -32,7 +32,7 @@ public class UsersGroupQueryService {
 
     public JsonObject getUserGroups(final Metadata metadata, final UUID userId) {
 
-        final JsonObject getGroupsForUserRequest = Json.createObjectBuilder().add("userId", userId.toString()).build();
+        final JsonObject getGroupsForUserRequest = JsonObjects.createObjectBuilder().add("userId", userId.toString()).build();
         final Metadata metadataWithActionName = metadataFrom(metadata).withName("usersgroups.get-logged-in-user-groups").build();
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getGroupsForUserRequest);
         final Envelope<JsonObject> response = requester.request(requestEnvelope, JsonObject.class);

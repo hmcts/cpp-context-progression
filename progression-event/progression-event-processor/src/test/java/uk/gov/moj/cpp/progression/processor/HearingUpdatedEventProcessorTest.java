@@ -6,7 +6,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableList;
@@ -290,7 +290,7 @@ public class HearingUpdatedEventProcessorTest {
     public void shouldProcessHearingUpdatedWhenProsecutionCaseListed() {
 
         final UUID hearingId = randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("updatedHearing", objectToJsonObjectConverter.convert(ConfirmedHearing.confirmedHearing()
                         .withId(hearingId).build()))
                 .build();
@@ -325,7 +325,7 @@ public class HearingUpdatedEventProcessorTest {
     public void shouldProcessHearingUpdatedWhenProsecutionCaseListedAndProgressionCasesRemoved() {
 
         final UUID hearingId = randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("updatedHearing", objectToJsonObjectConverter.convert(ConfirmedHearing.confirmedHearing()
                         .withId(hearingId).build()))
                 .build();
@@ -359,7 +359,7 @@ public class HearingUpdatedEventProcessorTest {
     public void shouldProcessHearingUpdatedWhenProsecutionCaseInitialised() {
 
         final UUID hearingId = randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("updatedHearing", objectToJsonObjectConverter.convert(ConfirmedHearing.confirmedHearing()
                         .withId(hearingId).build()))
                 .build();
@@ -627,7 +627,7 @@ public class HearingUpdatedEventProcessorTest {
     public void shouldNotProcessHearingUpdatedWhenProsecutionCasesEmpty() {
 
         final UUID hearingId = randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("updatedHearing", objectToJsonObjectConverter.convert(ConfirmedHearing.confirmedHearing()
                         .withId(hearingId).build()))
                 .build();
@@ -681,9 +681,9 @@ public class HearingUpdatedEventProcessorTest {
     private JsonObject createProsecutionCaseJson(final UUID offenceId, final UUID defendantId, final UUID caseId) {
         return createObjectBuilder()
                 .add("id", caseId.toString())
-                .add("defendants", Json.createArrayBuilder().add(createObjectBuilder()
+                .add("defendants", JsonObjects.createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString())
-                                .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
+                                .add("offences", JsonObjects.createArrayBuilder().add(createObjectBuilder()
                                                 .add("id", offenceId.toString())
                                                 .build())
                                         .build())
@@ -719,7 +719,7 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
+        return JsonObjects.createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")

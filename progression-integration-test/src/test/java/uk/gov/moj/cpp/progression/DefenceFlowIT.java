@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -178,7 +178,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     private JsonObject createPayloadForDisassociation(final boolean isLAA) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("userId", userId)
                 .add("defendantId", defendantId)
                 .add("organisationId", organisationId)
@@ -189,7 +189,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     private JsonObject createPayloadForAssociation(final boolean isLAA, final String laaContractNumber) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("defendantId", defendantId)
                 .add("organisationId", organisationId)
                 .add("organisationName", organisationName)

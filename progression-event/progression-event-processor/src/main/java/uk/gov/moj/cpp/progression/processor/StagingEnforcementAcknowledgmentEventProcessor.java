@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import java.util.Map;
 import java.util.Optional;
@@ -85,7 +85,7 @@ public class StagingEnforcementAcknowledgmentEventProcessor {
     }
 
     private Map<String, String> getMaterialIdsForRequestId(final String requestId, final JsonEnvelope event) {
-        final JsonObject payload = Json.createObjectBuilder().add("requestId", requestId).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add("requestId", requestId).build();
         final JsonObject requestMaterialIdPayload = requester.request(envelop(payload)
                 .withName("progression.query.now-document-requests-by-request-id")
                 .withMetadataFrom(event)).payloadAsJsonObject();

@@ -30,7 +30,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
@@ -223,7 +223,7 @@ public class OpaNoticeProcessorTest {
                         .withName(commandName)
                         .withId(randomUUID())
                         .build(),
-                Json.createObjectBuilder().build());
+                JsonObjects.createObjectBuilder().build());
     }
 
     private void verifyOpaNoticeSentContents(final Envelope<JsonObject> envelope, final JsonObject opaNoticeSent, final String event) {

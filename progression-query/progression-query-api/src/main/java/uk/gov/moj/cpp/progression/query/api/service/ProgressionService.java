@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.query.api.service;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.view.service.exception.ProgressionServiceException;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import java.util.UUID;
 
@@ -131,7 +131,7 @@ public class ProgressionService {
             return responseEnvelope.payloadAsJsonObject();
         }catch(Exception e){
             LOGGER.error("PET form Not Found or Error while fetching {}",e);
-            return Json.createObjectBuilder().build();
+            return JsonObjects.createObjectBuilder().build();
         }
     }
 
@@ -150,7 +150,7 @@ public class ProgressionService {
             return responseEnvelope.payloadAsJsonObject();
         }catch(Exception e){
             LOGGER.error("PTPH form Not Found or Error while fetching {}",e);
-            return Json.createObjectBuilder().build();
+            return JsonObjects.createObjectBuilder().build();
         }
     }
 }

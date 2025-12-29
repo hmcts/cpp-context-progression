@@ -36,7 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -138,7 +138,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
 
     private void ejectCase(final String prosecutionCaseId, final String removalReason) {
-        JsonObject payload = Json.createObjectBuilder()
+        JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("prosecutionCaseId", prosecutionCaseId)
                 .add("removalReason", removalReason)
                 .build();

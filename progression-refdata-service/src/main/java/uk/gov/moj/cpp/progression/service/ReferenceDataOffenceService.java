@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -54,7 +54,7 @@ public class ReferenceDataOffenceService {
 
     public Optional<JsonObject> getOffenceById(final UUID offenceId, final JsonEnvelope envelope, final Requester requester) {
 
-        final JsonObject payload = Json.createObjectBuilder().add(OFFENCE_ID, offenceId.toString()).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add(OFFENCE_ID, offenceId.toString()).build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATAOFFENCE_GET_OFFENCE)
@@ -68,7 +68,7 @@ public class ReferenceDataOffenceService {
             return Optional.empty();
         }
         final JsonObject offencePayload = response.payloadAsJsonObject();
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         return buildOffence(offencePayload, jsonObjectBuilder);
     }
 
@@ -149,7 +149,7 @@ public class ReferenceDataOffenceService {
     }
 
     private JsonObject generateOffenceJsonObject(final JsonObject offencePayload) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, getString(offencePayload, CJS_OFFENCE_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(OFFENCE_ID, getString(offencePayload, OFFENCE_ID).orElse(EMPTY));
         jsonObjectBuilder.add(MODE_OF_TRIAL, getString(offencePayload, MODEOFTRIAL_DERIVED).orElse(EMPTY));

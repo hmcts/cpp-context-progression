@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssocia
 
 import java.util.Collections;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class DefendantByLAAContractNumberQueryViewTest {
         final String defendantId = randomUUID().toString();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("laaContractNumber", laaContractNumber).build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(

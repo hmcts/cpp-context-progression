@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class DefendantMatchingApiTest {
 
     @Test
     public void shouldMatchDefendant() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("prosecutionCaseId", randomUUID().toString())
                 .add("matchedDefendants", createArrayBuilder().build())

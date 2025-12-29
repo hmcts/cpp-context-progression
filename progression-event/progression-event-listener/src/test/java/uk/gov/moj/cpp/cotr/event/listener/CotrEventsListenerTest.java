@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.cotr.event.listener;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -55,7 +55,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -305,8 +305,8 @@ public class CotrEventsListenerTest {
     }
 
     private JsonObject getJsonObject() {
-       return Json.createObjectBuilder()
-                .add("prosecutionQuestions",Json.createObjectBuilder()
+       return JsonObjects.createObjectBuilder()
+                .add("prosecutionQuestions",JsonObjects.createObjectBuilder()
                         .add(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION, FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION)
                         .build()
                 )

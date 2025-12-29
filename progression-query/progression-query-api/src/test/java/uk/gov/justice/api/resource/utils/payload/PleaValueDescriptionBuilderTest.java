@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource.utils.payload;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -47,10 +47,10 @@ public class PleaValueDescriptionBuilderTest {
     public void shouldRebuildWithPleaValueDescription() throws Exception {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream("payload.json");
-             final JsonReader jsonReader = Json.createReader(stream);
+             final JsonReader jsonReader = JsonObjects.createReader(stream);
 
              final InputStream streamResult = loader.getResourceAsStream("payload-with-description.json");
-             final JsonReader jsonResultReader = Json.createReader(streamResult)) {
+             final JsonReader jsonResultReader = JsonObjects.createReader(streamResult)) {
              final JsonObject result = jsonResultReader.readObject();
 
              final JsonObject payload = jsonReader.readObject();
@@ -76,10 +76,10 @@ public class PleaValueDescriptionBuilderTest {
     public void shouldRebuildWithPleaValueDescriptionForCourtOrderOffencePlea() throws Exception {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream("payload-courtapplications-courtorder-courtorderoffence-plea.json");
-             final JsonReader jsonReader = Json.createReader(stream);
+             final JsonReader jsonReader = JsonObjects.createReader(stream);
 
              final InputStream streamResult = loader.getResourceAsStream("payload-courtapplications-courtorder-courtorderoffence-plea-with-description.json");
-             final JsonReader jsonResultReader = Json.createReader(streamResult)) {
+             final JsonReader jsonResultReader = JsonObjects.createReader(streamResult)) {
             final JsonObject result = jsonResultReader.readObject();
 
             final JsonObject payload = jsonReader.readObject();

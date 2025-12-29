@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingResultLineEn
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -83,17 +83,17 @@ public class ProsecutionCaseDefendantHearingResultUpdatedListenerTest {
     public void shouldHandleProsecutionCaseDefendantHearingResultEvent() throws Exception {
 
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(hearingResultLineId);
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(JsonObjects.createObjectBuilder().build());
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantHearingResultUpdated.class)).thenReturn(ProsecutionCaseDefendantHearingResultUpdated.prosecutionCaseDefendantHearingResultUpdated().withHearingId(hearingId).withSharedResultLines(Arrays.asList(SharedResultLine.sharedResultLine().withId(UUID.randomUUID()).build())).build());
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
