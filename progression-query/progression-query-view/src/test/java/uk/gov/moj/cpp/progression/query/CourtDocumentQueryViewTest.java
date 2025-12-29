@@ -1509,7 +1509,7 @@ public class CourtDocumentQueryViewTest {
         final String userGroup = "Defence Lawyers";
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add("isDefenceQuery", true)
                 .build();

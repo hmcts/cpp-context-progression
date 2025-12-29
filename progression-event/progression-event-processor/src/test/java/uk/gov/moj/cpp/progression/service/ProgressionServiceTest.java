@@ -539,8 +539,7 @@ public class ProgressionServiceTest {
 
         final UUID hearingId = randomUUID();
         final HearingType hearingType = HearingType.hearingType().withDescription("Trial").build();
-        final List<HearingDay> hearingDays = List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
+        final List<HearingDay> hearingDays = List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
                 .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
                 .add("hearingId", hearingId.toString())
                 .add("hearingDays", hearingDayListToJsonArrayConverter.convert(hearingDays))
