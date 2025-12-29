@@ -21,7 +21,7 @@ import java.io.StringReader;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.ws.rs.core.HttpHeaders;
@@ -83,7 +83,7 @@ public class RestHelper {
 
     public static JsonObject getJsonObject(final String jsonAsString) {
         final JsonObject payload;
-        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
+        try (final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonAsString))) {
             payload = jsonReader.readObject();
         }
         return payload;

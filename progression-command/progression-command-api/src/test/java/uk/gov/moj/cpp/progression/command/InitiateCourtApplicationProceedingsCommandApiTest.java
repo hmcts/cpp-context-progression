@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -12,7 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -22,12 +21,12 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,7 +47,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
     private InitiateCourtApplicationProceedingsCommandApi initiateCourtApplicationProceedingsCommandApi;
 
     @Test
-    public void shouldInitialCourtProceedingsForCourtApplicationWhenNoApplicationReferenceSet() {
+    public void shouldInitialCourtProceedingsForCourtApplication() {
         final JsonEnvelope commandEnvelope = buildEnvelope();
 
         final Envelope queryResponseEnvelope = mock(Envelope.class);
@@ -64,128 +63,6 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
         assertThat(newCommand.metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
         assertThat(newCommand.payload(), equalTo(commandEnvelope.payloadAsJsonObject()));
-    }
-
-    @Test
-    public void shouldInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsValid() {
-        final String validURN = "ASD1RTY5WE1";//11 Char length, alfaNumeric, all upper case
-        final JsonObject payload = createObjectBuilder()
-                .add("courtApplication", createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("code", "anyCode")
-                                .add("linkType", "STANDALONE"))
-                        .add("applicationReference", validURN)
-                        .build())
-                .build();
-
-        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
-
-        final Envelope queryResponseEnvelope = mock(Envelope.class);
-        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
-        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
-
-
-        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
-
-        verify(sender, times(1)).send(envelopeCaptor.capture());
-
-        final DefaultEnvelope newCommand = envelopeCaptor.getValue();
-
-        assertThat(newCommand.metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
-        assertThat(newCommand.payload(), equalTo(commandEnvelope.payloadAsJsonObject()));
-    }
-
-    @Test
-    public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsEmpty() {
-        final String invalidURN = "";
-        final JsonObject payload = createObjectBuilder()
-                .add("courtApplication", createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("code", "anyCode")
-                                .add("linkType", "STANDALONE"))
-                        .add("applicationReference", invalidURN)
-                        .build())
-                .build();
-
-        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
-
-        final Envelope queryResponseEnvelope = mock(Envelope.class);
-        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
-        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
-
-        assertThrows(BadRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
-
-    }
-
-    @Test
-    public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNineCharLength() {
-        final String invalidURN = "ASDERTYUW";//NOT 11 Char length, alfaNumeric, all upper case
-        final JsonObject payload = createObjectBuilder()
-                .add("courtApplication", createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("code", "anyCode")
-                                .add("linkType", "STANDALONE"))
-                        .add("applicationReference", invalidURN)
-                        .build())
-                .build();
-
-        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
-
-        final Envelope queryResponseEnvelope = mock(Envelope.class);
-        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
-        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
-
-        assertThrows(BadRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
-
-    }
-
-    @Test
-    public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNotAllCapital() {
-        final String invalidURN = "ASDERTYUWXe";//11 Char length, alfaNumeric, NOT all upper case
-        final JsonObject payload = createObjectBuilder()
-                .add("courtApplication", createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("linkType", "STANDALONE")
-                                .add("code", "anyCode"))
-                        .add("applicationReference", invalidURN)
-                        .build())
-                .build();
-
-        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
-
-        final Envelope queryResponseEnvelope = mock(Envelope.class);
-        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
-        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
-
-        assertThrows(BadRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
-
-    }
-
-    @Test
-    public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNotAllAlfaNumeric() {
-        final String invalidURN = "ASD!RTYU1EX";//11 Char length, NOT all alfaNumeric, all upper case
-        final JsonObject payload = createObjectBuilder()
-                .add("courtApplication", createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("code", "anyCode")
-                                .add("linkType", "STANDALONE"))
-                        .add("applicationReference", invalidURN)
-                        .build())
-                .build();
-
-        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
-
-        final Envelope queryResponseEnvelope = mock(Envelope.class);
-        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
-        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
-
-        assertThrows(BadRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
-
     }
 
     @Test
@@ -231,16 +108,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder()
-                                .add("code", "anyCode")
-                                .add("linkType", "STANDALONE"))
+                        .add("type", createObjectBuilder().add("code", "anyCode"))
                         .build())
                 .build();
-
-        return buildEnvelope(payload);
-    }
-
-    private JsonEnvelope buildEnvelope(final JsonObject payload) {
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

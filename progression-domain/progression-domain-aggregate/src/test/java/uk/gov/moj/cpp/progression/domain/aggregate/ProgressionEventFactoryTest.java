@@ -21,7 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -115,7 +115,7 @@ public class ProgressionEventFactoryTest {
         when(envelope.payloadAsJsonObject().getString(any())).thenReturn(CASE_ID);
         when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
                 .thenReturn(
-                   Json.createArrayBuilder()
+                   JsonObjects.createArrayBuilder()
                         .add(createDefendantJsonWithIsPsrRequested(true))
                         .add(createDefendantJsonWithIsPsrRequested(false))
                         .build());
@@ -135,7 +135,7 @@ public class ProgressionEventFactoryTest {
     }
 
     private JsonObject createDefendantJsonWithIsPsrRequested(final Boolean isPsrRequested) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("defendantId", UUID.randomUUID().toString())
                 .add("psrIsRequested", isPsrRequested).build();
     }

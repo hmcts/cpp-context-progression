@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -18,7 +18,7 @@ public class NullAwareJsonObjectBuilderTest {
     @Test
     public void testAddString() {
         final JsonObjectBuilder builder =
-                        NullAwareJsonObjectBuilder.wrap(Json.createObjectBuilder());
+                        NullAwareJsonObjectBuilder.wrap(JsonObjects.createObjectBuilder());
         final String value = null;
         final String name = null;
         final JsonObject json =

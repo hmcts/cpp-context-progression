@@ -6,8 +6,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.AddMaterialV2.addMaterialV2;
 import static uk.gov.justice.core.courts.DefendantSubject.defendantSubject;
@@ -47,8 +47,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
-import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
@@ -78,12 +76,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -669,32 +666,22 @@ public class NotificationService {
     }
 
     private void sendNotification(final JsonEnvelope event, final UUID notificationId, final PostalNotificationDetails postalNotificationDetails, final String thirdParty, final Optional<String> emailAddressOptional, final Optional<Address> addressOptional) {
+
         final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(event, postalNotificationDetails.getHearingDate(), postalNotificationDetails.getHearingTime(), postalNotificationDetails.getCourtApplication().getApplicationReference(), postalNotificationDetails.getCourtApplication().getType().getType(), postalNotificationDetails.getCourtApplication().getType().getTypeWelsh(), postalNotificationDetails.getCourtApplication().getType().getLegislation(), postalNotificationDetails.getCourtApplication().getType().getLegislationWelsh(), postalNotificationDetails.getCourtCentre(), postalNotificationDetails.getCourtApplicationParty(), postalNotificationDetails.getJurisdictionType(), postalNotificationDetails.getCourtApplication().getApplicationParticulars(), postalNotificationDetails.getCourtApplication(), thirdParty, postalNotificationDetails.getAmended(), postalNotificationDetails.getWelTranslationRequired(), postalNotificationDetails.getIssueDate());
-        final CourtDocumentMetadata courtDocumentMetadata = ofNullable(postalNotification.getAddressee())
-                .map(addressee -> new CourtDocumentMetadata(uk.gov.moj.cpp.progression.common.PostalAddressee.postalAddressee()
-                        .withName(addressee.getName())
-                        .withCourtApplicationPartyId(addressee.getCourtApplicationPartyId())
-                        .withCourtApplicationPartyType(addressee.getCourtApplicationPartyType())
-                        .build()))
-                .orElse(null);
+
         final JsonObject notificationPayload = objectToJsonObjectConverter.convert(postalNotification);
         final UUID materialId = documentGeneratorService.generateDocument(event, notificationPayload, PostalService.POSTAL_NOTIFICATION, sender, null, postalNotificationDetails.getCourtApplication().getId(), false);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
 
         if (Boolean.TRUE.equals(postalNotificationDetails.getWelTranslationRequired())) {
-            postalService.sendPostalNotificationAaag(event, postalNotificationDetails.getCourtApplication().getId(), null, materialId, courtDocumentMetadata);
+            postalService.sendPostalNotificationAaag(event, postalNotificationDetails.getCourtApplication().getId(), null, materialId);
         } else {
             emailAddressOptional.ifPresent(emailAddress -> sendEmail(event, notificationId, null, postalNotificationDetails.getCourtApplication().getId(), null, Collections.singletonList(buildEmailChannel(emailAddress, postalNotificationDetails.getCourtApplication().getApplicationReference(), postalNotificationDetails.getCourtApplication().getType().getType(), postalNotificationDetails.getCourtApplication().getType().getLegislation(), postalNotificationDetails.getHearingDate(), postalNotificationDetails.getHearingTime(), ofNullable(postalNotificationDetails.getCourtCentre()).map(CourtCentre::getName).orElse(EMPTY), ofNullable(postalNotificationDetails.getCourtCentre()).map(CourtCentre::getAddress).orElse(null), materialUrl))));
 
             emailAddressOptional.ifPresent(email -> {
                 final CourtDocument courtDocument = postalService.courtDocument(postalNotificationDetails.getCourtApplication().getId(), materialId, event, null);
-                final JsonObject courtDocumentPayload = Json.createObjectBuilder()
-                        .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
-                        .add("courtDocumentMetadata",
-                                courtDocumentMetadata != null
-                                        ? objectToJsonObjectConverter.convert(courtDocumentMetadata)
-                                        : JsonValue.NULL)
-                        .build();
+                final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+
                 LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 
                 sender.send(enveloper.withMetadataFrom(event, PostalService.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(courtDocumentPayload));
@@ -704,7 +691,7 @@ public class NotificationService {
                 // send postal notification only if email notification was not sent.
                 if (!emailAddressOptional.isPresent()) {
                     // linkedCaseId null; GPE-15039 Commented temporarily
-                    postalService.sendPostalNotification(event, postalNotificationDetails.getCourtApplication().getId(), postalNotification, null, courtDocumentMetadata);
+                    postalService.sendPostalNotification(event, postalNotificationDetails.getCourtApplication().getId(), postalNotification, null);
                 }
             });
         }
@@ -725,15 +712,13 @@ public class NotificationService {
 
         // Build PostalAddressee if address is present
         final Optional<PostalAddressee> postalAddressee = addressOptional.map(address ->
-                PostalAddressee.builder()
-                        .withProsecutionAuthorityId(prosecutingAuthority.getProsecutionAuthorityId())
-                        .withCourtApplicationPartyType(CourtApplicationPartyType.PROSECUTING_AUTHORITY)
-                        .withName(prosecutingAuthority.getProsecutionAuthorityCode())
-                        .withAddress( new PostalAddress(
+                new PostalAddressee(
+                        prosecutingAuthority.getProsecutionAuthorityCode(),
+                        new PostalAddress(
                                 address.getAddress1(), address.getAddress2(), address.getAddress3(),
                                 address.getAddress4(), address.getWelshAddress5(), address.getPostcode()
-                        ))
-                        .build()
+                        )
+                )
         );
 
         // Create PostalNotification
@@ -746,14 +731,10 @@ public class NotificationService {
                 postalNotificationDetails.getCourtApplication().getId(), false
         );
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
-        final CourtDocumentMetadata courtDocumentMetadata = new CourtDocumentMetadata(uk.gov.moj.cpp.progression.common.PostalAddressee.postalAddressee()
-                .withName(prosecutingAuthority.getName())
-                .withProsecutionAuthorityId(prosecutingAuthority.getProsecutionAuthorityId())
-                .withCourtApplicationPartyType(CourtApplicationPartyType.PROSECUTING_AUTHORITY)
-                .build());
+
         // Handle Welsh translation requirement
         if (Boolean.TRUE.equals(postalNotificationDetails.getWelTranslationRequired())) {
-            postalService.sendPostalNotificationAaag(event, postalNotificationDetails.getCourtApplication().getId(), null, materialId, courtDocumentMetadata);
+            postalService.sendPostalNotificationAaag(event, postalNotificationDetails.getCourtApplication().getId(), null, materialId);
             return;
         }
 
@@ -761,7 +742,7 @@ public class NotificationService {
         emailAddressOptional.ifPresentOrElse(
                 email -> sendEmailNotification(event, notificationId, postalNotificationDetails, email, materialUrl, materialId),
                 () -> addressOptional.ifPresent(address ->
-                        postalService.sendPostalNotification(event, postalNotificationDetails.getCourtApplication().getId(), postalNotification, null, courtDocumentMetadata)
+                        postalService.sendPostalNotification(event, postalNotificationDetails.getCourtApplication().getId(), postalNotification, null)
                 )
         );
     }
@@ -798,7 +779,7 @@ public class NotificationService {
                 postalNotificationDetails.getCourtApplication().getId(), materialId, event, null
         );
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder()
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .build();
 

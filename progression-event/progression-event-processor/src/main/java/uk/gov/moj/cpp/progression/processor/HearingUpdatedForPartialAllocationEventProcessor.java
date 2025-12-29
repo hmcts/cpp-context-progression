@@ -6,7 +6,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
@@ -27,7 +27,7 @@ public class HearingUpdatedForPartialAllocationEventProcessor {
     public void handle(final Envelope<HearingUpdatedForPartialAllocation> event){
         final HearingUpdatedForPartialAllocation hearingUpdatedForPartialAllocation = event.payload();
 
-        final JsonArrayBuilder offenceIdsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceIdsBuilder = JsonObjects.createArrayBuilder();
 
         hearingUpdatedForPartialAllocation.getProsecutionCasesToRemove().stream()
                 .flatMap(prosecutionCasesToRemove -> prosecutionCasesToRemove.getDefendantsToRemove().stream())
@@ -35,7 +35,7 @@ public class HearingUpdatedForPartialAllocationEventProcessor {
                 .map(OffencesToRemove::getOffenceId)
                 .forEach(offenceId -> offenceIdsBuilder.add(offenceId.toString()));
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingUpdatedForPartialAllocation.getHearingId().toString())
                 .add("offenceIds", offenceIdsBuilder.build())
                 .build();

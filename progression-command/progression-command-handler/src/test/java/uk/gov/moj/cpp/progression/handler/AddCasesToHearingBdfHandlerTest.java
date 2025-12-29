@@ -1,28 +1,23 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.InsertCaseBdf;
-import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
-import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
+import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
 import uk.gov.justice.progression.courts.application.CasesBdf;
 import uk.gov.justice.progression.courts.application.DefendantsBdf;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -38,8 +33,8 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -399,7 +394,6 @@ class AddCasesToHearingBdfHandlerTest {
                 .build();
         return hearing;
     }
-
 
     private Optional<JsonObject> createProsecutionCase(final UUID caseId, final List<Map<UUID, List<UUID>>> defendants) {
         ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
