@@ -14,7 +14,7 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class AuditCourtDocumentApiTest {
         final UUID uuid = randomUUID();
         final UUID userId = randomUUID();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("organisationId", randomUUID().toString())
                 .build();
 

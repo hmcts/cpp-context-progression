@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -103,7 +103,7 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListenerTest {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;
@@ -111,8 +111,8 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListenerTest {
 
     private JsonObject getPayload(final HearingDaysWithoutCourtCentreCorrected hearingDaysWithoutCourtCentreCorrected) {
 
-        return Json.createObjectBuilder()
-                .add("hearingDays", Json.createArrayBuilder().add(objectToJsonObjectConverter.convert(hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0))).build())
+        return JsonObjects.createObjectBuilder()
+                .add("hearingDays", JsonObjects.createArrayBuilder().add(objectToJsonObjectConverter.convert(hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0))).build())
                 .add("id", hearingDaysWithoutCourtCentreCorrected.getId().toString())
                 .build();
     }

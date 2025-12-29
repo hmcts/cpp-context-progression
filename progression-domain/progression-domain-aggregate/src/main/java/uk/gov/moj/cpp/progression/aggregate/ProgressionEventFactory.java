@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;

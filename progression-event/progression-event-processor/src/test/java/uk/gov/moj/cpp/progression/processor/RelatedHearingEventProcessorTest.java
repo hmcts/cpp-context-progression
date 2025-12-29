@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -198,7 +198,7 @@ public class RelatedHearingEventProcessorTest {
     public void shouldHandlePublicCasesAddedForUpdatedRelatedHearing() {
         final String hearingId = randomUUID().toString();
         final String seedingHearingId = randomUUID().toString();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingId)
                 .add("seedingHearingId", seedingHearingId).build();
         final JsonEnvelope event = envelopeFrom(

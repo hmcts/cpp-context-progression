@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -207,71 +207,71 @@ public class DefendantPartialMatchQueryViewTest {
 
     public static Collection<Object[]> data() {
         return Arrays.asList(
-                new Object[]{Json.createObjectBuilder().build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder().add("page", 1).build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder().build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
+                new Object[]{JsonObjects.createObjectBuilder().add("page", 1).build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "XXXX")
                         .add(SORT_ORDER, "XXXX")
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "XXXX")
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "Desc")
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "Asc")
                         .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeAsc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "XXXX")
                         .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Asc")
                         .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Desc")
                         .build(), 1, 10, 22, "findAllOrderByDefendantNameDesc",true},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 7)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Desc")
                         .build(), null, null, 59, "",false},
-                new Object[]{Json.createObjectBuilder()
+                new Object[]{JsonObjects.createObjectBuilder()
                         .add(PAGE, 1)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")

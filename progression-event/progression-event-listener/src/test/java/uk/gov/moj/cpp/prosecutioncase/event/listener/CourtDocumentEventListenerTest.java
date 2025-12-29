@@ -4,8 +4,8 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -55,7 +55,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -158,7 +158,7 @@ public class CourtDocumentEventListenerTest {
                                 .add("materials", createObjectBuilder().add("id", "5e1cc18c-76dc-47dd-99c1-d6f87385edf1"))
                                 .add("containsFinancialMeans", true)
                                 .add("courtDocumentTypeRBAC",
-                                        Json.createObjectBuilder()
+                                        JsonObjects.createObjectBuilder()
                                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
@@ -529,6 +529,6 @@ public class CourtDocumentEventListenerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 }

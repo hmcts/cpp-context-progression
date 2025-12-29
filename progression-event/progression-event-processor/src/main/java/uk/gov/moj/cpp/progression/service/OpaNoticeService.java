@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.jobstore.api.task.ExecutionStatus.STARTED;
 import static uk.gov.moj.cpp.progression.task.Task.GENERATE_OPA_NOTICE;
 

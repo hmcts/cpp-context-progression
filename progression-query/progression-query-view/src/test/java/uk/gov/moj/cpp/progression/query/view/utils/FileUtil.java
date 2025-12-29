@@ -4,7 +4,7 @@ import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class FileUtil {
@@ -49,7 +49,7 @@ public class FileUtil {
     public static JsonObject getJsonPayload(final String fileName) throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(fileName);
-             final JsonReader jsonReader = Json.createReader(stream)) {
+             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             return payload;
         }

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.service.disqualificationreferral;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;

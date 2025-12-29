@@ -11,7 +11,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
@@ -52,7 +52,7 @@ public class CourtOrderServiceTest {
     public void shouldNotReturnCourtOrders() {
 
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder().build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_ORDERS_QUERY, randomUUID());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
 

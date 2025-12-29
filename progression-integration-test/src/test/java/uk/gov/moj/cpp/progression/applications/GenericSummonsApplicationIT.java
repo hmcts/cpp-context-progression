@@ -4,8 +4,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -45,7 +45,7 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.util.List;
 import java.util.Optional;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -257,7 +257,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         final JsonObject courtApplication = courtApplicationsArray.getJsonObject(0);
         final JsonString sittingDay = hearing.getJsonArray("hearingDays").getJsonObject(0).getJsonString("sittingDay");
         final String hearingDay = ZonedDateTimes.fromJsonString(sittingDay).toLocalDate().toString();
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("isReshare", true)
                 .add("hearingDay", hearingDay)
                 .add("hearing", createObjectBuilder()

@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
@@ -51,7 +51,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -233,7 +233,7 @@ public class NowsRequestedEventProcessor {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;
@@ -291,7 +291,7 @@ public class NowsRequestedEventProcessor {
 
         final CourtDocument courtDocument = courtDocument(nowDocumentRequest, permittedGroups, documentTypeDataJsonObject);
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         sender.send(envelop(jsonObject).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(incomingEvent));
     }

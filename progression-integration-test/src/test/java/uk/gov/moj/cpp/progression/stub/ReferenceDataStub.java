@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
@@ -51,7 +51,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryLocalJusticeArea(final String resourceName) {
-        final JsonObject jsonObject = Json.createReader(ReferenceDataStub.class
+        final JsonObject jsonObject = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -76,7 +76,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryOrganisation(final String resourceName) {
-        final JsonObject judge = Json.createReader(ReferenceDataStub.class
+        final JsonObject judge = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -104,7 +104,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryCourtsCodeData(final String resourceName) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -117,7 +117,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryOrganisationUnitsData(final String resourceName) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -130,7 +130,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryAllResultDefinitions(final String resourceName) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -143,7 +143,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryDocumentTypeData(final String resourceName) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -156,7 +156,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryDocumentTypeAccessQueryData(final String resourceName) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -169,7 +169,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryDocumentTypeData(final String resourceName, final String documentTypeId) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -183,7 +183,7 @@ public class ReferenceDataStub {
 
 
     public static void stubGetDocumentsTypeAccess(final String filePath) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(filePath))
                 .readObject();
 
@@ -195,7 +195,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubCourtApplicationTypes(final String resourceName) {
-        final JsonObject applicationTypesResponse = Json.createReader(ReferenceDataStub.class
+        final JsonObject applicationTypesResponse = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/application-types";
@@ -209,7 +209,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryReferralReasons(final String resourceName, final UUID referralReasonId) {
-        final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
+        final JsonObject referralReasonsJson = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -225,7 +225,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryJudiciaries(final String resourceName) {
-        final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
+        final JsonObject referralReasonsJson = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -240,7 +240,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryPrisonSuites(final String resourceName) {
-        final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
+        final JsonObject referralReasonsJson = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -255,7 +255,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryEthinicityData(final String resourceName, final UUID id) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/ethnicities";
@@ -267,7 +267,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryNationalityData(final String resourceName, final UUID id) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -280,7 +280,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryHearingTypeData(final String resourceName, final UUID id) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/hearing-types";
@@ -305,7 +305,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryProsecutorData(final String resourceName, final UUID id) {
-        final JsonObject responsePayload = Json.createReader(ReferenceDataStub.class
+        final JsonObject responsePayload = JsonObjects.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors.*";
@@ -326,7 +326,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubQueryCpsProsecutorData(final String resourceName, final UUID id, int returnStatus) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors.*oucode.*";
@@ -339,7 +339,7 @@ public class ReferenceDataStub {
 
 
     public static void stubQueryPetFormData(final String resourceName, final UUID id, int returnStatus) {
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+        final JsonObject documentType = JsonObjects.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/latest-pet-form";
@@ -353,7 +353,7 @@ public class ReferenceDataStub {
 
     public static void stubQueryCourtOURoom() {
         COURT_ID_LIST.forEach(cid -> {
-            final JsonObject courtCentre = Json.createReader(ReferenceDataStub.class
+            final JsonObject courtCentre = JsonObjects.createReader(ReferenceDataStub.class
                             .getResourceAsStream(cid.getV()))
                     .readObject();
 
@@ -368,7 +368,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubEnforcementArea(final String resourceName) {
-        final JsonObject enforcementArea = Json.createReader(ReferenceDataStub.class
+        final JsonObject enforcementArea = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -381,7 +381,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubLegalStatus(final String resourceName, final String statusCode) {
-        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
+        final JsonObject legalStatuses = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -394,7 +394,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubLegalStatusWithStatusDescription(final String resourceName, final String statusCode, final String statusDescription) {
-        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
+        final JsonObject legalStatuses = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 
@@ -408,7 +408,7 @@ public class ReferenceDataStub {
 
 
     public static void stubGetOrganisationById(final String resourceName) {
-        final JsonObject judge = Json.createReader(ReferenceDataStub.class
+        final JsonObject judge = JsonObjects.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
                 .readObject();
 

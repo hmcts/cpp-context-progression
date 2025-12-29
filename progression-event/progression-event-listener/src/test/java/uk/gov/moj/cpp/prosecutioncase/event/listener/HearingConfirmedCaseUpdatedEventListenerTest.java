@@ -33,7 +33,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -180,7 +180,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
     }
 
     private JsonObject getPayload(final ProsecutionCase prosecutionCase) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
                 .add("caseStatus", SJP_REFERRAL.getDescription())
                 .build();

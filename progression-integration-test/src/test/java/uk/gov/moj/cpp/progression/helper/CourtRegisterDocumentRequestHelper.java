@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -62,7 +62,7 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("payloadFileServiceId", templatePayloadId.toString())
                 .add("templateIdentifier", templateIdentifier)
                 .add("conversionFormat", "pdf")
@@ -76,7 +76,7 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
-        return metadataFrom(Json.createObjectBuilder()
+        return metadataFrom(JsonObjects.createObjectBuilder()
                 .add(ORIGINATOR, courtCentreId.toString())
                 .add(ID, randomUUID().toString())
                 .add(HeaderConstants.USER_ID, userId)

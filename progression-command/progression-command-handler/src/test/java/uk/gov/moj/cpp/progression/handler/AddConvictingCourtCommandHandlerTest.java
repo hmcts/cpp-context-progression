@@ -42,7 +42,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -193,7 +193,7 @@ public class AddConvictingCourtCommandHandlerTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(referenceDataOffenceJsonString));
         return jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
     }
 

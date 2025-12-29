@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 
@@ -336,7 +336,7 @@ public class MatchedDefendantCriteria {
     }
 
     private JsonObjectBuilder getDefaultCriteriaBuilder() {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add(PAGE_SIZE, DEFAULT_PAGE_SIZE)
                 .add(PROCEEDINGS_CONCLUDED, DEFAULT_PROCEEDINGS_CONCLUDED)
                 .add(COURT_ORDER_VALIDITY_DATE, LocalDate.now().toString())

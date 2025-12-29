@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.api.resource.utils.ResultPromptValueHelper.getValue;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
@@ -23,13 +23,13 @@ public class ResultPromptValueHelperTest {
 
     @Test
     public void shouldConvertCurrencyTypePromptValueToStringValue() {
-        assertThat(getValue("CURR", Json.createValue(1200.00)), is("1200.00"));
+        assertThat(getValue("CURR", JsonObjects.getProvider().createValue(1200.00)), is("1200.00"));
     }
 
     @Test
     public void shouldConvertDurationTypePromptValueToStringValue() {
-        assertThat(getValue("DURATION", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        assertThat(getValue("DURATION", JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("label", "MINUTES")
                         .add("value", 30)
                         .build())
@@ -38,12 +38,12 @@ public class ResultPromptValueHelperTest {
 
     @Test
     public void shouldConvertDurationTypePromptWithMultipleValuesToStringValue() {
-        assertThat(getValue("DURATION", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        assertThat(getValue("DURATION", JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("label", "HOURS")
                         .add("value", 2)
                         .build())
-                .add(Json.createObjectBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("label", "MINUTES")
                         .add("value", 30)
                         .build())
@@ -52,14 +52,14 @@ public class ResultPromptValueHelperTest {
 
     @Test
     public void shouldConvertFixedListMultipleTypePromptValueToStringValue() {
-        assertThat(getValue("FIXLM", Json.createArrayBuilder()
+        assertThat(getValue("FIXLM", JsonObjects.createArrayBuilder()
                 .add("Offence while on bail")
                 .build()), is("Offence while on bail"));
     }
 
     @Test
     public void shouldConvertFixedListMultipleTypePromptMultipleValuesToStringValue() {
-        assertThat(getValue("FIXLM", Json.createArrayBuilder()
+        assertThat(getValue("FIXLM", JsonObjects.createArrayBuilder()
                 .add("Offence while on bail")
                 .add("Second element")
                 .build()), is("Offence while on bail###Second element"));
@@ -67,14 +67,14 @@ public class ResultPromptValueHelperTest {
 
     @Test
     public void shouldConvertFixedListOtherMultipleTypePromptValueToStringValue() {
-        assertThat(getValue("FIXLOM", Json.createArrayBuilder()
+        assertThat(getValue("FIXLOM", JsonObjects.createArrayBuilder()
                 .add("Broken bail conditions")
                 .build()), is("Broken bail conditions"));
     }
 
     @Test
     public void shouldConvertFixedListOtherMultipleTypePromptMultipleValuesToStringValue() {
-        assertThat(getValue("FIXLOM", Json.createArrayBuilder()
+        assertThat(getValue("FIXLOM", JsonObjects.createArrayBuilder()
                 .add("Broken bail conditions")
                 .add("Offended on bail")
                 .build()), is("Broken bail conditions###Offended on bail"));

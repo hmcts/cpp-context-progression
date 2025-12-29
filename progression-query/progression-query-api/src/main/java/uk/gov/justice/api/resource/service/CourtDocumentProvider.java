@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 
@@ -23,7 +23,7 @@ public class CourtDocumentProvider {
 
     public Action getDocumentTypeId(final Action action) {
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder().add("courtDocumentId", action.envelope().payloadAsJsonObject().getString("courtDocumentId"));
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder().add("courtDocumentId", action.envelope().payloadAsJsonObject().getString("courtDocumentId"));
         final MetadataBuilder metadataBuilder = metadataFrom(action.metadata()).withName("progression.query.courtdocument");
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataBuilder, jsonObjectBuilder.build());
         final JsonEnvelope response = courtDocumentQueryView.getCourtDocument(requestEnvelope);

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Stream.concat;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;

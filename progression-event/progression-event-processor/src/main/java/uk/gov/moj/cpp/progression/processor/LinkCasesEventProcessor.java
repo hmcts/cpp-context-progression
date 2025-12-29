@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -93,7 +93,7 @@ public class LinkCasesEventProcessor {
                         if (alreadyLinkedCases.get().size() > 0 && alreadyLinkedCases.get().containsKey(LINKED_CASES) && !alreadyLinkedCases.get().getJsonArray(LINKED_CASES).isEmpty()) {
                             alreadyLinkedCases.get().getJsonArray(LINKED_CASES).stream().forEach(
                                     lc -> {
-                                        final JsonObject linkedCase = Json.createObjectBuilder().add("linkedCase", lc).build();
+                                        final JsonObject linkedCase = JsonObjects.createObjectBuilder().add("linkedCase", lc).build();
                                         if (linkedCase.getJsonObject("linkedCase").getString(CASE_ID).equals(existingCase.get().getString(CASE_ID))) {
                                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                                             failed.set(true);
@@ -131,8 +131,8 @@ public class LinkCasesEventProcessor {
     }
 
     private JsonObject buildCasesLinkedEventPayload(final JsonEnvelope envelope, final UUID leadCaseId, final List<String> caseUrns) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString());
-        final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString());
+        final JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
         // for case reference; caseURN is used  for spi cases, and prosecutionAuthorityReference is used for sjp cases
         final ProsecutionCaseIdentifier pci = jsonObjectToObjectConverter.convert(progressionService.getProsecutionCaseDetailById(envelope, leadCaseId.toString()).get().getJsonObject("prosecutionCase"), ProsecutionCase.class).getProsecutionCaseIdentifier();
         final String leadCaseUrn = pci.getCaseURN() != null ? pci.getCaseURN() : pci.getProsecutionAuthorityReference();

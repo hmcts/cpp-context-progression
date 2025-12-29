@@ -32,7 +32,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NowDocumentRequestR
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -109,7 +109,7 @@ public class NowsRequestedEventListenerTest {
         final ArgumentCaptor<CourtDocumentEntity> courtDocumentsSavedCaptor = ArgumentCaptor.forClass(CourtDocumentEntity.class);
         verify(this.repository).save(courtDocumentsSavedCaptor.capture());
         final CourtDocumentEntity savedEntity = courtDocumentsSavedCaptor.getValue();
-        final JsonObject jsonPayload = Json.createReader(new StringReader(savedEntity.getPayload())).readObject();
+        final JsonObject jsonPayload = JsonObjects.createReader(new StringReader(savedEntity.getPayload())).readObject();
         final CourtDocument courtDocumentSaved = jsonObjectToObjectConverter.convert(jsonPayload, CourtDocument.class);
         assertThat(courtDocumentSaved.getCourtDocumentId(), is(originalCourtDocument.getCourtDocumentId()));
         assertThat(courtDocumentSaved.getMaterials().size(), is(originalCourtDocument.getMaterials().size()));
@@ -142,7 +142,7 @@ public class NowsRequestedEventListenerTest {
         final ArgumentCaptor<NowDocumentRequestEntity> nowDocumentRequestedCaptor = ArgumentCaptor.forClass(NowDocumentRequestEntity.class);
         verify(this.nowDocumentRequestRepository).save(nowDocumentRequestedCaptor.capture());
         final NowDocumentRequestEntity savedNowDocumentRequestEntity = nowDocumentRequestedCaptor.getValue();
-        final JsonObject jsonPayload = Json.createReader(new StringReader(savedNowDocumentRequestEntity.getPayload())).readObject();
+        final JsonObject jsonPayload = JsonObjects.createReader(new StringReader(savedNowDocumentRequestEntity.getPayload())).readObject();
         final NowDocumentRequest nowDocumentRequestSaved = jsonObjectToObjectConverter.convert(jsonPayload, NowDocumentRequest.class);
 
         assertThat(savedNowDocumentRequestEntity.getMaterialId(), is(materialId));
@@ -176,7 +176,7 @@ public class NowsRequestedEventListenerTest {
         final ArgumentCaptor<NowDocumentRequestEntity> nowDocumentRequestedCaptor = ArgumentCaptor.forClass(NowDocumentRequestEntity.class);
         verify(this.nowDocumentRequestRepository).save(nowDocumentRequestedCaptor.capture());
         final NowDocumentRequestEntity savedNowDocumentRequestEntity = nowDocumentRequestedCaptor.getValue();
-        final JsonObject jsonPayload = Json.createReader(new StringReader(savedNowDocumentRequestEntity.getPayload())).readObject();
+        final JsonObject jsonPayload = JsonObjects.createReader(new StringReader(savedNowDocumentRequestEntity.getPayload())).readObject();
         final NowDocumentRequest nowDocumentRequestSaved = jsonObjectToObjectConverter.convert(jsonPayload, NowDocumentRequest.class);
 
         assertThat(savedNowDocumentRequestEntity.getMaterialId(), is(materialId));

@@ -4,7 +4,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;

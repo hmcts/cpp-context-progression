@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.cotr.event.listener;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.DefendantCotrServed;

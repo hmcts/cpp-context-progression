@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.query.api;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 

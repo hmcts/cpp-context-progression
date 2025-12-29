@@ -6,8 +6,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -50,7 +50,7 @@ import uk.gov.moj.cpp.progression.query.api.service.DefenceService;
 import uk.gov.moj.cpp.progression.query.api.service.ListingService;
 import uk.gov.moj.cpp.progression.query.api.service.ProgressionService;
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -163,7 +163,7 @@ public class CotrQueryApi {
                     .build();
             return envelopeFrom(envelope.metadata(), responsePayload);
         }
-        return envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build());
+        return envelopeFrom(envelope.metadata(), JsonObjects.createObjectBuilder().build());
     }
 
     @Handles("progression.query.trial-readiness-details")

@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -121,7 +121,7 @@ public class NotificationRequestProcessorTest {
                 .add("postage", false)
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("notifications", createArrayBuilder()
                         .add(notification)
                         .build())
@@ -147,7 +147,7 @@ public class NotificationRequestProcessorTest {
         final String urn = "AB1243";
         final String email = "email@hmcts.net";
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("systemDocGeneratorId", materialId.toString())
                 .add("notificationId", notificationId.toString())
                 .add("caseId", caseId.toString())
@@ -179,7 +179,7 @@ public class NotificationRequestProcessorTest {
         final String email = "email@hmcts.net";
         final String postcode = "CR0 5QT";
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("email", email)
                 .add("urn", urn)

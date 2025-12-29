@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -130,7 +130,7 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
         final DocumentContext prosecutionCase = parse(commandJsonInputJson);
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.initiateCourtProceedings.prosecutionCases[0]");
-        final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
+        final JsonObject prosecutionCaseEvent = JsonObjects.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
         return parse(prosecutionCaseEvent);
     }
 }

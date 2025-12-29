@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -312,7 +312,7 @@ class ReceiveRepresentationOrderForApplicationApiTest {
     public void shouldThrowBadRequestExceptionRecordRepresentationOrderForApplicationWithoutOffences() {
         final UUID applicationId = randomUUID();
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("applicationId", applicationId.toString())
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())

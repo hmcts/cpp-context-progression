@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -162,7 +162,7 @@ public class CourtDocumentTransformerTest {
     @Test
     public void shouldTransformCourtDocumentMaterialWhenProsecutionCaseHasNotHavingCaseURNAndCallRefDataToGetOuCode() {
 
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
@@ -181,7 +181,7 @@ public class CourtDocumentTransformerTest {
 
     @Test
     public void shouldTransformCourtDocumentMaterialWhenProsecutionCaseHasOuCodeOnly() {
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
@@ -262,7 +262,7 @@ public class CourtDocumentTransformerTest {
         final CourtDocument courtDocument = buildCourtDocumentWithApplication(materialId, applicationId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
 
-        final JsonObjectBuilder materialBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder materialBuilder = JsonObjects.createObjectBuilder();
         materialBuilder.add("materialId", randomUUID().toString());
         materialBuilder.add("fileName", "fileName.pdf");
         materialBuilder.add("mimeType", "application/octet-stream");
@@ -345,7 +345,7 @@ public class CourtDocumentTransformerTest {
         final ProsecutionCaseIdentifier.Builder prosecutionCaseIdentifierBuilder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
         prosecutionCaseIdentifierBuilder.withCaseURN("URN-123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }
@@ -375,7 +375,7 @@ public class CourtDocumentTransformerTest {
         final ProsecutionCaseIdentifier.Builder prosecutionCaseIdentifierBuilder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
         prosecutionCaseIdentifierBuilder.withCaseURN("URN-123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }
@@ -397,7 +397,7 @@ public class CourtDocumentTransformerTest {
         prosecutionCaseIdentifierBuilder.withProsecutionAuthorityReference("prosecutorAuthorityRefNumber");
         prosecutionCaseIdentifierBuilder.withProsecutionAuthorityOUCode("OUCODE_123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }

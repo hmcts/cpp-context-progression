@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;

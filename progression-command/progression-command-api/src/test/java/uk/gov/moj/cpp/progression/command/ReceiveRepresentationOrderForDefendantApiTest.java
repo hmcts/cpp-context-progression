@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.command.service.OrganisationService;
 
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -61,13 +61,13 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldReceiveRepresentationOrderForDefendantAPI() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("prosecutionCaseId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .build());
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisation(any(), any(), any())).thenReturn(jsonObjectPayload);
         receiveRepresentationOrderForDefendantApi.handle(envelope);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
@@ -80,13 +80,13 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldReceiveRepresentationOrderForDefendantAPIWithNoAssociation() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("prosecutionCaseId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .build());
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisation(any(), any(), any())).thenReturn(jsonObjectPayload);
         receiveRepresentationOrderForDefendantApi.handle(envelope);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
@@ -98,7 +98,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsNotValidUUID() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", "invalid-uuid")
                 .build());
@@ -110,7 +110,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsnull() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .build());
 
@@ -121,7 +121,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfDefendantIdIsNotValidUUID() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("defendantId", "invalid-uuid")
                 .add("offenceId", randomUUID().toString())
                 .build());
@@ -133,7 +133,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfDefendantIdIsNull() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("offenceId", randomUUID().toString())
                 .build());
 
@@ -144,7 +144,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfCasedIsNull() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("offenceId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .build());
@@ -156,7 +156,7 @@ public class ReceiveRepresentationOrderForDefendantApiTest {
     @Test
     public void shouldThrowBadRequestIfProsecutionCaseIdIsNotValidUUID() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, Json.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .add("prosecutionCaseId", "invalid-uuid")

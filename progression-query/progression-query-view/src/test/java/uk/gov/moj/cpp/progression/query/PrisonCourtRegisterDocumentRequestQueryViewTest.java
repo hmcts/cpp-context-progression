@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PrisonCourtRegister
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
@@ -41,14 +41,14 @@ public class PrisonCourtRegisterDocumentRequestQueryViewTest {
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID())
                         .withName("progression.query.prison-court-register-document-by-court-centre").build(),
-                Json.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build());
+                JsonObjects.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build());
 
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity = new PrisonCourtRegisterEntity();
         prisonCourtRegisterEntity.setCourtCentreId(courtCentreId);
         prisonCourtRegisterEntity.setFileId(fileId);
         prisonCourtRegisterEntity.setRecordedDate(LocalDate.now());
 
-        final JsonObject transformedJsonEntity = Json.createObjectBuilder()
+        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("fileId", fileId.toString())
                 .build();

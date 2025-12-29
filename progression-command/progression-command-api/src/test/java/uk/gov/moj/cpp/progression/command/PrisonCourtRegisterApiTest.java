@@ -17,7 +17,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -64,8 +64,8 @@ public class PrisonCourtRegisterApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("prisonCourtRegisterDocumentRequest", Json.createObjectBuilder().build())
+        final JsonObject payload = JsonObjects.createObjectBuilder()
+                .add("prisonCourtRegisterDocumentRequest", JsonObjects.createObjectBuilder().build())
                 .build();
 
         final Metadata metadata = Envelope
