@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.hamcrest.Matchers.is;

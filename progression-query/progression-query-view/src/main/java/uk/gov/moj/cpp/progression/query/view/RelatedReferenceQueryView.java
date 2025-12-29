@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRep
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
@@ -35,8 +35,8 @@ public class RelatedReferenceQueryView {
     }
 
     private JsonObjectBuilder getRelatedReferences(final UUID caseId) {
-        final JsonObjectBuilder responseBuilder = Json.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder responseBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         relatedReferenceRepository
                 .findByProsecutionCaseId(caseId)
                 .stream()

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -159,7 +159,7 @@ public class SharedCourtDocumentsQueryView {
 
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
-                Json.createObjectBuilder().add("sharedCourtDocumentsLinksForApplication", sharedCourtDocumentsLinksForApplicationListToJsonArrayConverter.convert(sharedCourtDocumentsLinks)).build());
+                JsonObjects.createObjectBuilder().add("sharedCourtDocumentsLinksForApplication", sharedCourtDocumentsLinksForApplicationListToJsonArrayConverter.convert(sharedCourtDocumentsLinks)).build());
 
     }
 

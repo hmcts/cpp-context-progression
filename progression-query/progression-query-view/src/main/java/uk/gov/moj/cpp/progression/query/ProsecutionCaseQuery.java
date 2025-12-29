@@ -5,8 +5,8 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
@@ -86,7 +86,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -245,7 +245,7 @@ public class ProsecutionCaseQuery {
     }
 
     private JsonArrayBuilder getMemberProsecutionCases(final List<ProsecutionCaseEntity> prosecutionCaseEntities) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         final List<JsonObject> jsonObjectList = prosecutionCaseEntities.stream()
                 .map(o -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(o.getPayload()), ProsecutionCase.class))
                 .filter(p -> (p.getIsGroupMember() && !p.getIsGroupMaster()))
@@ -281,7 +281,7 @@ public class ProsecutionCaseQuery {
 
             JsonArray civilFeesArray = null;
             if (!civilFeesList.isEmpty()) {
-                final JsonArrayBuilder jsonProsecutionBuilder = Json.createArrayBuilder();
+                final JsonArrayBuilder jsonProsecutionBuilder = JsonObjects.createArrayBuilder();
                 civilFeesList.forEach(civilFee -> buildCivilFeesList(civilFee, jsonProsecutionBuilder));
                 civilFeesArray = jsonProsecutionBuilder.build();
             }
@@ -441,7 +441,7 @@ public class ProsecutionCaseQuery {
             jsonObjectBuilder.add("defendants", resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
 
             if (!courtApplicationCaseEntities.isEmpty()) {
-                final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
+                final JsonArrayBuilder jsonApplicationBuilder = JsonObjects.createArrayBuilder();
                 courtApplicationCaseEntities
                         .stream().filter(courtApplicationCaseEntity -> courtApplicationCaseEntity.getCourtApplication().getParentApplicationId() == null)
                         .forEach(courtApplicationCaseEntity -> buildApplicationSummary(courtApplicationCaseEntity.getCourtApplication().getPayload(), jsonApplicationBuilder));
@@ -621,7 +621,7 @@ public class ProsecutionCaseQuery {
 
         LOGGER.debug("Searching for allowed user groups with materialId='{}'", FIELD_QUERY);
         final JsonObjectBuilder json = createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         final CourtDocumentMaterialEntity courtDocumentMaterialEntity = courtDocumentMaterialRepository.findBy(UUID
                 .fromString(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
         if (courtDocumentMaterialEntity != null) {
@@ -642,7 +642,7 @@ public class ProsecutionCaseQuery {
         if (StringUtils.isNotBlank(searchCriteria)) {
             final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findBySearchCriteria(prepareSearch
                     (searchCriteria.toLowerCase()));
-            final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
             cases.forEach(caseEntity ->
                     jsonArrayBuilder.add(stringToJsonObjectConverter.convert(SearchCaseBuilder.searchCaseBuilder()
                             .withSearchCaseEntity(caseEntity)
@@ -662,7 +662,7 @@ public class ProsecutionCaseQuery {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (envelope.payloadAsJsonObject().containsKey(FIELD_CASE_URN) && StringUtils.isNotBlank(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN))) {
             final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN).toUpperCase());
-            final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
             cases.forEach(caseEntity ->
                     jsonArrayBuilder.add(stringToJsonObjectConverter.convert(SearchCaseBuilder.searchCaseBuilder()
                             .withSearchCaseEntity(caseEntity)
@@ -787,7 +787,7 @@ public class ProsecutionCaseQuery {
         final GetHearingsAtAGlance hearingsAtAGlance = hearingAtAGlanceService.getHearingAtAGlance(caseId.get());
         final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
         if (isNotEmpty(courtApplicationCaseEntities)) {
-            final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
+            final JsonArrayBuilder jsonApplicationBuilder = JsonObjects.createArrayBuilder();
             courtApplicationCaseEntities.forEach(courtApplicationCaseEntity -> buildApplicationSummary(courtApplicationCaseEntity.getCourtApplication().getPayload(), jsonApplicationBuilder));
             jsonObjectBuilder.add(LINKED_APPLICATIONS_SUMMARY, jsonApplicationBuilder.build());
             addCourtApplication(hearingsAtAGlance, courtApplicationCaseEntities);
@@ -816,7 +816,7 @@ public class ProsecutionCaseQuery {
 
     public JsonEnvelope getActiveApplicationsOnCase(final JsonEnvelope envelope) {
         final UUID prosecutionCaseId = getProsecutionCaseId(envelope);
-        final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonApplicationBuilder = JsonObjects.createArrayBuilder();
         final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(prosecutionCaseId);
 
         if (!courtApplicationCaseEntities.isEmpty()) {
@@ -899,7 +899,7 @@ public class ProsecutionCaseQuery {
             return;
         }
 
-        final JsonArrayBuilder offencesArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offencesArrayBuilder = JsonObjects.createArrayBuilder();
         prosecutionCase.getDefendants().stream()
                 .filter(defendant -> defendant.getMasterDefendantId().equals(matchDefendantCaseHearingEntity.getMasterDefendantId()))
                 .flatMap(defendant -> defendant.getOffences().stream())
@@ -910,12 +910,12 @@ public class ProsecutionCaseQuery {
 
         final JsonArray offences = offencesArrayBuilder.build();
         if (isNotEmpty(offences)) {
-            final JsonObjectBuilder caseObjectBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder caseObjectBuilder = JsonObjects.createObjectBuilder();
             caseObjectBuilder.add(CASE_ID, prosecutionCase.getId().toString());
             caseObjectBuilder.add(CASE_STATUS, prosecutionCaseStatus);
             if (nonNull(prosecutionCase.getProsecutionCaseIdentifier())) {
                 final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
-                final JsonObjectBuilder pciJsonBuilder = Json.createObjectBuilder();
+                final JsonObjectBuilder pciJsonBuilder = JsonObjects.createObjectBuilder();
 
                 pciJsonBuilder.add(PROSECUTION_AUTHORITY_ID, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString());
                 pciJsonBuilder.add("prosecutionAuthorityCode", prosecutionCaseIdentifier.getProsecutionAuthorityCode());
