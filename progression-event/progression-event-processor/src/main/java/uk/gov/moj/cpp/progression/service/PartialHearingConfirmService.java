@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Collections.emptyList;
-import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -26,12 +25,8 @@ import uk.gov.justice.listing.courts.ListNextHearings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -141,61 +136,6 @@ public class PartialHearingConfirmService {
                 .withHearingId(hearingId)
                 .withProsecutionCasesToRemove(prosecutionCases)
                 .build();
-    }
-
-    /**
-     * The method generates prosecutionCases based on seedingHearing from deltaProsecutionCases.
-     * Each related hearing's prosecutionCases can be populated by this method.
-     *
-     * @param confirmedHearing
-     * @param hearing
-     * @param seedingHearing
-     * @return relatedSeedingHearingProsecutionCasesMap
-     */
-    public Map<SeedingHearing, List<ProsecutionCase>> getRelatedSeedingHearingsProsecutionCasesMap(final ConfirmedHearing confirmedHearing, final Hearing hearing, final SeedingHearing seedingHearing) {
-        final List<ProsecutionCase> deltaProsecutionCases = getDifferences(confirmedHearing, hearing);
-        final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingProsecutionCasesMap = new HashMap<>();
-        if (nonNull(seedingHearing)) {
-            final Set<SeedingHearing> relatedSeedingHearings = deltaProsecutionCases.stream()
-                    .flatMap(pc -> pc.getDefendants().stream())
-                    .flatMap(defendant -> defendant.getOffences().stream())
-                    .filter(offence -> nonNull(offence.getSeedingHearing()) && !offence.getSeedingHearing().getSeedingHearingId().equals(seedingHearing.getSeedingHearingId()))
-                    .map(Offence::getSeedingHearing)
-                    .collect(Collectors.toSet());
-            for (final SeedingHearing relatedSeedingHearing : relatedSeedingHearings) {
-                relatedSeedingHearingProsecutionCasesMap.put(relatedSeedingHearing, getRelatedDeltaProsecutionCases(deltaProsecutionCases, relatedSeedingHearing));
-            }
-        }
-        return relatedSeedingHearingProsecutionCasesMap;
-    }
-
-    private List<ProsecutionCase> getRelatedDeltaProsecutionCases(final List<ProsecutionCase> deltaProsecutionCases, final SeedingHearing relatedSeedingHearing) {
-
-        final List<UUID> deltaRelatedOffenceIds = deltaProsecutionCases.stream()
-                .flatMap(pc -> pc.getDefendants().stream())
-                .flatMap(defendant -> defendant.getOffences().stream())
-                .filter(offence -> nonNull(offence.getSeedingHearing()) && offence.getSeedingHearing().getSeedingHearingId().equals(relatedSeedingHearing.getSeedingHearingId()))
-                .map(Offence::getId)
-                .collect(Collectors.toList());
-
-        final List<ProsecutionCase> deltaRelatedProsecutionCases = deltaProsecutionCases.stream()
-                .filter(prosecutionCase -> prosecutionCase.getDefendants().stream()
-                        .flatMap(defendant -> defendant.getOffences().stream())
-                        .anyMatch(offence -> deltaRelatedOffenceIds.contains(offence.getId())))
-                .map(pc -> ProsecutionCase.prosecutionCase().withValuesFrom(pc)
-                        .withDefendants(pc.getDefendants().stream().map(defendant -> Defendant.defendant().withValuesFrom(defendant)
-                                .withOffences(defendant.getOffences().stream().map(offence -> Offence.offence().withValuesFrom(offence).build()).collect(toList()))
-                                .build()).collect(toList()))
-                        .build())
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        deltaRelatedProsecutionCases.forEach(prosecutionCase -> prosecutionCase.getDefendants()
-                .forEach(defendant -> defendant.getOffences().removeIf(offence -> !deltaRelatedOffenceIds.contains(offence.getId()))));
-
-        deltaRelatedProsecutionCases.forEach(prosecutionCase -> prosecutionCase.getDefendants().removeIf(defendant -> defendant.getOffences().isEmpty()));
-        deltaRelatedProsecutionCases.removeIf(prosecutionCase -> prosecutionCase.getDefendants().isEmpty());
-
-        return deltaRelatedProsecutionCases;
     }
 
     private List<DefendantsToRemove> transformToDefendantsToRemove(final List<Defendant> defendants) {
