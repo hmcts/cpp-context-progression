@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.nows.event.listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -51,6 +52,7 @@ public class PrisonCourtRegisterEventListener {
 
     @Handles("progression.event.prison-court-register-generated")
     public void generatePrisonCourtRegister(final JsonEnvelope event) {
+        LOGGER.info("generatePrisonCourtRegister");
         final JsonObject payload = event.payloadAsJsonObject();
         final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = jsonObjectToObjectConverter.convert(payload, PrisonCourtRegisterGenerated.class);
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity;
@@ -75,7 +77,8 @@ public class PrisonCourtRegisterEventListener {
     @Handles("progression.event.prison-court-register-generated-v2")
     public void sendPrisonCourtRegisterNotificationToAmp(final JsonEnvelope event) {
         LOGGER.info("sendPrisonCourtRegisterNotificationToAmp");
-        // TODO include materialId
-        // TODO post to AMP endpoint
+        // What do we need to do here ?
+        // We post to AMP endpoint in the command
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGeneratedv2 = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), PrisonCourtRegisterGeneratedV2.class);
     }
 }

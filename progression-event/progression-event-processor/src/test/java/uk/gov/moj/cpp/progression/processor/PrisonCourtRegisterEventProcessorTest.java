@@ -1,22 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
@@ -30,6 +25,7 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
@@ -38,24 +34,33 @@ import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
+import uk.gov.moj.cpp.progression.service.amp.mappers.AmpPcrMapper;
+import uk.gov.moj.cpp.progression.service.amp.service.AmpClientService;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterEventProcessorTest {
@@ -83,6 +88,11 @@ public class PrisonCourtRegisterEventProcessorTest {
 
     @Mock
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
+
+    @Mock
+    AmpPcrMapper ampPcrMapper;
+    @Mock
+    AmpClientService ampClientService;
 
     @Spy
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
@@ -194,7 +204,8 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Test
     public void shouldSendPrisonCourtRegisterV2() {
         final UUID fileId = randomUUID();
-        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated().withCourtCentreId(randomUUID())
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .withCourtCentreId(randomUUID())
                 .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
                         .withEmailAddress1("test@hmcst.net")
                         .withEmailTemplateName("emailTemplateName").build()))
@@ -204,19 +215,20 @@ public class PrisonCourtRegisterEventProcessorTest {
                         .withProsecutionCasesOrApplications(
                                 singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
                         ).build())
-                .withHearingVenue(new PrisonCourtRegisterHearingVenue.Builder().withCourtHouse("liverpool Crown Court").build())
                 .withFileId(fileId)
                 .build();
 
+        MetadataBuilder metadata = MetadataBuilderFactory.metadataWithDefaults();
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
-        final JsonEnvelope requestMessage = envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated-v2"),
-                jsonObject);
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
-        prisonCourtRegisterEventProcessor.sendPrisonCourtRegister(requestMessage);
-        verify(notificationNotifyService).sendEmailNotification(eq(requestMessage), notificationJsonObjectCaptor.capture());
-        assertThat(notificationJsonObjectCaptor.getValue().getString("fileId"), is(fileId.toString()));
-        assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(notNullValue()));
+        final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObject);
+        PcrEventPayload pcrEventPayload = PcrEventPayload.builder().build();
+        Instant expectedCreatedAt = metadata.build().createdAt().get().toInstant();
+        when(ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, "test@hmcst.net", expectedCreatedAt)).thenReturn(pcrEventPayload);
+        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.noContent().build());
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        verify(ampClientService).post("http://amp-address", pcrEventPayload);
     }
 
     @Test

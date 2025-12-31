@@ -5,13 +5,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 // Generated and copied from AMP
-public class PcrEventPayloadDefendantsInnerCustodyEstablishmentDetails {
+public class PcrEventPayloadDefendantsDocuments {
 
-    private String emailAddress;
+    private UUID materialId;
+    private Instant timestamp;
 }
 

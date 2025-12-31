@@ -12,8 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 // Generated and copied from AMP
-public class PcrEventPayloadDefendantsInnerCasesInner {
+public class PcrEventPayloadDefendantsCases {
     private String urn;
-    private List<PcrEventPayloadDefendantsInnerCasesInnerDocumentsInner> documents;
+    private List<PcrEventPayloadDefendantsDocuments> documents;
 }
 

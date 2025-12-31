@@ -3,36 +3,50 @@ package uk.gov.moj.cpp.progression.service.amp.mappers;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
-import uk.gov.moj.cpp.progression.service.amp.dto.EventType;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsInner;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsInnerCustodyEstablishmentDetails;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadCustodyEstablishmentDetails;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendants;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsCases;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsDocuments;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
 public class AmpPcrMapper {
 
-    public PcrEventPayload mapPcrForAmp(PrisonCourtRegisterGeneratedV2 pcr) {
-        PcrEventPayloadDefendantsInnerCustodyEstablishmentDetails pcrCustodyEstablishment = PcrEventPayloadDefendantsInnerCustodyEstablishmentDetails.builder()
-                .emailAddress("TODO")
+    public PcrEventPayload mapPcrForAmp(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail, Instant createdAt) {
+        PcrEventPayloadCustodyEstablishmentDetails pcrCustodyEstablishment = PcrEventPayloadCustodyEstablishmentDetails.builder()
+                .emailAddress(prisonEmail)
                 .build();
-        PrisonCourtRegisterDefendant pcrDefendant = pcr.getDefendant() == null
+        PrisonCourtRegisterDefendant pcrDefendant = pcrIn.getDefendant() == null
                 ? PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().build()
-                : pcr.getDefendant();
-        // pcrDefendant.getDefendantResults().
-        PcrEventPayloadDefendantsInner payloadDefendant = PcrEventPayloadDefendantsInner.builder()
+                : pcrIn.getDefendant();
+        PcrEventPayloadDefendantsDocuments pcrDocument = PcrEventPayloadDefendantsDocuments.builder()
+                .materialId(pcrIn.getMaterialId())
+                .timestamp(createdAt)
+                .build();
+        String caseUrn = pcrDefendant.getProsecutionCasesOrApplications().size() > 0
+                ? pcrDefendant.getProsecutionCasesOrApplications().get(0).getCaseOrApplicationReference()
+                : null;
+        PcrEventPayloadDefendantsCases cases = PcrEventPayloadDefendantsCases.builder()
+                .urn(caseUrn)
+                .documents(List.of(pcrDocument))
+                .build();
+        PcrEventPayloadDefendants payloadDefendant = PcrEventPayloadDefendants.builder()
                 .masterDefendantId(pcrDefendant.getMasterDefendantId())
                 .name(pcrDefendant.getName())
                 .dateOfBirth(getDateOfBirth(pcrDefendant))
                 .custodyEstablishmentDetails(pcrCustodyEstablishment)
+                .cases(List.of(cases))
                 .build();
         return PcrEventPayload.builder()
-                .eventId(pcr.getId())
-                .eventType(EventType.PCR)
-                .timestamp(OffsetDateTime.now())
+                .eventId(pcrIn.getId())
+                .eventType(PcrEventType.PCR)
+                .timestamp(Instant.now())
                 .defendants(List.of(payloadDefendant))
                 .build();
     }

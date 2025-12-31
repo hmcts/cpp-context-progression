@@ -8,9 +8,14 @@ import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsInner;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendants;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsCases;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsDocuments;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +24,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static uk.gov.moj.cpp.progression.service.amp.dto.EventType.PCR;
+import static uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType.PCR;
 
 @ExtendWith(MockitoExtension.class)
 class AmpPcrMapperTest {
@@ -44,7 +49,8 @@ class AmpPcrMapperTest {
 
     @Test
     void mapperShouldCreateAmpPayload() {
-        PcrEventPayload payload = mapper.mapPcrForAmp(pcr);
+        Instant createdAt = Instant.now();
+        PcrEventPayload payload = mapper.mapPcrForAmp(pcr, "wandsworth@example.com", createdAt);
 
         assertThat(payload.getEventId(), equalTo(pcr.getId()));
         assertThat(payload.getEventType(), equalTo(PCR));
@@ -53,20 +59,33 @@ class AmpPcrMapperTest {
         assertDefendant(payload.getDefendants().get(0));
     }
 
-    private void assertDefendant(PcrEventPayloadDefendantsInner defendant) {
+    @Test
+    void mapperShouldBeNullSafe() {
+        PrisonCourtRegisterGeneratedV2 emptyPcr = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .build();
+        PcrEventPayload payload = mapper.mapPcrForAmp(emptyPcr, null, null);
+
+        assertThat(payload.getEventId(), equalTo(pcr.getId()));
+        assertThat(payload.getEventType(), equalTo(PCR));
+        assertThat(payload.getTimestamp(), is(notNullValue()));
+        assertThat(payload.getDefendants(), hasSize(1));
+        assertDefendant(payload.getDefendants().get(0));
+    }
+
+    private void assertDefendant(PcrEventPayloadDefendants defendant) {
         assertThat(defendant.getMasterDefendantId(), equalTo(UUID.fromString("d78e8cac-991c-43fa-86a7-8fc6b857308a")));
         assertThat(defendant.getName(), equalTo("Defendant Name"));
         assertThat(defendant.getDateOfBirth(), equalTo(LocalDate.of(2000, 1, 31)));
-        assertThat(defendant.getCustodyEstablishmentDetails().getEmailAddress(), equalTo("TODO"));
+        assertThat(defendant.getCustodyEstablishmentDetails().getEmailAddress(), equalTo("wandsworth@example.com"));
 
         // TODO needs define from here
-//        assertThat(defendant.getCases(), hasSize(1));
-//        PcrEventPayloadDefendantsInnerCasesInner case0 = defendant.getCases().get(0);
+        assertThat(defendant.getCases(), hasSize(1));
+        PcrEventPayloadDefendantsCases case0 = defendant.getCases().get(0);
 //        assertThat(case0.getUrn(), equalTo("http://xxx"));
 //
-//        assertThat(case0.getDocuments(), hasSize(1));
-//        PcrEventPayloadDefendantsInnerCasesInnerDocumentsInner document0 = case0.getDocuments().get(0);
+        assertThat(case0.getDocuments(), hasSize(1));
+        PcrEventPayloadDefendantsDocuments document0 = case0.getDocuments().get(0);
 //        assertThat(document0.getUrl(), equalTo(""));
-//        assertThat(document0.getTimestamp(), is(notNullValue()));
+        assertThat(document0.getTimestamp(), is(notNullValue()));
     }
 }

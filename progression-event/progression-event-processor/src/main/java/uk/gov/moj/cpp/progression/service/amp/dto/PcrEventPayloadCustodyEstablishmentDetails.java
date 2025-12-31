@@ -5,17 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.net.URI;
-import java.time.OffsetDateTime;
-
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 // Generated and copied from AMP
-public class PcrEventPayloadDefendantsInnerCasesInnerDocumentsInner {
+public class PcrEventPayloadCustodyEstablishmentDetails {
 
-    private URI url;
-    private OffsetDateTime timestamp;
+    private String emailAddress;
 }
 

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,8 +21,8 @@ import java.util.UUID;
 public class PcrEventPayload {
 
     private UUID eventId;
-    private EventType eventType;
-    private OffsetDateTime timestamp;
-    private List<PcrEventPayloadDefendantsInner> defendants = new ArrayList<>();
+    private PcrEventType eventType;
+    private Instant timestamp;
+    private List<PcrEventPayloadDefendants> defendants = new ArrayList<>();
 }
 

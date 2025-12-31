@@ -143,6 +143,7 @@ public class CourtCentreAggregate implements Aggregate {
                 .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
                 .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
                 .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
+                .withMaterialId(notifyPrisonCourtRegister.getMaterialId())
                 .withId(notifyPrisonCourtRegister.getId())
                 .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
                 .build();
