@@ -12,7 +12,6 @@ import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -29,7 +28,7 @@ public class AmpPcrMapper {
                 .materialId(pcrIn.getMaterialId())
                 .timestamp(createdAt)
                 .build();
-        String caseUrn = pcrDefendant.getProsecutionCasesOrApplications().size() > 0
+        String caseUrn = pcrDefendant.getProsecutionCasesOrApplications() != null && pcrDefendant.getProsecutionCasesOrApplications().size() > 0
                 ? pcrDefendant.getProsecutionCasesOrApplications().get(0).getCaseOrApplicationReference()
                 : null;
         PcrEventPayloadDefendantsCases cases = PcrEventPayloadDefendantsCases.builder()

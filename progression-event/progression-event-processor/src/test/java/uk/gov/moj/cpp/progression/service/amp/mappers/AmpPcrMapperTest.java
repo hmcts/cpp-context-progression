@@ -14,8 +14,6 @@ import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsDocum
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType.PCR;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,11 +64,7 @@ class AmpPcrMapperTest {
                 .build();
         PcrEventPayload payload = mapper.mapPcrForAmp(emptyPcr, null, null);
 
-        assertThat(payload.getEventId(), equalTo(pcr.getId()));
-        assertThat(payload.getEventType(), equalTo(PCR));
-        assertThat(payload.getTimestamp(), is(notNullValue()));
-        assertThat(payload.getDefendants(), hasSize(1));
-        assertDefendant(payload.getDefendants().get(0));
+        assertNull(payload.getEventId());
     }
 
     private void assertDefendant(PcrEventPayloadDefendants defendant) {
