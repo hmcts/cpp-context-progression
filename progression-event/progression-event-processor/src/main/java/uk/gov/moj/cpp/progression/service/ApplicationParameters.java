@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import lombok.Getter;
 import uk.gov.justice.services.common.configuration.Value;
 
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+@Getter
 public class ApplicationParameters {
 
     @Inject
@@ -57,6 +59,10 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "laa.defendantProceedingsConcluded.apim.url", defaultValue ="http://localhost:8080/LAA/v1/caseOutcome/conclude")
     private String defendantProceedingsConcludedApimUrl;
+
+    @Inject
+    @Value(key = "amp.pcrEvent.apim.url", defaultValue ="http://localhost:8080/AMP/pcrEvent")
+    private String ampPcrEventApimUrl;
 
     @Inject
     @Value(key = "laa.defendantProceedingsConcluded.apim.subscription.key", defaultValue ="3674a16507104b749a76b29b6c837352")
@@ -162,134 +168,6 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
-
-    public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
-        return onlineGuiltyPleaCourtHearingEnglishTemplateId;
-    }
-
-    public String getOnlineGuiltyPleaCourtHearingWelshTemplateId() {
-        return onlineGuiltyPleaCourtHearingWelshTemplateId;
-    }
-
-    public String getOnlineGuiltyPleaNoCourtHearingEnglishTemplateId() {
-        return onlineGuiltyPleaNoCourtHearingEnglishTemplateId;
-    }
-
-    public String getOnlineGuiltyPleaNoCourtHearingWelshTemplateId() {
-        return onlineGuiltyPleaNoCourtHearingWelshTemplateId;
-    }
-
-    public String getOnlineNotGuiltyPleaEnglishTemplateId() {
-        return onlineNotGuiltyPleaEnglishTemplateId;
-    }
-
-    public String getOnlineNotGuiltyPleaWelshTemplateId() {
-        return onlineNotGuiltyPleaWelshTemplateId;
-    }
-
-    public String getDefenceAssociationTemplateId() {
-        return defenceAssociationTemplateId;
-    }
-
-    public String getNcesEmailTemplateId() {
-
-        return ncesEmailTemplateId;
-    }
-
-    public String getApplicationTemplateId() {
-
-        return applicationTemplateId;
-    }
-
-    public String getDefenceInstructionTemplateId() {
-
-        return defenceInstructionTemplateId;
-    }
-
-    public String getDefenceDisassociationTemplateId() {
-
-        return defenceDisassociationTemplateId;
-    }
-
-    public String getAzureFunctionHostName() {
-        return azureFunctionHostName;
-    }
-
-    public String getAzureScanManagerContainerName() {
-        return azureScanManagerContainerName;
-    }
-
-    public String getSetCaseEjectedFunctionPath() {
-        return setCaseEjectedFunctionPath;
-    }
-
-    public String getRelayCaseOnCppFunctionPath() {
-        return relayCaseOnCppFunctionPath;
-    }
-
-    public String getDefendantProceedingsConcludedApimUrl() {
-        return defendantProceedingsConcludedApimUrl;
-    }
-
-    public String getSubscriptionKey() {
-        return subscriptionKey;
-    }
-
-    public String getCpsCourtDocumentTemplateId() {
-        return cpsCourtDocumentTemplateId;
-    }
-
-    public String getCpsDefendantCourtDocumentTemplateId() {
-        return cpsDefendantCourtDocumentTemplateId;
-    }
-
-    public String getNotifyDefenceOfNewMaterialTemplateId() {
-        return notifyDefenceOfNewMaterialTemplateId;
-    }
-
-    public String getSummonsApprovedAndSuppressedTemplateId() {
-        return summonsApprovedAndSuppressedTemplateId;
-    }
-
-    public String getSummonsApprovedAndNotSuppressedTemplateId() {
-        return summonsApprovedAndNotSuppressedTemplateId;
-    }
-
-    public String getSummonsRejectedTemplateId() {
-        return summonsRejectedTemplateId;
-    }
-
-    public String getEndClientHost() {
-        return endClientHost;
-    }
-
-    public String getUnscheduledHearingAllocationEmailTemplateId() {
-        return unscheduledHearingAllocationEmailTemplateId;
-    }
-
-    public String getCaseAtaGlanceURI() {
-        return caseAtaGlanceURI;
-    }
-
-    public String getStatDecSendAppointmentLetterTemplateId() {
-        return statDecSendAppointmentLetterTemplateId;
-    }
-
-    public String getOnlinePleaProsecutorTemplateId() {
-        return onlinePleaProsecutorTemplateId;
-    }
-
-    public String getNotifyHearingTemplateId() {
-        return notifyHearingTemplateId;
-    }
-
-    public String getRetryTimes() {
-        return retryTimes;
-    }
-
-    public String getRetryInterval() {
-        return retryInterval;
-    }
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

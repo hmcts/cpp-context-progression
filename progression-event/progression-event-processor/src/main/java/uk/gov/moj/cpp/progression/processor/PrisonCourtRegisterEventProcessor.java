@@ -82,7 +82,6 @@ public class PrisonCourtRegisterEventProcessor {
     private Sender sender;
 
     @Inject
-
     private ApplicationParameters applicationParameters;
 
     @Inject
@@ -222,7 +221,7 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         PcrEventPayload pcrEventPayload = ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-        Response response = ampClientService.post("http://amp-address", pcrEventPayload);
+        Response response = ampClientService.post(applicationParameters.getAmpPcrEventApimUrl(), pcrEventPayload);
         LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", response.getStatus());
     }
 
