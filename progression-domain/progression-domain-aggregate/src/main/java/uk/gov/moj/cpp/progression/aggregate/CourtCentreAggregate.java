@@ -41,7 +41,6 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
 import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
-import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_HEARINGNOWS;
 
 public class CourtCentreAggregate implements Aggregate {
     private static final long serialVersionUID = 1054L;

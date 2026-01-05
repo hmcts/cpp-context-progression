@@ -1,5 +1,53 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
+import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
+import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
+import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterRecipient;
+import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
+import uk.gov.moj.cpp.progression.test.FileUtil;
+
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.stream.Stream;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
@@ -20,55 +68,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
 import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getPrisonCourtRegisterStreamId;
-
-import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
-import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
-import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
-import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
-import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
-import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
-import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterRecipient;
-import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.aggregate.AggregateService;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.eventsourcing.source.core.EventSource;
-import uk.gov.justice.services.eventsourcing.source.core.EventStream;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
-import uk.gov.moj.cpp.progression.test.FileUtil;
-
-import javax.json.JsonObject;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterHandlerTest {
@@ -97,10 +98,13 @@ public class PrisonCourtRegisterHandlerTest {
     private ApplicationAggregate applicationAggregate;
     @Mock
     private EventStream applicationEventStream;
+    @Mock
+    FeatureControlGuard featureControlGuard;
     @InjectMocks
     private PrisonCourtRegisterHandler prisonCourtRegisterHandler;
-
+    @InjectMocks
     private static CourtCentreAggregate aggregator;
+
     private static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     private static final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
@@ -193,9 +197,9 @@ public class PrisonCourtRegisterHandlerTest {
 
     @Test
     public void shouldCreateRegisterGeneratedEvents() throws Exception {
-        aggregator = new CourtCentreAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
+        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)).thenReturn(true);
 
         prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
 
@@ -220,8 +224,6 @@ public class PrisonCourtRegisterHandlerTest {
 
     @Test
     public void shouldRecordPrisonCourtRegisterDocumentSent() throws Exception {
-
-        aggregator = new CourtCentreAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
 
@@ -240,8 +242,6 @@ public class PrisonCourtRegisterHandlerTest {
 
     @Test
     public void shouldHandlePrisonCourtRegisterFailed() throws Exception {
-
-        aggregator = new CourtCentreAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
 
