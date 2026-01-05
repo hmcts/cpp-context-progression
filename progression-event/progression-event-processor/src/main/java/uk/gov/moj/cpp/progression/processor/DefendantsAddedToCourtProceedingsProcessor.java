@@ -7,12 +7,14 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.HearingRequest.hearingRequest;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedingsV2;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListHearingRequest;
@@ -27,9 +29,11 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.progression.HearingRequest;
+import uk.gov.moj.cpp.progression.ListingHearingRequest;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -98,9 +102,35 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
             for (final HearingRequest hearingRequest : hearingRequests) {
                 if (TRUE.equals(hearingRequest.getIsNewHearing())) {
-                    createNewHearingForNewDefendant(jsonEnvelope, prosecutionCase, hearingRequest);
+                    createNewHearingForNewDefendant(jsonEnvelope, randomUUID(), prosecutionCase, hearingRequest.getListHearingRequest());
                 } else {
-                    addNewDefendantToExistingHearing(jsonEnvelope, hearingRequest, defendantsAddedToCourtProceedings, prosecutionCase);
+                    addNewDefendantToExistingHearing(jsonEnvelope, hearingRequest.getHearingId(), hearingRequest.getListHearingRequest(),
+                            defendantsAddedToCourtProceedings.getDefendants(), prosecutionCase);
+                }
+            }
+        } else {
+            throw new CaseNotFoundException("Prosecution case not found in view store, so retrying -->> " + prosecutionCaseId);
+        }
+    }
+
+    @Handles("progression.event.defendants-added-to-court-proceedings-v2")
+    public void processV2(final JsonEnvelope jsonEnvelope) {
+        final DefendantsAddedToCourtProceedingsV2 defendantsAddedToCourtProceedings = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), DefendantsAddedToCourtProceedingsV2.class);
+        final JsonEnvelope jsonEnvelopeOrg = getDefendantsAddedToCourtProceedings(jsonEnvelope.metadata(), defendantsAddedToCourtProceedings);
+        final String prosecutionCaseId = defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString();
+        final Optional<JsonObject> pcFromViewStore = progressionService.getProsecutionCaseDetailById(jsonEnvelopeOrg, prosecutionCaseId);
+
+        if (pcFromViewStore.isPresent()) {
+            publishDefendantAddedToCase(jsonEnvelopeOrg, prosecutionCaseId);
+
+            final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pcFromViewStore.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+
+            for (final ListingHearingRequest hearingRequest : defendantsAddedToCourtProceedings.getListingHearingRequests()) {
+                if (HEARING_INITIALISED == hearingRequest.getHearingListingStatus()) {
+                    createNewHearingForNewDefendant(jsonEnvelopeOrg, hearingRequest.getHearingId(), prosecutionCase, hearingRequest.getListHearingRequest());
+                } else {
+                    addNewDefendantToExistingHearing(jsonEnvelopeOrg, hearingRequest.getHearingId(), hearingRequest.getListHearingRequest(),
+                            defendantsAddedToCourtProceedings.getDefendants(), prosecutionCase);
                 }
             }
         } else {
@@ -109,10 +139,9 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private void createNewHearingForNewDefendant(final JsonEnvelope jsonEnvelope,
+                                                 final UUID hearingId,
                                                  final ProsecutionCase prosecutionCase,
-                                                 final HearingRequest hearingRequest) {
-        final UUID hearingId = randomUUID();
-        final ListHearingRequest listHearingRequest = hearingRequest.getListHearingRequest();
+                                                 final ListHearingRequest listHearingRequest) {
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
                 singletonList(prosecutionCase), singletonList(listHearingRequest), hearingId, null);
 
@@ -124,18 +153,19 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private void addNewDefendantToExistingHearing(final JsonEnvelope jsonEnvelope,
-                                                  final HearingRequest hearingRequest,
-                                                  final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings,
+                                                  final UUID hearingId,
+                                                  final ListHearingRequest hearingRequest,
+                                                  final List<Defendant> defendants,
                                                   final ProsecutionCase prosecutionCase) {
-        LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCase.getId(), hearingRequest.getHearingId());
+        LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCase.getId(), hearingId);
 
         publishDefendantsAddedToCourtProceedings(jsonEnvelope);
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.update-hearing-with-new-defendant"),
-                transformToUpdateHearing(hearingRequest.getHearingId(), prosecutionCase.getId(), defendantsAddedToCourtProceedings.getDefendants()));
+                transformToUpdateHearing(hearingId, prosecutionCase.getId(), defendants));
 
-        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, hearingRequest.getListHearingRequest().getListDefendantRequests(), hearingRequest.getHearingId());
-        increaseListingNumber(jsonEnvelope, prosecutionCase.getId(), hearingRequest.getHearingId(), getDefendantOffences(defendantsAddedToCourtProceedings));
+        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, hearingRequest.getListDefendantRequests(), hearingId);
+        increaseListingNumber(jsonEnvelope, prosecutionCase.getId(), hearingId, getDefendantOffences(defendants));
     }
 
     public void increaseListingNumber(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final UUID hearingId, final JsonArray offenceListingNumbersJsonArray) {
@@ -228,9 +258,9 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                         .anyMatch(hearingDay -> hearingDay.getStartTime().toLocalDateTime().isEqual(listHearingRequest.getListedStartDateTime().toLocalDateTime()));
     }
 
-    private static JsonArray getDefendantOffences(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
+    private static JsonArray getDefendantOffences(final List<Defendant> defendants) {
         final JsonArrayBuilder offenceIdArrayBuilder = Json.createArrayBuilder();
-        defendantsAddedToCourtProceedings.getDefendants().stream()
+        defendants.stream()
                 .flatMap(r -> r.getOffences().stream())
                 .map(Offence::getId)
                 .map(UUID::toString)
@@ -254,6 +284,19 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.add-or-store-defendants-and-listing-hearing-requests"),
                 jsonEnvelope.payloadAsJsonObject());
+    }
+
+    private JsonEnvelope getDefendantsAddedToCourtProceedings(final Metadata metadata,
+                                                              final DefendantsAddedToCourtProceedingsV2 v2payload) {
+        final List<ListHearingRequest> listHearingRequests = v2payload.getListingHearingRequests().stream().map(ListingHearingRequest::getListHearingRequest).toList();
+
+        final DefendantsAddedToCourtProceedings addedToCourtProceedings = DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withDefendants(v2payload.getDefendants())
+                .withListHearingRequests(listHearingRequests)
+                .build();
+
+        return JsonEnvelope.envelopeFrom(metadataFrom(metadata).withName("progression.event.defendants-added-to-court-proceedings"),
+                objectToJsonObjectConverter.convert(addedToCourtProceedings));
     }
 
     private void publishEvent(final MetadataBuilder metadata, final JsonObject payload) {

@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
@@ -41,6 +40,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +61,7 @@ public class AddDefendantsToHearingIT extends AbstractIT {
     private final JmsMessageConsumerClient messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendants-added-to-court-proceedings").getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     @Test
     public void shouldStoreDefendantWhenProsecutionCaseHasBeenCreatedInHearing() throws IOException, JSONException {
@@ -72,14 +73,14 @@ public class AddDefendantsToHearingIT extends AbstractIT {
         final String offenceId = randomUUID().toString();
         final String courtCentreId = "f8254db1-1683-483e-afb3-b87fde5a0a26";
         final String urn = generateUrn();
+        final String startDateTime = ZonedDateTime.now().plusWeeks(2).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
 
         // add prosecution case
         addProsecutionCaseToCrownCourt(prosecutionCaseId, defendantId, urn);
         final String hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId, defendantId);
-        stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
-                prosecutionCaseId, hearingId, defendantId, courtCentreId));
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-add-to-court.json",
+                prosecutionCaseId, hearingId, defendantId, courtCentreId, startDateTime));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
         Matcher[] caseUpdatedMatchers = {
@@ -91,7 +92,7 @@ public class AddDefendantsToHearingIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(prosecutionCaseId, caseUpdatedMatchers);
 
         // add defendants but prosecution case has not been created in hearing
-        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, defendantId1, offenceId, courtCentreId);
+        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, defendantId1, offenceId, courtCentreId, startDateTime);
         final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
@@ -108,7 +109,7 @@ public class AddDefendantsToHearingIT extends AbstractIT {
 
     }
 
-    private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(final String prosecutionCaseId, final String defendantId, final String offenceId, final String courtCentreId) {
+    private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(final String prosecutionCaseId, final String defendantId, final String offenceId, final String courtCentreId, final String startDateTime) {
 
         final List<Defendant> defendants = new ArrayList<>();
 
@@ -145,7 +146,7 @@ public class AddDefendantsToHearingIT extends AbstractIT {
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withListDefendantRequests(Collections.singletonList(listDefendantRequest))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(2))
-                .withListedStartDateTime(ZonedDateTime.parse("2050-05-18T09:01:01.001Z"))
+                .withListedStartDateTime(ZonedDateTime.parse(startDateTime))
                 .withEstimateMinutes(20)
                 .build();
 
@@ -158,12 +159,13 @@ public class AddDefendantsToHearingIT extends AbstractIT {
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String hearingDateTime) {
         final String strPayload = getPayload(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("HEARING_DT", hearingDateTime);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

@@ -94,6 +94,7 @@ import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedingsV2;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
@@ -1332,14 +1333,69 @@ class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
 
         //Assert total defendants with count 3 including duplicates
         assertThat(defendantsAddedToCourtProceedings.getDefendants().size(), is(3));
         //Assert total defendants with count 2 excluded duplicates
-        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
+        assertThat(((DefendantsAddedToCourtProceedingsV2) object).getDefendants().size(), is(2));
     }
 
+    @Test
+    void shouldDefendantsAddedToCourtProceedingsWithDuplicateOffencesWithinDefendant() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+
+        final List<uk.gov.justice.core.courts.Offence> offences = new ArrayList<>();
+        offences.add(offence().withId(offenceId1)
+                        .withOffenceCode("TFL123")
+                        .withOffenceTitle("Test Offence 1")
+                        .build());
+        offences.add(offence().withId(offenceId1)
+                        .withOffenceCode("TFL456")
+                        .withOffenceTitle("Test Offence Duplicate")
+                        .build());
+        offences.add(offence()
+                        .withId(offenceId2)
+                        .withOffenceCode("TFL789")
+                        .withOffenceTitle("Test Offence 2")
+                        .build());
+
+        final Defendant defendantWithDuplicateOffences = Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(offences)
+                .build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withCourtCentre(CourtCentre.courtCentre().withId(UUID.randomUUID()).build())
+                .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_TRIAL").build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(Collections.emptyList())
+                .withListedStartDateTime(ZonedDateTime.now().plusWeeks(2))
+                .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
+                .withEstimateMinutes(20)
+                .build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final List<Object> eventStream = caseAggregate.defendantsAddedToCourtProceedings(
+                Lists.newArrayList(defendantWithDuplicateOffences),
+                Lists.newArrayList(listHearingRequest),
+                Optional.of(createJsonList())).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
+
+        final DefendantsAddedToCourtProceedingsV2 result = (DefendantsAddedToCourtProceedingsV2) object;
+        assertThat(result.getDefendants().size(), is(1));
+        // Verify that the defendant was processed correctly (duplicate offences filtering happens in listener, not aggregate)
+        assertThat(result.getDefendants().get(0).getId(), is(defendantId));
+    }
 
     @Test
     public void shouldCreateProsecutionCaseAndUpdateMasterDefendantId() {
@@ -1418,15 +1474,15 @@ class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
 
         //Assert total defendants with count 3 including duplicates
         assertThat(defendantsAddedToCourtProceedings.getDefendants().size(), is(3));
         //Assert total defendants with count 2 excluded duplicates
-        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
+        assertThat(((DefendantsAddedToCourtProceedingsV2) object).getDefendants().size(), is(2));
 
         // Asser Master defendant Id is present from exact match stored
-        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(x -> masterDefendantId.equals(x.getMasterDefendantId())).collect(toList()).size(), is(1));
+        assertThat(((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(x -> masterDefendantId.equals(x.getMasterDefendantId())).collect(toList()).size(), is(1));
     }
 
     @Test
@@ -1730,18 +1786,18 @@ class CaseAggregateTest {
                 defendantsAddedToCourtProceedings.getListHearingRequests(), Optional.of(createJsonList())).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
 
 
-        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
+        assertThat(((DefendantsAddedToCourtProceedingsV2) object).getDefendants().size(), is(2));
 
-        final Defendant defendant1 = ((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId)).findFirst().get();
+        final Defendant defendant1 = ((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId)).findFirst().get();
 
         assertThat(defendant1.getIsYouth(), is(true));
 
         assertThat(defendant1.getOffences().get(0).getReportingRestrictions().get(0).getLabel(), is (YOUTH_RESTRICTION));
 
-        final Defendant defendant2 = ((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId2)).findFirst().get();
+        final Defendant defendant2 = ((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId2)).findFirst().get();
 
         assertNull(defendant2.getIsYouth());
 
@@ -1765,9 +1821,9 @@ class CaseAggregateTest {
                 defendantsAddedToCourtProceedings.getListHearingRequests(), Optional.of(referencedataOffencesJsonObject)).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
 
-        final Defendant defendant1 = ((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId)).findFirst().get();
+        final Defendant defendant1 = ((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId)).findFirst().get();
 
         assertThat(defendant1.getIsYouth(), is(true));
 
@@ -1775,7 +1831,7 @@ class CaseAggregateTest {
         assertThat(defendant1.getOffences().get(0).getReportingRestrictions().get(1).getLabel(), is (SEXUAL_OFFENCE_RR_DESCRIPTION));
 
 
-        final Defendant defendant2 = ((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId2)).findFirst().get();
+        final Defendant defendant2 = ((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(defendant ->defendant.getId().equals(defendantId2)).findFirst().get();
 
         assertNull(defendant2.getIsYouth());
 
@@ -1801,12 +1857,12 @@ class CaseAggregateTest {
                 defendantsAddedToCourtProceedings.getListHearingRequests(),Optional.of(createJsonList())).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        assertThat(object.getClass(), is(equalTo(DefendantsAddedToCourtProceedingsV2.class)));
 
 
-        assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(1));
+        assertThat(((DefendantsAddedToCourtProceedingsV2) object).getDefendants().size(), is(1));
 
-        final Defendant defendant = ((DefendantsAddedToCourtProceedings) object).getDefendants().stream().filter(def ->def.getId().equals(defendantId)).findFirst().get();
+        final Defendant defendant = ((DefendantsAddedToCourtProceedingsV2) object).getDefendants().stream().filter(def ->def.getId().equals(defendantId)).findFirst().get();
 
         assertThat(defendant.getIsYouth(), is(false));
 
