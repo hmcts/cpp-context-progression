@@ -54,7 +54,7 @@ public class CourtCentreAggregate implements Aggregate {
     private final Map<UUID, PrisonCourtRegisterDocumentRequest> prisonCourtRegisterMap = new HashMap<>();
 
     @Inject
-    private FeatureControlGuard featureControlGuard;
+    private transient FeatureControlGuard featureControlGuard;
 
     @Override
     public Object apply(final Object event) {
