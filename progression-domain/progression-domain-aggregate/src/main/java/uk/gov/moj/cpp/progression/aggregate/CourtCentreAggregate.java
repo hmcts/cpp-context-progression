@@ -20,7 +20,9 @@ import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
 import uk.gov.justice.progression.courts.CourtRegisterNotifiedV2;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 
+import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +40,8 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_HEARINGNOWS;
 
 public class CourtCentreAggregate implements Aggregate {
     private static final long serialVersionUID = 1054L;
@@ -48,6 +52,9 @@ public class CourtCentreAggregate implements Aggregate {
     private ZonedDateTime registerDate;
 
     private final Map<UUID, PrisonCourtRegisterDocumentRequest> prisonCourtRegisterMap = new HashMap<>();
+
+    @Inject
+    private FeatureControlGuard featureControlGuard;
 
     @Override
     public Object apply(final Object event) {
@@ -136,18 +143,22 @@ public class CourtCentreAggregate implements Aggregate {
                 .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
                 .build();
 
-        PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
-                .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
-                .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
-                .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
-                .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
-                .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
-                .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
-                .withMaterialId(notifyPrisonCourtRegister.getMaterialId())
-                .withId(notifyPrisonCourtRegister.getId())
-                .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
-                .build();
-        return apply(Stream.of(pcrEvent1, pcrEvent2));
+        if (featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)) {
+            PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                    .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
+                    .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
+                    .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
+                    .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
+                    .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
+                    .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
+                    .withMaterialId(notifyPrisonCourtRegister.getMaterialId())
+                    .withId(notifyPrisonCourtRegister.getId())
+                    .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
+                    .build();
+            return apply(Stream.of(pcrEvent1, pcrEvent2));
+        } else {
+            return apply(Stream.of(pcrEvent1));
+        }
     }
 
     public Stream<Object> recordPrisonCourtRegisterDocumentSent(final UUID courtCentreId, final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent) {

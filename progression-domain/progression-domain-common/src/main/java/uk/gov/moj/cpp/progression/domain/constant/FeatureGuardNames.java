@@ -6,4 +6,6 @@ public class FeatureGuardNames {
     }
 
     public static final String FEATURE_HEARINGNOWS = "HearingNows";
+    public static final String FEATURE_AMP_SEND_PCR = "AmpSendPcr";
+
 }

@@ -6,7 +6,13 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
@@ -31,22 +37,21 @@ import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 
+@ExtendWith( MockitoExtension.class)
 public class CourtCentreAggregateTest {
-    private CourtCentreAggregate aggregate;
+    @Mock
+    FeatureControlGuard featureControlGuard;
 
-    @BeforeEach
-    public void setUp() {
-        aggregate = new CourtCentreAggregate();
-    }
+    @InjectMocks
+    private CourtCentreAggregate aggregate;
 
     private static final ZonedDateTime REGISTER_DATE = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
 
@@ -149,11 +154,41 @@ public class CourtCentreAggregateTest {
     }
 
     @Test
-    public void shouldRecordPrisonCourtRegisterGenerated() {
+    public void shouldRecordPrisonCourtRegisterGeneratedV1Only() {
         final UUID courtCentreId = randomUUID();
         final UUID payloadFileId = randomUUID();
         final UUID systemDocumentId = randomUUID();
 
+        aggregate.recordPrisonCourtRegisterDocumentSent(courtCentreId,
+                        RecordPrisonCourtRegisterDocumentSent.recordPrisonCourtRegisterDocumentSent()
+                                .withCourtCentreId(courtCentreId)
+                                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().build())
+                                .withHearingDate(ZonedDateTime.now())
+                                .withRecipients(Arrays.asList(PrisonCourtRegisterRecipient.prisonCourtRegisterRecipient().build()))
+                                .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().build())
+                                .withHearingId(randomUUID())
+                                .withHearingDate(ZonedDateTime.now())
+                                .withPayloadFileId(payloadFileId)
+                                .build())
+                .collect(Collectors.toList());
+
+        final List<Object> eventStream = aggregate.recordPrisonCourtRegisterGenerated(courtCentreId,
+                        NotifyPrisonCourtRegister.notifyPrisonCourtRegister()
+                                .withSystemDocGeneratorId(systemDocumentId)
+                                .withPayloadFileId(payloadFileId).build())
+                .collect(Collectors.toList());
+        assertThat(eventStream.size(), is(1));
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated1 = (PrisonCourtRegisterGenerated) eventStream.get(0);
+        assertThat(prisonCourtRegisterGenerated1.getCourtCentreId(), is(courtCentreId));
+        assertThat(prisonCourtRegisterGenerated1.getFileId(), is(systemDocumentId));
+    }
+
+    @Test
+    public void shouldRecordPrisonCourtRegisterGeneratedV1AndV2() {
+        final UUID courtCentreId = randomUUID();
+        final UUID payloadFileId = randomUUID();
+        final UUID systemDocumentId = randomUUID();
+        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)).thenReturn(true);
         aggregate.recordPrisonCourtRegisterDocumentSent(courtCentreId,
                         RecordPrisonCourtRegisterDocumentSent.recordPrisonCourtRegisterDocumentSent()
                                 .withCourtCentreId(courtCentreId)
