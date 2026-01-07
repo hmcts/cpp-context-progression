@@ -18,6 +18,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.getSummonsCode;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.emptyIfBlank;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getFullName;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getProsecutorCosts;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getSummonsHearingDetails;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.populateSummonsAddress;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
@@ -122,7 +123,7 @@ public class CaseDefendantSummonsService {
 
         final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
         if (nonNull(summonsApprovedOutcome)) {
-            summonsDocumentContent.withProsecutorCosts(emptyIfBlank(summonsApprovedOutcome.getProsecutorCost()));
+            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost()));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
         }
         summonsDocumentContent.withStatementOfFacts(emptyIfBlank(prosecutionCaseQueried.getStatementOfFacts()));

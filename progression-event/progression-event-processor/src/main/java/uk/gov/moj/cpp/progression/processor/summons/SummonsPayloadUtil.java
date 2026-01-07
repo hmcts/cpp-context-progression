@@ -5,7 +5,9 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.summons.SummonsAddress.summonsAddress;
 import static uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails.summonsHearingCourtDetails;
@@ -42,6 +44,8 @@ public class SummonsPayloadUtil {
     private static final String COURT_ROOM_NAME = "courtroomName";
     private static final String COURT_ROOM_NAME_WELSH = "welshCourtroomName";
     private static final String SINGLE_SPACE_DELIMITER = " ";
+    public static final String POUND_SIGN = "£";
+    public static final String UNSPECIFIED = "Unspecified";
 
     private SummonsPayloadUtil() {
     }
@@ -127,6 +131,22 @@ public class SummonsPayloadUtil {
                 .withHearingTime(getCourtTime(hearingDateTime))
                 .withCourtAddress(populateAddress(courtCentreJson))
                 .build();
+    }
+
+    public static String getProsecutorCosts(final String eventProsecutorCostValue) {
+        if (isEmpty(eventProsecutorCostValue)) {
+            return EMPTY;
+        }
+
+        String costValue = eventProsecutorCostValue.replace(POUND_SIGN, EMPTY).trim();
+
+        if (isNotEmpty(costValue)) {
+            Double value = Double.parseDouble(costValue);
+            if (value == 0) {
+                return UNSPECIFIED;
+            }
+        }
+        return eventProsecutorCostValue;
     }
 
 
