@@ -1,0 +1,23 @@
+
+{
+  "materialIds": [
+    {
+      "materialId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "courtDocumentId": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "caseId": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "caseUrn": "39GD1116822"
+    },
+    {
+      "materialId": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+      "courtDocumentId": null,
+      "caseId": "a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d",
+      "caseUrn": "TFL122222"
+    },
+    {
+      "materialId": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+      "courtDocumentId": "c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+      "caseId": null,
+      "caseUrn": null
+    }
+  ]
+}

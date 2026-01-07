@@ -865,4 +865,13 @@ rule "Query - Civil fee details for progression.query.civil-fee-details"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Material content for progression.query.material-content-bulk"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.material-content-bulk");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users","Advocates","Defence Lawyers"))
+  then
+    $outcome.setSuccess(true);
+end
+
 
