@@ -54,6 +54,28 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.material-content-for-defence+json:
           application/vnd.progression.query.material-content-for-prosecution+json:
 
+/materials/cases:
+  description: Bulk resolve material_ids to cases
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-bulk+json
+          name: progression.query.material-content-bulk
+      ...
+    queryParameters:
+        materialIds:
+          description: List of materialIds separated by comma(,)
+          type: string
+          example: 55a0ed4b-6719-490b-b5b9-f480a6e0ecde, abc8357f-2325-46f2-b8f7-ded2ede2c103
+          required : false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-bulk+json:
+            schema: !include json/schema/progression.query.material-bulk.json
+            example: !include json/progression.query.material-bulk.json
+
 /prosecutioncases/{caseId}/defendants/{defendantId}/extract/{template}:
   description: get court extract content as pdf
   uriParameters:
