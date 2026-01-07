@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,8 +19,9 @@ import java.util.UUID;
 public class PcrEventPayload {
 
     private UUID eventId;
+    private UUID materialId;
     private PcrEventType eventType;
     private Instant timestamp;
-    private List<PcrEventPayloadDefendants> defendants = new ArrayList<>();
+    private PcrEventPayloadDefendant defendant;
 }
 

@@ -14,13 +14,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 // Generated and copied from AMP
-public class PcrEventPayloadDefendants {
+public class PcrEventPayloadDefendant {
 
     private UUID masterDefendantId;
     private String name;
     private LocalDate dateOfBirth;
 
     private PcrEventPayloadCustodyEstablishmentDetails custodyEstablishmentDetails;
-    private List<PcrEventPayloadDefendantsCases> cases;
+    private List<PcrEventPayloadDefendantCases> cases;
 }
 

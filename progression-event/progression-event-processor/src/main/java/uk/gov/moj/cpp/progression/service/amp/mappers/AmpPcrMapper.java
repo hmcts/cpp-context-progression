@@ -5,52 +5,54 @@ import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadCustodyEstablishmentDetails;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendants;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsCases;
-import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantsDocuments;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendant;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantCases;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 public class AmpPcrMapper {
 
     public PcrEventPayload mapPcrForAmp(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail, Instant createdAt) {
+        return PcrEventPayload.builder()
+                .eventId(pcrIn.getId())
+                .materialId(pcrIn.getMaterialId())
+                .eventType(PcrEventType.PRISON_COURT_REGISTER_GENERATED)
+                .timestamp(Instant.now())
+                .defendant(mapDefendant(pcrIn, prisonEmail))
+                .build();
+    }
+
+    private PcrEventPayloadDefendant mapDefendant(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail) {
         PcrEventPayloadCustodyEstablishmentDetails pcrCustodyEstablishment = PcrEventPayloadCustodyEstablishmentDetails.builder()
                 .emailAddress(prisonEmail)
                 .build();
         PrisonCourtRegisterDefendant pcrDefendant = pcrIn.getDefendant() == null
                 ? PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().build()
                 : pcrIn.getDefendant();
-        PcrEventPayloadDefendantsDocuments pcrDocument = PcrEventPayloadDefendantsDocuments.builder()
-                .materialId(pcrIn.getMaterialId())
-                .timestamp(createdAt)
-                .build();
-        String caseUrn = pcrDefendant.getProsecutionCasesOrApplications() != null && pcrDefendant.getProsecutionCasesOrApplications().size() > 0
-                ? pcrDefendant.getProsecutionCasesOrApplications().get(0).getCaseOrApplicationReference()
-                : null;
-        PcrEventPayloadDefendantsCases cases = PcrEventPayloadDefendantsCases.builder()
-                .urn(caseUrn)
-                .documents(List.of(pcrDocument))
-                .build();
-        PcrEventPayloadDefendants payloadDefendant = PcrEventPayloadDefendants.builder()
+
+        return PcrEventPayloadDefendant.builder()
                 .masterDefendantId(pcrDefendant.getMasterDefendantId())
                 .name(pcrDefendant.getName())
-                .dateOfBirth(getDateOfBirth(pcrDefendant))
+                .dateOfBirth(mapDateOfBirth(pcrDefendant))
                 .custodyEstablishmentDetails(pcrCustodyEstablishment)
-                .cases(List.of(cases))
-                .build();
-        return PcrEventPayload.builder()
-                .eventId(pcrIn.getId())
-                .eventType(PcrEventType.PCR)
-                .timestamp(Instant.now())
-                .defendants(List.of(payloadDefendant))
+                .cases(mapCases(pcrDefendant))
                 .build();
     }
 
-    private LocalDate getDateOfBirth(PrisonCourtRegisterDefendant defendant) {
+    private List<PcrEventPayloadDefendantCases> mapCases(PrisonCourtRegisterDefendant pcrDefendant) {
+        return pcrDefendant.getProsecutionCasesOrApplications() == null
+                ? Collections.emptyList()
+                : pcrDefendant.getProsecutionCasesOrApplications().stream()
+                .map(c ->
+                        PcrEventPayloadDefendantCases.builder().urn(c.getCaseOrApplicationReference()).build()).toList();
+    }
+
+    private LocalDate mapDateOfBirth(PrisonCourtRegisterDefendant defendant) {
         try {
             return defendant == null || defendant.getDateOfBirth() == null
                     ? null
