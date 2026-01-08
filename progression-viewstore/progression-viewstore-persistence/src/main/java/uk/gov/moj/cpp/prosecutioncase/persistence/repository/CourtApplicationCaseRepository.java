@@ -23,6 +23,6 @@ public interface CourtApplicationCaseRepository extends EntityRepository<CourtAp
     @Query("delete from CourtApplicationCaseEntity entity where entity.id.applicationId = :applicationId")
     void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
 
-    @Query(value = "from CourtApplicationCaseEntity entity WHERE entity.id.applicationId = :applicationId AND entity.id.caseId = :caseId")
+    @Query(value = "from CourtApplicationCaseEntity entity WHERE entity.id.applicationId = :applicationId AND entity.id.caseId = :caseId", singleResult = SingleResultType.OPTIONAL)
     CourtApplicationCaseEntity findByApplicationIdAndCaseId(@QueryParam("applicationId") final UUID applicationId, @QueryParam("caseId") final UUID caseId);
 }
