@@ -5,6 +5,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
@@ -106,6 +107,110 @@ public class AddDefendantsToHearingIT extends AbstractIT {
         final JsonEnvelope publicHearingCaseCreatedEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, userId), prosecutionCaseCreatedInHearingJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, publicHearingCaseCreatedEventEnvelope);
         verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent();
+
+    }
+
+
+    @Test
+    void shouldAddDefendantsWhenProsecutionCaseHasBeenCreatedInHearing() throws IOException, JSONException {
+
+        final String userId = randomUUID().toString();
+        final String prosecutionCaseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final String defendantId1 = randomUUID().toString();
+        final String offenceId = randomUUID().toString();
+        final String courtCentreId = "f8254db1-1683-483e-afb3-b87fde5a0a26";
+        final String urn = generateUrn();
+        final String startDateTime = ZonedDateTime.now().plusWeeks(2).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+
+        // add prosecution case
+        addProsecutionCaseToCrownCourt(prosecutionCaseId, defendantId, urn);
+        final String hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-add-to-court.json",
+                prosecutionCaseId, hearingId, defendantId, courtCentreId, startDateTime));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        Matcher[] caseUpdatedMatchers = {
+                withJsonPath("$.prosecutionCase.id", equalTo(prosecutionCaseId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
+                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true))
+        };
+
+        pollProsecutionCasesProgressionFor(prosecutionCaseId, caseUpdatedMatchers);
+
+        // add defendants but prosecution case has not been created in hearing
+        AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, defendantId1, offenceId, courtCentreId, startDateTime);
+        String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        // add defendants but prosecution case has not been created in hearing
+        addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, randomUUID().toString(), offenceId, courtCentreId, startDateTime);
+        addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
+
+        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
+                "application/vnd.progression.add-defendants-to-court-proceedings+json",
+                addDefendantsToCourtProceedingsJson);
+
+        final JsonObject prosecutionCaseCreatedInHearingJson = getProsecutionCaseCreatedInHearingObject(prosecutionCaseId);
+
+        // prosecution case has been created in hearing
+        final JsonEnvelope publicHearingCaseCreatedEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, userId), prosecutionCaseCreatedInHearingJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, publicHearingCaseCreatedEventEnvelope);
+        verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent();
+
+
+        Matcher[] hearingMatchers = {
+                withJsonPath("$.prosecutionCase.id", equalTo(prosecutionCaseId)),
+                withJsonPath("$.hearingsAtAGlance.hearings.length()", is(equalTo(1))),
+                withJsonPath("$.hearingsAtAGlance.hearings.[0].defendants.length()", is(equalTo(8)))
+        };
+
+        pollProsecutionCasesProgressionFor(prosecutionCaseId, hearingMatchers);
 
     }
 
