@@ -1026,6 +1026,7 @@ public class ApplicationAggregate implements Aggregate {
         return generateUrn();
     }
 
+    @SuppressWarnings({"java:S2245"})
     private String generateUrn() {
         return RandomStringUtils.randomAlphanumeric(4).toUpperCase() + RandomStringUtils.randomNumeric(7);
     }
