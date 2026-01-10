@@ -1007,8 +1007,8 @@ public class ApplicationAggregate implements Aggregate {
 
     private String generateApplicationReference(final CourtApplication courtApplication) {
 
-        if(isStandaloneApplication(courtApplication) && nonNull(courtApplication.getApplicationReference())){
-            return  courtApplication.getApplicationReference();
+        if (isStandaloneApplication(courtApplication) && nonNull(courtApplication.getApplicationReference())) {
+            return courtApplication.getApplicationReference();
         }
 
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
@@ -1023,9 +1023,13 @@ public class ApplicationAggregate implements Aggregate {
                     .distinct().collect(Collectors.joining(","));
         }
 
-        final int ARN_LENGTH = 10;
-        return RandomStringUtils.randomAlphanumeric(ARN_LENGTH).toUpperCase();
+        return generateUrn();
     }
+
+    private String generateUrn() {
+        return RandomStringUtils.randomAlphanumeric(4).toUpperCase() + RandomStringUtils.randomNumeric(7);
+    }
+
 
     private boolean isStandaloneApplication(final CourtApplication courtApplication) {
         return STANDALONE == courtApplication.getType().getLinkType();
