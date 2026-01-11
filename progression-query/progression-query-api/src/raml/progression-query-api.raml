@@ -1545,3 +1545,26 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.civil-fee-details+json:
             example: !include json/progression.query.civil-fee-details.json
             schema: !include json/schema/progression.query.civil-fee-details.json
+
+/searchinactivemigratedcases:
+  get:
+      description: |
+        Search for cases
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.search-inactive-migrated-cases+json
+            name: progression.query.search-inactive-migrated-cases
+        ...
+      queryParameters:
+        caseIds:
+          description: caseId(s) - comma separated to be searched
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: true
+      responses:
+         200:
+           description: OK
+           body:
+             application/vnd.progression.query.search-inactive-migrated-cases+json:
+               example: !include json/progression.query.inactive.migration.case.summary.json
+               schema: !include json/schema/progression.query.inactive.migration.case.summary.json

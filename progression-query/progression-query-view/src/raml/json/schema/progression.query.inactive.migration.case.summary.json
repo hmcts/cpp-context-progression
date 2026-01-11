@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/inactiveMigratedCaseSummaries.json",
+  "title": "Inactive Migrated Case Summaries List",
+  "type": "object",
+  "properties": {
+    "inactiveMigratedCaseSummaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "inactiveCaseSummary": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "The unique prosecution case identifier",
+                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+              },
+              "migrationSourceSystem": {
+                "description": "Details of the source system and migration status",
+                "$ref": "http://justice.gov.uk/core/courts/migrationSourceSystem.json"
+              },
+              "defendants": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/defendant"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "defendant": {
+      "type": "object",
+      "description": "Defendant details including court identification",
+      "properties": {
+        "defendantid": {
+          "description": "Unique identifier for the defendant",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "masterdefendantId": {
+          "description": "Master record identifier for the defendant",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "convictingcourtid": {
+          "description": "Identifier for the court where the defendant was convicted",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        }
+      }
+    }
+  }
+}

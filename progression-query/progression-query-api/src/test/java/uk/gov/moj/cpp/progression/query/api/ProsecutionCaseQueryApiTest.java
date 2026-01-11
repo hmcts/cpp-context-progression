@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.readJson;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -54,11 +56,14 @@ public class ProsecutionCaseQueryApiTest {
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_MULTIPLE_DEFENDANTS_JSON = "json/caseQueryApiWithCourtOrdersMultipleDefendantsExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON = "json/caseQueryApiWithNoCourtOrdersExpectedResponse.json";
     private static final String CASE_QUERY_VIEW_JSON = "json/caseQueryResponse.json";
+    private static final String PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY_JSON = "json/searchInActiveMigratedCasesQueryResponse.json";
     private static final String COTR_QUERY_VIEW_JSON = "json/cotrQueryResponse.json";
     private static final String CASE_QUERY_API_EXPECTED_JSON = "json/caseQueryExpectedResponse.json";
+    private static final String PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY_EXPECTED_JSON = "json/searchInActiveMigratedCasesQueryResponse.json";
     private static final String COTR_QUERY_API_EXPECTED_JSON = "json/cotrQueryExpectedResponse.json";
 
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
+    private static final String PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY = "progression.query.search-inactive-migrated-cases";
     private static final String PROSECUTION_CASE_QUERY_V2 = "progression.query.prosecutioncase-v2";
     private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
     private static final String PROSECUTION_CASE_QUERY_ACTIVE_APPLICATIONS_JSON  = "json/activeApplicationsOnCaseResponse.json";
@@ -465,5 +470,21 @@ public class ProsecutionCaseQueryApiTest {
 
         final JsonEnvelope actual = prosecutionCaseQueryApi.getRecordSheetForApplication(envelope);
         assertThat(actual, is(response));
+    }
+
+    @Test
+    public void shouldHandleSearchInactiveMigratedcasesQuery() {
+        final JsonObject prosecutionCasePayload = readJson(PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        when(prosecutionCaseQuery.searchInactiveMigratedCases(query)).thenReturn(envelope);
+        final JsonEnvelope actualResponse = prosecutionCaseQueryApi.searchInactiveMigratedCases(query);
+
+        final JsonObject expectedResponse = readJson(PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY_EXPECTED_JSON, JsonObject.class);
+        verify(prosecutionCaseQuery).searchInactiveMigratedCases(any(JsonEnvelope.class));
+
+        assertThat(actualResponse.payloadAsJsonObject(), equalTo(expectedResponse));
     }
 }

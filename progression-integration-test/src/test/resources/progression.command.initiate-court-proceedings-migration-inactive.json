@@ -214,6 +214,12 @@
         "migrationSourceSystem": {
           "migrationSourceSystemName": "XHIBIT",
           "migrationSourceSystemCaseIdentifier": "T20250001",
+          "defendantFineAccountNumbers": [
+            {
+              "defendantId": "RANDOM_DEFENDANT_ID",
+              "fineAccountNumber": "12345"
+            }
+          ],
           "migrationCaseStatus": "INACTIVE"
         }
       }

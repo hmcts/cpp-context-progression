@@ -27,6 +27,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.CASE_IDS_SEARCH_PARAM;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -45,6 +46,8 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.MigrationCaseStatus;
+import uk.gov.justice.core.courts.MigrationSourceSystem;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -2118,5 +2121,47 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByGroupId(groupId)).thenReturn(singletonList(prosecutionCaseEntity));
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionMasterCaseDetails(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("masterCase"), notNullValue());
+    }
+
+    @Test
+    public void shouldSearchInactiveMigratedCases() {
+        final UUID caseId = randomUUID();
+
+        final String prosecutionCaseEntity = "{" +
+                "\"inactiveCaseSummary\": {" +
+                "\"id\": \"" + caseId.toString() + "\"," +
+                "\"defendants\": [{" +
+                "\"defendantid\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"," +
+                "\"convictingcourtid\": \"f8254db1-1683-483e-afb3-b87fde5a0a26\"," +
+                "\"masterdefendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"" +
+                "}]," +
+                "\"migrationSourceSystem\": {" +
+                "\"migrationCaseStatus\": \"INACTIVE\"," +
+                "\"migrationSourceSystemName\": \"XHIBIT\"," +
+                "\"defendantFineAccountNumbers\": [{" +
+                "\"defendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"," +
+                "\"fineAccountNumber\": \"12345\"" +
+                "}]," +
+                "\"migrationSourceSystemCaseIdentifier\": \"SCRDID98443\"" +
+                "}" +
+                "}" +
+                "}";
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(CASE_IDS_SEARCH_PARAM, caseId.toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.query.search-inactive-migrated-cases")
+                        .build(),
+                jsonObject);
+
+        when(prosecutionCaseRepository.findInactiveMigratedCaseSummaries(anyList()))
+                .thenReturn(List.of(prosecutionCaseEntity));
+
+        final JsonEnvelope response = prosecutionCaseQuery.searchInactiveMigratedCases(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("inactiveMigratedCaseSummaries"), notNullValue());
     }
 }

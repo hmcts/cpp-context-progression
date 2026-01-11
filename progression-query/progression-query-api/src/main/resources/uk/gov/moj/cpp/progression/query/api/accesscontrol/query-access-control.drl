@@ -837,4 +837,13 @@ rule "Query - Civil fee details for progression.query.civil-fee-details"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.search-inactive-migrated-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-inactive-migrated-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors","Operational Delivery Admin"))
+  then
+    $outcome.setSuccess(true);
+end
 
