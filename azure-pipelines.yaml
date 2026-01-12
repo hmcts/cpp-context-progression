@@ -50,3 +50,4 @@ stages:
           sonarQubeType: 'sonarQubeAKS'
           serviceName: ${{ variables['service_Name'] }}
           itTestFolder: ${{ variables['itTest_Folder'] }}
+          aksDeployBranch: "dev/PEG-2744-proactive-processing"

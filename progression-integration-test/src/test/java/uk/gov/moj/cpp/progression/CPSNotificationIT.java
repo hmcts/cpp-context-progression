@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHe
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 public class CPSNotificationIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED = "public.defence.event.record-instruction-details";
@@ -71,7 +72,7 @@ public class CPSNotificationIT extends AbstractIT {
         // Instruct
         final JsonObject recordInstructedPublicEvent =
                 getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-        Thread.sleep(1000 * 5);
+        sleepToBeRefactored();
         final JsonEnvelope publicEventInstructedEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_RECORD_INSTRUCTED, userId), recordInstructedPublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_RECORD_INSTRUCTED, publicEventInstructedEnvelope);
 

@@ -1,5 +1,32 @@
 package uk.gov.moj.cpp.progression;
 
+import com.google.common.io.Resources;
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.courts.progression.query.ApplicationDocument;
+import uk.gov.justice.courts.progression.query.DocumentCategory;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.moj.cpp.progression.helper.MultipartFileUploadHelper;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+import uk.gov.moj.cpp.progression.util.Utilities;
+
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -25,35 +52,6 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsPros
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.courts.progression.query.ApplicationDocument;
-import uk.gov.justice.courts.progression.query.DocumentCategory;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.moj.cpp.progression.helper.MultipartFileUploadHelper;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-import uk.gov.moj.cpp.progression.util.Utilities;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import com.google.common.io.Resources;
-import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class UploadCourtDocumentIT extends AbstractIT {
 
@@ -227,7 +225,8 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
 
     private void assertCourtDocumentByApplication(String documentId, String documentTypeId, String materialId, String applicationId) throws JSONException {
-        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId);
+        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId,
+                new Matcher[]{withJsonPath("$.documentIndices[0].document.courtDocumentId", is(documentId))});
         final String expectedPayload = getPayload("expected/expected.progression.upload.court-document-1.json")
                 .replace("%DOCUMENT_ID%", documentId)
                 .replace("%APPLICATION_ID%", applicationId)

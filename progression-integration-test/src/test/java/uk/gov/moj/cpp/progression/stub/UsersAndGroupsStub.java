@@ -16,9 +16,7 @@ import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.util.List;
-
 import uk.gov.justice.services.messaging.JsonObjects;
-
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {
