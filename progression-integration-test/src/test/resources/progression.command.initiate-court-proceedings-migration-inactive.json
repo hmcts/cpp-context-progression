@@ -36,16 +36,13 @@
                 "firstName": "Jim",
                 "middleName": "John",
                 "lastName" : "Jefferies",
-                "title" : "MR",
-                "legalEntityName" : "Chicken & Curry Best In Town LTD"
+                "title" : "MR"
               },
               {
                 "firstName": "Jim2",
                 "middleName": "John2",
                 "lastName" : "Jefferies",
-                "title" : "MR",
-                "legalEntityName" : "Chicken & Curry Best In Town LTD"
-
+                "title" : "MR"
               }
             ],
 
@@ -62,6 +59,17 @@
                 "orderIndex": 1,
                 "offenceCode": "TTH105HY",
                 "offenceTitle": "ROBBERY",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "b4562684-9209-3ec4-a544-7f80dabd94d8"
+                },
+                "convictionDate": "2025-07-28",
                 "count": 0,
                 "notifiedPlea": {
                   "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
@@ -118,29 +126,6 @@
                 "role": "parent"
               }
             ],
-            "legalEntityDefendant": {
-              "organisation": {
-                "address": {
-                  "address1": "888",
-                  "address2": "382 Graham Drives",
-                  "address3": "New Genevieve",
-                  "address4": "CO",
-                  "address5": "Cyprus",
-                  "postcode": "SW11 1JU"
-                },
-                "contact": {
-                  "fax": "670-011-2708",
-                  "home": "696-318-7043",
-                  "mobile": "673-269-7203",
-                  "primaryEmail": "watson.doyle@yahoo.com",
-                  "secondaryEmail": "neha.hand@yahoo.com",
-                  "work": "699.244.3301"
-                },
-                "incorporationNumber": "qrdE2yTAM9",
-                "name": "ojIE26ztNj",
-                "registeredCharityNumber": "WTV7hUH2nz"
-              }
-            },
             "pncId": "1234567",
             "personDefendant": {
               "personDetails": {
@@ -214,6 +199,12 @@
         "migrationSourceSystem": {
           "migrationSourceSystemName": "XHIBIT",
           "migrationSourceSystemCaseIdentifier": "T20250001",
+          "defendantFineAccountNumbers": [
+            {
+              "defendantId": "RANDOM_DEFENDANT_ID",
+              "fineAccountNumber": "12345"
+            }
+          ],
           "migrationCaseStatus": "INACTIVE"
         }
       }

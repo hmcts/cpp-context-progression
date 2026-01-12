@@ -837,4 +837,12 @@ rule "Query - Civil fee details for progression.query.civil-fee-details"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.search-inactive-migrated-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-inactive-migrated-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
 

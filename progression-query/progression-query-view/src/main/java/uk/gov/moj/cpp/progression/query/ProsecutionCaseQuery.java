@@ -814,6 +814,30 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(envelope.metadata(), createObjectBuilder().add("linkedApplications", jsonApplicationBuilder.build()).build());
     }
 
+    @Handles("progression.query.search-inactive-migrated-cases")
+    public JsonEnvelope searchInactiveMigratedCases(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+
+        final String strCaseIds = JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_IDS_SEARCH_PARAM)
+                .orElse(null);
+
+        if (StringUtils.isNotEmpty(strCaseIds)) {
+            final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
+
+            final List<String> inActiveCasesJsonList = prosecutionCaseRepository.findInactiveMigratedCaseSummaries(caseIdList);
+
+            inActiveCasesJsonList.forEach(caseJson ->
+                    jsonArrayBuilder.add(stringToJsonObjectConverter.convert(caseJson))
+            );
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.add("inactiveMigratedCaseSummaries", jsonArrayBuilder).build()
+        );
+    }
+
     private UUID getSubjectId(final CourtApplicationParty subject) {
         return isNull(subject) || isNull(subject.getMasterDefendant()) ? null : subject.getMasterDefendant().getMasterDefendantId();
     }

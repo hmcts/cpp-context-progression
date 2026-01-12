@@ -1,0 +1,27 @@
+{
+  "inactiveMigratedCaseSummaries": [
+    {
+      "inactiveCaseSummary": {
+        "id": "0e3004a0-dd4c-47c0-bd69-3ba31c7fb53b",
+        "defendants": [
+          {
+            "defendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
+            "convictingcourtId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "masterDefendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c"
+          }
+        ],
+        "migrationSourceSystem": {
+          "migrationCaseStatus": "INACTIVE",
+          "migrationSourceSystemName": "XHIBIT",
+          "defendantFineAccountNumbers": [
+            {
+              "defendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
+              "fineAccountNumber": "12345"
+            }
+          ],
+          "migrationSourceSystemCaseIdentifier": "SCRDID98443"
+        }
+      }
+    }
+  ]
+}

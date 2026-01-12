@@ -313,4 +313,9 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getActiveApplicationsOnCase(envelope);
     }
 
+    @Handles("progression.query.search-inactive-migrated-cases")
+    public JsonEnvelope searchInactiveMigratedCases(final JsonEnvelope envelope) {
+        return prosecutionCaseQuery.searchInactiveMigratedCases(envelope);
+    }
+
 }
