@@ -115,19 +115,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
-    public static Matcher<? super ReadContext>[] getProsecutionSearchCaseMatchers(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
-        List<Matcher<? super ReadContext>> matchers = newArrayList(
-
-        );
-
-
-
-        matchers.addAll(additionalMatchers);
-
-        return matchers.toArray(new Matcher[0]);
-//getProsecutionSearchCaseMatchers
-    }
-
     public static Matcher<? super ReadContext>[] getCivilProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.id", is(caseId)),

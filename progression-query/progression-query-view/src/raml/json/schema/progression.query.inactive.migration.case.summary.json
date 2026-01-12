@@ -26,15 +26,15 @@
                   "type": "object",
                   "description": "Defendant details including court identification",
                   "properties": {
-                    "defendantid": {
+                    "defendantId": {
                       "description": "Unique identifier for the defendant",
                       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
                     },
-                    "masterdefendantId": {
+                    "masterDefendantId": {
                       "description": "Master record identifier for the defendant",
                       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
                     },
-                    "convictingcourtid": {
+                    "convictingcourtId": {
                       "description": "Identifier for the court where the defendant was convicted",
                       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
                     }

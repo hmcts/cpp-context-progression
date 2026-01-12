@@ -62,14 +62,13 @@ public class SearchInactiveMigratedCasesIT extends AbstractIT {
         );
 
         final List<Matcher<? super ReadContext>> inactiveMigratedCaseSearchMatchers = newArrayList(
-                // Added the array index [0] to the path
                 withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.id", is(caseId)),
 
                 withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.migrationSourceSystem.migrationCaseStatus", is(inactive)),
 
                 withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.migrationSourceSystem.migrationSourceSystemName", is(xhibit)),
 
-                withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.defendants[0].masterdefendantId", is(defendantId))
+                withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.defendants[0].masterDefendantId", is(defendantId))
         );
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, inactiveMigratedCaseMatchers));

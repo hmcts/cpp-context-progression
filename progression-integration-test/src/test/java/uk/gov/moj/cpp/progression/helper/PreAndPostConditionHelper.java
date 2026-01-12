@@ -1147,7 +1147,7 @@ public class PreAndPostConditionHelper {
 
     @SafeVarargs
     public static String pollInactiveProsecutionCasesProgressionFor(final String caseId, final Matcher<? super ReadContext>... matchers) {
-        return pollForResponse("/searchinactivemigratedcases?caseIds=" + caseId, "application/vnd.progression.query.search-inactive-migrated-cases+json", matchers);
+        return pollForResponse("/search-inactive-migratedcases?caseIds=" + caseId, "application/vnd.progression.query.search-inactive-migrated-cases+json", matchers);
     }
 
     @SafeVarargs
