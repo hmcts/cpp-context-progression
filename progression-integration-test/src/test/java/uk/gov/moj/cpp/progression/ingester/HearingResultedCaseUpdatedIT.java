@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingRes
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -32,6 +33,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
@@ -81,9 +83,11 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         verifyInitialElasticSearchCase(inputProsecutionCase, initialElasticSearchCaseResponseJsonObject.get(), "ACTIVE");
 
+        sleepToBeRefactored(); // not all events are processed immediately
         sendEventToMessageQueue();
 
-        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE"))};
+        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.parties[0].postCode", equalTo("GIR 0AA"))};
         final Optional<JsonObject> updatedElasticSearchCaseResponseJsonObject = findBy(postMatchers);
 
         assertTrue(updatedElasticSearchCaseResponseJsonObject.isPresent());

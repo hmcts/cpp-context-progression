@@ -76,6 +76,8 @@ public class ApplicationExtractIT extends AbstractIT {
         final String actualDocumentAfterUpdate = getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
                 withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false)),
+                withJsonPath("$.courtDocument.documentTypeId", equalTo("a4e50dad-9e21-4b2b-903f-94176a443fca")),
+                withJsonPath("$.courtDocument.name", equalTo("Application Updated Notice")),
                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications"))
         ));
         final String expectedPayloadAfterUpdate = getPayload("expected/expected.progression.court-document-updated-for-standalone.json")

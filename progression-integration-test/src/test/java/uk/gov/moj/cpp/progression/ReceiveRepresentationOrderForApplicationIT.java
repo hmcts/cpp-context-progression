@@ -37,6 +37,7 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAnd
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayloadAsJsonObject;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -94,7 +95,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
     }
 
     @Test
-    void shouldRaisePublicEventWhenApplicationIsFoundForReceiveRepresentationOrderForApplicationWithOrganisation() throws IOException, JSONException {
+    void shouldRaisePublicEventWhenApplicationIsFoundForReceiveRepresentationOrderForApplicationWithOrganisation() throws IOException, JSONException, InterruptedException {
         applicationId = randomUUID().toString();
         subjectId = randomUUID().toString();
         hearingId = randomUUID().toString();
@@ -140,6 +141,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         final JmsMessageConsumerClient messageConsumerClientPrivateForLaaReferenceUpdatedForHearing = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_APPLICATION_OFFENCES_UPDATED_FOR_HEARING).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPrivateForRepOrcerUpdatedForHearing = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_APPLICATION_REPORDER_UPDATED_FOR_HEARING).getMessageConsumerClient();
         //When
+        sleepToBeRefactored();
         receiveRepresentationOrderForApplication(applicationId, subjectId, offenceId, statusCode, laaContractNumber, applicationReference, userId);
 
         //Then

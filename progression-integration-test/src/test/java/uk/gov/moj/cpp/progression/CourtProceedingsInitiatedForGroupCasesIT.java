@@ -31,13 +31,19 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
 import org.hamcrest.Matcher;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
+
 import org.json.JSONException;
+
 import static org.junit.Assert.assertTrue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -309,15 +315,17 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         UUID groupMasterId = null;
 
         for (final UUID caseId : caseIds) {
-            final String payload = pollProsecutionCasesProgressionFor(caseId.toString(), withJsonPath("$.prosecutionCase.id", is(caseId.toString())));
+            final String payload;
+            if (removedCaseIds.contains(caseId))
+                payload = pollProsecutionCasesProgressionFor(caseId.toString(), withJsonPath("$.prosecutionCase.id", is(caseId.toString())),
+                        withJsonPath("$.prosecutionCase.isGroupMember", is(false)),
+                        withJsonPath("$.prosecutionCase.isGroupMaster", is(false)));
+            else
+                payload = pollProsecutionCasesProgressionFor(caseId.toString(), withJsonPath("$.prosecutionCase.id", is(caseId.toString())),
+                        withJsonPath("$.prosecutionCase.isGroupMember", is(true)),
+                        withJsonPath("$.prosecutionCase.isGroupMaster", notNullValue()));
             final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(payload).getJsonObject("prosecutionCase");
-            if (removedCaseIds.contains(caseId)) {
-                assertThat(prosecutionCase.getBoolean("isGroupMember"), is(false));
-                assertThat(prosecutionCase.getBoolean("isGroupMaster"), is(false));
-            } else {
-                assertThat(prosecutionCase.getBoolean("isGroupMember"), is(true));
-                assertThat(prosecutionCase.containsKey("isGroupMaster"), is(true));
-
+            if (!removedCaseIds.contains(caseId)) {
                 if (prosecutionCase.getBoolean("isGroupMaster")) {
                     if (nonNull(groupMasterId)) {
                         assertThat(format("Only one case can be a group master. {}, {}", groupMasterId, caseId), false);
