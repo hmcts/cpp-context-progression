@@ -5,6 +5,7 @@ import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.eclipse.jetty.util.NanoTime.until;
 import static org.hamcrest.CoreMatchers.allOf;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -13,15 +14,20 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.Duration;
 
 import com.google.common.io.Resources;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class ApplicationHelper {
 
@@ -106,14 +112,18 @@ public class ApplicationHelper {
 
     public static String pollForCourtApplicationOnly(final String applicationId, final Matcher... matchers) {
         return poll(requestParams(getReadUrl("/applications/" + applicationId),
-                "application/vnd.progression.query.application-only+json").withHeader(USER_ID, randomUUID()))
+                        "application/vnd.progression.query.application-only+json").withHeader(USER_ID, randomUUID()).build(),
+                new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)),
+                Duration.ofSeconds(TIMEOUT_IN_SECONDS))
                 .until(status().is(OK), payload().isJson(allOf(matchers)))
                 .getPayload();
     }
 
     public static String pollCourtApplicationForLaa(final String applicationId, final Matcher... matchers) {
         return poll(requestParams(getReadUrl("/applications/" + applicationId),
-                "application/vnd.progression.query.application-laa+json").withHeader(USER_ID, randomUUID()))
+                "application/vnd.progression.query.application-laa+json").withHeader(USER_ID, randomUUID()).build(),
+                new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)),
+                Duration.ofSeconds(TIMEOUT_IN_SECONDS))
                 .until(status().is(OK), payload().isJson(allOf(matchers))).getPayload();
     }
 

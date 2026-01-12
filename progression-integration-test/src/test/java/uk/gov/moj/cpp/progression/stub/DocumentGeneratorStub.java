@@ -18,14 +18,16 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PdfTestHelper.asPdf;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
@@ -33,6 +35,7 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class DocumentGeneratorStub {
 
@@ -113,7 +116,7 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            return await().timeout(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> findAll(postRequestedFor(urlPathMatching(PATH)))
+            return await().timeout(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> findAll(postRequestedFor(urlPathMatching(PATH)))
                     .stream()
                     .map(LoggedRequest::getBodyAsString)
                     .map(t -> {

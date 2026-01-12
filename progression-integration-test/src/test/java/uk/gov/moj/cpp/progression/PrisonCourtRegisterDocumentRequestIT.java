@@ -71,7 +71,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final List<JSONObject> jsonObjectsList = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(2), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final List<JSONObject> jsonObjectsList = SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(Matchers.hasSize(2), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
         final JSONObject jsonObject1 = jsonObjectsList.stream().filter(request -> !request.toString().contains(documentFileServiceId.toString())).findFirst().get();
         final UUID payloadFileServiceId1 = fromString(jsonObject1.getString("payloadFileServiceId"));
         final UUID documentFileServiceId1 = randomUUID();

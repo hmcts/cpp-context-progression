@@ -75,4 +75,16 @@ public class Utilities {
         }
     }
 
+    /**
+     * todo this needs to be refactored for each usage with correct polling conditions, it's just placeholder for now
+     */
+    @SuppressWarnings("java:S2925")
+    public static void sleepToBeRefactored(){
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
+
 }

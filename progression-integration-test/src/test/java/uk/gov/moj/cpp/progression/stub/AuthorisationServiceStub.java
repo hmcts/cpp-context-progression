@@ -10,9 +10,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.util.UUID;
-
 import uk.gov.justice.services.messaging.JsonObjects;
-
 public class AuthorisationServiceStub extends StubUtil {
 
     private static final String CAPABILITY_ENABLEMENT_QUERY_URL = "/authorisation-service-server/rest/capabilities/%s";

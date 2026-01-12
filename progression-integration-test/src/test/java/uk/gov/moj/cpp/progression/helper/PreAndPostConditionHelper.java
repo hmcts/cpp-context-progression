@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.progression.util.Pair;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -51,8 +51,11 @@ import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static uk.gov.justice.services.messaging.JsonObjects.getJsonBuilderFactory;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
@@ -385,7 +388,7 @@ public class PreAndPostConditionHelper {
     public static Response deleteRelatedReference(final String caseId, final String relatedReferenceId) {
         return postCommand(getWriteUrl("/prosecutioncases/" + caseId),
                 "application/vnd.progression.delete-related-reference+json",
-                JsonObjects.createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
+                getJsonBuilderFactory().createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
 
     }
 
@@ -1195,7 +1198,7 @@ public class PreAndPostConditionHelper {
     @SafeVarargs
     public static String pollCaseAndGetHearingForDefendant(final String caseId, final String defendantId, final Matcher<? super ReadContext>... additionalMatchers) {
         return await()
-                .pollInterval(INTERVAL_IN_MILLISECONDS, TimeUnit.MILLISECONDS)
+                .pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)))
                 .timeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
                 .until(() -> {
                     try {
@@ -1272,6 +1275,10 @@ public class PreAndPostConditionHelper {
 
     public static String getCourtDocumentsByCase(final String userId, final String caseId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
+    public static String getCourtDocumentsByCase(final String userId, final String caseId, final Matcher[] matchers) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId, matchers);
     }
 
     public static String getCourtDocumentsPerCase(final String userId, final String caseId, final Matcher[] matchers) {
@@ -1814,7 +1821,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static Response removeCaseFromGroupCases(final UUID caseId, final UUID groupId) {
-        final JsonObject payload = createObjectBuilder()
+        final JsonObject payload = getJsonBuilderFactory().createObjectBuilder()
                 .add("prosecutionCaseId", caseId.toString())
                 .add("groupId", groupId.toString())
                 .build();

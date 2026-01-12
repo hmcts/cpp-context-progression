@@ -1,11 +1,21 @@
 package uk.gov.moj.cpp.progression.applications;
 
+import com.google.common.io.Resources;
+import org.hamcrest.Matcher;
+import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.moj.cpp.progression.AbstractIT;
+
+import java.nio.charset.Charset;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
@@ -14,19 +24,6 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForApplicationShortId;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
-
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.cpp.progression.AbstractIT;
-
-import java.nio.charset.Charset;
-
-import javax.json.JsonObject;
-
-import com.google.common.io.Resources;
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class CourtAppealApplicationIT extends AbstractIT {
 
@@ -93,12 +90,11 @@ public class CourtAppealApplicationIT extends AbstractIT {
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json");
         pollForCourtApplication(applicationId, withJsonPath("$.courtApplication.id", is(applicationId)));
 
-        final String response = pollForApplicationStatus(applicationId);
-        final JsonObject applicationStatusResponse = new StringToJsonObjectConverter().convert(response);
-        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").size(), equalTo(1));
-        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationId"), equalTo(applicationId));
-        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationStatus"), equalTo("UN_ALLOCATED"));
-
+        pollForApplicationStatus(applicationId,
+                withJsonPath("$.applicationsWithStatus.length()", is(1)),
+                withJsonPath("$.applicationsWithStatus[0].applicationId", is(applicationId)),
+                withJsonPath("$.applicationsWithStatus[0].applicationStatus", is("UN_ALLOCATED")));
+        Assertions.assertTrue(true);
     }
 
     private CustomComparator getCustomComparator(String applicationId, String applicationReference) {
