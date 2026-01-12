@@ -17,13 +17,17 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class MaterialStub {
 
@@ -77,7 +81,7 @@ public class MaterialStub {
     }
 
     public static void verifyMaterialCreated(String... expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
             RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND));
             Arrays.stream(expectedValues).forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

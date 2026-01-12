@@ -21,7 +21,10 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +32,7 @@ import java.util.UUID;
 import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
 import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class NotificationServiceStub {
     public static final String NOTIFICATION_NOTIFY_ENDPOINT = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/.*";
@@ -66,7 +70,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues, CountMatchingStrategy expectedCount) {
-        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
@@ -94,7 +98,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, Optional<UUID> materialId) {
-        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
@@ -111,7 +115,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyCreateLetterRequested(final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
             RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

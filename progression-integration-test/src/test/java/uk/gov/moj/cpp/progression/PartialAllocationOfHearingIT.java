@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -59,6 +60,7 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId1, defendantId1);
         final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId1, defendantId1);
 
+        sleepToBeRefactored();
         // Extending hearing for one offence
         doHearingConfirmed(existingHearingId, caseId1, defendantId1, courtCentreId1, userId1, firstHearingId);
 
@@ -91,6 +93,7 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId2, defendantId3);
 
         // Extending hearing for one offence
+        Thread.sleep(250);
         doHearingConfirmed(existingHearingId, caseId2, defendantId3, courtCentreId1, userId1, extendedHearingId);
         pollAndVerifyHearingIsExtended(extendedHearingId, 2);
     }
@@ -104,7 +107,7 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         final String defendantId2 = randomUUID().toString();
         final String courtCentreId = randomUUID().toString();
         final String userId = randomUUID().toString();
-
+        sleepToBeRefactored();
         addProsecutionCaseToCrownCourtWithTwoProsecutionCases(caseId1, caseId2, defendantId1, defendantId2);
         final String extendedHearingId = pollCaseAndGetHearingForDefendant(caseId1, defendantId1);
 
@@ -120,6 +123,7 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourtWithTwoProsecutionCases(caseId3, caseId4, defendantId3, defendantId4);
         final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId3, defendantId3);
+        sleepToBeRefactored();
 
         // Extending hearing for one offence
         doHearingConfirmed(existingHearingId, caseId3, defendantId3, courtCentreId1, userId1, extendedHearingId);

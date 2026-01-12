@@ -15,6 +15,8 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 
 import java.time.Duration;
 import java.util.stream.Stream;
@@ -22,6 +24,7 @@ import java.util.stream.Stream;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class HearingStub {
 
@@ -39,7 +42,7 @@ public class HearingStub {
     }
 
     public static void verifyPostInitiateCourtHearing(final String hearingId) {
-        waitAtMost(Duration.ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {

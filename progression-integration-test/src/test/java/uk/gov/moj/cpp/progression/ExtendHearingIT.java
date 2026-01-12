@@ -49,6 +49,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonP
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 @SuppressWarnings("squid:S1607")
 public class ExtendHearingIT extends AbstractIT {
@@ -127,6 +128,7 @@ public class ExtendHearingIT extends AbstractIT {
                 .build();
 
         final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata("public.events.listing.offences-removed-from-unallocated-hearing", userId), payload2);
+        sleepToBeRefactored();
         messageProducerClientPublic.sendMessage("public.events.listing.offences-removed-from-unallocated-hearing", publicEventEnvelope2);
 
         LOGGER.info("*** Existing Hearing : {}  | caseId : {}  |  defendant id : {} | offenceId : {}", existingHearingId, caseId1, defendantId1, offenceId1);

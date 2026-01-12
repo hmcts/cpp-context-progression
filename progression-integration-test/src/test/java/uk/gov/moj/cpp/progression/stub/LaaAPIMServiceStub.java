@@ -16,7 +16,10 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 
+import java.time.Duration;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
@@ -24,6 +27,7 @@ import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class LaaAPIMServiceStub {
     private static final Logger LOGGER = LoggerFactory.getLogger(LaaAPIMServiceStub.class);
@@ -47,7 +51,7 @@ public class LaaAPIMServiceStub {
     }
 
     private static void verifyLaaProceedingsConcludedCommandInvoked(final String commandEndPoint, final CountMatchingStrategy countMatchingStrategy, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

@@ -66,6 +66,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 @SuppressWarnings("squid:S1607")
 public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT {
@@ -375,6 +376,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         final JsonObject publicEvent = createObjectBuilder().add("newHearingId", newHearingId).add("seedingHearingId", hearingId)
                 .add("oldHearingIds", createArrayBuilder().add(nextHearingId)).build();
         publicEventEnvelope = envelopeFrom(buildMetadata("public.listing.offences-moved-to-next-hearing", userId), publicEvent);
+        sleepToBeRefactored();
         messageProducerClientPublic.sendMessage("public.listing.offences-moved-to-next-hearing", publicEventEnvelope);
 
         assertTrue(retrieveMessageBody(messageConsumerPublicEvent1).isPresent());

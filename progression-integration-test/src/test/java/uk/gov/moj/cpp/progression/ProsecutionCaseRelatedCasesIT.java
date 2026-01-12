@@ -30,6 +30,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
@@ -97,6 +98,10 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
 
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+        /* todo as we have faster event processing, some parts of viewstore are not settling yet.
+            This needs to be fixed with proper matchers in previous steps
+        */
+        sleepToBeRefactored();
         // match defendantId_2_forMasterDefendantId_1 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
 
