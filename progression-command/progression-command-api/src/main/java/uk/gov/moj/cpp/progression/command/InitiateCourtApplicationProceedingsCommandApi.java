@@ -21,7 +21,7 @@ import javax.json.JsonObject;
 @ServiceComponent(COMMAND_API)
 public class InitiateCourtApplicationProceedingsCommandApi {
 
-    private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{10}$");
+    private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{11}$");
 
     @Inject
     private Sender sender;

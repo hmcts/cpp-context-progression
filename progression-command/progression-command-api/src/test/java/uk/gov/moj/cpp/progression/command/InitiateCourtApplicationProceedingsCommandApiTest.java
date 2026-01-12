@@ -68,7 +68,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
     @Test
     public void shouldInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsValid() {
-        final String validURN = "ASD1RTY5WE";//10 Char length, alfaNumeric, all upper case
+        final String validURN = "ASD1RTY5WE1";//11 Char length, alfaNumeric, all upper case
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
@@ -117,7 +117,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
     @Test
     public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNineCharLength() {
-        final String invalidURN = "ASDERTYUW";//NOT 10 Char length, alfaNumeric, all upper case
+        final String invalidURN = "ASDERTYUW";//NOT 11 Char length, alfaNumeric, all upper case
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
@@ -138,7 +138,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
     @Test
     public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNotAllCapital() {
-        final String invalidURN = "ASDERTYUWe";//10 Char length, alfaNumeric, NOT all upper case
+        final String invalidURN = "ASDERTYUWXe";//11 Char length, alfaNumeric, NOT all upper case
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
@@ -159,7 +159,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
     @Test
     public void shouldValidationFailOnInitialCourtProceedingsForCourtApplicationWhenApplicationReferenceIsNotAllAlfaNumeric() {
-        final String invalidURN = "ASD!RTYU1E";//10 Char length, NOT all alfaNumeric, all upper case
+        final String invalidURN = "ASD!RTYU1EX";//11 Char length, NOT all alfaNumeric, all upper case
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
