@@ -36,16 +36,13 @@
                 "firstName": "Jim",
                 "middleName": "John",
                 "lastName" : "Jefferies",
-                "title" : "MR",
-                "legalEntityName" : "Chicken & Curry Best In Town LTD"
+                "title" : "MR"
               },
               {
                 "firstName": "Jim2",
                 "middleName": "John2",
                 "lastName" : "Jefferies",
-                "title" : "MR",
-                "legalEntityName" : "Chicken & Curry Best In Town LTD"
-
+                "title" : "MR"
               }
             ],
 
@@ -129,29 +126,6 @@
                 "role": "parent"
               }
             ],
-            "legalEntityDefendant": {
-              "organisation": {
-                "address": {
-                  "address1": "888",
-                  "address2": "382 Graham Drives",
-                  "address3": "New Genevieve",
-                  "address4": "CO",
-                  "address5": "Cyprus",
-                  "postcode": "SW11 1JU"
-                },
-                "contact": {
-                  "fax": "670-011-2708",
-                  "home": "696-318-7043",
-                  "mobile": "673-269-7203",
-                  "primaryEmail": "watson.doyle@yahoo.com",
-                  "secondaryEmail": "neha.hand@yahoo.com",
-                  "work": "699.244.3301"
-                },
-                "incorporationNumber": "qrdE2yTAM9",
-                "name": "ojIE26ztNj",
-                "registeredCharityNumber": "WTV7hUH2nz"
-              }
-            },
             "pncId": "1234567",
             "personDefendant": {
               "personDetails": {
