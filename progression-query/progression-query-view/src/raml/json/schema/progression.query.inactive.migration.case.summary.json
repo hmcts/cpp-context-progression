@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/inactiveMigratedCaseSummaries.json",
+  "id": "http://justice.gov.uk/courts/progression/query/inactiveMigratedCaseSummaries.json",
   "title": "Inactive Migrated Case Summaries List",
   "type": "object",
   "properties": {
@@ -23,31 +23,26 @@
               "defendants": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/definitions/defendant"
+                  "type": "object",
+                  "description": "Defendant details including court identification",
+                  "properties": {
+                    "defendantid": {
+                      "description": "Unique identifier for the defendant",
+                      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+                    },
+                    "masterdefendantId": {
+                      "description": "Master record identifier for the defendant",
+                      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+                    },
+                    "convictingcourtid": {
+                      "description": "Identifier for the court where the defendant was convicted",
+                      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+                    }
+                  }
                 }
               }
             }
           }
-        }
-      }
-    }
-  },
-  "definitions": {
-    "defendant": {
-      "type": "object",
-      "description": "Defendant details including court identification",
-      "properties": {
-        "defendantid": {
-          "description": "Unique identifier for the defendant",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-        },
-        "masterdefendantId": {
-          "description": "Master record identifier for the defendant",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-        },
-        "convictingcourtid": {
-          "description": "Identifier for the court where the defendant was convicted",
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
         }
       }
     }
