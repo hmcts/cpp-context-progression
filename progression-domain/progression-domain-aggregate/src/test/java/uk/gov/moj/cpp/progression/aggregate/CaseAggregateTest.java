@@ -59,100 +59,7 @@ import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpd
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
-import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
-import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
-import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
-import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
-import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
-import uk.gov.justice.core.courts.CaseEjected;
-import uk.gov.justice.core.courts.CaseEjectedViaBdf;
-import uk.gov.justice.core.courts.CaseInactiveBdf;
-import uk.gov.justice.core.courts.CaseLinkedToHearing;
-import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
-import uk.gov.justice.core.courts.CaseMarkersUpdated;
-import uk.gov.justice.core.courts.CaseNoteAdded;
-import uk.gov.justice.core.courts.CaseNoteAddedV2;
-import uk.gov.justice.core.courts.CaseNoteEditedV2;
-import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
-import uk.gov.justice.core.courts.Cases;
-import uk.gov.justice.core.courts.CivilFees;
-import uk.gov.justice.core.courts.ContactNumber;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtHearingRequest;
-import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
-import uk.gov.justice.core.courts.CustodialEstablishment;
-import uk.gov.justice.core.courts.DefenceOrganisation;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantCaseOffences;
-import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
-import uk.gov.justice.core.courts.DefendantSubject;
-import uk.gov.justice.core.courts.DefendantUpdate;
-import uk.gov.justice.core.courts.Defendants;
-import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
-import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
-import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
-import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
-import uk.gov.justice.core.courts.EditFormRequested;
-import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.FeeStatus;
-import uk.gov.justice.core.courts.FeeType;
-import uk.gov.justice.core.courts.FormCreated;
-import uk.gov.justice.core.courts.FormDefendants;
-import uk.gov.justice.core.courts.FormDefendantsUpdated;
-import uk.gov.justice.core.courts.FormFinalised;
-import uk.gov.justice.core.courts.FormOperationFailed;
-import uk.gov.justice.core.courts.FormType;
-import uk.gov.justice.core.courts.FormUpdated;
-import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
-import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
-import uk.gov.justice.core.courts.IndicatedPlea;
-import uk.gov.justice.core.courts.IndicatedPleaValue;
-import uk.gov.justice.core.courts.InitiationCode;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.LockStatus;
-import uk.gov.justice.core.courts.Marker;
-import uk.gov.justice.core.courts.OffenceListingNumbers;
-import uk.gov.justice.core.courts.OnlinePleasAllocation;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.PetDefendants;
-import uk.gov.justice.core.courts.PetDetailReceived;
-import uk.gov.justice.core.courts.PetDetailUpdated;
-import uk.gov.justice.core.courts.PetFormCreated;
-import uk.gov.justice.core.courts.PetFormDefendantUpdated;
-import uk.gov.justice.core.courts.PetFormFinalised;
-import uk.gov.justice.core.courts.PetFormReceived;
-import uk.gov.justice.core.courts.PetFormUpdated;
-import uk.gov.justice.core.courts.PetOperationFailed;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseCreated;
-import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseSubject;
-import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
-import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
-import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CaseStatusUpdatedBdf;
@@ -242,6 +149,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -325,6 +233,7 @@ class CaseAggregateTest {
                             .withLastName("lastName")
                             .withDateOfBirth(LocalDate.now().minusYears(20))
                             .build())
+                    .withBailStatus(BailStatus.bailStatus().withCode("C").withDescription("Custody").build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
             .withOffences(asList(offence().withId(randomUUID())
@@ -7879,6 +7788,61 @@ class CaseAggregateTest {
 
         final Stream<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         assertThat(eventStream.toList().size(), is(0));
+    }
+
+    @Test
+    public void shouldRetainCorrectBailStatusAfterLAAReferenceAndRepresentationOrder() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final UUID associatedOrganisationId = randomUUID();
+        final UUID currentOrganisationId = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+        Defendant currentDefendant1 = prosecutionCase.getDefendants().get(0);
+        Defendant.Builder defendant1 = defendant().withValuesFrom(currentDefendant1);
+        PersonDefendant personDefendant = currentDefendant1.getPersonDefendant();
+        final PersonDefendant newPersonDefendant = personDefendant().withValuesFrom(personDefendant).withBailStatus(BailStatus.bailStatus()
+                        .withCode("B")
+                        .withDescription("Conditional Bail")
+                .build()).build();
+        defendant1.withPersonDefendant(newPersonDefendant);
+        ProsecutionCase hearingResultedProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withDefendants(Lists.newArrayList(defendant1.build()))
+                .build();
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = HearingResultedCaseUpdated.hearingResultedCaseUpdated()
+                .withProsecutionCase(hearingResultedProsecutionCase)
+                .build();
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        caseAggregate.apply(hearingResultedCaseUpdated);
+        caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests(), Optional.of(createJsonList())).collect(toList());
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+
+        final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = ReceiveRepresentationOrderForDefendant
+                .receiveRepresentationOrderForDefendant()
+                .withDefendantId(currentDefendant1.getId())
+                .withProsecutionCaseId(caseId)
+                .withOffenceId(currentDefendant1.getOffences().get(0).getId())
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withOrganisation(Organisation.organisation()
+                                .withName("XYZ Organisation")
+                                .withId(associatedOrganisationId)
+                                .build())
+                        .withLaaContractNumber("LAA Contract Number")
+                        .build())
+                .build();
+        final OrganisationDetails organisationDetails = OrganisationDetails.newBuilder().withId(currentOrganisationId).build();
+        caseAggregate.recordLAAReferenceForOffence(caseId, currentDefendant1.getId(), currentDefendant1.getOffences().get(0).getId(), laaReference).collect(toList());
+        final LaaReference laaReference1 = laaReference().withValuesFrom(laaReference).withLaaContractNumber("ABCD").build();
+        final List<Object> eventStream = caseAggregate.receiveRepresentationOrderForDefendant(receiveRepresentationOrderForDefendant, laaReference1, organisationDetails, associatedOrganisationId.toString())
+                .collect(Collectors.toUnmodifiableList());
+        assertThat(eventStream.size(), is(8));
+        Optional<Object> pcdUpdated = eventStream.stream().filter(event -> event instanceof ProsecutionCaseDefendantUpdated).findFirst();
+        assertThat(((ProsecutionCaseDefendantUpdated)pcdUpdated.get()).getDefendant().getPersonDefendant().getBailStatus().getDescription(), is("Conditional Bail"));
     }
 
     private Defendant getDefendant(final UUID defendantId1) {
