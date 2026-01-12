@@ -62,6 +62,17 @@
                 "orderIndex": 1,
                 "offenceCode": "TTH105HY",
                 "offenceTitle": "ROBBERY",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "b4562684-9209-3ec4-a544-7f80dabd94d8"
+                },
+                "convictionDate": "2025-07-28",
                 "count": 0,
                 "notifiedPlea": {
                   "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
