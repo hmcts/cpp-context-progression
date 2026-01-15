@@ -2127,24 +2127,31 @@ public class ProsecutionCaseQueryViewTest {
     public void shouldSearchInactiveMigratedCases() {
         final UUID caseId = randomUUID();
 
-        final String prosecutionCaseEntity = "{" +
-                "\"inactiveCaseSummary\": {" +
-                "\"id\": \"" + caseId.toString() + "\"," +
-                "\"defendants\": [{" +
-                "\"defendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"," +
-                "\"masterDefendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"" +
-                "}]," +
-                "\"migrationSourceSystem\": {" +
-                "\"migrationCaseStatus\": \"INACTIVE\"," +
-                "\"migrationSourceSystemName\": \"XHIBIT\"," +
-                "\"defendantFineAccountNumbers\": [{" +
-                "\"defendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"," +
-                "\"fineAccountNumber\": \"12345\"" +
-                "}]," +
-                "\"migrationSourceSystemCaseIdentifier\": \"SCRDID98443\"" +
-                "}" +
-                "}" +
-                "}";
+        final String prosecutionCaseEntity = """
+                {
+                  "inactiveCaseSummary": {
+                    "id": "%s",
+                    "defendants": [
+                      {
+                        "defendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
+                        "masterDefendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c"
+                      }
+                    ],
+                    "migrationSourceSystem": {
+                      "migrationCaseStatus": "INACTIVE",
+                      "migrationSourceSystemName": "XHIBIT",
+                      "defendantFineAccountNumbers": [
+                        {
+                          "defendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
+                          "fineAccountNumber": "12345"
+                        }
+                      ],
+                      "migrationSourceSystemCaseIdentifier": "SCRDID98443"
+                    }
+                  }
+                }
+                """.formatted(caseId.toString());
+
 
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add(CASE_IDS_SEARCH_PARAM, caseId.toString())
