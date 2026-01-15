@@ -31,8 +31,7 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
             "    'migrationSourceSystem', COALESCE(CAST(p.payload AS jsonb) -> 'migrationSourceSystem', CAST('{}' AS jsonb)), " +
             "    'defendants', jsonb_agg(jsonb_build_object( " +
             "      'defendantId', def ->> 'id', " +
-            "      'masterDefendantId', def ->> 'masterDefendantId', " +
-            "      'convictingcourtId', def -> 'offences' -> 0 -> 'convictingCourt' ->> 'id' " +
+            "      'masterDefendantId', def ->> 'masterDefendantId' " +
             "    )) " +
             "  )) AS text) " +
             "  FROM prosecution_case p, " +

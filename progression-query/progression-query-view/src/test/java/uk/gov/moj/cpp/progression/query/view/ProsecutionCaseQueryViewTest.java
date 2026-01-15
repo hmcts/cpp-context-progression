@@ -2132,7 +2132,6 @@ public class ProsecutionCaseQueryViewTest {
                 "\"id\": \"" + caseId.toString() + "\"," +
                 "\"defendants\": [{" +
                 "\"defendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"," +
-                "\"convictingcourtId\": \"f8254db1-1683-483e-afb3-b87fde5a0a26\"," +
                 "\"masterDefendantId\": \"c40785ef-9394-4c2e-9f9b-b0d819acea0c\"" +
                 "}]," +
                 "\"migrationSourceSystem\": {" +
