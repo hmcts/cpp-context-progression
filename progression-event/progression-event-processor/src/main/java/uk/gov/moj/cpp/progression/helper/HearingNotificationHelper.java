@@ -98,6 +98,7 @@ public class HearingNotificationHelper {
     private static final String HEARING_CONFIRMED = "HEARING_CONFIRMED";
     public static final String ENGLISH_OFFENCE_TITLE_LIST = "englishOffenceTitleList";
     public static final String WELSH_OFFENCE_TITLE_LIST = "welshOffenceTitleList";
+    public static final String FULL_NAME = "fullName";
 
     @Inject
     private ProgressionService progressionService;
@@ -162,11 +163,11 @@ public class HearingNotificationHelper {
     }
 
     private void sendNotificationToParties(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
-        sendHearingNotificationToDefendant(prosecutionCase, defendant, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
+        sendHearingNotificationToDefendant(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         sendHearingNotificationToProsecutor(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
     }
 
-    private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
+    private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
         LOGGER.info("Sending HearingNotification on HearingId {} and DefendantId {}", hearingNotificationInputData.getHearingId(), defendant.getId());
         final UUID caseId = prosecutionCase.getId();
         final UUID defendantId = defendant.getId();
@@ -174,8 +175,13 @@ public class HearingNotificationHelper {
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = defenceService.getDefenceOrganisationByDefendantId(jsonEnvelope, defendantId);
         final DefenceOrganisationVO defenceOrganisationVO = buildDefenceOrgVO(associatedDefenceOrganisation);
         final PostalAddressee defendantAddressee = getPostalAddresseeForDefendant(defendant, defenceOrganisationVO);
+        String prosecutorName = EMPTY;
+        if(prosecutorDetails.isPresent()){
+            final JsonObject prosecutorJsonObject = prosecutorDetails.get();
+            prosecutorName = prosecutorJsonObject.getString(FULL_NAME, EMPTY);
+        }
         //payload is same for newHearingTemplate and amendedHearingTemplate
-        final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, defendantAddressee, enrichedCourtCentre, hearingNotificationInputData);
+        final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, defendantAddressee, enrichedCourtCentre, hearingNotificationInputData, prosecutorName);
         final UUID materialId = randomUUID();
 
         final RecipientType recipientType = nonNull(defenceOrganisationVO) ? RecipientType.DEFENCE : RecipientType.DEFENDANT ;
@@ -304,7 +310,7 @@ public class HearingNotificationHelper {
 
     private void sendHearingNotificationToProsecutor(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
         final UUID caseId = prosecutionCase.getId();
-        if (!prosecutorDetails.isPresent()) {
+        if (prosecutorDetails.isEmpty()) {
             LOGGER.info("Hearing notification will not be sent for caseId {} due to absence of prosecutor details", caseId);
             return;
         }
@@ -314,7 +320,7 @@ public class HearingNotificationHelper {
             return;
         }
 
-        final String prosecutorName = prosecutorJsonObject.getString("fullName");
+        final String prosecutorName = prosecutorJsonObject.getString(FULL_NAME);
         final String prosecutorEmail = prosecutorJsonObject.getString("contactEmailAddress", null);
         final Address prosecutorAddress = isNull(prosecutorJsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(prosecutorJsonObject.getJsonObject("address"), Address.class);
         final PostalAddressee postalAddressee = PostalAddressee.builder()
@@ -322,7 +328,7 @@ public class HearingNotificationHelper {
                 .withAddress(buildPostalAddress(prosecutorAddress, false))
                 .build();
 
-        final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, postalAddressee, enrichedCourtCentre, hearingNotificationInputData);
+        final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, postalAddressee, enrichedCourtCentre, hearingNotificationInputData, prosecutorName);
         final UUID materialId = randomUUID();
         final String templateName = hearingNotificationInputData.getTemplateName();
         final String fileName = getNotificationPdfName(templateName, RecipientType.PROSECUTOR.getRecipientName());
@@ -381,19 +387,23 @@ public class HearingNotificationHelper {
     }
 
     private static void populateOffenceLists(final Offence offence, final List<CaseOffence> offenceList, final List<CaseOffence> welshOffenceList) {
-        if (isNotEmpty(offence.getOffenceTitle())) {
-            CaseOffence caseOffence = new CaseOffence();
-            caseOffence.setOffence(offence.getOffenceTitle());
-            offenceList.add(caseOffence);
-        }
+
+        CaseOffence caseOffence = new CaseOffence();
+        caseOffence.setOffence(offence.getOffenceTitle());
+        offenceList.add(caseOffence);
+
         if (isNotEmpty(offence.getOffenceTitleWelsh())) {
             CaseOffence welshCaseOffence = new CaseOffence();
             welshCaseOffence.setOffence(offence.getOffenceTitleWelsh());
             welshOffenceList.add(welshCaseOffence);
+        } else {
+            CaseOffence welshCaseOffence = new CaseOffence();
+            welshCaseOffence.setOffence(offence.getOffenceTitle());
+            welshOffenceList.add(welshCaseOffence);
         }
     }
 
-    private JsonObject createDocumentPayload(final ProsecutionCase prosecutionCase, final Defendant defendant, final PostalAddressee postalAddressee, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData) {
+    private JsonObject createDocumentPayload(final ProsecutionCase prosecutionCase, final Defendant defendant, final PostalAddressee postalAddressee, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final String applicantName) {
 
         final String caseReference = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
         final PostalDefendant postalDefendant = getPostalDefendant(defendant);
@@ -418,7 +428,7 @@ public class HearingNotificationHelper {
         final boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
 
         final HearingTemplatePayload hearingTemplatePayload = buildHearingTemplatePayload(enrichedCourtCentre, hearingNotificationInputData, LocalDate.now().toString(), caseReference,
-                postalAddressee, postalDefendant, postalHearingCourtDetailsBuilder.build(), offenceMap, isCivil);
+                postalAddressee, postalDefendant, postalHearingCourtDetailsBuilder.build(), offenceMap, isCivil, applicantName);
         return objectToJsonObjectConverter.convert(hearingTemplatePayload);
     }
 
@@ -476,7 +486,7 @@ public class HearingNotificationHelper {
 
     public HearingTemplatePayload buildHearingTemplatePayload(final CourtCentre courtCenter, final HearingNotificationInputData hearingNotificationInputData, String issueDate, final String reference,
                                                               final PostalAddressee addressee, final PostalDefendant defendant, final PostalHearingCourtDetails hearingCourtDetails,
-                                                              final Map<String, List<CaseOffence>> offenceMap, final boolean isCivil) {
+                                                              final Map<String, List<CaseOffence>> offenceMap, final boolean isCivil, final String applicantName) {
 
         return HearingTemplatePayload.builder()
                 .withReference(ofNullable(reference).orElse(EMPTY))
@@ -491,6 +501,7 @@ public class HearingNotificationHelper {
                 .withIsCivil(isCivil)
                 .withCourtCentreName(courtCenter.getName())
                 .withHearingType(hearingNotificationInputData.getHearingType())
+                .withApplicantName(applicantName)
                 .build();
     }
 
