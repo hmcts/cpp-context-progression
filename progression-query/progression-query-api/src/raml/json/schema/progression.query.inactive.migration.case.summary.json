@@ -33,10 +33,6 @@
                     "masterDefendantId": {
                       "description": "Master record identifier for the defendant",
                       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
-                    },
-                    "convictingcourtId": {
-                      "description": "Identifier for the court where the defendant was convicted",
-                      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
                     }
                   }
                 }

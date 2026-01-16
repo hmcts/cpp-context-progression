@@ -26,19 +26,20 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
     List<ProsecutionCaseEntity> findByProsecutionCaseIds(
             @QueryParam("caseIds") final List<UUID> caseIds);
 
-    @Query(value = "SELECT CAST(jsonb_build_object('inactiveCaseSummary', jsonb_build_object( " +
-            "    'id', p.id, " +
-            "    'migrationSourceSystem', COALESCE(CAST(p.payload AS jsonb) -> 'migrationSourceSystem', CAST('{}' AS jsonb)), " +
-            "    'defendants', jsonb_agg(jsonb_build_object( " +
-            "      'defendantId', def ->> 'id', " +
-            "      'masterDefendantId', def ->> 'masterDefendantId', " +
-            "      'convictingcourtId', def -> 'offences' -> 0 -> 'convictingCourt' ->> 'id' " +
-            "    )) " +
-            "  )) AS text) " +
-            "  FROM prosecution_case p, " +
-            "  LATERAL jsonb_array_elements(CAST(p.payload AS jsonb) -> 'defendants') AS def " +
-            "  WHERE p.id IN (:caseIds) " +
-            "  AND CAST(p.payload AS jsonb) -> 'migrationSourceSystem' ->> 'migrationCaseStatus' = 'INACTIVE' " +
-            "  GROUP BY p.id", isNative = true)
+    @Query(value = """
+    SELECT CAST(jsonb_build_object('inactiveCaseSummary', jsonb_build_object(
+        'id', p.id,
+        'migrationSourceSystem', COALESCE(CAST(p.payload AS jsonb) -> 'migrationSourceSystem', CAST('{}' AS jsonb)),
+        'defendants', jsonb_agg(jsonb_build_object(
+          'defendantId', def ->> 'id',
+          'masterDefendantId', def ->> 'masterDefendantId'
+        ))
+      )) AS text)
+      FROM prosecution_case p,
+      LATERAL jsonb_array_elements(CAST(p.payload AS jsonb) -> 'defendants') AS def
+      WHERE p.id IN (:caseIds)
+      AND CAST(p.payload AS jsonb) -> 'migrationSourceSystem' ->> 'migrationCaseStatus' = 'INACTIVE'
+      GROUP BY p.id
+    """, isNative = true)
     List<String> findInactiveMigratedCaseSummaries(@QueryParam("caseIds") List<UUID> caseIds);
 }
