@@ -70,6 +70,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 public class HearingNotificationHelperTest {
@@ -148,6 +150,7 @@ public class HearingNotificationHelperTest {
     private UUID hearingId;
     private UUID offenceId1;
     private UUID offenceId2;
+    private CourtCentre enrichedCourtCenter;
 
     @BeforeEach
     void initMocks() {
@@ -176,7 +179,7 @@ public class HearingNotificationHelperTest {
                 .withWelshLjaName("testWalesLja")
                 .withLjaName("ljaName")
                 .build();
-        final CourtCentre enrichedCourtCenter = CourtCentre.courtCentre()
+        enrichedCourtCenter = CourtCentre.courtCentre()
                 .withCourtHearingLocation("Burmimgham")
                 .withId(randomUUID())
                 .withLja((ljaDetails)).withName("Lavender Court")
@@ -210,7 +213,7 @@ public class HearingNotificationHelperTest {
                 .replaceAll("OFFENCE_ID_1", offenceId1.toString())
                 .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
-
+        when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(CourtCentre.courtCentre().withValuesFrom(enrichedCourtCenter).withWelshCourtCentre(true).build());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
                 add("prosecutionCase", prosecutionCase)
                 .build()
@@ -923,5 +926,20 @@ public class HearingNotificationHelperTest {
         assertThat(emailChannel.getPersonalisation(), notNullValue());
         assertThat(emailChannel.getPersonalisation().getAdditionalProperties().containsKey(HEARING_NOTIFICATION_DATE),is(true));
         assertThat(emailChannel.getPersonalisation().getAdditionalProperties().get(HEARING_NOTIFICATION_DATE), is(expectedUKTime));
+    }
+
+    @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    void shouldGetEarliestStartDateTimeNonNull() {
+        final ZonedDateTime nowTime = ZonedDateTime.now();
+        ZonedDateTime result = hearingNotificationHelper.getEarliestStartDateTime(nowTime);
+        assertThat("Europe/London", is(result.getZone().getId()));
+    }
+
+    @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    void shouldGetEarliestStartDateTimeNull() {
+        ZonedDateTime result = hearingNotificationHelper.getEarliestStartDateTime(null);
+        assertThat(null, is(result));
     }
 }
