@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.nows.event.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.isNull;
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
-import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -12,16 +13,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PrisonCourtRegisterEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PrisonCourtRegisterRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.Objects.isNull;
-import static java.util.UUID.randomUUID;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_LISTENER)
 public class PrisonCourtRegisterEventListener {
@@ -72,13 +74,5 @@ public class PrisonCourtRegisterEventListener {
             prisonCourtRegisterEntity.setFileId(prisonCourtRegisterGenerated.getFileId());
         }
 
-    }
-
-    @Handles("progression.event.prison-court-register-generated-v2")
-    public void sendPrisonCourtRegisterNotificationToAmp(final JsonEnvelope event) {
-        LOGGER.info("sendPrisonCourtRegisterNotificationToAmp");
-        // What do we need to do here ?
-        // We post to AMP endpoint in the command
-        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGeneratedv2 = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), PrisonCourtRegisterGeneratedV2.class);
     }
 }

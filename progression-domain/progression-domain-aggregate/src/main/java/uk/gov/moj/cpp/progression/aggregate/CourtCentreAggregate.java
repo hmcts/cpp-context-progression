@@ -142,7 +142,7 @@ public class CourtCentreAggregate implements Aggregate {
                 .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
                 .build();
 
-        if (featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)) {
+        if (nonNull(featureControlGuard) && featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)) {
             PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                     .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
                     .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
@@ -193,6 +193,11 @@ public class CourtCentreAggregate implements Aggregate {
     //should be used only in test
     public void setCourtRegisterRecipients(final List<CourtRegisterRecipient> courtRegisterRecipients) {
         this.courtRegisterRecipients = Collections.unmodifiableList(courtRegisterRecipients);
+    }
+
+    //should be used to inject featureControlGuard after aggregate is loaded from event store
+    public void setFeatureControlGuard(final FeatureControlGuard featureControlGuard) {
+        this.featureControlGuard = featureControlGuard;
     }
 
     public Stream<Object> publishCourtList(final UUID courtCentreId, final PublishCourtList publishCourtList) {
