@@ -17,6 +17,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider;
 import uk.gov.moj.cpp.progression.domain.constant.RegisterType;
 import uk.gov.moj.cpp.progression.helper.PrisonCourtRegisterDocumentRequestHelper;
+import uk.gov.moj.cpp.progression.stub.AmpPcrServiceStub;
 import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
@@ -162,6 +163,42 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final String prisonCourtRegisterId = additionalInformationArray.getJSONObject(0).getString("propertyValue");
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicFailedEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, prisonCourtRegisterId);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterDocumentFailedPrivateTopic(courtCentreId.toString(), payloadFileServiceId.toString(), prisonCourtRegisterId);
+    }
+
+    @Test
+    public void shouldGeneratePcrAndCallAmpServiceWhenAmpSendPcrIsEnabled() throws JSONException {
+        setFeatureToggle("AmpSendPcr", true);
+        AmpPcrServiceStub.stubPostAmpPcrEvent();
+
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
+        final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());
+
+        final PrisonCourtRegisterDocumentRequestHelper prisonCourtRegisterDocumentRequestHelper = new PrisonCourtRegisterDocumentRequestHelper();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final String body = getPayload("progression.prison-court-register-document-request.json")
+                .replaceAll("%COURT_CENTRE_ID%", courtCentreId.toString())
+                .replaceAll("%HEARING_DATE%", hearingDateTime.toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString());
+
+        Response writeResponse = postCommand(getWriteUrl("/prison-court-register"),
+                "application/vnd.progression.add-prison-court-register+json",
+                body);
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final JSONObject jsonObject = jsonObjects.get(0);
+        final UUID payloadFileServiceId = fromString(jsonObject.getString("payloadFileServiceId"));
+        final UUID documentFileServiceId = randomUUID();
+        final JSONArray additionalInformationArray = jsonObject.getJSONArray("additionalInformation");
+        final String prisonCourtRegisterId = additionalInformationArray.getJSONObject(0).getString("propertyValue");
+        prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, prisonCourtRegisterId);
+        prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId, prisonCourtRegisterId);
+
+        AmpPcrServiceStub.verifyAmpPcrEventInvoked(1);
     }
 
     private UUID getPrisonCourtRegisterStreamId(final String courtCentreId, final String hearingDate) {
