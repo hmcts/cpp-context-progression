@@ -1313,19 +1313,9 @@
     },
     "majorCreditorCode": "PO30",
     "prosecutionAuthorityCode": "DERPF",
-    "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+    "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
     "prosecutionAuthorityName": "Derbyshire Police",
     "prosecutionAuthorityOUCode": "0300000",
     "caseURN": "53NP1722422"
-  },
-  "prosecutor": {
-    "address": {
-      "address1": "King Edward Court",
-      "address2": "Nottingham",
-      "postcode": "NG1 1ET"
-    },
-    "prosecutorCode": "CPS-EM",
-    "prosecutorId": "42880989-5d09-332e-a711-8797af06ecea",
-    "prosecutorName": "CPS East Midlands"
   }
 }
