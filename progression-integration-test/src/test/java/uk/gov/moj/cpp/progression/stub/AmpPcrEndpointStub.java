@@ -14,7 +14,7 @@ import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
 import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
-public class AmpPcrServiceStub {
+public class AmpPcrEndpointStub {
 
     private static final String AMP_PCR_API_ENDPOINT_URL = "/AMP/pcrEvent";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
@@ -23,18 +23,26 @@ public class AmpPcrServiceStub {
         configureFor(HOST, 8080);
     }
 
-    public static void stubPostAmpPcrEvent() {
+    public static void stubPostPcrToAmp() {
         stubFor(post(urlMatching(AMP_PCR_API_ENDPOINT_URL))
                 .willReturn(aResponse()
                         .withStatus(OK.getStatusCode())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
-    public static void verifyAmpPcrEventInvoked(int count) {
-        verifyAmpPcrEventInvoked(exactly(count), null);
+    /**
+     * Resets the WireMock request journal for the AMP PCR endpoint.
+     * This should be called before each test to ensure verification counts are isolated.
+     */
+    public static void resetRequests() {
+        resetAllRequests();
     }
 
-    private static void verifyAmpPcrEventInvoked(CountMatchingStrategy countStrategy, List<String> expectedValues) {
+    public static void verifyPostPcrToAmp(int count) {
+        verifyPostPcrToAmp(exactly(count), null);
+    }
+
+    private static void verifyPostPcrToAmp(CountMatchingStrategy countStrategy, List<String> expectedValues) {
         await().atMost(30, SECONDS)
                 .pollInterval(500, MILLISECONDS)
                 .until(() -> {
