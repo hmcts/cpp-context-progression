@@ -463,28 +463,15 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final String resentencingActivationCode = courtApplication.getType().getResentencingActivationCode();
 
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
-                .map(courtApplicationCase -> {
-                    if (activeCase(courtApplicationCase.getCaseStatus())) {
-                        return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
-                                .withOffences(null)
-                                .build();
-                    } else {
-                        return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
-                                .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
-                                        .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
-                                        .collect(collectingAndThen(toList(), getListOrNull())))
-                                .build();
-                    }
-                })
+                .map(courtApplicationCase -> courtApplicationCase()
+                        .withValuesFrom(courtApplicationCase)
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
+                                .collect(collectingAndThen(toList(), getListOrNull())))
+                        .build())
                 .collect(toList());
 
         courtApplicationBuilder.withCourtApplicationCases(courtApplicationCases);
-    }
-
-    private boolean activeCase(final String caseStatus) {
-        return nonNull(caseStatus) && !"INACTIVE".equalsIgnoreCase(caseStatus) && !"CLOSED".equalsIgnoreCase(caseStatus);
     }
 
     private <T> UnaryOperator<List<T>> getListOrNull() {

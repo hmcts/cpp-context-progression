@@ -9,8 +9,8 @@
       "categoryCode": "VP",
       "linkType": "LINKED",
       "jurisdiction": "MAGISTRATES",
-      "summonsTemplateType": "GENERIC_APPLICATION",
-      "breachType": "NOT_APPLICABLE",
+      "summonsTemplateType" : "GENERIC_APPLICATION",
+      "breachType" : "NOT_APPLICABLE",
       "appealFlag": true,
       "applicantAppellantFlag": false,
       "pleaApplicableFlag": false,
@@ -19,17 +19,17 @@
       "courtExtractAvlFlag": false,
       "prosecutorThirdPartyFlag": false,
       "spiOutApplicableFlag": false,
-      "offenceActiveOrder": "NOT_APPLICABLE"
+      "offenceActiveOrder" : "NOT_APPLICABLE"
     },
     "applicationReceivedDate": "2020-01-01",
-    "applicationReference": "AS145197659",
+    "applicationReference": "APPLICATION_REFERENCE",
     "applicant": {
       "id": "9ce6e439-d5da-4202-a446-ef4ca7072540",
       "summonsRequired": false,
       "notificationRequired": true
     },
     "subject": {
-      "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+      "id": "SUBJECT_ID",
       "summonsRequired": false,
       "notificationRequired": true,
       "masterDefendant": {
@@ -40,35 +40,42 @@
             "defendantId": "DEFENDANT_ID"
           }
         ],
-        "masterDefendantId": "MASTERDEFENDANTID",
+        "masterDefendantId": "DEFENDANT_ID",
         "personDefendant": {
-          "arrestSummonsNumber": "2300000000000790541H",
-          "bailReasons": "Nature and seriousness of offence, Previous record and character, realistic prospect custodial sentence",
+          "arrestSummonsNumber": "E28GC01123537140",
+          "bailConditions": "",
           "bailStatus": {
-            "code": "C",
-            "description": "Custody",
-            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
           },
-          "custodialEstablishment": {
-            "custody": "Prison",
-            "id": "da6aa6ea-c12f-31e8-81c0-a1897785d346",
-            "name": "HMP Birmingham"
-          },
+          "driverNumber": "CRIME709136TC8GZ",
           "personDetails": {
             "address": {
-              "address1": "142 Murray Road",
-              "address2": "Rugby",
-              "address3": "Warwickshire",
-              "postcode": "CV21 3JR"
+              "address1": "t",
+              "address2": "Bashirian Lakes",
+              "address3": "Swansea",
+              "address4": "Avon",
+              "postcode": "SW1 3AE"
             },
-            "dateOfBirth": "1970-01-10",
+            "contact": {
+              "home": "895-373-0578"
+            },
+            "dateOfBirth": "1976-09-09",
             "documentationLanguageNeeds": "ENGLISH",
-            "firstName": "Nadeem",
-            "gender": "MALE",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Nadia",
+            "gender": "FEMALE",
             "hearingLanguageNeeds": "ENGLISH",
-            "lastName": "JANJUA",
-            "nationalityDescription": "Unknown",
-            "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+            "lastName": "Padberg",
+            "title": "Mr"
           },
           "policeBailStatus": {
             "code": "C",
@@ -104,8 +111,65 @@
             "aquittalDate": "2020-04-14",
             "chargeDate": "2020-03-14",
             "count": 1,
-            "id": "28b3d444-ae80-4920-a70f-ef01e128188e",
+            "id": "OFFENCE_ID",
             "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Evan",
+                  "lastName": "Roberts",
+                  "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "W",
+                  "primaryDurationValue": 5
+                },
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "judicialResultId": "6bb49432-64f3-41e9-bb20-30dae0da9588",
+                "publishedForNows": false,
+                "rollUpPrompts": false,
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [
+                      "Court Clerks",
+                      "Legal Advisers"
+                    ],
+                    "value": "5 Weeks",
+                    "welshLabel": ""
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2020-04-14",
+                "lifeDuration": false,
+                "orderedDate": "2020-05-17",
+                "orderedHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
+                "postHearingCustodyStatus": "A",
+                "publishedAsAPrompt": false,
+                "rank": 8500,
+                "resultText": "Conditional discharge\nPeriod of conditional discharge 5 Weeks",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
             "modeOfTrial": "Summary",
             "notifiedPlea": {
               "notifiedPleaDate": "2020-04-14",
@@ -132,19 +196,31 @@
         ]
       }
     ]
-
-
   },
   "courtHearing": {
-    "id": "HEARING_ID",
+    "bookedSlots": [
+      {
+        "oucode": "B01EF00",
+        "session": "AM",
+        "duration": 180,
+        "startTime": "2020-05-21T00:00:00.000Z",
+        "courtRoomId": 793,
+        "courtScheduleId": "8e837de0-743a-4a2c-9db3-b2e678c48729"
+      }
+    ],
     "hearingType": {
       "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
       "description": "Sentence"
     },
     "jurisdictionType": "MAGISTRATES",
-    "listedStartDateTime": "2020-12-21T05:27:17.210Z",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "earliestStartDateTime" : "2015-01-11T05:27:17.210Z",
+    "endDate" : "2015-01-10",
     "estimatedMinutes": 20,
-    "earliestStartDateTime": "2020-12-21T05:27:17.210Z",
+    "weekCommencingDate": {
+      "duration" : 20,
+      "startDate" : "2015-01-11"
+    },
     "courtCentre": {
       "address": {
         "address1": "176A Lavender Hill",
@@ -158,23 +234,12 @@
       "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
       "lja": {
         "ljaCode": "2577",
-        "ljaName": "South West London Magistrates Court"
+        "ljaName": "South West London Magistrates' Court"
       },
-      "name": "Lavender Hill Magistrates Court",
+      "name": "Lavender Hill Magistrates' Court",
       "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
       "roomName": "Courtroom 01"
-    },
-    "bookedSlots": [
-      {
-        "startTime": "2020-12-22T01:02:33Z",
-        "duration": 25,
-        "courtScheduleId": "d74876ff-2bd9-435a-87e3-b8047cb1357a",
-        "session": "AM",
-        "oucode": "ABS236",
-        "courtRoomId": 123498
-      }
-    ]
+    }
   },
-
   "summonsApprovalRequired": false
 }

@@ -72,7 +72,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
                         .add("applicationReference", validURN)
                         .build())
                 .build();
@@ -100,7 +102,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
                         .add("applicationReference", invalidURN)
                         .build())
                 .build();
@@ -121,7 +125,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
                         .add("applicationReference", invalidURN)
                         .build())
                 .build();
@@ -142,7 +148,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("linkType", "STANDALONE")
+                                .add("code", "anyCode"))
                         .add("applicationReference", invalidURN)
                         .build())
                 .build();
@@ -163,7 +171,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
                         .add("applicationReference", invalidURN)
                         .build())
                 .build();
@@ -221,7 +231,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder()
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
                         .build())
                 .build();
 
