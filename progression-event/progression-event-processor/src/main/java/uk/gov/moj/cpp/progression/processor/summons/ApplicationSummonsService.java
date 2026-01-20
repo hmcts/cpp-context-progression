@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.po
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -78,7 +79,7 @@ public class ApplicationSummonsService {
 
         final SummonsApprovedOutcome summonsApprovedOutcome = courtApplicationPartyListingNeeds.getSummonsApprovedOutcome();
         if (nonNull(summonsApprovedOutcome)) {
-            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost()));
+            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), HearingLanguage.WELSH == courtApplicationPartyListingNeeds.getHearingLanguageNeeds()));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
         }
 

@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProce
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateProsecutionCase;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateReferralReasonsJson;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateSummonsData;
+import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateSummonsDataWithCostAndLanguageNeeds;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getLjaDetails;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getProsecutor;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getRefDataOffences;
@@ -127,6 +128,15 @@ public class CaseDefendantSummonsServiceTest {
         );
     }
 
+    public static Stream<Arguments> caseSummonsCostSpecification() {
+        return Stream.of(
+                Arguments.of(FIRST_HEARING, MCA, "£0", false),
+                Arguments.of(FIRST_HEARING, MCA, "£0", true),
+                Arguments.of(FIRST_HEARING, MCA, "£12.5", true),
+                Arguments.of(FIRST_HEARING, MCA, "£40.12", false)
+        );
+    }
+
     @MethodSource("caseSummonsSpecification")
     @ParameterizedTest
     void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
@@ -137,6 +147,12 @@ public class CaseDefendantSummonsServiceTest {
     @ParameterizedTest
     void shouldGenerateEnglishSummonsPayloadForFirstHearingCivilCase(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
         verifyCivilSummonsPayloadGeneratedFor(summonsRequired, summonsCode, summonsType);
+    }
+
+    @MethodSource("caseSummonsCostSpecification")
+    @ParameterizedTest
+    void shouldGenerateSummonsPayloadForFirstHearingCaseWithUnspecifiedCost(final SummonsType summonsRequired, final SummonsCode summonsCode, final String costValue, final boolean isWelsh) {
+        verifySummonsPayloadGeneratedForUnspecifiedCost(FIRST_HEARING, MCA, costValue, isWelsh);
     }
 
     public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
@@ -160,6 +176,32 @@ public class CaseDefendantSummonsServiceTest {
 
         //Then
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
+    }
+
+    private void verifySummonsPayloadGeneratedForUnspecifiedCost(final SummonsType summonsRequired, final SummonsCode summonsCode, final String costValue, final boolean isWelsh) {
+
+        if (SJP_REFERRAL == summonsRequired) {
+            when(referenceDataService.getReferralReasonByReferralReasonId(envelope, REFERRAL_ID, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
+        }
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.empty()))).thenReturn(getRefDataOffences());
+
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared().withSummonsData(generateSummonsDataWithCostAndLanguageNeeds(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, BOOLEAN.next(), costValue, isWelsh)).build();
+        final String summonsCodeAsString = nonNull(summonsCode) ? summonsCode.getCode() : StringUtils.EMPTY;
+        final ProsecutionCase prosecutionCase = generateProsecutionCase(CASE_ID.toString(), DEFENDANT_ID.toString(), summonsCodeAsString, true);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final ListDefendantRequest listDefendantRequest = summonsDataPrepared.getSummonsData().getListDefendantRequests().get(0);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+        final SummonsProsecutor summonsProsecutor = getProsecutor();
+
+        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+        assertThat(summonsDocumentContent.getProsecutorCosts(), notNullValue());
+        if (costValue.contains("£0")) {
+            assertThat(summonsDocumentContent.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
+        } else {
+            assertThat(summonsDocumentContent.getProsecutorCosts(), is(costValue));
+        }
     }
 
     public void verifyCivilSummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {

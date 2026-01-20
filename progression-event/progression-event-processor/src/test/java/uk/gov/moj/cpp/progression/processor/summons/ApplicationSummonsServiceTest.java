@@ -35,6 +35,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
@@ -54,6 +55,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -104,7 +106,7 @@ public class ApplicationSummonsServiceTest {
 
     @MethodSource("applicationSummonsSpecifications")
     @ParameterizedTest
-    public void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
+    void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
 
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
         final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
@@ -196,6 +198,51 @@ public class ApplicationSummonsServiceTest {
         assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
     }
 
+    @Test
+    void generateSummonsDocumentContentWithUnspecifiedCost() {
+        final SummonsType summonsRequired = APPLICATION;
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, "£0", false);
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        assertThat(applicationSummonsPayload.getProsecutorCosts(), is("Unspecified"));
+    }
+
+    @Test
+    void generateSummonsDocumentContentWithUnspecifiedCostInWelsh() {
+        final SummonsType summonsRequired = APPLICATION;
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, "£0", true);
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        assertThat(applicationSummonsPayload.getProsecutorCosts(), is("Heb ei bennu"));
+    }
+
+    @Test
+    void generateSummonsDocumentContentWithNullCost() {
+        final SummonsType summonsRequired = APPLICATION;
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, null, true);
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        assertThat(applicationSummonsPayload.getProsecutorCosts(), is(""));
+    }
+
     private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsType summonsRequired) {
 
         final SummonsData summonsData = summonsData()
@@ -215,6 +262,33 @@ public class ApplicationSummonsServiceTest {
                                 .withPersonalService(true)
                                 .withSummonsSuppressed(true)
                                 .build())
+                        .build()))
+                .build();
+
+        return summonsDataPrepared().withSummonsData(summonsData).build();
+    }
+
+
+    private SummonsDataPrepared getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(final SummonsType summonsRequired, final String costString, final Boolean isWelsh) {
+
+        final SummonsData summonsData = summonsData()
+                .withConfirmedApplicationIds(newArrayList(APPLICATION_ID))
+                .withCourtCentre(courtCentre()
+                        .withId(COURT_CENTRE_ID)
+                        .withRoomId(COURT_ROOM_ID)
+                        .build())
+                .withHearingDateTime(HEARING_DATE_TIME)
+                .withCourtApplicationPartyListingNeeds(newArrayList(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withSummonsRequired(summonsRequired)
+                        .withCourtApplicationId(APPLICATION_ID)
+                        .withCourtApplicationPartyId(SUBJECT_ID)
+                        .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                                .withProsecutorEmailAddress("test@test.com")
+                                .withProsecutorCost(costString)
+                                .withPersonalService(true)
+                                .withSummonsSuppressed(true)
+                                .build())
+                        .withHearingLanguageNeeds(isWelsh ? HearingLanguage.WELSH : HearingLanguage.ENGLISH)
                         .build()))
                 .build();
 

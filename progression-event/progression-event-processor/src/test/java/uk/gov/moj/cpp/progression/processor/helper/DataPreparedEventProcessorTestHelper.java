@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SummonsData;
@@ -75,6 +76,36 @@ public class DataPreparedEventProcessorTestHelper {
                                 .withDefendantId(defendantId)
                                 .withId(referralId)
                                 .build())
+                        .build()))
+                .build();
+    }
+
+    public static SummonsData generateSummonsDataWithCostAndLanguageNeeds(final SummonsType summonsRequired,
+                                                                          final UUID caseId,
+                                                                          final UUID defendantId,
+                                                                          final UUID courtCentreId,
+                                                                          final UUID referralId,
+                                                                          final boolean summonsSuppressed,
+                                                                          final String costString,
+                                                                          final boolean isWelsh) {
+        return summonsData()
+                .withConfirmedProsecutionCaseIds(Arrays.asList(generateConfirmedProsecutionId(caseId, defendantId)))
+                .withCourtCentre(generateCourtCentre(courtCentreId))
+                .withHearingDateTime(HEARING_DATE_TIME)
+                .withListDefendantRequests(Arrays.asList(listDefendantRequest()
+                        .withSummonsRequired(summonsRequired)
+                        .withProsecutionCaseId(caseId)
+                        .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                                .withProsecutorEmailAddress("test@test.com")
+                                .withProsecutorCost(costString)
+                                .withPersonalService(true)
+                                .withSummonsSuppressed(summonsSuppressed)
+                                .build())
+                        .withReferralReason(referralReason()
+                                .withDefendantId(defendantId)
+                                .withId(referralId)
+                                .build())
+                        .withHearingLanguageNeeds(isWelsh ? HearingLanguage.WELSH : HearingLanguage.ENGLISH)
                         .build()))
                 .build();
     }
