@@ -92,6 +92,9 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: progression.event.defendants-added-to-court-proceedings-v2
+          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings-v2.json
+
         - name: progression.event.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 

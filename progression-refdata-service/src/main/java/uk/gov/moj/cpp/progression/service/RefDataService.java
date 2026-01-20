@@ -716,7 +716,7 @@ public class RefDataService {
                 .build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelopeFrom(metadata, payload), JsonObject.class);
-        if (isNull(response.payload()) || response.payload().getJsonArray("prosecutors").isEmpty()) {
+        if (isNull(response.payload()) || isNull(response.payload().getJsonArray("prosecutors")) || response.payload().getJsonArray("prosecutors").isEmpty()) {
             return Optional.empty();
         }
         return ofNullable(response.payload().getJsonArray("prosecutors").getJsonObject(0));

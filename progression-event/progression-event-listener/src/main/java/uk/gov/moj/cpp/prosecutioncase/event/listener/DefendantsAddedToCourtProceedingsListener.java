@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedingsV2;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -57,18 +59,18 @@ public class DefendantsAddedToCourtProceedingsListener {
         }
         final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantsAddedToCourtProceedings.class);
 
-        for (final uk.gov.justice.core.courts.Defendant defendant: defendantsAddedToCourtProceedings.getDefendants()) {
-            final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendant.getProsecutionCaseId());
-            final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-            final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-            filterDuplicateOffencesById(defendant.getOffences());
-            prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(defendant));
-            prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
-            repository.save(prosecutionCaseEntity);
-        }
+        saveToDb(defendantsAddedToCourtProceedings.getDefendants());
     }
 
+    @Handles("progression.event.defendants-added-to-court-proceedings-v2")
+    public void processDefendantsAddedToCourtProceedingsV2(final JsonEnvelope event) {
+        if(LOGGER.isInfoEnabled()) {
+            LOGGER.info("received event progression.event.defendants-added-to-court-proceedings {} ", event.toObfuscatedDebugString());
+        }
+        final DefendantsAddedToCourtProceedingsV2 defendantsAddedToCourtProceedingsV2 = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantsAddedToCourtProceedingsV2.class);
+
+        saveToDb(defendantsAddedToCourtProceedingsV2.getDefendants());
+    }
     @Handles("progression.event.new-defendant-added-to-hearing")
     public void addNewDefendantToHearing(final JsonEnvelope event) {
         if(LOGGER.isDebugEnabled()) {
@@ -82,6 +84,19 @@ public class DefendantsAddedToCourtProceedingsListener {
                 .forEach(prosecutionCase -> prosecutionCase.getDefendants().addAll(newDefendantAddedToHearing.getDefendants()));
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         hearingRepository.save(hearingEntity);
+    }
+
+    private void saveToDb (final List<uk.gov.justice.core.courts.Defendant> defendants) {
+        for (final uk.gov.justice.core.courts.Defendant defendant : defendants) {
+            final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendant.getProsecutionCaseId());
+            final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+            final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+            filterDuplicateOffencesById(defendant.getOffences());
+            prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(defendant));
+            prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+            repository.save(prosecutionCaseEntity);
+        }
     }
 
     private void filterDuplicateOffencesById(final List<Offence> offences) {
