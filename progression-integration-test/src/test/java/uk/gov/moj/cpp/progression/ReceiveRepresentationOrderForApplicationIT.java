@@ -105,7 +105,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         userId = "test";
         statusCode = "G2";
         statusDescription = "Desc";
-        applicationReference = "AB746921";
+        applicationReference = "AS145197659";
         stubGetOrganisationDetails(organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
@@ -157,7 +157,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
     private List<Matcher<? super ReadContext>> buildProsecutionCaseLaaMatchers() {
         return newArrayList(
                     withJsonPath("$.prosecutionCase.defendants[*].legalAidStatus", hasItem(equalTo("Pending"))),
-                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo("AB746921"))),
+                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo("AS145197659"))),
                     withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.offenceLevelStatus", hasItem(equalTo("Pending")))
             );
     }

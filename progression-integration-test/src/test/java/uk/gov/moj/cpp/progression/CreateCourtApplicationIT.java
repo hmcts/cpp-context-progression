@@ -120,7 +120,7 @@ public class CreateCourtApplicationIT extends AbstractIT {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(10, is(referenceResponse.length()));
+        assertThat(11, is(referenceResponse.length()));
     }
 
 }

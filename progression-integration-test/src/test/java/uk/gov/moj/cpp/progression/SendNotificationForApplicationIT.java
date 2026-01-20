@@ -42,6 +42,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -341,7 +342,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         applicantAddress4 = STRING.next();
         applicantAddress5 = STRING.next();
         applicantPostCode = POST_CODE.next();
-        applicationReference = STRING.next();
+        applicationReference = RandomStringUtils.randomAlphanumeric(4).toUpperCase() + RandomStringUtils.randomNumeric(7);
         respondentDefendantId = randomUUID().toString();
         respondentOrganisationName = STRING.next();
         respondentOrganisationAddress1 = STRING.next();

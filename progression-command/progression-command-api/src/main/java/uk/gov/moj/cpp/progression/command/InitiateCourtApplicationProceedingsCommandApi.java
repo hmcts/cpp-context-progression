@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static uk.gov.justice.core.courts.LinkType.STANDALONE;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.command.api.UserDetailsLoader.isUserHasPermissionForApplicationTypeCode;
@@ -22,6 +23,7 @@ import javax.json.JsonObject;
 public class InitiateCourtApplicationProceedingsCommandApi {
 
     private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{11}$");
+    private static final String LINK_TYPE = "linkType";
 
     @Inject
     private Sender sender;
@@ -32,7 +34,7 @@ public class InitiateCourtApplicationProceedingsCommandApi {
     @Handles("progression.initiate-court-proceedings-for-application")
     public void initiateCourtApplicationProceedings(final JsonEnvelope command) {
 
-        if(isUserNotAuthorised(command)){
+        if (isUserNotAuthorised(command)) {
             throw new ForbiddenRequestException("User is not authorised to use this application type!");
         }
 
@@ -44,9 +46,13 @@ public class InitiateCourtApplicationProceedingsCommandApi {
 
     private void validateInputsForApplication(final JsonObject jsonObject) {
         final JsonObject courtApplication = jsonObject.getJsonObject("courtApplication");
-        if(courtApplication.containsKey("applicationReference") && isNotValidUrn(courtApplication.getString("applicationReference"))) {
+        if (standaloneApplication(courtApplication) && courtApplication.containsKey("applicationReference") && isNotValidUrn(courtApplication.getString("applicationReference"))) {
             throw new BadRequestException("Entered URN is not valid!");
         }
+    }
+
+    private boolean standaloneApplication(final JsonObject courtApplication) {
+        return STANDALONE.toString().equals(courtApplication.getJsonObject("type").getString(LINK_TYPE));
     }
 
     private boolean isNotValidUrn(final String applicationReference) {
