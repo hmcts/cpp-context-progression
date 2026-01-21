@@ -76,6 +76,7 @@ public class DataPreparedEventProcessorTestHelper {
                                 .withDefendantId(defendantId)
                                 .withId(referralId)
                                 .build())
+                                .withHearingLanguageNeeds(HearingLanguage.ENGLISH)
                         .build()))
                 .build();
     }

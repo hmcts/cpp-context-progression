@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -54,8 +55,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
-
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -101,6 +100,17 @@ public class ApplicationSummonsServiceTest {
                 Arguments.of(BREACH, true, PartyType.MASTER_DEFENDANT_PERSON),
                 Arguments.of(BREACH, false, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
                 Arguments.of(BREACH, false, PartyType.PROSECUTION_AUTHORITY)
+        );
+    }
+
+    public static Stream<Arguments> applicationSummonsSpecificationsWithVariousCosts() {
+        return Stream.of(
+                // summons required, welsh values, subject type
+                Arguments.of(APPLICATION, "£0", true),
+                Arguments.of(APPLICATION, "£0", false),
+                Arguments.of(BREACH, "", true),
+                Arguments.of(BREACH, null , false),
+                Arguments.of(BREACH, "£200", true)
         );
     }
 
@@ -198,10 +208,10 @@ public class ApplicationSummonsServiceTest {
         assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
     }
 
-    @Test
-    void generateSummonsDocumentContentWithUnspecifiedCost() {
-        final SummonsType summonsRequired = APPLICATION;
-        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, "£0", false);
+    @MethodSource("applicationSummonsSpecificationsWithVariousCosts")
+    @ParameterizedTest
+    void generateSummonsDocumentContentWithVariousCosts(final SummonsType summonsType, final String costString, final boolean isWelsh) {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsType, costString, isWelsh);
         final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
         final JsonObject courtCentreJson = generateCourtCentreJson(true);
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
@@ -210,37 +220,13 @@ public class ApplicationSummonsServiceTest {
         final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
 
         assertThat(applicationSummonsPayload, notNullValue());
-        assertThat(applicationSummonsPayload.getProsecutorCosts(), is("Unspecified"));
-    }
-
-    @Test
-    void generateSummonsDocumentContentWithUnspecifiedCostInWelsh() {
-        final SummonsType summonsRequired = APPLICATION;
-        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, "£0", true);
-        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
-        final JsonObject courtCentreJson = generateCourtCentreJson(true);
-        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
-
-        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
-        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
-
-        assertThat(applicationSummonsPayload, notNullValue());
-        assertThat(applicationSummonsPayload.getProsecutorCosts(), is("Heb ei bennu"));
-    }
-
-    @Test
-    void generateSummonsDocumentContentWithNullCost() {
-        final SummonsType summonsRequired = APPLICATION;
-        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsRequired, null, true);
-        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
-        final JsonObject courtCentreJson = generateCourtCentreJson(true);
-        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
-
-        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
-        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
-
-        assertThat(applicationSummonsPayload, notNullValue());
-        assertThat(applicationSummonsPayload.getProsecutorCosts(), is(""));
+        if (isEmpty(costString)) {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(""));
+        } else if (costString.contains("£0")) {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
+        } else {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(costString));
+        }
     }
 
     private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsType summonsRequired) {
@@ -262,6 +248,7 @@ public class ApplicationSummonsServiceTest {
                                 .withPersonalService(true)
                                 .withSummonsSuppressed(true)
                                 .build())
+                        .withHearingLanguageNeeds(HearingLanguage.ENGLISH)
                         .build()))
                 .build();
 

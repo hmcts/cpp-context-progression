@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor.summons;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -133,7 +134,9 @@ public class CaseDefendantSummonsServiceTest {
                 Arguments.of(FIRST_HEARING, MCA, "£0", false),
                 Arguments.of(FIRST_HEARING, MCA, "£0", true),
                 Arguments.of(FIRST_HEARING, MCA, "£12.5", true),
-                Arguments.of(FIRST_HEARING, MCA, "£40.12", false)
+                Arguments.of(FIRST_HEARING, MCA, "£40.12", false),
+                Arguments.of(FIRST_HEARING, MCA, null, false),
+                Arguments.of(FIRST_HEARING, MCA, "£", true)
         );
     }
 
@@ -152,7 +155,7 @@ public class CaseDefendantSummonsServiceTest {
     @MethodSource("caseSummonsCostSpecification")
     @ParameterizedTest
     void shouldGenerateSummonsPayloadForFirstHearingCaseWithUnspecifiedCost(final SummonsType summonsRequired, final SummonsCode summonsCode, final String costValue, final boolean isWelsh) {
-        verifySummonsPayloadGeneratedForUnspecifiedCost(FIRST_HEARING, MCA, costValue, isWelsh);
+        verifySummonsPayloadGeneratedForUnspecifiedCost(summonsRequired, summonsCode, costValue, isWelsh);
     }
 
     public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
@@ -197,7 +200,9 @@ public class CaseDefendantSummonsServiceTest {
 
         final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
         assertThat(summonsDocumentContent.getProsecutorCosts(), notNullValue());
-        if (costValue.contains("£0")) {
+        if (isEmpty(costValue)) {
+            assertThat(summonsDocumentContent.getProsecutorCosts(), is(""));
+        } else if (costValue.contains("£0")) {
             assertThat(summonsDocumentContent.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
         } else {
             assertThat(summonsDocumentContent.getProsecutorCosts(), is(costValue));
