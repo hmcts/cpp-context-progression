@@ -27,6 +27,9 @@ import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
 import uk.gov.moj.cpp.progression.service.amp.mappers.AmpPcrMapper;
 import uk.gov.moj.cpp.progression.service.amp.service.AmpClientService;
+import uk.gov.moj.cpp.progression.exception.CrimeHearingCaseEventPcrNotificationException;
+import static java.lang.Integer.parseInt;
+import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -211,9 +214,16 @@ public class PrisonCourtRegisterEventProcessor {
                 });
     }
 
+    /**
+     * Handles the prison-court-register-generated-v2 event by sending PCR notification to the CrimeHearingCaseEvent service.
+     * 
+     * This method processes the V2 event for prison court register generation and sends a notification
+     * to the Crime Court Hearing service via a direct service-to-service call (not through APIM).
+     * 
+     */
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-generated-v2")
-    public void sendPrisonCourtRegisterV2(final JsonEnvelope envelope) {
+    public void sendPrisonCourtRegisterV2(final JsonEnvelope envelope)  throws InterruptedException{
         LOGGER.info("progression.event.prison-court-register-generated-v2 {}", envelope.payload());
         final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = converter.convert(envelope.payloadAsJsonObject(), PrisonCourtRegisterGeneratedV2.class);
         List<EmailPair> emailRecipients = filterEmailRecipients(envelope.payloadAsJsonObject());
@@ -222,8 +232,29 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         PcrEventPayload pcrEventPayload = ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-        Response response = ampClientService.post(applicationParameters.getAmpPcrEventApimUrl(), pcrEventPayload);
-        LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", response.getStatus());
+        
+        final UUID fileId = prisonCourtRegisterGenerated.getFileId();
+        final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
+                ? envelope.payloadAsJsonObject().getString("id") 
+                : fileId.toString();
+        final String url = applicationParameters.getCrimeHearingCaseEventPcrNotificationUrl();
+            final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
+                    fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
+            retryHelper()
+                    .withSupplier(() -> {
+                        Response response = ampClientService.post(url, pcrEventPayload);
+                        int statusCode = response.getStatus();
+                        LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", statusCode);
+                        return statusCode;
+                    })
+                    .withCrimeHearingCaseEventPcrNotificationUrl(url)
+                    .withPayload(payloadDescription)
+                    .withRetryTimes(parseInt(applicationParameters.getCrimeHearingCaseEventRetryTimes()))
+                    .withRetryInterval(parseInt(applicationParameters.getCrimeHearingCaseEventRetryInterval()))
+                    .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, pcrEventPayload.getMaterialId(), prisonCourtRegisterId, url))
+                    .withPredicate(statusCode -> statusCode > 429)
+                    .build()
+                    .postWithRetry();
     }
 
     private List<EmailPair> filterEmailRecipients(JsonObject payload){

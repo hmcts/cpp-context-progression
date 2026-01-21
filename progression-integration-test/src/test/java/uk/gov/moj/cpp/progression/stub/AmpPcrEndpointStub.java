@@ -16,7 +16,7 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class AmpPcrEndpointStub {
 
-    private static final String AMP_PCR_API_ENDPOINT_URL = "/AMP/pcrEvent";
+    private static final String AMP_PCR_API_ENDPOINT_URL = "/notifications/pcr";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
 
     static {

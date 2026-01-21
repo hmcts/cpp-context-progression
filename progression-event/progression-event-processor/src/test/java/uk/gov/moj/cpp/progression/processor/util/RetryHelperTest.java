@@ -42,6 +42,7 @@ public class RetryHelperTest {
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
+                .withApimUrl("url")
                 .withPredicate(statusCode -> statusCode > 429);
 
         RetryHelper retryHelper = builder.build();
@@ -57,6 +58,43 @@ public class RetryHelperTest {
 
         assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
+                .withApimUrl("url")
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))
+                .withPredicate(statusCode -> statusCode > 429)
+                .build()
+                .postWithRetry());
+        ;
+        verify(supplier, times(3)).getAsInt();
+    }
+
+    @Test
+    public void shouldInvokeCrimeHearingCaseEventURL() throws Exception{
+
+        when(supplier.getAsInt()).thenReturn(420);
+
+        RetryHelper.Builder builder = retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withCrimeHearingCaseEventPcrNotificationUrl("url")
+                .withPredicate(statusCode -> statusCode > 429);
+
+        RetryHelper retryHelper = builder.build();
+        retryHelper.postWithRetry();
+
+        verify(supplier).getAsInt();
+    }
+
+    @Test
+    public void shouldThrowExceptionAfterExceedingRetryCountForCrimeHearingCaseEventURL() {
+
+        when(supplier.getAsInt()).thenReturn(500);
+
+        assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withCrimeHearingCaseEventPcrNotificationUrl("url")
                 .withRetryTimes(3)
                 .withRetryInterval(200)
                 .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))

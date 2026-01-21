@@ -60,9 +60,6 @@ public class ApplicationParameters {
     @Value(key = "laa.defendantProceedingsConcluded.apim.url", defaultValue ="http://localhost:8080/LAA/v1/caseOutcome/conclude")
     private String defendantProceedingsConcludedApimUrl;
 
-    @Inject
-    @Value(key = "amp.pcrEvent.apim.url", defaultValue ="http://localhost:8080/AMP/pcrEvent")
-    private String ampPcrEventApimUrl;
 
     @Inject
     @Value(key = "laa.defendantProceedingsConcluded.apim.subscription.key", defaultValue ="3674a16507104b749a76b29b6c837352")
@@ -168,6 +165,25 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
+
+    /**
+     * URL for Crime Hearing Case Event service PCR notification endpoint.
+     * Local Development: Default value: http://localhost:8080/notifications/pcr
+     * For Higher environments
+     *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
+     *  Ingress URL or Kubernetes Discovery URL
+     */
+    @Inject
+    @Value(key = "crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/notifications/pcr")
+    private String crimeHearingCaseEventPcrNotificationUrl;
+
+    @Inject
+    @Value(key = "crimeHearingCaseEvent.pcrNotification.retryTimes", defaultValue = "3")
+    private String crimeHearingCaseEventRetryTimes;
+
+    @Inject
+    @Value(key = "crimeHearingCaseEvent.pcrNotification.retryInterval", defaultValue = "1000")
+    public String crimeHearingCaseEventRetryInterval;
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

@@ -202,7 +202,7 @@ public class PrisonCourtRegisterEventProcessorTest {
     }
 
     @Test
-    public void shouldSendPrisonCourtRegisterV2() {
+    public void shouldSendPrisonCourtRegisterV2() throws InterruptedException {
         final UUID fileId = randomUUID();
         final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                 .withCourtCentreId(randomUUID())
@@ -224,7 +224,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         PcrEventPayload pcrEventPayload = PcrEventPayload.builder().build();
         Instant expectedCreatedAt = metadata.build().createdAt().get().toInstant();
         when(ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, "test@hmcst.net", expectedCreatedAt)).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpPcrEventApimUrl()).thenReturn("http://amp-address");
+        when(applicationParameters.getCrimeHearingCaseEventPcrNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.noContent().build());
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
