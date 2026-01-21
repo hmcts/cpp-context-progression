@@ -46,6 +46,7 @@ public class SummonsPayloadUtil {
     private static final String SINGLE_SPACE_DELIMITER = " ";
     public static final String POUND_SIGN = "£";
     public static final String UNSPECIFIED = "Unspecified";
+    public static final String UNSPECIFIED_IN_WELSH = "Heb ei bennu";
 
     private SummonsPayloadUtil() {
     }
@@ -133,21 +134,23 @@ public class SummonsPayloadUtil {
                 .build();
     }
 
-    public static String getProsecutorCosts(final String eventProsecutorCostValue) {
+    public static String getProsecutorCosts(final String eventProsecutorCostValue, boolean isWelsh) {
         if (isEmpty(eventProsecutorCostValue)) {
             return EMPTY;
         }
-
+        String prosecutorCost = eventProsecutorCostValue;
         String costValue = eventProsecutorCostValue.replace(POUND_SIGN, EMPTY).trim();
-
         if (isNotEmpty(costValue)) {
             Double value = Double.parseDouble(costValue);
             if (value == 0) {
-                return UNSPECIFIED;
+                if (isWelsh) {
+                    prosecutorCost = UNSPECIFIED_IN_WELSH;
+                } else {
+                    prosecutorCost = UNSPECIFIED;
+                }
             }
         }
-        return eventProsecutorCostValue;
+        return prosecutorCost;
     }
-
 
 }

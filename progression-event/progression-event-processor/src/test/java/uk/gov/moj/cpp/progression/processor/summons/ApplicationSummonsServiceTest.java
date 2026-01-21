@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -35,6 +36,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
@@ -48,12 +50,14 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -102,9 +106,21 @@ public class ApplicationSummonsServiceTest {
         );
     }
 
+    public static Stream<Arguments> applicationSummonsSpecificationsWithVariousCosts() {
+        return Stream.of(
+                // summons required, welsh values, subject type
+                Arguments.of(APPLICATION, "£0", true),
+                Arguments.of(APPLICATION, "£0", false),
+                Arguments.of(BREACH, "", true),
+                Arguments.of(BREACH, null, false),
+                Arguments.of(BREACH, "£200", true),
+                Arguments.of(BREACH, "£", true)
+        );
+    }
+
     @MethodSource("applicationSummonsSpecifications")
     @ParameterizedTest
-    public void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
+    void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
 
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
         final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
@@ -196,6 +212,84 @@ public class ApplicationSummonsServiceTest {
         assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
     }
 
+    @Test
+    void generateSummonsDocumentContentForBranchCoverage() {
+        final SummonsType summonsRequired = APPLICATION;
+        final boolean welshValuesPresent = false;
+        final PartyType partyType = PartyType.INDIVIDUAL;
+        final SummonsDataPrepared initialOne = getSummonsDataPreparedForApplication(APPLICATION);
+        final SummonsDataPrepared summonsDataPrepared = SummonsDataPrepared.summonsDataPrepared()
+                .withSummonsData(SummonsData.summonsData()
+                        .withConfirmedApplicationIds(initialOne.getSummonsData().getConfirmedApplicationIds())
+                        .withCourtCentre(initialOne.getSummonsData().getCourtCentre())
+                        .withHearingDateTime(initialOne.getSummonsData().getHearingDateTime())
+                        .withConfirmedProsecutionCaseIds(initialOne.getSummonsData().getConfirmedProsecutionCaseIds())
+                        .withCourtApplicationPartyListingNeeds(List.of(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                                .withValuesFrom(initialOne.getSummonsData().getCourtApplicationPartyListingNeeds().get(0))
+                                .withSummonsApprovedOutcome(null)
+                                .build()))
+
+                        .build())
+                .build();
+        final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        assertThat(applicationSummonsPayload.getSubTemplateName(), is(summonsRequired.toString()));
+
+        final SummonsAddress defendantAddress = applicationSummonsPayload.getDefendant().getAddress();
+        assertThat(defendantAddress.getLine1(), is("subject line 1"));
+        assertThat(defendantAddress.getPostCode(), is("CD1 5TG"));
+
+        assertThat(applicationSummonsPayload.getAddressee().getName(), is(applicationSummonsPayload.getDefendant().getName()));
+        final SummonsAddress addresseeAddress = applicationSummonsPayload.getAddressee().getAddress();
+        assertThat(addresseeAddress.getLine1(), is(defendantAddress.getLine1()));
+        assertThat(addresseeAddress.getPostCode(), is(defendantAddress.getPostCode()));
+
+        final SummonsHearingCourtDetails hearingCourtDetails = applicationSummonsPayload.getHearingCourtDetails();
+        assertThat(hearingCourtDetails.getCourtName(), is("Liverpool Mag Court"));
+        assertThat(hearingCourtDetails.getHearingDate(), is("2018-04-01"));
+        assertThat(hearingCourtDetails.getHearingTime(), equalToIgnoringCase("2:00 PM"));
+        final SummonsAddress hearingCourtAddress = hearingCourtDetails.getCourtAddress();
+        assertThat(hearingCourtAddress.getLine1(), is("176a Lavender Hill"));
+        assertThat(hearingCourtAddress.getPostCode(), is("SW11 1JU"));
+
+        assertThat(applicationSummonsPayload.getProsecutor(), nullValue());
+
+        final String welshSuffix = welshValuesPresent ? WELSH_VALUE_SUFFIX : "";
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationType(), is(APPLICATION_TYPE));
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationTypeWelsh(), is(APPLICATION_TYPE + welshSuffix));
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationLegislation(), is(LEGISLATION));
+
+        assertThat(applicationSummonsPayload.getBreachContent().getBreachedOrderDate(), is(BREACH_ORDER_DATE.toString()));
+        assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
+    }
+
+    @MethodSource("applicationSummonsSpecificationsWithVariousCosts")
+    @ParameterizedTest
+    void generateSummonsDocumentContentWithVariousCosts(final SummonsType summonsType, final String costString, final boolean isWelsh) {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsType, costString, isWelsh);
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        if (isEmpty(costString)) {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(""));
+        } else if (costString.contains("£0")) {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
+        } else {
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(costString));
+        }
+    }
+
     private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsType summonsRequired) {
 
         final SummonsData summonsData = summonsData()
@@ -215,6 +309,34 @@ public class ApplicationSummonsServiceTest {
                                 .withPersonalService(true)
                                 .withSummonsSuppressed(true)
                                 .build())
+                        .withHearingLanguageNeeds(HearingLanguage.ENGLISH)
+                        .build()))
+                .build();
+
+        return summonsDataPrepared().withSummonsData(summonsData).build();
+    }
+
+
+    private SummonsDataPrepared getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(final SummonsType summonsRequired, final String costString, final Boolean isWelsh) {
+
+        final SummonsData summonsData = summonsData()
+                .withConfirmedApplicationIds(newArrayList(APPLICATION_ID))
+                .withCourtCentre(courtCentre()
+                        .withId(COURT_CENTRE_ID)
+                        .withRoomId(COURT_ROOM_ID)
+                        .build())
+                .withHearingDateTime(HEARING_DATE_TIME)
+                .withCourtApplicationPartyListingNeeds(newArrayList(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withSummonsRequired(summonsRequired)
+                        .withCourtApplicationId(APPLICATION_ID)
+                        .withCourtApplicationPartyId(SUBJECT_ID)
+                        .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                                .withProsecutorEmailAddress("test@test.com")
+                                .withProsecutorCost(costString)
+                                .withPersonalService(true)
+                                .withSummonsSuppressed(true)
+                                .build())
+                        .withHearingLanguageNeeds(isWelsh ? HearingLanguage.WELSH : HearingLanguage.ENGLISH)
                         .build()))
                 .build();
 
