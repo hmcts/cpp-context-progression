@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.query.api.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.api.resource.utils.ReportsTransformer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
@@ -35,7 +35,7 @@ public class RecordSheetService {
     private static final String NAME = "name";
 
     @Inject
-    private CourtExtractTransformer courtExtractTransformer;
+    private ReportsTransformer reportsTransformer;
 
     public JsonEnvelope getTrialRecordSheetPayload(final JsonEnvelope envelope, final JsonEnvelope document, final UUID userId) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
@@ -45,7 +45,7 @@ public class RecordSheetService {
 
         try {
             LOGGER.info("Prosecution case for Record sheet for a defendant {} with caseId {} ", defendantId, caseId);
-            JsonObject result = courtExtractTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, Arrays.asList(), userId);
+            JsonObject result = reportsTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, Arrays.asList(), userId);
             LOGGER.info("Successfully fetched transformed payload for defendantId: {} and caseId: {}", defendantId, caseId);
             jsonObjectBuilder.add(PAYLOAD, result);
         } catch (final Exception e) {
@@ -67,7 +67,7 @@ public class RecordSheetService {
         {
             try {
                 LOGGER.info("Prosecution case for Record sheet for a defendant {} with caseId {} ", defendantId, caseId);
-                JsonObject result = courtExtractTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, emptyList(), userId);
+                JsonObject result = reportsTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, emptyList(), userId);
                 LOGGER.info("Successfully fetched transformed payload for defendantId: {} and caseId: {}", defendantId, caseId);
 
                 jsonArrayBuilder.add(Json.createObjectBuilder()

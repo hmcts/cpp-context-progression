@@ -106,6 +106,10 @@
             "$ref": "#/definitions/respondentRepresentative"
           }
         },
+        "representation": {
+          "description": "when the respondent is subject, this is filled with subject.associatedDefenceOrganisation",
+          "type": "string"
+        },
         "isSubject": {
           "type": "boolean"
         },

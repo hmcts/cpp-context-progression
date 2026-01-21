@@ -8,6 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,16 +26,18 @@ import static uk.gov.justice.core.courts.FeeStatus.SATISFIED;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
@@ -53,10 +57,19 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.BooleanGenerator;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
+import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.progression.query.view.service.OrganisationService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +78,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -84,10 +98,22 @@ public class ApplicationAtAGlanceHelperTest {
     private ProsecutionCaseRepository prosecutionCaseRepository;
 
     @Mock
+    private HearingApplicationRepository hearingApplicationRepository;
+
+    @Mock
+    private CourtApplicationRepository courtApplicationRepository;
+
+    @Mock
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
+    private HearingRepository hearingRepository;
+
+    @Mock
+    private HearingService hearingService;
 
     @InjectMocks
     private ApplicationAtAGlanceHelper applicationAtAGlanceHelper;
@@ -379,48 +405,48 @@ public class ApplicationAtAGlanceHelperTest {
                 .withOrganisation(applicantOrgan)
                 .withPersonDetails(null)
                 .withOrganisationPersons(Arrays.asList(AssociatedPerson.associatedPerson()
-                        .withPerson(Person.person()
-                                .withFirstName("Rob")
-                                .withMiddleName("Martin")
-                                .withLastName("Paine")
-                                .withAddress(Address.address()
-                                        .withAddress1("36 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS1 4TE")
+                                .withPerson(Person.person()
+                                        .withFirstName("Rob")
+                                        .withMiddleName("Martin")
+                                        .withLastName("Paine")
+                                        .withAddress(Address.address()
+                                                .withAddress1("36 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS1 4TE")
+                                                .build())
                                         .build())
-                                .build())
-                        .build()
-                        ,
-                        AssociatedPerson.associatedPerson().withPerson(Person.person()
-                                .withFirstName("Ali")
-                                .withMiddleName("Veli")
-                                .withLastName("Lawson")
-                                .withAddress(Address.address()
-                                        .withAddress1("40 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS1 4TE")
-                                        .build())
-                                .build())
                                 .build()
                         ,
                         AssociatedPerson.associatedPerson().withPerson(Person.person()
-                                .withFirstName(null)
-                                .withLastName("Dur")
-                                .withAddress(Address.address()
-                                        .withAddress1("40 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS3 4TH")
+                                        .withFirstName("Ali")
+                                        .withMiddleName("Veli")
+                                        .withLastName("Lawson")
+                                        .withAddress(Address.address()
+                                                .withAddress1("40 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS1 4TE")
+                                                .build())
                                         .build())
-                                .build())
+                                .build()
+                        ,
+                        AssociatedPerson.associatedPerson().withPerson(Person.person()
+                                        .withFirstName(null)
+                                        .withLastName("Dur")
+                                        .withAddress(Address.address()
+                                                .withAddress1("40 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS3 4TH")
+                                                .build())
+                                        .build())
                                 .build()
 
                 ))
@@ -443,7 +469,7 @@ public class ApplicationAtAGlanceHelperTest {
         assertTrue(applicantDetails.getIsProbationBreach());
         assertThat(applicantDetails.getAddress(), is(applicantOrgan.getAddress()));
         assertThat(courtApplication.getApplicant().getOrganisationPersons(), notNullValue());
-        assertThat(applicantDetails.getRepresentation(),is("Rob Paine, Ali Lawson"));
+        assertThat(applicantDetails.getRepresentation(), is("Rob Paine, Ali Lawson"));
 
     }
 
@@ -823,7 +849,7 @@ public class ApplicationAtAGlanceHelperTest {
 
 
     @Test
-    public void shouldGetThirdPartyDetails() {
+    void shouldGetThirdPartyDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -872,7 +898,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
+    void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
         final Address address = mock(Address.class);
 
         final String name = STRING_GENERATOR.next();
@@ -899,7 +925,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -930,7 +956,7 @@ public class ApplicationAtAGlanceHelperTest {
         final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getName(), is(firstName + " " + lastName));
         assertThat(details.getAddress(), is(address));
         assertThat(details.getDateOfBirth(), is(person.getDateOfBirth()));
         assertThat(details.getRespondentRepresentatives().size(), is(1));
@@ -939,7 +965,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForMasterDefendant() {
+    void shouldGetRespondentForMasterDefendant() {
 
         final Address address = mock(Address.class);
 
@@ -972,7 +998,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForSubject() {
+    void shouldGetRespondentForSubject() {
 
         final Address address = mock(Address.class);
 
@@ -1014,7 +1040,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentWhichIsNotSubject() {
+    void shouldGetRespondentWhichIsNotSubject() {
 
         final Address address = mock(Address.class);
 
@@ -1057,7 +1083,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -1087,7 +1113,7 @@ public class ApplicationAtAGlanceHelperTest {
         final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, false);
         assertThat(thirdPartyDetails.size(), is(1));
         final ThirdParties details = thirdPartyDetails.get(0);
-        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getName(), is(firstName + " " + lastName));
         assertThat(details.getAddress(), is(address));
 
         assertThat(details.getThirdPartyRepresentatives().size(), is(1));
@@ -1096,14 +1122,14 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
+    void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
         final CourtApplication courtApplication = courtApplication().build();
         final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication,false);
         assertThat(respondentDetails, empty());
     }
 
     @Test
-    public void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
+    void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
         final UUID subjectId = randomUUID();
         final UUID applicantId = randomUUID();
 
@@ -1134,5 +1160,42 @@ public class ApplicationAtAGlanceHelperTest {
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getIsSubject(),is(true));
 
+    }
+
+    @Test
+    void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
+        final UUID applicationId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(applicationId);
+        courtApplicationEntity.setPayload("{}");
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        final JsonObject jsonPayload = mock(JsonObject.class);
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(jsonPayload);
+        when(jsonObjectToObjectConverter.convert(jsonPayload, CourtApplication.class)).thenReturn(courtApplication()
+                .withId(applicationId)
+                .withSubject(courtApplicationParty().withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                        .build()).build())
+                .build());
+
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
+        hearingEntity.setSharedTime(ZonedDateTime.now());
+        hearingEntity.setPayload("{}");
+
+        when(hearingService.getApplicationHearings(applicationId)).thenReturn(List.of(hearingId));
+        when(hearingRepository.findByHearingIds(List.of(hearingId))).thenReturn(List.of(hearingEntity));
+
+        final Pair<CourtApplication, List<JsonObject>> linkedApplicationHearingsForCourtExtract = applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId, defendantId);
+
+        assertThat(linkedApplicationHearingsForCourtExtract.getLeft().getId(), is(applicationId));
+        final List<JsonObject> applicationHearings = linkedApplicationHearingsForCourtExtract.getRight();
+        assertThat(applicationHearings.size(), is(1));
     }
 }

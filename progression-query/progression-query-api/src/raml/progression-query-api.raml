@@ -228,6 +228,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.case-defendant-hearings+json
             name: progression.query.case-defendant-hearings
+        (mapping):
+            responseType: application/vnd.progression.query.case-hearings-for-court-extract+json
+            name: progression.query.case-hearings-for-court-extract
         ...
       responses:
             200:
@@ -236,6 +239,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case-defendant-hearings+json:
                     example:  !include json/progression.query.case-defendant-hearings.json
                     schema:  !include json/schema/progression.query.case-defendant-hearings.json
+                  application/vnd.progression.query.case-hearings-for-court-extract+json:
+                    example:  !include json/progression.query.case-hearings-for-court-extract.json
+                    schema:  !include json/schema/progression.query.case-hearings-for-court-extract.json
 
 /prosecutioncases/group/{groupId}:
   uriParameters:
@@ -627,6 +633,58 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.court-extract-application+json:
+
+/applications/{applicationId}/defendants/{defendantId}:
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      Return the application details for the  Id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-hearings-for-court-extract+json
+          name: progression.query.linked-application-hearings-for-court-extract
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.linked-application-hearings-for-court-extract+json:
+            example:  !include json/progression.query.linked-application-hearings-for-court-extract.json
+            schema:  !include json/schema/progression.query.linked-application-hearings-for-court-extract.json
+
+
+/applications/{applicationId}/defendants/{defendantId}/extract:
+  description: get court linked application extract content as pdf
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-extract+json
+          name: progression.query.linked-application-extract
+      ...
+    queryParameters:
+      hearingIds:
+        description: comma separated list of hearingIds, only expected when template value is CrownCourtExtract
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.linked-application-extract+json:
 
 /applications/application-status:
   description: get application status for a given list of comma separated applicationIds

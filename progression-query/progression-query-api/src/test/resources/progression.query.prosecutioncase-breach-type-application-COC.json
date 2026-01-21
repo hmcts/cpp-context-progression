@@ -852,6 +852,7 @@
               "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
             },
             "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
             "judicialResults": [],
             "name": "Kayla Walter",
             "offences": [
@@ -1127,6 +1128,102 @@
                 "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
                 "applicationReceivedDate": "2025-05-08",
                 "applicationType": "Failing to comply with the requirements of a community order",
+                "courtOrder": {
+                  "canBeSubjectOfBreachProceedings": true,
+                  "canBeSubjectOfVariationProceedings": true,
+                  "courtOrderOffences": [
+                    {
+                      "offences": {
+                        "arrestDate": "2022-12-14",
+                        "chargeDate": "2022-12-15",
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-05-14",
+                        "count": 0,
+                        "endorsableFlag": false,
+                        "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                        "isDisposed": false,
+                        "listingNumber": 1,
+                        "maxPenalty": "EW:6M &/or Ultd Fine",
+                        "modeOfTrial": "Either Way",
+                        "offenceCode": "CJ03522",
+                        "offenceDateCode": 1,
+                        "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                        "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                        "offenceTitle": "Theft from a shop",
+                        "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                        "orderIndex": 1,
+                        "plea": {
+                          "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                          "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                          "pleaDate": "2025-05-14",
+                          "pleaValue": "GUILTY"
+                        },
+                        "startDate": "2022-12-12",
+                        "wording": "Original CaseURN: 28DI4181281, Re-sentenced Original code : TH68010, Original details: Theft from shop."
+                      },
+                      "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                      "prosecutionCaseIdentifier": {
+                        "address": {
+                          "address1": "Bishopsgate police station",
+                          "address2": "182, Bishopsgate",
+                          "address5": "London",
+                          "postcode": "EC2M 4NP"
+                        },
+                        "contact": {
+                          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        },
+                        "majorCreditorCode": "COLP",
+                        "prosecutionAuthorityCode": "CITYPF",
+                        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                        "prosecutionAuthorityName": "City of London Police",
+                        "prosecutionAuthorityOUCode": "0480000",
+                        "caseURN": "28DI4181281"
+                      }
+                    }
+                  ],
+                  "defendantIds": [
+                    "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+                  ],
+                  "endDate": "2025-03-12",
+                  "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+                  "isSJPOrder": false,
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+                  "orderDate": "2025-05-14",
+                  "orderingCourt": {
+                    "address": {
+                      "address1": "176A Lavender Hill",
+                      "address2": "London",
+                      "address3": "",
+                      "address4": "",
+                      "address5": "",
+                      "postcode": "SW11 1JU"
+                    },
+                    "code": "B01LY00",
+                    "courtHearingLocation": "B01LY01",
+                    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                    "lja": {
+                      "ljaCode": "2577",
+                      "ljaName": "South West London Magistrates' Court"
+                    },
+                    "name": "Lavender Hill Magistrates' Court",
+                    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                    "roomName": "Courtroom 01"
+                  },
+                  "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "startDate": "2025-05-14"
+                },
                 "isAppeal": false,
                 "judicialResults": [
                   {
@@ -1254,6 +1351,7 @@
             ],
             "dateOfBirth": "1991-11-11",
             "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
             "judicialResults": [],
             "name": "Kayla Walter"
           }
@@ -1321,6 +1419,102 @@
                 "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
                 "applicationReceivedDate": "2025-05-08",
                 "applicationType": "Failing to comply with the requirements of a community order",
+                "courtOrder": {
+                  "canBeSubjectOfBreachProceedings": true,
+                  "canBeSubjectOfVariationProceedings": true,
+                  "courtOrderOffences": [
+                    {
+                      "offences": {
+                        "arrestDate": "2022-12-14",
+                        "chargeDate": "2022-12-15",
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-05-14",
+                        "count": 0,
+                        "endorsableFlag": false,
+                        "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                        "isDisposed": false,
+                        "listingNumber": 1,
+                        "maxPenalty": "EW:6M &/or Ultd Fine",
+                        "modeOfTrial": "Either Way",
+                        "offenceCode": "CJ03522",
+                        "offenceDateCode": 1,
+                        "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                        "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                        "offenceTitle": "Theft from a shop",
+                        "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                        "orderIndex": 1,
+                        "plea": {
+                          "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                          "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                          "pleaDate": "2025-05-14",
+                          "pleaValue": "GUILTY"
+                        },
+                        "startDate": "2022-12-12",
+                        "wording": "Original CaseURN: 28DI4181281, Re-sentenced Original code : TH68010, Original details: Theft from shop."
+                      },
+                      "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                      "prosecutionCaseIdentifier": {
+                        "address": {
+                          "address1": "Bishopsgate police station",
+                          "address2": "182, Bishopsgate",
+                          "address5": "London",
+                          "postcode": "EC2M 4NP"
+                        },
+                        "contact": {
+                          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        },
+                        "majorCreditorCode": "COLP",
+                        "prosecutionAuthorityCode": "CITYPF",
+                        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                        "prosecutionAuthorityName": "City of London Police",
+                        "prosecutionAuthorityOUCode": "0480000",
+                        "caseURN": "28DI4181281"
+                      }
+                    }
+                  ],
+                  "defendantIds": [
+                    "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+                  ],
+                  "endDate": "2025-03-12",
+                  "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+                  "isSJPOrder": false,
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+                  "orderDate": "2025-05-14",
+                  "orderingCourt": {
+                    "address": {
+                      "address1": "176A Lavender Hill",
+                      "address2": "London",
+                      "address3": "",
+                      "address4": "",
+                      "address5": "",
+                      "postcode": "SW11 1JU"
+                    },
+                    "code": "B01LY00",
+                    "courtHearingLocation": "B01LY01",
+                    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                    "lja": {
+                      "ljaCode": "2577",
+                      "ljaName": "South West London Magistrates' Court"
+                    },
+                    "name": "Lavender Hill Magistrates' Court",
+                    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                    "roomName": "Courtroom 01"
+                  },
+                  "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "startDate": "2025-05-14"
+                },
                 "isAppeal": false,
                 "judicialResults": [
                   {
@@ -1526,6 +1720,7 @@
             ],
             "dateOfBirth": "1991-11-11",
             "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
             "judicialResults": [],
             "name": "Kayla Walter"
           }
