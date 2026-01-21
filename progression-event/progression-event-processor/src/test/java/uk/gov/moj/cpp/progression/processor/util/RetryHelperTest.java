@@ -78,7 +78,7 @@ public class RetryHelperTest {
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withCrimeHearingCaseEventPcrNotificationUrl("url")
+                .withAmpPcrNotificationUrl("url")
                 .withPredicate(statusCode -> statusCode > 429);
 
         RetryHelper retryHelper = builder.build();
@@ -94,7 +94,7 @@ public class RetryHelperTest {
 
         assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
-                .withCrimeHearingCaseEventPcrNotificationUrl("url")
+                .withAmpPcrNotificationUrl("url")
                 .withRetryTimes(3)
                 .withRetryInterval(200)
                 .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))

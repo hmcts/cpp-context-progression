@@ -19,7 +19,7 @@ public class RetryHelper {
     private IntPredicate predicate;
     private String apimUrl;
     private String payload;
-    private String crimeHearingCaseEventPcrNotificationUrl;
+    private String ampPcrNotificationUrl;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RetryHelper.class.getName());
 
@@ -31,7 +31,7 @@ public class RetryHelper {
         this.predicate = builder.predicate;
         this.apimUrl = builder.apimUrl;
         this.payload = builder.payload;
-        this.crimeHearingCaseEventPcrNotificationUrl = builder.crimeHearingCaseEventPcrNotificationUrl;
+        this.ampPcrNotificationUrl = builder.ampPcrNotificationUrl;
     }
 
     public static RetryHelper.Builder retryHelper() {
@@ -45,8 +45,8 @@ public class RetryHelper {
         do {
             final int statusCode = supplier.getAsInt();
 
-            if(nonNull(crimeHearingCaseEventPcrNotificationUrl)) {
-                LOGGER.info("Try - {} : Crime Hearing Case Event Pcr Notification URL invoked with Request: {} Received response status: {}", tryCount, crimeHearingCaseEventPcrNotificationUrl, payload, statusCode);
+            if(nonNull(ampPcrNotificationUrl)) {
+                LOGGER.info("Try - {} : Crime Hearing Case Event Pcr Notification URL invoked with Request: {} Received response status: {}", tryCount, ampPcrNotificationUrl, payload, statusCode);
             } else {
                 LOGGER.info("Try - {} : Azure Function {} invoked with Request: {} Received response status: {}", tryCount, apimUrl, payload, statusCode);
             }
@@ -77,7 +77,7 @@ public class RetryHelper {
         private IntPredicate predicate;
         private String apimUrl;
         private String payload;
-        private String crimeHearingCaseEventPcrNotificationUrl;
+        private String ampPcrNotificationUrl;
 
         public Builder withSupplier(IntSupplier supplier) {
             this.supplier = supplier;
@@ -114,8 +114,8 @@ public class RetryHelper {
             return this;
         }
 
-        public Builder withCrimeHearingCaseEventPcrNotificationUrl(String crimeHearingCaseEventPcrNotificationUrl) {
-            this.crimeHearingCaseEventPcrNotificationUrl = crimeHearingCaseEventPcrNotificationUrl;
+        public Builder withAmpPcrNotificationUrl(String ampPcrNotificationUrl) {
+            this.ampPcrNotificationUrl = ampPcrNotificationUrl;
             return this;
         }
 

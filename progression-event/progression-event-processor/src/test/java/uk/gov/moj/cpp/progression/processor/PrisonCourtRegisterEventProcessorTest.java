@@ -224,10 +224,10 @@ public class PrisonCourtRegisterEventProcessorTest {
         PcrEventPayload pcrEventPayload = PcrEventPayload.builder().build();
         Instant expectedCreatedAt = metadata.build().createdAt().get().toInstant();
         when(ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, "test@hmcst.net", expectedCreatedAt)).thenReturn(pcrEventPayload);
-        when(applicationParameters.getCrimeHearingCaseEventPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.noContent().build());
-        when(applicationParameters.getCrimeHearingCaseEventRetryTimes()).thenReturn("3");
-        when(applicationParameters.getCrimeHearingCaseEventRetryInterval()).thenReturn("1000");
+        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
