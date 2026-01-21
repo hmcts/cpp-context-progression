@@ -42,6 +42,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
@@ -54,6 +55,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -62,6 +64,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -156,6 +159,43 @@ public class CaseDefendantSummonsServiceTest {
     @ParameterizedTest
     void shouldGenerateSummonsPayloadForFirstHearingCaseWithUnspecifiedCost(final SummonsType summonsRequired, final SummonsCode summonsCode, final String costValue, final boolean isWelsh) {
         verifySummonsPayloadGeneratedForUnspecifiedCost(summonsRequired, summonsCode, costValue, isWelsh);
+    }
+
+
+    @Test
+    void shouldGenerateEnglishSummonsPayloadForFirstHearingForBranchCoverage() {
+        final SummonsType summonsRequired = SummonsType.FIRST_HEARING;
+        final SummonsCode summonsCode = MCA;
+        final String summonsType = MCA.getSubType();
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.empty()))).thenReturn(getRefDataOffences());
+
+        final SummonsDataPrepared initialOne = summonsDataPrepared().withSummonsData(generateSummonsData(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, BOOLEAN.next())).build();
+        final SummonsDataPrepared summonsDataPrepared = SummonsDataPrepared.summonsDataPrepared()
+                .withSummonsData(SummonsData.summonsData()
+                        .withConfirmedProsecutionCaseIds(initialOne.getSummonsData().getConfirmedProsecutionCaseIds())
+                        .withCourtCentre(initialOne.getSummonsData().getCourtCentre())
+                        .withHearingDateTime(initialOne.getSummonsData().getHearingDateTime())
+                        .withConfirmedProsecutionCaseIds(initialOne.getSummonsData().getConfirmedProsecutionCaseIds())
+                        .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                                .withValuesFrom(initialOne.getSummonsData().getListDefendantRequests().get(0))
+                                .withSummonsApprovedOutcome(null)
+                                .build()))
+                        .build())
+                .build();
+
+        final String summonsCodeAsString = nonNull(summonsCode) ? summonsCode.getCode() : StringUtils.EMPTY;
+        final ProsecutionCase prosecutionCase = generateProsecutionCase(CASE_ID.toString(), DEFENDANT_ID.toString(), summonsCodeAsString, true);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final ListDefendantRequest listDefendantRequest = summonsDataPrepared.getSummonsData().getListDefendantRequests().get(0);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+        final SummonsProsecutor summonsProsecutor = getProsecutor();
+
+        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+
+        //Then
+        assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
+
     }
 
     public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {

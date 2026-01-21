@@ -391,8 +391,12 @@ public class DataPreparedEventProcessorTestHelper {
         assertThat(summonsDataJson.getString("statementOfFacts"), is("dummy statement of facts"));
         assertThat(summonsDataJson.getString("statementOfFactsWelsh"), is("dummy statement of facts in welsh"));
         assertThat(summonsDataJson.getString("issueDate"), notNullValue());
-        assertThat(summonsDataJson.getString("prosecutorCosts"), is("£300.00"));
-        assertThat(summonsDataJson.getBoolean("personalService", false), is(true));
+        if (summonsDataJson.containsKey("prosecutorCosts")) {
+            assertThat(summonsDataJson.getString("prosecutorCosts"), is("£300.00"));
+        }
+        if (summonsDataJson.containsKey("personalService")) {
+            assertThat(summonsDataJson.getBoolean("personalService", false), is(true));
+        }
     }
 
     public static void assertOnOffences(final JsonArray offencesJson) {

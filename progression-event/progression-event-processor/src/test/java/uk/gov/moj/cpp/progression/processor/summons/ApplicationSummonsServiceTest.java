@@ -50,11 +50,14 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -109,8 +112,9 @@ public class ApplicationSummonsServiceTest {
                 Arguments.of(APPLICATION, "£0", true),
                 Arguments.of(APPLICATION, "£0", false),
                 Arguments.of(BREACH, "", true),
-                Arguments.of(BREACH, null , false),
-                Arguments.of(BREACH, "£200", true)
+                Arguments.of(BREACH, null, false),
+                Arguments.of(BREACH, "£200", true),
+                Arguments.of(BREACH, "£", true)
         );
     }
 
@@ -203,6 +207,63 @@ public class ApplicationSummonsServiceTest {
         assertThat(applicationSummonsPayload.getApplicationContent().getApplicationParticulars(), is(APPLICATION_PARTICULARS));
         assertThat(applicationSummonsPayload.getApplicationContent().getApplicationParticularsWelsh(), is(APPLICATION_PARTICULARS));
         assertThat(applicationSummonsPayload.getApplicationContent().getApplicationReference(), is(APPLICATION_REFERENCE));
+
+        assertThat(applicationSummonsPayload.getBreachContent().getBreachedOrderDate(), is(BREACH_ORDER_DATE.toString()));
+        assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
+    }
+
+    @Test
+    void generateSummonsDocumentContentForBranchCoverage() {
+        final SummonsType summonsRequired = APPLICATION;
+        final boolean welshValuesPresent = false;
+        final PartyType partyType = PartyType.INDIVIDUAL;
+        final SummonsDataPrepared initialOne = getSummonsDataPreparedForApplication(APPLICATION);
+        final SummonsDataPrepared summonsDataPrepared = SummonsDataPrepared.summonsDataPrepared()
+                .withSummonsData(SummonsData.summonsData()
+                        .withConfirmedApplicationIds(initialOne.getSummonsData().getConfirmedApplicationIds())
+                        .withCourtCentre(initialOne.getSummonsData().getCourtCentre())
+                        .withHearingDateTime(initialOne.getSummonsData().getHearingDateTime())
+                        .withConfirmedProsecutionCaseIds(initialOne.getSummonsData().getConfirmedProsecutionCaseIds())
+                        .withCourtApplicationPartyListingNeeds(List.of(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                                .withValuesFrom(initialOne.getSummonsData().getCourtApplicationPartyListingNeeds().get(0))
+                                .withSummonsApprovedOutcome(null)
+                                .build()))
+
+                        .build())
+                .build();
+        final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(applicationSummonsPayload, notNullValue());
+        assertThat(applicationSummonsPayload.getSubTemplateName(), is(summonsRequired.toString()));
+
+        final SummonsAddress defendantAddress = applicationSummonsPayload.getDefendant().getAddress();
+        assertThat(defendantAddress.getLine1(), is("subject line 1"));
+        assertThat(defendantAddress.getPostCode(), is("CD1 5TG"));
+
+        assertThat(applicationSummonsPayload.getAddressee().getName(), is(applicationSummonsPayload.getDefendant().getName()));
+        final SummonsAddress addresseeAddress = applicationSummonsPayload.getAddressee().getAddress();
+        assertThat(addresseeAddress.getLine1(), is(defendantAddress.getLine1()));
+        assertThat(addresseeAddress.getPostCode(), is(defendantAddress.getPostCode()));
+
+        final SummonsHearingCourtDetails hearingCourtDetails = applicationSummonsPayload.getHearingCourtDetails();
+        assertThat(hearingCourtDetails.getCourtName(), is("Liverpool Mag Court"));
+        assertThat(hearingCourtDetails.getHearingDate(), is("2018-04-01"));
+        assertThat(hearingCourtDetails.getHearingTime(), equalToIgnoringCase("2:00 PM"));
+        final SummonsAddress hearingCourtAddress = hearingCourtDetails.getCourtAddress();
+        assertThat(hearingCourtAddress.getLine1(), is("176a Lavender Hill"));
+        assertThat(hearingCourtAddress.getPostCode(), is("SW11 1JU"));
+
+        assertThat(applicationSummonsPayload.getProsecutor(), nullValue());
+
+        final String welshSuffix = welshValuesPresent ? WELSH_VALUE_SUFFIX : "";
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationType(), is(APPLICATION_TYPE));
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationTypeWelsh(), is(APPLICATION_TYPE + welshSuffix));
+        assertThat(applicationSummonsPayload.getApplicationContent().getApplicationLegislation(), is(LEGISLATION));
 
         assertThat(applicationSummonsPayload.getBreachContent().getBreachedOrderDate(), is(BREACH_ORDER_DATE.toString()));
         assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
