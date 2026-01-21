@@ -226,6 +226,8 @@ public class PrisonCourtRegisterEventProcessorTest {
         when(ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, "test@hmcst.net", expectedCreatedAt)).thenReturn(pcrEventPayload);
         when(applicationParameters.getCrimeHearingCaseEventPcrNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.noContent().build());
+        when(applicationParameters.getCrimeHearingCaseEventRetryTimes()).thenReturn("3");
+        when(applicationParameters.getCrimeHearingCaseEventRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
