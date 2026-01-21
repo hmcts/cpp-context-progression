@@ -1,12 +1,14 @@
 package uk.gov.moj.cpp.progression.aggregate.helper;
 
 import static java.util.Arrays.asList;
+import static java.util.List.of;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,6 +22,8 @@ import static uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedings
 import static uk.gov.moj.cpp.progression.aggregate.helper.ResultConstantsTest.APA;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
@@ -28,10 +32,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ApplicationProceedingsHelperTest {
+
+    public static Stream<Arguments> getBreachTypeApplications() {
+        return Stream.of(
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID),
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID_2),
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_ENGAGEMENT_SUPPORT_ORDER_ID),
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID),
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID_2),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_SUPERVISION_REQUIREMENTS),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_SUPERVISION_REQUIREMENTS_2),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_YOUTH_REHABILITATION_REQUIREMENTS),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_YOUTH_REHABILITATION_REQUIREMENTS_2),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_POST_CUSTODIAL_SUPERVISION_REQUIREMENTS),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_COMMUNITY_REQUIREMENTS),
+                Arguments.of(ApplicationTypeConstantsTest.FAIL_TO_COMPLY_WITH_COMMUNITY_REQUIREMENTS_2),
+                Arguments.of(ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID_2)
+        );
+    }
 
     // Basic Validation Tests
     @Test
@@ -58,7 +85,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAbandoned() { //1-1
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(APA)
+                of(APA)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -69,7 +96,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionWithdrawn() { //1-2
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(ResultConstantsTest.AW)
+                of(ResultConstantsTest.AW)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -80,7 +107,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionDismissed() { //1-3
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(ResultConstantsTest.AACD)
+                of(ResultConstantsTest.AACD)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -91,7 +118,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConvictionDismissedAndSentenceVaried() { //1-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AACD,
                         ResultConstantsTest.ASV
                 )
@@ -106,7 +133,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForConvictionWhenASVAndNoOffenceResults() { //1-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.ASV
                 )
         );
@@ -120,7 +147,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForConvictionWhenASVAndOffenceResultsNotFinal() { //1-4
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.ASV
                 ),
                 false
@@ -135,7 +162,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForConvictionWhenASVAndOffenceResultsFinal() { //1-4
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.ASV
                 ),
                 true
@@ -150,7 +177,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAllowed() { //1-5
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(ResultConstantsTest.AACA)
+                of(ResultConstantsTest.AACA)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -162,7 +189,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithNoResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of()
+                of()
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -173,7 +200,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithUnknownResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(randomUUID())
+                of(randomUUID())
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -184,7 +211,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithInvalidCombination() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AACD,
                         ResultConstantsTest.AASA  // Contradictory results - both dismissed and allowed
                 )
@@ -198,7 +225,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithSentenceResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(ResultConstantsTest.SV)  // Using sentence result for conviction appeal
+                of(ResultConstantsTest.SV)  // Using sentence result for conviction appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -209,7 +236,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithBreachResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(ResultConstantsTest.OREV)  // Using breach result for conviction appeal
+                of(ResultConstantsTest.OREV)  // Using breach result for conviction appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -220,7 +247,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionWithMultipleInvalidResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,
-                List.of(
+                of(
                         randomUUID(),
                         ResultConstantsTest.SV,
                         ResultConstantsTest.OREV
@@ -236,7 +263,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstSentenceAbandoned() { //2-1
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(APA)
+                of(APA)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -247,7 +274,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstSentenceWithdrawn() { //2-2
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.AW)
+                of(ResultConstantsTest.AW)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -258,7 +285,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstSentenceDismissed() { //2-3
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.AASD)
+                of(ResultConstantsTest.AASD)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -269,7 +296,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceVaried() { //2-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.SV)
+                of(ResultConstantsTest.SV)
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -280,7 +307,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForAppealAgainstSentenceWhenAppealAgainstSentenceAllowedAndOffenceResultsNotFinal() { // 2-5
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.AASA),
+                of(ResultConstantsTest.AASA),
                 false
         );
 
@@ -292,7 +319,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForAppealAgainstSentenceWhenAppealAgainstSentenceAllowedAndOffenceResultsFinal() { // 2-5
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.AASA),
+                of(ResultConstantsTest.AASA),
                 true
         );
 
@@ -305,7 +332,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAndSentenceAbandoned() { //3-1
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(APA)
+                of(APA)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -316,7 +343,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAndSentenceWithdrawn() { //3-2
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.AW)
+                of(ResultConstantsTest.AW)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -327,7 +354,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAndSentenceDismissed() { //3-3
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.AACA)
+                of(ResultConstantsTest.AACA)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -339,7 +366,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForAppealAgainstSentenceWhenAASDandSVandNoOffenceResults() { //3-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AASD,
                         ResultConstantsTest.SV
                 )
@@ -354,7 +381,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForAppealAgainstSentenceWhenAASDandSVandOffenceResultsNotFinal() { //3-4
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AASD,
                         ResultConstantsTest.SV
                 ),
@@ -370,7 +397,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForAppealAgainstSentenceWhenAASDandSVandOffenceResultsFinal() { //3-4
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AASD,
                         ResultConstantsTest.SV
                 ),
@@ -386,7 +413,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForAppealAgainstConvictionAndSentenceWhenAppealAgainstConvictionAndSentenceVariedAndOffenceResultsNotFinal() { // 3-5
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.ASV),
+                of(ResultConstantsTest.ASV),
                 false
         );
 
@@ -398,7 +425,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForAppealAgainstConvictionAndSentenceWhenAppealAgainstConvictionAndSentenceVariedAndOffenceResultsFinal() { // 3-5
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.ASV),
+                of(ResultConstantsTest.ASV),
                 true
         );
 
@@ -411,7 +438,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForAppealAgainstConvictionAndSentenceWhenAppealAgainstConvictionDismissedAndAppealAgainstSentenceAllowedAndOffenceResultsNotFinal() { //3-6
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AACD,
                         ResultConstantsTest.AASA
                 ),
@@ -427,7 +454,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForAppealAgainstConvictionAndSentenceWhenAppealAgainstConvictionDismissedAndAppealAgainstSentenceAllowedAndOffenceResultsNFinal() { //3-6
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.AACD,
                         ResultConstantsTest.AASA
                 ),
@@ -443,7 +470,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenAppealAgainstConvictionAndSentenceCombinedAllowed() { //3-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.ACSD)
+                of(ResultConstantsTest.ACSD)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -455,31 +482,31 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForStatutoryDeclarationWhenGandSTDECandOffenceResultsNotFinal() { // 4-1
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_STATUTORY_DECLARATION_ID,
-                List.of(ResultConstantsTest.G, ResultConstantsTest.STDEC),
+                of(ResultConstantsTest.G, ResultConstantsTest.STDEC),
                 false
         );
 
         assertFalse(result.getProceedingsConcluded());
-        assertEquals(String.join(" & ", List.of(ResultCodeConstantsTest.G_CODE, ResultCodeConstantsTest.STDEC_CODE)), result.getApplicationResultCodeForLaa());
+        assertEquals(String.join(" & ", of(ResultCodeConstantsTest.G_CODE, ResultCodeConstantsTest.STDEC_CODE)), result.getApplicationResultCodeForLaa());
     }
 
     @Test
     void shouldConcludeForStatutoryDeclarationWhenGandSTDECandOffenceResultsFinal() { // 4-1
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_STATUTORY_DECLARATION_ID,
-                List.of(ResultConstantsTest.G, ResultConstantsTest.STDEC),
+                of(ResultConstantsTest.G, ResultConstantsTest.STDEC),
                 true
         );
 
         assertTrue(result.getProceedingsConcluded());
-        assertEquals(String.join(" & ", List.of(ResultCodeConstantsTest.G_CODE, ResultCodeConstantsTest.STDEC_CODE)), result.getApplicationResultCodeForLaa());
+        assertEquals(String.join(" & ", of(ResultCodeConstantsTest.G_CODE, ResultCodeConstantsTest.STDEC_CODE)), result.getApplicationResultCodeForLaa());
     }
 
     @Test
     void shouldConcludeWhenStatutoryDeclarationWithdrawn() { // 4-2
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_STATUTORY_DECLARATION_ID,
-                List.of(ResultConstantsTest.WDRN)
+                of(ResultConstantsTest.WDRN)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -490,7 +517,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenStatutoryDeclarationDismissed() { // 4-3
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_STATUTORY_DECLARATION_ID,
-                List.of(ResultConstantsTest.DISM)
+                of(ResultConstantsTest.DISM)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -501,7 +528,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenStatutoryDeclarationGrantedWithSTDEC() { // 4-4
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_STATUTORY_DECLARATION_ID,
-                List.of(
+                of(
                         ResultConstantsTest.G,
                         ResultConstantsTest.STDEC
                 )
@@ -517,7 +544,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenReopenCaseGrantedOnly() {  // 5-1
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_REOPEN_CASE_ID,
-                List.of(ResultConstantsTest.G)
+                of(ResultConstantsTest.G)
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -528,7 +555,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeForReOpenWhenGandROPENEDandOffenceResultsNotFinal() { // 5-2
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_REOPEN_CASE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.G,
                         ResultConstantsTest.ROPENED
                 ),
@@ -544,7 +571,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeForReOpenWhenGandROPENEDandOffenceResultsFinal() { // 5-2
         CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_REOPEN_CASE_ID,
-                List.of(
+                of(
                         ResultConstantsTest.G,
                         ResultConstantsTest.ROPENED
                 ),
@@ -556,34 +583,23 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
-    // Breach Application Tests
-    @Test
-    void shouldConcludeWhenBreachApplicationWithOrderRevoked() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of(ResultConstantsTest.OREV)
-        );
-
-        assertTrue(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.OREV_CODE, result.getApplicationResultCodeForLaa());
-    }
-
     @Test
     void shouldConcludeWhenBreachApplicationWithNoAdjudication() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_BREACH_ENGAGEMENT_SUPPORT_ORDER_ID,
-                List.of(ResultConstantsTest.BRO)
+                of(ResultConstantsTest.BRO)
         );
 
         assertFalse(result.getProceedingsConcluded());
         assertEquals(ResultCodeConstantsTest.BRO_CODE, result.getApplicationResultCodeForLaa());
     }
 
-    @Test
-    void shouldConcludeWhenBreachApplicationWithOrderToContinue() {
+    @ParameterizedTest
+    @ValueSource(strings = {ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID, ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID_2})
+    void shouldConcludeWhenBreachApplicationWithOrderToContinue(final String applicationTypeConstantsTest) {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_ID,
-                List.of(ResultConstantsTest.OTC)
+                applicationTypeConstantsTest,
+                of(ResultConstantsTest.OTC)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -594,7 +610,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenBreachYROIntensiveWithOrderRevoked() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_BREACH_YRO_INTENSIVE_ID,
-                List.of(ResultConstantsTest.OREV)
+                of(ResultConstantsTest.OREV)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -605,7 +621,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenBreachReparationOrderWithNoAdjudication() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_BREACH_REPARATION_ORDER_ID,
-                List.of(ResultConstantsTest.BRO)
+                of(ResultConstantsTest.BRO)
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -613,21 +629,10 @@ class ApplicationProceedingsHelperTest {
     }
 
     @Test
-    void shouldConcludeWhenBreachApplicationWithOrderRevokedAndNoAdjudication() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of(ResultConstantsTest.OREV, ResultConstantsTest.BRO)
-        );
-
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE, result.getApplicationResultCodeForLaa());
-    }
-
-    @Test
     void shouldNotConcludeWhenConfiscationOrderIsRefused() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(ResultConstantsTest.RFSD)
+                of(ResultConstantsTest.RFSD)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -638,67 +643,22 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConfiscationOrderIsWithdrawn() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(ResultConstantsTest.WDRN)
+                of(ResultConstantsTest.WDRN)
         );
 
         assertTrue(result.getProceedingsConcluded());
         assertEquals(ResultCodeConstantsTest.WDRN_CODE, result.getApplicationResultCodeForLaa());
     }
 
-    // Breach Application Negative Tests
-    @Test
-    void shouldNotConcludeWhenBreachApplicationWithNoResults() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of()
-        );
 
-        assertFalse(result.getProceedingsConcluded());
-        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
-    }
 
-    @Test
-    void shouldNotConcludeWhenBreachApplicationWithUnknownResult() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of(randomUUID())
-        );
 
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals("UNKNOWN_RESULT", result.getApplicationResultCodeForLaa());
-    }
-
-    @Test
-    void shouldNotConcludeWhenBreachApplicationWithNonBreachResult() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of(APA)  // Using appeal result for breach application
-        );
-
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.APA_CODE, result.getApplicationResultCodeForLaa());
-    }
-
-    @Test
-    void shouldNotConcludeWhenBreachApplicationWithMultipleInvalidResults() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
-                List.of(
-                        randomUUID(),
-                        randomUUID(),
-                        ResultConstantsTest.OREV
-                )
-        );
-
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.OREV_CODE, result.getApplicationResultCodeForLaa());
-    }
 
     @Test
     void shouldNotConcludeWhenBreachApplicationWithWrongApplicationType() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID,  // Wrong application type
-                List.of(ResultConstantsTest.OREV)
+                of(ResultConstantsTest.OREV)
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -710,7 +670,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithNoResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of()  // Empty results list
+                of()  // Empty results list
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -721,7 +681,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithUnknownResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(randomUUID())
+                of(randomUUID())
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -733,7 +693,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithConvictionResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.AACD)  // Using conviction result for sentence appeal
+                of(ResultConstantsTest.AACD)  // Using conviction result for sentence appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -744,7 +704,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithBreachResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(ResultConstantsTest.OREV)  // Using breach result for sentence appeal
+                of(ResultConstantsTest.OREV)  // Using breach result for sentence appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -755,7 +715,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithMultipleInvalidResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID,
-                List.of(
+                of(
                         randomUUID(),
                         ResultConstantsTest.AACD,  // Conviction result
                         ResultConstantsTest.OREV  // Breach result
@@ -770,7 +730,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstSentenceWithWrongApplicationType() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,  // Wrong application type
-                List.of(ResultConstantsTest.AASD)  // Valid sentence result
+                of(ResultConstantsTest.AASD)  // Valid sentence result
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -782,7 +742,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithNoResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of()  // Empty results list
+                of()  // Empty results list
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -793,7 +753,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithUnknownResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(randomUUID())  // Random unknown result ID
+                of(randomUUID())  // Random unknown result ID
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -804,7 +764,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithSentenceOnlyResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.SV)  // Using sentence-only result for combined appeal
+                of(ResultConstantsTest.SV)  // Using sentence-only result for combined appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -815,7 +775,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithConvictionOnlyResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.AACD)  // Using conviction-only result for combined appeal
+                of(ResultConstantsTest.AACD)  // Using conviction-only result for combined appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -826,7 +786,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithBreachResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(ResultConstantsTest.OREV)  // Using breach result for combined appeal
+                of(ResultConstantsTest.OREV)  // Using breach result for combined appeal
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -837,7 +797,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithMultipleInvalidResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID,
-                List.of(
+                of(
                         randomUUID(),
                         ResultConstantsTest.SV,
                         ResultConstantsTest.OREV,
@@ -850,23 +810,12 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
-    @Test
-    void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithWrongApplicationType() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,  // Wrong application type
-                List.of(ResultConstantsTest.ACSD)  // Valid combined appeal result
-        );
-
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.ACSD_CODE, result.getApplicationResultCodeForLaa());
-    }
-
     // Confiscation Order Positive Tests
     @Test
     void shouldConcludeWhenConfiscationOrderWithConfaaAndConviction() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(
+                of(
                         ResultConstantsTest.CONFAA,
                         ResultConstantsTest.G
                 )
@@ -882,7 +831,7 @@ class ApplicationProceedingsHelperTest {
     void shouldConcludeWhenConfiscationOrderIsWithdrawn() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(ResultConstantsTest.WDRN)
+                of(ResultConstantsTest.WDRN)
         );
 
         assertTrue(result.getProceedingsConcluded());
@@ -894,7 +843,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConfiscationOrderWithNoResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of()  // Empty results list
+                of()  // Empty results list
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -905,7 +854,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConfiscationOrderWithOnlyConfaa() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(ResultConstantsTest.CONFAA)  // Only CONFAA result
+                of(ResultConstantsTest.CONFAA)  // Only CONFAA result
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -916,7 +865,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConfiscationOrderWithBreachResult() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(ResultConstantsTest.OREV)  // Using breach result for confiscation order
+                of(ResultConstantsTest.OREV)  // Using breach result for confiscation order
         );
 
         assertFalse(result.getProceedingsConcluded());
@@ -927,7 +876,7 @@ class ApplicationProceedingsHelperTest {
     void shouldNotConcludeWhenConfiscationOrderWithMultipleInvalidResults() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
-                List.of(
+                of(
                         randomUUID(),
                         ResultConstantsTest.OREV,
                         ResultConstantsTest.SV
@@ -939,16 +888,6 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
-    @Test
-    void shouldNotConcludeWhenConfiscationOrderWithWrongApplicationType() {
-        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
-                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,  // Wrong application type
-                List.of(ResultConstantsTest.CONFAA)  // Valid confiscation result
-        );
-
-        assertFalse(result.getProceedingsConcluded());
-        assertEquals(ResultCodeConstantsTest.CONFAA_CODE, result.getApplicationResultCodeForLaa());
-    }
 
     @Test
     void shouldConcludeForAppealAgainstSentenceWhenAPAandOneChildResult() {
@@ -1026,6 +965,216 @@ class ApplicationProceedingsHelperTest {
     }
 
 
+    // Breach Application Tests scenarios
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationResultHasOREVAndBRO_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV, ResultConstantsTest.BRO),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationHasNoResultAndOffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                null,
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationResultHasOREVAndBRO_OffenceResultsHaveIntermediary(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV, ResultConstantsTest.BRO),
+                of(JudicialResultCategory.INTERMEDIARY, JudicialResultCategory.FINAL)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasOREVAndBRO_OffenceResultsAreFinalOrAncillary(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV, ResultConstantsTest.BRO),
+                of(JudicialResultCategory.ANCILLARY, JudicialResultCategory.FINAL)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasOREVAndBRO_HasNoCourtOrderButApplicationCases(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithApplicationResultsAndOffenceResults(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV, ResultConstantsTest.BRO),
+                true
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasOREVAndBRO_OffenceResultsAreFinal(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV, ResultConstantsTest.BRO),
+                of(JudicialResultCategory.FINAL, JudicialResultCategory.FINAL)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationHasNoResult_OffenceResultsAreFinal(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                null,
+                of(JudicialResultCategory.FINAL, JudicialResultCategory.FINAL)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationHasNoResult_OffenceResultsHasIntermediary(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                null,
+                of(JudicialResultCategory.FINAL, JudicialResultCategory.INTERMEDIARY)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationHasNoResult_OffenceResultsAreFinalOrAncillary(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                null,
+                of(JudicialResultCategory.FINAL, JudicialResultCategory.ANCILLARY)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasOREV_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OREV),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasOTC_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.OTC),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OTC_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasDismissed_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.DISM),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.DISM_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasWithdrawn_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.WDRN),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.WDRN_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldConcludeBreachApplicationWhenApplicationResultHasWithdrawn_OffenceHasNoFinalResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(ResultConstantsTest.WDRN),
+                of(JudicialResultCategory.ANCILLARY, JudicialResultCategory.INTERMEDIARY)
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(true));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.WDRN_CODE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationResultHasRandomValue_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(randomUUID()),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), is("UNKNOWN_RESULT"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getBreachTypeApplications")
+    void shouldNotConcludeBreachApplicationWhenApplicationResultHasMultipleMismatchingValues_OffenceHasNoResult(final String applicationTypeCode) {
+        CourtApplication result = createApplicationWithCourtOrder(
+                applicationTypeCode,
+                of(randomUUID(), randomUUID(), ResultConstantsTest.OREV),
+                null
+        );
+
+        assertThat(result.getProceedingsConcluded(), is(false));
+        assertThat(result.getApplicationResultCodeForLaa(), is(ResultCodeConstantsTest.OREV_CODE));
+    }
+
     private CourtApplication createApplicationWithApplicationResultsAndNoOffenceResults(String applicationTypeCode, List<UUID> resultTypeIds) {
         List<JudicialResult> judicialResults = resultTypeIds.stream()
                 .map(id -> judicialResult()
@@ -1042,6 +1191,47 @@ class ApplicationProceedingsHelperTest {
                                 .withCode(applicationTypeCode)
                                 .build())
                         .withJudicialResults(judicialResults)
+                        .build()
+        );
+    }
+
+    private CourtApplication createApplicationWithCourtOrder(final String applicationTypeCode, final List<UUID> applicationLevelResultIds, final List<JudicialResultCategory> judicialResultCategories) {
+        final List<JudicialResult> applicationLevelResults = ofNullable(applicationLevelResultIds)
+                .map(ids -> ids.stream()
+                        .map(id -> judicialResult()
+                                .withJudicialResultTypeId(id)
+                                .withCategory(JudicialResultCategory.FINAL)
+                                .withRootJudicialResultTypeId(id)
+                                .build())
+                        .collect(Collectors.toList()))
+                .orElse(null);
+
+        final List<JudicialResult> offenceLevelResults = ofNullable(judicialResultCategories)
+                .map(judicialResultCategoryList -> judicialResultCategoryList.stream()
+                        .map(judicialResultCategory -> judicialResult()
+                                .withJudicialResultTypeId(randomUUID())
+                                .withCategory(judicialResultCategory)
+                                .withRootJudicialResultTypeId(randomUUID())
+                                .build())
+                        .collect(Collectors.toList()))
+                .orElse(null);
+
+        return determineApplicationProceedingsConcluded(
+                courtApplication()
+                        .withId(randomUUID())
+                        .withType(courtApplicationType()
+                                .withCode(applicationTypeCode)
+                                .build())
+                        .withJudicialResults(applicationLevelResults)
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withId(randomUUID())
+                                .withCourtOrderOffences(asList(CourtOrderOffence.courtOrderOffence()
+                                        .withOffence(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(offenceLevelResults)
+                                                .build())
+                                        .build()))
+                                .build())
                         .build()
         );
     }
@@ -1095,4 +1285,6 @@ class ApplicationProceedingsHelperTest {
                 ))
                 .build());
     }
+
+
 } 

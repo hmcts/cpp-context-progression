@@ -1,0 +1,976 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-11-06T10:37:29.661Z",
+        "id": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+        "isYouth": false,
+        "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+        "offences": [
+          {
+            "arrestDate": "2025-10-22",
+            "chargeDate": "2025-10-27",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "439a7cfc-bf3e-4ffd-b358-c8c1b295e5c1",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1015",
+                "committedToCC": false,
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": true,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "c19906bc-ff34-48ff-8e4d-1f24d6f89843",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": true,
+                    "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                    "label": "Amount of fine",
+                    "promptReference": "AOF",
+                    "promptSequence": 100,
+                    "type": "CURR",
+                    "usergroups": [],
+                    "value": "£500.00",
+                    "welshLabel": "Swm y ddirwy",
+                    "welshValue": "£500.00"
+                  }
+                ],
+                "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "label": "Fine",
+                "lastSharedDateTime": "2025-11-06",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-11-06",
+                "orderedHearingId": "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 72100,
+                "resultDefinitionGroup": "Imposition",
+                "resultText": "FO - Fine\nFined £500.00",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "c19906bc-ff34-48ff-8e4d-1f24d6f89843",
+                "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "sentToCC": false,
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Dirwy"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "EW:6M &/or Ultd Fine",
+            "modeOfTrial": "Either Way",
+            "offenceCode": "TH68010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "38873d2b-4f99-35ae-9d8f-41da07abb6d5",
+            "offenceFacts": {
+              "alcoholReadingAmount": 500,
+              "alcoholReadingMethodCode": "A",
+              "alcoholReadingMethodDescription": "Blood"
+            },
+            "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+            "offenceTitle": "Theft from a shop",
+            "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2025-09-07",
+            "wording": "Attempt theft from a shop"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "2391NX0000846491195D",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "60 London Road",
+              "address2": "London Road",
+              "address3": "Leicester",
+              "address4": "Leicestershire",
+              "postcode": "NW1 5BR"
+            },
+            "contact": {
+              "home": "0746761267",
+              "mobile": "02879327789",
+              "primaryEmail": "toby.stokes@example.com"
+            },
+            "dateOfBirth": "1992-11-06",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Toby",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Stokes",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "2391NX0000846491195D",
+        "prosecutionCaseId": "95bc4d77-2f22-4ace-a15d-eed11855818c"
+      }
+    ],
+    "id": "95bc4d77-2f22-4ace-a15d-eed11855818c",
+    "initiationCode": "C",
+    "originatingOrganisation": "0480000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "OL107437679"
+    }
+  },
+  "linkedApplicationsSummary": [
+    {
+      "applicationId": "3b6bada0-0de0-4db0-a7fa-567800ae289c",
+      "applicationTitle": "Appearance to make statutory declaration (other than SJP)",
+      "applicationReference": "OL107437679",
+      "applicationStatus": "FINALISED",
+      "applicantDisplayName": "Toby Stokes",
+      "applicantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+      "respondentDisplayNames": [
+        "CITYPF"
+      ],
+      "respondentIds": [],
+      "subjectId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+      "isAppeal": false
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "b0f952a2-cca2-4d04-a4c9-a677925fdaeb",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "95bc4d77-2f22-4ace-a15d-eed11855818c",
+                "caseReference": "OL107437679",
+                "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+              }
+            ],
+            "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX0000846491195D",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "60 London Road",
+                  "address2": "London Road",
+                  "address3": "Leicester",
+                  "address4": "Leicestershire",
+                  "postcode": "NW1 5BR"
+                },
+                "contact": {
+                  "home": "0746761267",
+                  "mobile": "02879327789",
+                  "primaryEmail": "toby.stokes@example.com"
+                },
+                "dateOfBirth": "1992-11-06",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Toby",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Stokes",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2025-11-06",
+        "applicationReference": "OL107437679",
+        "applicationStatus": "FINALISED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "offences": [
+              {
+                "arrestDate": "2025-10-22",
+                "chargeDate": "2025-10-27",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "439a7cfc-bf3e-4ffd-b358-c8c1b295e5c1",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "24e0341b-9894-481a-b5d0-480f259d155a",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2025-11-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-11-06",
+                    "orderedHearingId": "5a034d06-da60-4429-8f96-2ae68bdd6969",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 53800,
+                    "resultText": "AD - Absolute discharge",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "24e0341b-9894-481a-b5d0-480f259d155a",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "lastAdjournDate": "2025-11-06",
+                "lastAdjournedHearingType": "To attend or a warrant to issue",
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "TH68010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "38873d2b-4f99-35ae-9d8f-41da07abb6d5",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 500,
+                  "alcoholReadingMethodCode": "A",
+                  "alcoholReadingMethodDescription": "Blood"
+                },
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "proceedingsConcluded": true,
+                "startDate": "2025-09-07",
+                "wording": "Attempt theft from a shop"
+              }
+            ],
+            "prosecutionCaseId": "95bc4d77-2f22-4ace-a15d-eed11855818c",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Bishopsgate police station",
+                "address2": "182, Bishopsgate",
+                "address5": "London",
+                "postcode": "EC2M 4NP"
+              },
+              "contact": {
+                "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+              },
+              "majorCreditorCode": "COLP",
+              "prosecutionAuthorityCode": "CITYPF",
+              "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+              "prosecutionAuthorityName": "City of London Police",
+              "prosecutionAuthorityOUCode": "0480000",
+              "caseURN": "OL107437679"
+            }
+          }
+        ],
+        "id": "3b6bada0-0de0-4db0-a7fa-567800ae289c",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "FINAL",
+            "committedToCC": false,
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "ddebe99b-e250-4e70-86f3-a6800c027678",
+            "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "label": "Granted",
+            "lastSharedDateTime": "2025-11-06",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-11-06",
+            "orderedHearingId": "79529853-e687-4322-9a2b-b10b9e264db8",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 98500,
+            "resultText": "G - Granted",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "ddebe99b-e250-4e70-86f3-a6800c027678",
+            "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "sentToCC": false,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "proceedingsConcluded": true,
+        "respondents": [
+          {
+            "id": "6fe9c83d-7083-4bb4-9c73-d28d52bfbdd6",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Bishopsgate police station",
+                "address2": "182, Bishopsgate",
+                "address5": "London",
+                "postcode": "EC2M 4NP"
+              },
+              "contact": {
+                "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+              },
+              "majorCreditorCode": "COLP",
+              "name": "City of London Police",
+              "prosecutionAuthorityCode": "CITYPF",
+              "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+              "prosecutionAuthorityOUCode": "0480000",
+              "welshName": "Heddlu Dinas Llundain"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "b0f952a2-cca2-4d04-a4c9-a677925fdaeb",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "95bc4d77-2f22-4ace-a15d-eed11855818c",
+                "caseReference": "OL107437679",
+                "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+              }
+            ],
+            "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX0000846491195D",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "60 London Road",
+                  "address2": "London Road",
+                  "address3": "Leicester",
+                  "address4": "Leicestershire",
+                  "postcode": "NW1 5BR"
+                },
+                "contact": {
+                  "home": "0746761267",
+                  "mobile": "02879327789",
+                  "primaryEmail": "toby.stokes@example.com"
+                },
+                "dateOfBirth": "1992-11-06",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Toby",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Stokes",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Appears before the court in order to make a statutory declaration following conviction {1} by {2} on {3}. Original case number: {4}",
+          "applicationWordingWelsh": "Yn ymddangos gerbron y llys er mwyn gwneud datganiad statudol yn dilyn euogfarn <[am y trosedd <Original Offence>][am y troseddau <Original Offences>]> gan <Court name> ar <Date of hearing>. Rhif yr Achos Gwreiddiol: <Original case number>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2025-03-17T10:29:09",
+          "code": "MC80527",
+          "commrOfOathFlag": true,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "a6663f2a-c900-4bb4-a7d7-4be34cb2f1f7",
+          "initialFeeApplicable": false,
+          "jurisdiction": "MAGISTRATES",
+          "lastModified": "2025-03-17T14:00:40.437Z",
+          "legislation": "In accordance with section 14 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 14 Deddf Llysoedd Ynadon 1980.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": true,
+          "prosecutorThirdPartyFlag": true,
+          "pssId": 601795,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Appearance to make statutory declaration (other than SJP)",
+          "typeWelsh": "Ymddangosiad i wneud datganiad statudol",
+          "validFrom": "2000-01-05"
+        }
+      }
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+        "defendantName": "Toby Stokes",
+        "hearingIds": [
+          "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c"
+        ],
+        "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-11-06"
+              }
+            ],
+            "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "committedToCC": false,
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "10bd23a7-07b8-486c-9546-a7439d6570b6",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "21/12/2025",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "21/12/2025"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2025-11-06",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "439a7cfc-bf3e-4ffd-b358-c8c1b295e5c1",
+              "orderedDate": "2025-11-06",
+              "orderedHearingId": "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c",
+              "parentJudicialResultId": "335b1949-d7c3-4ab4-ab02-7b07b40c8abd",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 21/12/2025.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "c19906bc-ff34-48ff-8e4d-1f24d6f89843",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "sentToCC": false,
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            },
+            "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "60 London Road",
+              "address2": "London Road",
+              "address3": "Leicester",
+              "address4": "Leicestershire",
+              "postcode": "NW1 5BR"
+            },
+            "age": "33",
+            "courtApplications": [],
+            "dateOfBirth": "1992-11-06",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+            },
+            "id": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+            "judicialResults": [],
+            "masterDefendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d",
+            "name": "Toby Stokes",
+            "offences": [
+              {
+                "count": 0,
+                "id": "439a7cfc-bf3e-4ffd-b358-c8c1b295e5c1",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c19906bc-ff34-48ff-8e4d-1f24d6f89843",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£500.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£500.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-11-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-11-06",
+                    "orderedHearingId": "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £500.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c19906bc-ff34-48ff-8e4d-1f24d6f89843",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "offenceCode": "TH68010",
+                "offenceDefinitionId": "38873d2b-4f99-35ae-9d8f-41da07abb6d5",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": true,
+                "startDate": "2025-09-07",
+                "verdicts": [],
+                "wording": "Attempt theft from a shop"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-11-06T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-11-06"
+              }
+            ],
+            "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+          }
+        ],
+        "defendants": [
+          {
+            "courtApplications": [
+              {
+                "applicant": "Toby Stokes",
+                "applicationId": "3b6bada0-0de0-4db0-a7fa-567800ae289c",
+                "applicationReceivedDate": "2025-11-06",
+                "applicationType": "Appearance to make statutory declaration (other than SJP)",
+                "isAppeal": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "ddebe99b-e250-4e70-86f3-a6800c027678",
+                    "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "label": "Granted",
+                    "lastSharedDateTime": "2025-11-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-11-06",
+                    "orderedHearingId": "79529853-e687-4322-9a2b-b10b9e264db8",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 98500,
+                    "resultText": "G - Granted",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "ddebe99b-e250-4e70-86f3-a6800c027678",
+                    "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "CITYPF"
+                  }
+                ]
+              }
+            ],
+            "id": "6fe9c83d-7083-4bb4-9c73-d28d52bfbdd6",
+            "judicialResults": [],
+            "masterDefendantId": "6fe9c83d-7083-4bb4-9c73-d28d52bfbdd6",
+            "name": "CITYPF"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "hasSharedResults": true,
+            "listedDurationMinutes": 10,
+            "sittingDay": "2025-11-06T00:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "79529853-e687-4322-9a2b-b10b9e264db8",
+        "isApplicationHearing": true,
+        "isBoxHearing": true,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Application",
+          "id": "3449743b-95d6-4836-8941-57f588b52068"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "Stoke-on-Trent Combined Crt Centre",
+            "address2": "Bethesda Street",
+            "address3": "Hanley",
+            "address4": "Stoke-on-Trent",
+            "address5": "Staffs",
+            "postcode": "ST1 3BP"
+          },
+          "code": "C21SK00",
+          "courtHearingLocation": "C21SK00",
+          "courtLocationCode": "0456",
+          "id": "cf0108e8-4653-324c-b4cb-8346e1d55c64",
+          "lja": {
+            "ljaCode": "2805",
+            "ljaName": "Staffordshire Magistrates' Court"
+          },
+          "name": "Stoke-on-Trent Crown Court",
+          "roomId": "4e7d765f-7ea5-3ef7-bda6-3748d9b00e87",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-11-06"
+              }
+            ],
+            "defendantId": "d90ac10b-ef12-4ab3-91db-f9394b8f949d"
+          }
+        ],
+        "defendants": [
+          {
+            "courtApplications": [
+              {
+                "applicant": "Toby Stokes",
+                "applicationId": "3b6bada0-0de0-4db0-a7fa-567800ae289c",
+                "applicationReceivedDate": "2025-11-06",
+                "applicationType": "Appearance to make statutory declaration (other than SJP)",
+                "isAppeal": false,
+                "judicialResults": [],
+                "respondents": [
+                  {
+                    "name": "CITYPF"
+                  }
+                ]
+              }
+            ],
+            "id": "6fe9c83d-7083-4bb4-9c73-d28d52bfbdd6",
+            "judicialResults": [],
+            "masterDefendantId": "6fe9c83d-7083-4bb4-9c73-d28d52bfbdd6",
+            "name": "CITYPF"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "cf0108e8-4653-324c-b4cb-8346e1d55c64",
+            "courtRoomId": "4e7d765f-7ea5-3ef7-bda6-3748d9b00e87",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 360,
+            "listingSequence": 0,
+            "sittingDay": "2025-11-06T10:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "5a034d06-da60-4429-8f96-2ae68bdd6969",
+        "isApplicationHearing": true,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Plea",
+          "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+        }
+      }
+    ],
+    "id": "95bc4d77-2f22-4ace-a15d-eed11855818c",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "OL107437679"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  }
+}

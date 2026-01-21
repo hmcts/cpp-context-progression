@@ -1,17 +1,25 @@
 package uk.gov.moj.cpp.progression.command;
 
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.command.helper.LAAHelper;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -28,6 +36,8 @@ public class RecordLAAReferenceApi {
     @Inject
     private Sender sender;
 
+    @Inject
+    private LAAHelper laaHelper;
 
     @Handles("progression.command.record-laareference-for-offence")
     public void handle(final JsonEnvelope envelope) {
@@ -43,15 +53,58 @@ public class RecordLAAReferenceApi {
     @Handles("progression.command.record-laareference-for-application")
     public void handleForApplication(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        validateInputsForApplication(payload);
+        validateInputsForApplication(envelope, payload);
 
-        final Metadata metadata = metadataFrom(envelope.metadata())
-                .withName("progression.command.handler.record-laareference-for-application")
-                .build();
+        final String applicationId = payload.getString(APPLICATION_ID, null);
+        final List<UUID> applicationIds = laaHelper.getChildApplicationList(fromString(applicationId));
+
+        final Metadata metadata = getMetadata(envelope, "progression.command.handler.record-laareference-for-application");
+
+        final Metadata metadataForChildApplications =
+                getMetadata(envelope, "progression.command.handler.record-laareference-for-application-on-application");
+
+        applicationIds.forEach(appId -> {
+            JsonObject updatedPayload = createObjectBuilder(payload)
+                    .add(APPLICATION_ID, appId.toString())
+                    .remove(SUBJECT_ID)// override with current id
+                    .remove(OFFENCE_ID)// override with current id
+                    .build();
+            sender.send(envelopeFrom(metadataForChildApplications, updatedPayload));
+        });
+
         sender.send(envelopeFrom(metadata, payload));
     }
 
-    private void validateInputsForApplication(final JsonObject payload) {
+    private static Metadata getMetadata(final JsonEnvelope envelope, final String name) {
+        return metadataFrom(envelope.metadata())
+                .withName(name)
+                .build();
+    }
+
+    @Handles("progression.command.record-laareference-for-application-on-application")
+    public void handleForApplicationOnApplication(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final String applicationId = payload.getString(APPLICATION_ID, null);
+
+        laaHelper.validateInputsForApplication(applicationId, envelope);
+        final List<UUID> childApplicationIds = laaHelper.getChildApplicationList(fromString(applicationId));
+
+        // append child app Ids to applicationId
+        final List<UUID> finalApplicationIdList = Stream.concat(Stream.of(UUID.fromString(applicationId)), childApplicationIds.stream()).toList();
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("progression.command.handler.record-laareference-for-application-on-application")
+                .build();
+
+        finalApplicationIdList.forEach(appId -> {
+            JsonObject updatedPayload = createObjectBuilder(payload)
+                    .add(APPLICATION_ID, appId.toString())  // override with current id
+                    .build();
+            sender.send(envelopeFrom(metadata, updatedPayload));
+        });
+
+    }
+
+    private void validateInputsForApplication(final JsonEnvelope envelope, final JsonObject payload) {
         final String applicationId = payload.containsKey(APPLICATION_ID) ? payload.getString(APPLICATION_ID) : null;
         final String subjectId = payload.containsKey(SUBJECT_ID) ? payload.getString(SUBJECT_ID) : null;
         final String offenceId = payload.containsKey(OFFENCE_ID) ? payload.getString(OFFENCE_ID) : null;
@@ -63,6 +116,16 @@ public class RecordLAAReferenceApi {
         }
         if (isInvalidUUID(offenceId)) {
             throw new BadRequestException("offenceId is not a valid UUID!");
+        }
+        final CourtApplication courtApplication = laaHelper.getCourtApplication(envelope, fromString(applicationId));
+        if (nonNull(courtApplication.getCourtApplicationCases())) {
+            boolean isOffencesAvailableInApplication = courtApplication.getCourtApplicationCases().stream()
+                    .anyMatch(courtApplicationCase -> nonNull(courtApplicationCase.getOffences()));
+            if (!isOffencesAvailableInApplication) {
+                throw new BadRequestException("No Offences found for application id: " + applicationId);
+            }
+        }else{
+            throw new BadRequestException("No linked case found for application id: " + applicationId);
         }
     }
 

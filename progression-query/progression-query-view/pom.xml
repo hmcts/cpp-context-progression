@@ -82,6 +82,18 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.hearing</groupId>
+                        <artifactId>hearing-query-api</artifactId>
+                        <version>${hearing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>

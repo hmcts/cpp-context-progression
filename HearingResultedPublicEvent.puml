@@ -1,0 +1,16 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+'@Handles("public.events.hearing.hearing-resulted")
+HearingResultEventProcessorPublicHearingResulted-> HearingResultEventProcessor: handleHearingResultedPublicEvent
+HearingResultHandler -> HearingResultHandler: handleCommandHearingResult
+HearingResultHandler -> HearingAggregate: saveHearingResult
+HearingAggregate -> HearingAggregate: processHearingResults
+HearingAggregate -> HearingAggregate: isEligibleForNextHearings
+HearingAggregate <-- HearingAggregate: createNextHearingEvents
+HearingResultedEventProcessor -> HearingResultedEventProcessor: handleNextHearingsRequested
+HearingResultedEventProcessor --> ListingService: listNextHearingsV2
+@enduml
+
+

@@ -1,0 +1,224 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "7f1ac3c8-8a0a-4e8c-811e-4bc002cae23e",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "dbdaf16d-a08f-4096-98d8-6a100cdd860e",
+            "caseReference": "RQ124344348",
+            "defendantId": "a1f5dfcf-3548-4b84-b158-af2a284aa886"
+          }
+        ],
+        "masterDefendantId": "a1f5dfcf-3548-4b84-b158-af2a284aa886",
+        "personDefendant": {
+          "arrestSummonsNumber": "2391NX0000753571577D",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "contact": {
+              "home": "0256914483",
+              "mobile": "05526479769",
+              "primaryEmail": "burt.steuber@example.com"
+            },
+            "dateOfBirth": "2001-08-27",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Burt",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Steuber",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2025-08-22",
+    "applicationReference": "RQ124344348",
+    "applicationStatus": "LISTED",
+    "commissionerOfOath": false,
+    "id": "6fd2c3d9-3c5f-4404-88e0-c3f12e393753",
+    "respondents": [
+      {
+        "id": "2741d59a-2dd5-4cf9-af1b-6503bff956e3",
+        "notificationRequired": true,
+        "prosecutingAuthority": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "name": "City of London Police",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityOUCode": "0480000",
+          "welshName": "Heddlu Dinas Llundain"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "laaApplnReference": {
+      "applicationReference": "7365182",
+      "effectiveEndDate": "2022-05-25",
+      "effectiveStartDate": "2022-05-25",
+      "laaContractNumber": "0J394Z",
+      "offenceLevelStatus": "Granted",
+      "statusCode": "GR",
+      "statusDate": "2022-05-25",
+      "statusDescription": "Granted (One Advocate)",
+      "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+    },
+    "subject": {
+      "id": "7f1ac3c8-8a0a-4e8c-811e-4bc002cae23e",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "dbdaf16d-a08f-4096-98d8-6a100cdd860e",
+            "caseReference": "RQ124344348",
+            "defendantId": "a1f5dfcf-3548-4b84-b158-af2a284aa886"
+          }
+        ],
+        "masterDefendantId": "a1f5dfcf-3548-4b84-b158-af2a284aa886",
+        "personDefendant": {
+          "arrestSummonsNumber": "2391NX0000753571577D",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "contact": {
+              "home": "0256914483",
+              "mobile": "05526479769",
+              "primaryEmail": "burt.steuber@example.com"
+            },
+            "dateOfBirth": "2001-08-27",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Burt",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Steuber",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false,
+      "associatedDefenceOrganisation": {
+        "defenceOrganisation": {
+          "organisation": {
+            "address": {
+              "address1": "defenceOrganisation",
+              "address2": "225",
+              "address3": "FuseRoad",
+              "address4": "East Croydon",
+              "address5": "SouthLondon",
+              "postcode": "LN72 9NG"
+            },
+            "contact": {
+              "fax": "765997700",
+              "home": "759019681",
+              "mobile": "1444010616",
+              "primaryEmail": "zdivwdsblf@gxvm7kqbh4.duzrohmbtt",
+              "secondaryEmail": "dusl1j0oxw@0rzelb2mln.rvjnuth3ar",
+              "work": "584591171"
+            },
+            "incorporationNumber": "cegH7rIgdX",
+            "name": "Test",
+            "registeredCharityNumber": "TestCharity"
+          },
+          "laaContractNumber": "LAA44569"
+        },
+        "associationStartDate": "2019-09-12",
+        "associationEndDate": "2019-12-12",
+        "fundingType": "REPRESENTATION_ORDER",
+        "isAssociatedByLAA": true
+      }
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "applicationWording": "Application for a confiscation order in connection with case {1} dealt with by {2} on {3}",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "VP",
+      "changeDate": "2025-03-17T11:21:34",
+      "code": "PC02541",
+      "commrOfOathFlag": false,
+      "contestedFeeApplicable": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "exParte": false,
+      "hearingCode": "APN",
+      "id": "2494fa76-b89e-47cd-8a9b-d8ede263e925",
+      "initialFeeApplicable": false,
+      "jurisdiction": "CROWN",
+      "lastModified": "2025-03-17T14:00:42.012Z",
+      "legislation": "In accordance with section 6 of the Proceeds of Crime Act 2002.",
+      "linkType": "LINKED",
+      "listingNotifTemplate": "NOT_APPLICABLE",
+      "offenceActiveOrder": "NOT_APPLICABLE",
+      "pleaApplicableFlag": true,
+      "prosecutorThirdPartyFlag": true,
+      "pssId": 628909,
+      "sowRef": "APPS",
+      "spiOutApplicableFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application for a confiscation order in the Crown Court",
+      "validFrom": "2003-03-26"
+    }
+  }
+}
+
+

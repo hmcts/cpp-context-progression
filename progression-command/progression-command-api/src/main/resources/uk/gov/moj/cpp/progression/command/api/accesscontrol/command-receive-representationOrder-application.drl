@@ -12,3 +12,12 @@ rule "Command - Rule for Receiving Representation Order for Application"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for Receiving Representation Order for Application on Application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.receive-representationorder-for-application-on-application");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end

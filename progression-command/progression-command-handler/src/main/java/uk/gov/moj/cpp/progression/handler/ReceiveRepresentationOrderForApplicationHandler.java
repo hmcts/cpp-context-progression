@@ -7,12 +7,11 @@ import static uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrg
 
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForApplication;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.core.courts.ReceiveRepresentationOrderForApplicationOnApplication;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -56,12 +55,6 @@ public class ReceiveRepresentationOrderForApplicationHandler {
 
     @Inject
     private OrganisationService organisationService;
-
-    @Inject
-    private Requester requester;
-
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Handles("progression.command.handler.receive-representationOrder-for-application")
     public void handle(final Envelope<ReceiveRepresentationOrderForApplication> envelope) throws EventStreamException {
@@ -110,6 +103,53 @@ public class ReceiveRepresentationOrderForApplicationHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
+    @Handles("progression.command.handler.receive-representationOrder-for-application-on-application")
+    public void handleOnApplication(final Envelope<ReceiveRepresentationOrderForApplicationOnApplication> envelope) throws EventStreamException {
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.handler.receive-representationOrder-for-application-on-application {}", envelope.payload());
+        }
+        final ReceiveRepresentationOrderForApplicationOnApplication receiveRepresentationOrderForApplicationOnApplication = envelope.payload();
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), createObjectBuilder().build());
+        final String statusCode = receiveRepresentationOrderForApplicationOnApplication.getStatusCode();
+        final UUID applicationId = receiveRepresentationOrderForApplicationOnApplication.getApplicationId();
+        final EventStream eventStream = eventSource.getStreamById(applicationId);
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final List<ApplicationCaseDefendantOrganisation> currentDefenceOrganisationForSubjectsCase =
+                applicationAggregate.getApplicationCaseDefendantOrganisations().stream()
+                        .map(applicationCaseDefendantOrganisation -> mapToUpdatedOrganisation(applicationCaseDefendantOrganisation, envelope))
+                        .toList();
+
+        final String laaContractNumber = receiveRepresentationOrderForApplicationOnApplication.getDefenceOrganisation().getLaaContractNumber();
+        final OrganisationDetails organisationDetailsForLaaContractNumber = usersGroupService.getOrganisationDetailsForLAAContractNumber(envelope, laaContractNumber);
+        final Optional<JsonObject> optionalLegalStatus = legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode
+                (jsonEnvelope, statusCode);
+
+        if (optionalLegalStatus.isEmpty()) {
+            LOGGER.error("Unable to get Ref Data for Legal Status by Status Code {}", statusCode);
+            return;
+        }
+
+        final JsonObject legalStatus = optionalLegalStatus.get();
+        final LaaReference laaReference = LaaReference.laaReference()
+                .withStatusCode(statusCode)
+                .withStatusId(fromString(legalStatus.getString("id")))
+                .withStatusDescription(legalStatus.getString("statusDescription"))
+                .withStatusDate(receiveRepresentationOrderForApplicationOnApplication.getStatusDate())
+                .withApplicationReference(receiveRepresentationOrderForApplicationOnApplication.getApplicationReference())
+                .withOffenceLevelStatus(legalStatus.getString("defendantLevelStatus", null))
+                .withEffectiveStartDate(receiveRepresentationOrderForApplicationOnApplication.getEffectiveStartDate())
+                .withEffectiveEndDate(receiveRepresentationOrderForApplicationOnApplication.getEffectiveEndDate())
+                .withLaaContractNumber(receiveRepresentationOrderForApplicationOnApplication.getDefenceOrganisation().getLaaContractNumber())
+                .build();
+
+        final LaaRepresentationOrder laaRepresentationOrder = LaaRepresentationOrder.laaRepresentationOrder()
+                .withLaaReference(laaReference)
+                .withDefenceOrganisation(receiveRepresentationOrderForApplicationOnApplication.getDefenceOrganisation())
+                .build();
+        final Stream<Object> events = applicationAggregate.receiveRepresentationOrderForApplicationOnApplication(applicationId, laaRepresentationOrder, organisationDetailsForLaaContractNumber, currentDefenceOrganisationForSubjectsCase);
+        appendEventsToStream(envelope, eventStream, events);
+    }
+
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
@@ -117,7 +157,7 @@ public class ReceiveRepresentationOrderForApplicationHandler {
                         .map(toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
 
-    private ApplicationCaseDefendantOrganisation mapToUpdatedOrganisation(final ApplicationCaseDefendantOrganisation organisation, final Envelope<ReceiveRepresentationOrderForApplication> envelope) {
+    private ApplicationCaseDefendantOrganisation mapToUpdatedOrganisation(final ApplicationCaseDefendantOrganisation organisation, final Envelope<?> envelope) {
         final UUID defendantId = organisation.getDefendantId();
 
         if (defendantId == null) {

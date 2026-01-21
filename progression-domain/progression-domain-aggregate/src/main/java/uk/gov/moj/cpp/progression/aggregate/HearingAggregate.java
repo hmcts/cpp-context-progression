@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -123,8 +124,8 @@ public class HearingAggregate implements Aggregate {
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
     private Map<LocalDate, List<BookingReferenceCourtScheduleIds>> bookingReferencesAndCourtScheduleIdsForHearingDay = new HashMap<>();
     private Boolean notifyNCES = false;
-    private Map<UUID,UUID> initiatedApplicationIdsForResultIds = new HashMap<>();
-    private Map<UUID,LocalDate> initiatedApplicationsIssueDateForResultIds = new HashMap<>();
+    private Map<UUID, UUID> initiatedApplicationIdsForResultIds = new HashMap<>();
+    private Map<UUID, LocalDate> initiatedApplicationsIssueDateForResultIds = new HashMap<>();
     private final List<AddedOffencesMovedToHearing> addedOffencesMovedToHearings = new ArrayList<>();
     private Boolean isHearingInitiateEnriched = false;
     private List<ProsecutionCase> seededProsecutionCases = null;
@@ -146,7 +147,6 @@ public class HearingAggregate implements Aggregate {
     private static final String GUILTY = "GUILTY";
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
-    private static final UUID WITHDRAWN_RESULT_ID = UUID.fromString("eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8");
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
     private static final String[] onBailStatusCodes = new String[]{ "B", "U"};
@@ -300,7 +300,7 @@ public class HearingAggregate implements Aggregate {
         if(isHearingInitiateEnriched){
             return;
         }
-        if(! addedOffencesMovedToHearings.contains(addedOffencesMovedToHearing)) {
+        if (!addedOffencesMovedToHearings.contains(addedOffencesMovedToHearing)) {
             addedOffencesMovedToHearings.add(addedOffencesMovedToHearing);
         }
     }
@@ -367,7 +367,7 @@ public class HearingAggregate implements Aggregate {
         }
 
         final Map<UUID, List<UUID>> finalAllDocumentsSharedCaseDefMap = allDocumentsSharedCaseDefMap;
-        if(isNull(finalAllDocumentsSharedCaseDefMap.get(caseId))){
+        if (isNull(finalAllDocumentsSharedCaseDefMap.get(caseId))) {
             finalAllDocumentsSharedCaseDefMap.put(caseId, new ArrayList<>());
         }
         finalAllDocumentsSharedCaseDefMap.get(caseId).add(defendantId);
@@ -445,7 +445,7 @@ public class HearingAggregate implements Aggregate {
                         .map(ListDefendantRequest::getReferralReason)
                         .collect(toList());
 
-                if(isNotEmpty(referralReasons)) {
+                if (isNotEmpty(referralReasons)) {
                     hearingBuilder.withDefendantReferralReasons(referralReasons);
                 }
             }
@@ -532,21 +532,38 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         LOGGER.info("Hearing with id {} and the applicationId: {} subjectId: {} offenceId: {}", hearingId, applicationId, subjectId, offenceId);
 
-        if (!isNull(this.hearing.getCourtApplications())) {
-            Optional<CourtApplication> courtApplicationOptional = this.hearing.getCourtApplications().stream().filter(ca -> ca.getId().equals(applicationId)).findFirst();
-            if (courtApplicationOptional.isPresent()) {
-                CourtApplication courtApplication = courtApplicationOptional.get();
-                if (!isNull(courtApplication.getSubject()) && courtApplication.getSubject().getId().equals(subjectId)) {
-                    Offence offence = findOffenceById(courtApplication, offenceId);
-                    if (!areLaaReferencesSame(offence.getLaaApplnReference(), laaReference)) {
-                        streamBuilder.add(ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
-                                .withApplicationId(applicationId)
-                                .withSubjectId(subjectId)
-                                .withOffenceId(offenceId)
-                                .withLaaReference(laaReference)
-                                .withHearingId(hearingId)
-                                .build());
-                    }
+        if (isNull(this.hearing.getCourtApplications())) {
+            return apply(streamBuilder.build());
+        }
+
+        final Optional<CourtApplication> courtApplicationOptional = this.hearing.getCourtApplications().stream().filter(ca -> ca.getId().equals(applicationId)).findFirst();
+
+        if (courtApplicationOptional.isEmpty()) {
+            return apply(streamBuilder.build());
+        }
+
+        CourtApplication courtApplication = courtApplicationOptional.get();
+        if (nonNull(courtApplication.getSubject()) && courtApplication.getSubject().getId().equals(subjectId)) {
+            if (nonNull(offenceId)) {
+                Offence offence = findOffenceById(courtApplication, offenceId);
+                if (!areLaaReferencesSame(offence.getLaaApplnReference(), laaReference)) {
+                    streamBuilder.add(ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
+                            .withApplicationId(applicationId)
+                            .withSubjectId(subjectId)
+                            .withOffenceId(offenceId)
+                            .withLaaReference(laaReference)
+                            .withHearingId(hearingId)
+                            .build());
+                }
+            } else { //Breach and POCA applications has no offence. Attach the laa reference to the court application level
+                if (!areLaaReferencesSame(courtApplication.getLaaApplnReference(), laaReference)) {
+                    streamBuilder.add(ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
+                            .withApplicationId(applicationId)
+                            .withSubjectId(subjectId)
+                            .withOffenceId(null)
+                            .withLaaReference(laaReference)
+                            .withHearingId(hearingId)
+                            .build());
                 }
             }
         }
@@ -561,11 +578,19 @@ public class HearingAggregate implements Aggregate {
                     if (courtApplication.getId().equals(applicationId) &&
                             !isNull(courtApplication.getSubject()) &&
                             courtApplication.getSubject().getId().equals(subjectId)) {
-                        List<CourtApplicationCase> updatedCases = getUpdatedCases(courtApplication, offenceId, laaReference);
-                        return CourtApplication.courtApplication()
-                                .withValuesFrom(courtApplication)
-                                .withCourtApplicationCases(updatedCases)
-                                .build();
+
+                        if (nonNull(offenceId)) {
+                            List<CourtApplicationCase> updatedCases = getUpdatedCases(courtApplication, offenceId, laaReference);
+                            return CourtApplication.courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withCourtApplicationCases(updatedCases)
+                                    .build();
+                        } else { //Breach and POCA applications has no offence. Attach the laa reference to the court application level
+                            return CourtApplication.courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withLaaApplnReference(laaReference)
+                                    .build();
+                        }
                     }
                     return courtApplication;
                 })
@@ -748,8 +773,8 @@ public class HearingAggregate implements Aggregate {
     /**
      * This command was used to share results before implementing amendReshare feature (GPE-15210)
      * and multiday share (DD-3429). As part of amendReshare feature (GPE-15210) and multiday share
-     * (DD-3429) feature this command call is being replaced by {@link
-     * HearingAggregate#processHearingResults}
+     * (DD-3429) feature this command call is being replaced by
+     * {@link HearingAggregate#processHearingResults}
      *
      * @param hearing
      * @param sharedTime
@@ -979,18 +1004,19 @@ public class HearingAggregate implements Aggregate {
     }
 
     @SuppressWarnings("squid:S1066")
-    private UUID findMatchedMasterDefendantId(final Defendant defendant){
-        if(null != this.hearing && null != this.hearing.getProsecutionCases()) {
-            if(null == defendant.getMasterDefendantId() || defendant.getId().equals(defendant.getMasterDefendantId())) {
+    private UUID findMatchedMasterDefendantId(final Defendant defendant) {
+        if (null != this.hearing && null != this.hearing.getProsecutionCases()) {
+            if (null == defendant.getMasterDefendantId() || defendant.getId().equals(defendant.getMasterDefendantId())) {
                 final Optional<Defendant> matchedDefendant = this.hearing.getProsecutionCases().stream().flatMap(x -> x.getDefendants().stream()).filter(d -> d.getId().equals(defendant.getId())).findFirst();
                 if (matchedDefendant.isPresent()) {
-                   final  UUID matchedMasterDefendantId = matchedDefendant.get().getMasterDefendantId();
-                     return  matchedMasterDefendantId == null ? defendant.getMasterDefendantId() : matchedMasterDefendantId;
+                    final UUID matchedMasterDefendantId = matchedDefendant.get().getMasterDefendantId();
+                    return matchedMasterDefendantId == null ? defendant.getMasterDefendantId() : matchedMasterDefendantId;
                 }
             }
         }
-        return  defendant.getMasterDefendantId();
+        return defendant.getMasterDefendantId();
     }
+
     public Stream<Object> processHearingExtended(final HearingListingNeeds hearingRequest, final List<UUID> shadowListedOffences) {
         return apply(Stream.of(HearingExtendedProcessed.hearingExtendedProcessed()
                 .withHearingRequest(hearingRequest)
@@ -1034,19 +1060,19 @@ public class HearingAggregate implements Aggregate {
 
         Hearing updatedHearing = dedupAllReportingRestrictions(hearing);
         updatedHearing = deDupAllApplications(updatedHearing);
-        if(isNull(this.hearing) || isNull(this.hearing.getProsecutionCases())) {
+        if (isNull(this.hearing) || isNull(this.hearing.getProsecutionCases())) {
             this.hearing = updatedHearing;
-        }else {
+        } else {
             updateHearingWithSeedingHearings(updatedHearing);
         }
     }
 
     private void updateHearingWithSeedingHearings(final Hearing updatedHearing) {
         final Map<UUID, SeedingHearing> seedingMap = this.hearing.getProsecutionCases().stream()
-                .flatMap(pc->pc.getDefendants().stream())
+                .flatMap(pc -> pc.getDefendants().stream())
                 .flatMap(def -> def.getOffences().stream())
                 .filter(offence -> nonNull(offence.getSeedingHearing()))
-                .collect(Collectors.toMap(Offence::getId, Offence::getSeedingHearing,  (existing, replacement) -> replacement));
+                .collect(Collectors.toMap(Offence::getId, Offence::getSeedingHearing, (existing, replacement) -> replacement));
 
         this.hearing = Hearing.hearing().withValuesFrom(updatedHearing)
                 .withProsecutionCases(ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
@@ -1086,12 +1112,12 @@ public class HearingAggregate implements Aggregate {
     }
 
     private void handleCaseAddedToHearingBdf(CaseAddedToHearingBdf caseAddedToHearingBdf) {
-        if(isNull(this.hearing)){
+        if (isNull(this.hearing)) {
             return;
         }
         final Hearing updatedHearing = addCaseToHearing(this.hearing, caseAddedToHearingBdf.getProsecutionCases());
 
-        this.committingCourt = findCommittingCourt( updatedHearing);
+        this.committingCourt = findCommittingCourt(updatedHearing);
         setHearing(updatedHearing);
     }
 
@@ -1120,10 +1146,9 @@ public class HearingAggregate implements Aggregate {
 
         if (isNull(courtApplication)) {
             return courtApplications;
-        }
-        else if (isNull(courtApplications)) {
+        } else if (isNull(courtApplications)) {
             return Stream.of(courtApplication).collect(toList());
-        }  else {
+        } else {
             if (courtApplications.stream().anyMatch(app -> app.getId().equals(courtApplication.getId()))) {
                 return courtApplications.stream().map(app -> app.getId().equals(courtApplication.getId()) ? courtApplication : app).collect(toList());
             } else {
@@ -1175,7 +1200,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate) {
 
-        if(this.deleted || this.duplicate || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)){
+        if (this.deleted || this.duplicate || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
             return Stream.empty();
         }
 
@@ -1193,11 +1218,11 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> recordUpdateMatchedDefendantDetailRequest(final DefendantUpdate defendantUpdate, final List<Defendant> defendants) {
         final UUID defendantId = defendantUpdate.getId();
 
-        if (isNull(hearing.getProsecutionCases())){
-            if (isNull(hearing.getCourtApplications())){
+        if (isNull(hearing.getProsecutionCases())) {
+            if (isNull(hearing.getCourtApplications())) {
                 return empty();
             }
-            if(isNotEmpty(defendants)) {
+            if (isNotEmpty(defendants)) {
                 final Optional<Defendant> originalDefendantPreviousVersion = defendants.stream()
                         .filter(defendant -> defendant.getId().equals(defendantId))
                         .findFirst();
@@ -1206,7 +1231,7 @@ public class HearingAggregate implements Aggregate {
                         .withDefendant(originalDefendantPreviousVersion.get())
                         .withMatchedDefendants(defendants.stream().filter(defendant -> !defendant.getId().equals(defendantId)).toList())
                         .build()));
-            }else{
+            } else {
                 return apply(Stream.of(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
                         .withDefendantUpdate(defendantUpdate)
                         .withMatchedDefendants(List.of())
@@ -1240,7 +1265,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> deleteHearing(final UUID hearingId) {
 
-        if (this.deleted  || (nonNull(hearingListingStatus) && hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)))  {
+        if (this.deleted || (nonNull(hearingListingStatus) && hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED))) {
             return empty();
         }
 
@@ -1299,7 +1324,7 @@ public class HearingAggregate implements Aggregate {
         final List<UUID> courtApplicationIds = isNotEmpty(hearing.getCourtApplications()) ? getCourtApplicationIds(hearing) : null;
 
         final Stream.Builder builder = Stream.builder();
-        if(nonNull(hearingListingStatus) && !hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)) {
+        if (nonNull(hearingListingStatus) && !hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)) {
             builder.add(HearingDeleted.hearingDeleted()
                     .withHearingId(hearingId)
                     .withCourtApplicationIds(courtApplicationIds)
@@ -1317,9 +1342,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     /**
-     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW.
-     * The aggregate function is being added to be invoked only by the BDF, purpose of this function to raise 'progression.event.hearing-deleted'
-     * event to remove any child entries of deleted hearing entity from the view store.
+     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW. The aggregate function is
+     * being added to be invoked only by the BDF, purpose of this function to raise
+     * 'progression.event.hearing-deleted' event to remove any child entries of deleted hearing
+     * entity from the view store.
      *
      * @param hearingId The already deleted hearing id
      * @return The Stream object
@@ -1368,7 +1394,7 @@ public class HearingAggregate implements Aggregate {
                 .collect(toList());
 
         // Hearing left with no case on it so delete the hearing
-        if(prosecutionCaseRemainingList.isEmpty()) {
+        if (prosecutionCaseRemainingList.isEmpty()) {
             return apply(Stream.of(HearingDeleted.hearingDeleted()
                     .withHearingId(this.hearing.getId())
                     .withProsecutionCaseIds(prosecutionCasesToBeRemoved)
@@ -1394,21 +1420,21 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> updateApplicationHearing(final DefendantUpdate defendantUpdate) {
-        if(nonNull(hearing) && nonNull(hearing.getCourtApplications())) {
+        if (nonNull(hearing) && nonNull(hearing.getCourtApplications())) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("updateApplicationWithUpdatedDefendant called for hearing id {}", hearing.getId());
             }
             final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
-                    .map(application -> updateApplicationWithUpdatedDefendantInfo(application,defendantUpdate))
+                    .map(application -> updateApplicationWithUpdatedDefendantInfo(application, defendantUpdate))
                     .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
             final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
                     .withCourtApplications(updatedCourtApplications).build();
             final Stream<Object> event1 = apply(Stream.of(ApplicationHearingDefendantUpdated.applicationHearingDefendantUpdated()
-                            .withDefendant(defendantUpdate)
-                            .withHearing(updatedHearing).build()));
+                    .withDefendant(defendantUpdate)
+                    .withHearing(updatedHearing).build()));
             return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
         }
-       return Stream.empty();
+        return Stream.empty();
     }
 
     private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {
@@ -1423,15 +1449,15 @@ public class HearingAggregate implements Aggregate {
 
     private static void updateSubjectWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
                                                         final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getSubject()) && nonNull(persistedApplication.getSubject().getMasterDefendant()) &&
-                updatedDefendantId.equals(persistedApplication.getSubject().getMasterDefendant().getMasterDefendantId())){
-            if(isDefendantOrganisation){
+        if (nonNull(persistedApplication.getSubject()) && nonNull(persistedApplication.getSubject().getMasterDefendant()) &&
+                updatedDefendantId.equals(persistedApplication.getSubject().getMasterDefendant().getMasterDefendantId())) {
+            if (isDefendantOrganisation) {
                 courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
                         .withValuesFrom(persistedApplication.getSubject())
-                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getSubject().getMasterDefendant() , defendant))
+                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getSubject().getMasterDefendant(), defendant))
                         .withUpdatedOn(LocalDate.now())
                         .build());
-            }else{
+            } else {
                 courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
                         .withValuesFrom(persistedApplication.getSubject())
                         .withMasterDefendant(buildPersonDefendant(persistedApplication.getSubject().getMasterDefendant(), defendant))
@@ -1443,15 +1469,15 @@ public class HearingAggregate implements Aggregate {
 
     private static void updateApplicantWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
                                                           final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getApplicant()) && nonNull(persistedApplication.getApplicant().getMasterDefendant()) &&
-                updatedDefendantId.equals(persistedApplication.getApplicant().getMasterDefendant().getMasterDefendantId())){
-            if(isDefendantOrganisation){
+        if (nonNull(persistedApplication.getApplicant()) && nonNull(persistedApplication.getApplicant().getMasterDefendant()) &&
+                updatedDefendantId.equals(persistedApplication.getApplicant().getMasterDefendant().getMasterDefendantId())) {
+            if (isDefendantOrganisation) {
                 courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withValuesFrom(persistedApplication.getApplicant())
                         .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
                         .withUpdatedOn(LocalDate.now())
                         .build());
-            }else{
+            } else {
                 courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withValuesFrom(persistedApplication.getApplicant())
                         .withMasterDefendant(buildPersonDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
@@ -1463,7 +1489,7 @@ public class HearingAggregate implements Aggregate {
 
     private static void updateRespondentsWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
                                                             final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getRespondents())) {
+        if (nonNull(persistedApplication.getRespondents())) {
             final Optional<CourtApplicationParty> updatedRespondent = persistedApplication.getRespondents().stream()
                     .filter(resp -> nonNull(resp.getMasterDefendant()) && resp.getMasterDefendant().getMasterDefendantId()
                             .equals(updatedDefendantId)).findFirst();
@@ -1645,7 +1671,7 @@ public class HearingAggregate implements Aggregate {
     private Defendant fromUpdatedDefendant(final Defendant defendant, final DefendantUpdate defendantUpdate) {
         return Defendant.defendant()
                 .withValuesFrom(defendant)
-                .withOffences(nonNull(defendant.getOffences())?enrichOffence(defendant.getOffences(),defendantUpdate.getOffences()):defendant.getOffences())
+                .withOffences(nonNull(defendant.getOffences()) ? enrichOffence(defendant.getOffences(), defendantUpdate.getOffences()) : defendant.getOffences())
                 .withNumberOfPreviousConvictionsCited(defendantUpdate.getNumberOfPreviousConvictionsCited())
                 .withProsecutionAuthorityReference(defendantUpdate.getProsecutionAuthorityReference())
                 .withWitnessStatement(defendantUpdate.getWitnessStatement())
@@ -1662,11 +1688,10 @@ public class HearingAggregate implements Aggregate {
                 .build();
 
 
-
     }
 
     private List<Offence> enrichOffence(final List<Offence> offences, final List<Offence> updatedOffences) {
-        if (isNull(updatedOffences)){
+        if (isNull(updatedOffences)) {
             return offences;
         }
         return
@@ -1690,7 +1715,7 @@ public class HearingAggregate implements Aggregate {
 
     private void onOffencesRemovedFromHearing(final OffencesRemovedFromHearing offencesRemovedFromHearing) {
 
-        if(ofNullable(offencesRemovedFromHearing.getIsResultFlow()).orElse(false)){
+        if (ofNullable(offencesRemovedFromHearing.getIsResultFlow()).orElse(false)) {
             seededProsecutionCases = ofNullable(this.hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .map(pc -> ProsecutionCase.prosecutionCase().withValuesFrom(pc)
                             .withDefendants(pc.getDefendants().stream().map(def -> Defendant.defendant().withValuesFrom(def)
@@ -1699,7 +1724,7 @@ public class HearingAggregate implements Aggregate {
                             .build()).toList();
         } else {
             // update newOffences when an offence was deleted from the hearing.
-            final Set<UUID> offences = hearing.getProsecutionCases().stream().flatMap( pc -> pc.getDefendants().stream())
+            final Set<UUID> offences = hearing.getProsecutionCases().stream().flatMap(pc -> pc.getDefendants().stream())
                     .flatMap(def -> def.getOffences().stream()).map(Offence::getId).collect(Collectors.toSet());
             newOffences.removeIf( off -> !offences.contains(off));
             addedOffencesMovedToHearings.clear();
@@ -1784,8 +1809,8 @@ public class HearingAggregate implements Aggregate {
         Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(updatedCourtApplications)
                 .withProsecutionCases(updatedProsecutionCasesForOriginalHearing).build();
-        final Set<UUID> CTLExpiredOffenceIds = stopCTLExpiryForV2(hearing, resultIdList);
-        if(isNotEmpty(CTLExpiredOffenceIds)) {
+        final Set<UUID> ctlExpiredOffenceIds = stopCTLExpiryForV2(hearing, resultIdList);
+        if(isNotEmpty(ctlExpiredOffenceIds)) {
             updatedHearing = Hearing.hearing().withValuesFrom(updatedHearing)
                     .withProsecutionCases(ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                             .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
@@ -1793,7 +1818,7 @@ public class HearingAggregate implements Aggregate {
                                             .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
                                                     .withOffences(ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                                             .map(offence -> Offence.offence().withValuesFrom(offence)
-                                                                    .withCustodyTimeLimit(CTLExpiredOffenceIds.contains(offence.getId()) ? null : offence.getCustodyTimeLimit())
+                                                                    .withCustodyTimeLimit(ctlExpiredOffenceIds.contains(offence.getId()) ? null : offence.getCustodyTimeLimit())
                                                                     .build())
                                                             .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                                                     .build())
@@ -1819,7 +1844,7 @@ public class HearingAggregate implements Aggregate {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .collect(toList()));
-        if(isNotEmpty(hearing.getProsecutionCases()) && isNotEmpty(judicialResults)) {
+        if (isNotEmpty(hearing.getProsecutionCases()) && isNotEmpty(judicialResults)) {
             streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
         }
 
@@ -1959,12 +1984,15 @@ public class HearingAggregate implements Aggregate {
 
 
     /**
-     * This method is responsible for merging cases, defendants and offences between HearingListingNeeds which is passed in payload and hearing in aggregate.
-     * Since the case can be splitted at case, defendant and offence levels when we are merging here we need to compare at every level and merge it back.
+     * This method is responsible for merging cases, defendants and offences between
+     * HearingListingNeeds which is passed in payload and hearing in aggregate. Since the case can
+     * be splitted at case, defendant and offence levels when we are merging here we need to compare
+     * at every level and merge it back.
      *
      * @param hearingListingNeeds HearingListingNeeds which is passed in payload
      * @param resultCases         Result cases
-     * @return set of new case with merged cases, defendant or offence based on which level spilt has happened.
+     * @return set of new case with merged cases, defendant or offence based on which level spilt
+     * has happened.
      */
     private Set<ProsecutionCase> getProsecutionCasesAfterMergeAtDifferentLevel(HearingListingNeeds hearingListingNeeds, final Set<ProsecutionCase> resultCases) {
         if (nonNull(this.hearing.getProsecutionCases()) && nonNull(hearingListingNeeds.getProsecutionCases())) {
@@ -2090,7 +2118,7 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateAllocationFields(final UpdateHearingForAllocationFields updateHearingForAllocationFields) {
-        if(nonNull(this.hearing)) {
+        if (nonNull(this.hearing)) {
             final Stream<Object> event1 = apply(Stream.of(HearingUpdatedForAllocationFields.hearingUpdatedForAllocationFields()
                     .withHearingDays(updateHearingForAllocationFields.getHearingDays())
                     .withCourtCentre(updateHearingForAllocationFields.getCourtCentre())
@@ -2100,16 +2128,16 @@ public class HearingAggregate implements Aggregate {
                     .build()));
 
             return Stream.concat(Stream.concat(event1,
-                    populateHearingToProbationCaseWorker()),
+                            populateHearingToProbationCaseWorker()),
                     populateHearingToVEP());
-        } else  {
+        } else {
             return apply(empty());
         }
     }
 
     public Stream<Object> populateHearingToProbationCaseWorker() {
         if (HearingListingStatus.SENT_FOR_LISTING.equals(this.hearingListingStatus)
-                || isNull(hearing)  || Boolean.TRUE.equals(hearing.getIsBoxHearing())
+                || isNull(hearing) || Boolean.TRUE.equals(hearing.getIsBoxHearing())
                 || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
             return apply(empty());
         }
@@ -2201,14 +2229,14 @@ public class HearingAggregate implements Aggregate {
                     .withHearingId(this.hearing.getId())
                     .withNewOffences(newOffences);
 
-            if(updatedOffences != null){
+            if (updatedOffences != null) {
                 hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.contains(offence.getId()))
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())));
             }
             final HearingOffencesUpdatedV2 hearingOffencesUpdatedV2 = hearingOffencesUpdatedV2Builder.build();
-            if(CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getNewOffences()) && CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getUpdatedOffences())){
+            if (CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getNewOffences()) && CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getUpdatedOffences())) {
                 return Stream.empty();
-            }else{
+            } else {
                 return apply(Stream.of(hearingOffencesUpdatedV2));
             }
         } else {
@@ -2288,7 +2316,7 @@ public class HearingAggregate implements Aggregate {
 
     private Hearing getHearingWithNewVerdictForApplication(final UUID applicationId, final Verdict verdict) {
         Hearing hearingObj;
-        if(nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
+        if (nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
             hearingObj = Hearing.hearing().withValuesFrom(hearing)
                     .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                             .map(courtApplication -> !courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
@@ -2359,7 +2387,7 @@ public class HearingAggregate implements Aggregate {
 
     private Offence getOffenceWithNewVerdict(final Offence offence, final Verdict verdict) {
         if (verdict.getOffenceId().equals(offence.getId())) {
-            if(nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
+            if (nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
                 return Offence.offence().withValuesFrom(offence)
                         .withVerdict(null)
                         .build();
@@ -2415,10 +2443,10 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object>  updateHearingDetailsInUnifiedSearch(final UUID hearingId) {
+    public Stream<Object> updateHearingDetailsInUnifiedSearch(final UUID hearingId) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        if(hearing == null){
+        if (hearing == null) {
             LOGGER.error("Hearing not found with stream id: {}", hearingId);
         } else {
             streamBuilder.add(CaseHearingDetailsUpdatedInUnifiedSearch.caseHearingDetailsUpdatedInUnifiedSearch()
@@ -2531,10 +2559,10 @@ public class HearingAggregate implements Aggregate {
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .forEach(defendant -> {
                                 if (defendant.getId().equals(hearingOffencesUpdated.getDefendantId())) {
-                                    if(hearingOffencesUpdated.getUpdatedOffences() != null) {
-                                        defendant.getOffences().replaceAll(offence -> hearingOffencesUpdated.getUpdatedOffences().stream().filter(o -> o.getId().equals(offence.getId())).findFirst().orElse(offence) );
+                                    if (hearingOffencesUpdated.getUpdatedOffences() != null) {
+                                        defendant.getOffences().replaceAll(offence -> hearingOffencesUpdated.getUpdatedOffences().stream().filter(o -> o.getId().equals(offence.getId())).findFirst().orElse(offence));
                                     }
-                                    if(hearingOffencesUpdated.getNewOffences() != null){
+                                    if (hearingOffencesUpdated.getNewOffences() != null) {
                                         defendant.getOffences().addAll(hearingOffencesUpdated.getNewOffences());
                                     }
                                     defendant.getOffences().sort(Comparator.comparing(o -> ofNullable(o.getOrderIndex()).orElse(0)));
@@ -2632,8 +2660,8 @@ public class HearingAggregate implements Aggregate {
     }
 
     /**
-     * This method aims to delete applications which have been created in the previous result
-     * and have been amended in the current result.
+     * This method aims to delete applications which have been created in the previous result and
+     * have been amended in the current result.
      *
      * @param hearing
      * @return
@@ -2656,8 +2684,8 @@ public class HearingAggregate implements Aggregate {
     }
 
     /**
-     * This method aims to raise events for delete applications which have been created in the previous result
-     * and have been amended with the same result id in the current result.
+     * This method aims to raise events for delete applications which have been created in the
+     * previous result and have been amended with the same result id in the current result.
      *
      * @param hearing
      * @param events
@@ -2678,9 +2706,8 @@ public class HearingAggregate implements Aggregate {
     }
 
     /**
-     * This method aims to raise events for delete applications which have been created in the previous result
-     * and have been amended with the different result id in the current result.
-     *
+     * This method aims to raise events for delete applications which have been created in the
+     * previous result and have been amended with the different result id in the current result.
      *
      * @param hearing
      * @param events
@@ -2803,8 +2830,8 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
 
-        if(events.stream().anyMatch(event -> event instanceof DeleteNextHearingsRequested) &&
-                events.stream().anyMatch(event -> event instanceof NextHearingsRequested)){
+        if (events.stream().anyMatch(event -> event instanceof DeleteNextHearingsRequested) &&
+                events.stream().anyMatch(event -> event instanceof NextHearingsRequested)) {
             events.removeIf(event -> event instanceof DeleteNextHearingsRequested);
             events.removeIf(event -> event instanceof NextHearingsRequested);
             DeletePreviousHearingsAndCreateNextHearing deletePreviousHearingsAndCreateNextHearing = DeletePreviousHearingsAndCreateNextHearing.deletePreviousHearingsAndCreateNextHearing()
@@ -2834,7 +2861,7 @@ public class HearingAggregate implements Aggregate {
                 .build()));
     }
 
-    private boolean isDeleteNextHearing(final String sittingDay, final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings, final boolean hasNewOrAmendedUnscheduledNextHearings, final boolean isNextHearingDeleted,final boolean isUnscheduledHearingDeleted) {
+    private boolean isDeleteNextHearing(final String sittingDay, final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings, final boolean hasNewOrAmendedUnscheduledNextHearings, final boolean isNextHearingDeleted, final boolean isUnscheduledHearingDeleted) {
         return (hasNewOrAmendedNextHearingsOrRelatedNextHearings || hasNewOrAmendedUnscheduledNextHearings || isNextHearingDeleted || isUnscheduledHearingDeleted)
                 && hasNextHearingForHearingDay.getOrDefault(sittingDay, Boolean.FALSE);
     }
@@ -3143,7 +3170,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     private boolean isRequestDateBeforeHearingDate(final LocalDate requestDate) {
-        if(ofNullable(hearing.getHearingDays()).isPresent()) {
+        if (ofNullable(hearing.getHearingDays()).isPresent()) {
             return hearing.getHearingDays().stream()
                     .map(HearingDay::getSittingDay)
                     .sorted()
@@ -3324,14 +3351,14 @@ public class HearingAggregate implements Aggregate {
         }
 
         final List<ProsecutionCase> seededCases = prosecutionCases.stream()
-                    .filter(pc -> pc.getDefendants().stream().flatMap(def -> def.getOffences().stream())
-                            .filter(offence -> nonNull(offence.getSeedingHearing()))
-                            .anyMatch(offence -> offence.getSeedingHearing().getSeedingHearingId().equals(moveOffencesFromOldNextHearing.getSeedingHearingId())))
-                    .toList();
+                .filter(pc -> pc.getDefendants().stream().flatMap(def -> def.getOffences().stream())
+                        .filter(offence -> nonNull(offence.getSeedingHearing()))
+                        .anyMatch(offence -> offence.getSeedingHearing().getSeedingHearingId().equals(moveOffencesFromOldNextHearing.getSeedingHearingId())))
+                .toList();
 
         return apply(Stream.of(OffencesMovedToNewNextHearing.offencesMovedToNewNextHearing()
-                        .withHearingId(moveOffencesFromOldNextHearing.getNewHearingId())
-                        .withSeededCase(seededCases.stream().map(pc -> SeededCase.seededCase()
+                .withHearingId(moveOffencesFromOldNextHearing.getNewHearingId())
+                .withSeededCase(seededCases.stream().map(pc -> SeededCase.seededCase()
                                 .withId(pc.getId())
                                 .withSeededDefendants(pc.getDefendants().stream()
                                         .filter(def -> def.getOffences().stream()
@@ -3344,8 +3371,8 @@ public class HearingAggregate implements Aggregate {
                                                 .build())
                                         .collect(collectingAndThen(toList(), l -> l.isEmpty() ? null : l)))
                                 .build())
-                                .filter(seededCase -> nonNull(seededCase.getSeededDefendants()))
-                                .collect(toList()))
+                        .filter(seededCase -> nonNull(seededCase.getSeededDefendants()))
+                        .collect(toList()))
                 .build()).filter(event -> ! event.getSeededCase().isEmpty()).map(o -> o));
     }
 
@@ -3354,12 +3381,12 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         moveOffencesToNewNextHearing.getSeededCase().forEach(seededCase ->
-                        ofNullable(seededCase.getSeededDefendants()).stream().flatMap(Collection::stream).filter(def->  this.hearing.getProsecutionCases().stream()
-                                        .filter(pcase -> pcase.getId().equals(seededCase.getId()))
-                                        .flatMap(pcase -> pcase.getDefendants().stream())
-                                        .filter(pdef -> pdef.getId().equals(def.getId()))
-                                        .anyMatch(pdef -> def.getSeededOffences().stream().anyMatch( off -> notInHearingState(seededCase.getId(), pdef.getId(), off.getId()))))
-                                .forEach(def -> {
+                ofNullable(seededCase.getSeededDefendants()).stream().flatMap(Collection::stream).filter(def->  this.hearing.getProsecutionCases().stream()
+                                .filter(pcase -> pcase.getId().equals(seededCase.getId()))
+                                .flatMap(pcase -> pcase.getDefendants().stream())
+                                .filter(pdef -> pdef.getId().equals(def.getId()))
+                                .anyMatch(pdef -> def.getSeededOffences().stream().anyMatch( off -> notInHearingState(seededCase.getId(), pdef.getId(), off.getId()))))
+                        .forEach(def -> {
                                     streamBuilder.add(AddedOffencesMovedToHearing.addedOffencesMovedToHearing()
                                             .withHearingId(moveOffencesToNewNextHearing.getHearingId())
                                             .withDefendantId(def.getId())
@@ -3368,8 +3395,8 @@ public class HearingAggregate implements Aggregate {
                                             .withNewOffences(def.getSeededOffences().stream().filter(off -> notInHearingState(seededCase.getId(), def.getId(), off.getId())).toList())
                                             .build());
                                 }
-                               )
-                );
+                        )
+        );
 
 
         return apply(streamBuilder.build());
@@ -3377,8 +3404,8 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> addCasesToHearingBdf(final UUID hearingId, final List<ProsecutionCase> cases) {
         final Stream<Object>  events = apply(Stream.of(CaseAddedToHearingBdf.caseAddedToHearingBdf()
-                        .withHearingId(hearingId)
-                        .withProsecutionCases(cases)
+                .withHearingId(hearingId)
+                .withProsecutionCases(cases)
                 .build()));
 
         return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
@@ -3484,7 +3511,7 @@ public class HearingAggregate implements Aggregate {
     private static boolean isOnBailAndHasCTLExpiryForV2(final Offence offence) {
         return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) &&
                 offence.getJudicialResults().stream().filter(Objects::nonNull)
-                        .filter(result -> isResultNotDeleted( result))
+                        .filter(HearingAggregate::isResultNotDeleted)
                         .anyMatch(result -> ofNullable(result.getJudicialResultPrompts()).map(Collection::stream).orElseGet(Stream::empty)
                                 .anyMatch(HearingAggregate::isPromptOnBail)
                         );
@@ -3502,7 +3529,7 @@ public class HearingAggregate implements Aggregate {
     private static boolean hasFinalResultAndHasCTLExpiryForV2(final Offence offence,
                                                               final List<UUID> resultIdList) {
         return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) && offence.getJudicialResults().stream().filter(Objects::nonNull)
-                .filter(result -> isResultNotDeleted(result))
+                .filter(HearingAggregate::isResultNotDeleted)
                 .anyMatch(result -> resultIdList != null && resultIdList.contains(result.getJudicialResultTypeId()));
     }
 

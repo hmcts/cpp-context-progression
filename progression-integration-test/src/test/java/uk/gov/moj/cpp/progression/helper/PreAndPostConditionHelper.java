@@ -127,6 +127,12 @@ public class PreAndPostConditionHelper {
                 getLAAReferenceForApplicationOffenceJsonBodyWithStatus(statusCode, statusDescription, applicationReference));
     }
 
+    public static Response recordApplicationLAAReferenceOnApplication(final String applicationId, final String statusCode, final String statusDescription, final String applicationReference){
+        return postCommand(getWriteUrl(String.format("/laaReference/applications/%s", applicationId)),
+                "application/vnd.progression.command.record-laareference-for-application-on-application+json",
+                getLAAReferenceForApplicationOffenceJsonBodyWithStatus(statusCode, statusDescription, applicationReference));
+    }
+
 
     public static javax.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) {
         final RestClient restClient = new RestClient();
