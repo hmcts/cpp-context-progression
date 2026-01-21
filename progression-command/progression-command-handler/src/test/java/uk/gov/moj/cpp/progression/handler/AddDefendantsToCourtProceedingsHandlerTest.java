@@ -106,6 +106,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
         assertThat(new AddDefendantsToCourtProceedingsHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.add-defendants-to-court-proceedings")
+
                 ));
     }
 
