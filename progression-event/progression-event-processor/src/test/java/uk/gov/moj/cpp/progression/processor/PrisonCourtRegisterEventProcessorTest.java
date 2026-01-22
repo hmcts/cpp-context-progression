@@ -240,12 +240,13 @@ public class PrisonCourtRegisterEventProcessorTest {
     }
 
     @Test
-    public void shouldSendPrisonCourtRegisterV2WithEmptyEmailRecipients() throws InterruptedException {
+    public void shouldSendPrisonCourtRegisterV2WhenRecipientsHaveNoEmailAddress() throws InterruptedException {
         final UUID fileId = randomUUID();
         final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                 .withCourtCentreId(randomUUID())
                 .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
-                        .withEmailTemplateName("emailTemplateName").build()))
+                        .withEmailTemplateName("emailTemplateName")
+                        .build()))
                 .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
                         .withName("defendant-name")
                         .withDateOfBirth("dateOfBirth")
@@ -262,6 +263,8 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
+        // Recipients exist but don't have emailAddress1, so filterEmailRecipients returns empty list
+        // resulting in empty string for emailRecipient
         when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
         when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
