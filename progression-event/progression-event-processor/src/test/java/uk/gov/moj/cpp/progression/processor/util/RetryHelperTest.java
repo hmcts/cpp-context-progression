@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
+import uk.gov.moj.cpp.progression.exception.CrimeHearingCaseEventPcrNotificationException;
 import uk.gov.moj.cpp.progression.processor.utils.RetryHelper;
 
 import java.util.ArrayList;
@@ -70,15 +71,19 @@ public class RetryHelperTest {
     }
 
     @Test
-    public void shouldInvokeCrimeHearingCaseEventURL() throws Exception{
+    public void shouldInvokeAMPPcrNotificationURL() throws Exception{
 
         when(supplier.getAsInt()).thenReturn(420);
+
+        String ampUrl = "http://localhost:8080/AMP/notifications/pcr";
+        String payload = "test-payload";
 
         RetryHelper.Builder builder = retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withAmpPcrNotificationUrl("url")
+                .withAmpPcrNotificationUrl(ampUrl)
+                .withPayload(payload)
                 .withPredicate(statusCode -> statusCode > 429);
 
         RetryHelper retryHelper = builder.build();
@@ -88,20 +93,24 @@ public class RetryHelperTest {
     }
 
     @Test
-    public void shouldThrowExceptionAfterExceedingRetryCountForCrimeHearingCaseEventURL() {
+    public void shouldThrowExceptionAfterExceedingRetryCountForAMPPcrNotificationURL() {
 
         when(supplier.getAsInt()).thenReturn(500);
 
-        assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
+        UUID fileId = UUID.randomUUID();
+        UUID materialId = UUID.randomUUID();
+        String prisonCourtRegisterId = "test-prison-court-register-id";
+        String ampUrl = "http://localhost:8080/AMP/notifications/pcr";
+
+        assertThrows(CrimeHearingCaseEventPcrNotificationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
-                .withAmpPcrNotificationUrl("url")
+                .withAmpPcrNotificationUrl(ampUrl)
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))
+                .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, materialId, prisonCourtRegisterId, ampUrl))
                 .withPredicate(statusCode -> statusCode > 429)
                 .build()
                 .postWithRetry());
-        ;
         verify(supplier, times(3)).getAsInt();
     }
 

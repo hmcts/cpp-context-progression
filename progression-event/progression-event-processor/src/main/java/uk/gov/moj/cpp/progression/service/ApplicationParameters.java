@@ -60,7 +60,6 @@ public class ApplicationParameters {
     @Value(key = "laa.defendantProceedingsConcluded.apim.url", defaultValue ="http://localhost:8080/LAA/v1/caseOutcome/conclude")
     private String defendantProceedingsConcludedApimUrl;
 
-
     @Inject
     @Value(key = "laa.defendantProceedingsConcluded.apim.subscription.key", defaultValue ="3674a16507104b749a76b29b6c837352")
     private String subscriptionKey;

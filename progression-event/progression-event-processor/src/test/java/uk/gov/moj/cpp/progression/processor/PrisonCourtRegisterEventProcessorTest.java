@@ -204,6 +204,79 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Test
     public void shouldSendPrisonCourtRegisterV2() throws InterruptedException {
         final UUID fileId = randomUUID();
+        final String prisonCourtRegisterId = randomUUID().toString();
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .withCourtCentreId(randomUUID())
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                        .withEmailAddress1("test@hmcst.net")
+                        .withEmailTemplateName("emailTemplateName").build()))
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                        .withName("defendant-name")
+                        .withDateOfBirth("dateOfBirth")
+                        .withProsecutionCasesOrApplications(
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                        ).build())
+                .withFileId(fileId)
+                .build();
+
+        MetadataBuilder metadata = MetadataBuilderFactory.metadataWithDefaults();
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
+        JsonObject jsonObjectWithId = Json.createObjectBuilder(jsonObject).add("id", prisonCourtRegisterId).build();
+        final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObjectWithId);
+        PcrEventPayload pcrEventPayload = PcrEventPayload.builder()
+                .materialId(randomUUID())
+                .eventId(randomUUID())
+                .build();
+        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-url");
+        when(ampClientService.post("http://amp-url", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        verify(ampClientService).post("http://amp-url", pcrEventPayload);
+        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+    }
+
+    @Test
+    public void shouldSendPrisonCourtRegisterV2WithEmptyEmailRecipients() throws InterruptedException {
+        final UUID fileId = randomUUID();
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .withCourtCentreId(randomUUID())
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                        .withEmailTemplateName("emailTemplateName").build()))
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                        .withName("defendant-name")
+                        .withDateOfBirth("dateOfBirth")
+                        .withProsecutionCasesOrApplications(
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                        ).build())
+                .withFileId(fileId)
+                .build();
+
+        MetadataBuilder metadata = MetadataBuilderFactory.metadataWithDefaults();
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
+        final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObject);
+        PcrEventPayload pcrEventPayload = PcrEventPayload.builder()
+                .materialId(randomUUID())
+                .eventId(randomUUID())
+                .build();
+        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        verify(ampClientService).post("http://amp-address", pcrEventPayload);
+        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class));
+    }
+
+    @Test
+    public void shouldSendPrisonCourtRegisterV2WithMissingIdUsesFileId() throws InterruptedException {
+        final UUID fileId = randomUUID();
         final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                 .withCourtCentreId(randomUUID())
                 .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
@@ -221,17 +294,56 @@ public class PrisonCourtRegisterEventProcessorTest {
         MetadataBuilder metadata = MetadataBuilderFactory.metadataWithDefaults();
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
         final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObject);
-        PcrEventPayload pcrEventPayload = PcrEventPayload.builder().build();
-        Instant expectedCreatedAt = metadata.build().createdAt().get().toInstant();
-        when(ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, "test@hmcst.net", expectedCreatedAt)).thenReturn(pcrEventPayload);
+        PcrEventPayload pcrEventPayload = PcrEventPayload.builder()
+                .materialId(randomUUID())
+                .eventId(randomUUID())
+                .build();
+        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
         when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
-        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.noContent().build());
+        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
         when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
         when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
         verify(ampClientService).post("http://amp-address", pcrEventPayload);
+        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+    }
+
+    @Test
+    public void shouldSendPrisonCourtRegisterV2WithMissingCreatedAtUsesCurrentTime() throws InterruptedException {
+        final UUID fileId = randomUUID();
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .withCourtCentreId(randomUUID())
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                        .withEmailAddress1("test@hmcst.net")
+                        .withEmailTemplateName("emailTemplateName").build()))
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                        .withName("defendant-name")
+                        .withDateOfBirth("dateOfBirth")
+                        .withProsecutionCasesOrApplications(
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                        ).build())
+                .withFileId(fileId)
+                .build();
+
+        MetadataBuilder metadata = MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated-v2");
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
+        final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObject);
+        PcrEventPayload pcrEventPayload = PcrEventPayload.builder()
+                .materialId(randomUUID())
+                .eventId(randomUUID())
+                .build();
+        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        verify(ampClientService).post("http://amp-address", pcrEventPayload);
+        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
     }
 
     @Test
