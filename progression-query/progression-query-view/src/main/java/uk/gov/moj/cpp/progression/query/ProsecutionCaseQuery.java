@@ -67,6 +67,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCa
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,7 +79,6 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -945,7 +946,13 @@ public class ProsecutionCaseQuery {
     }
 
     private List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {
-        return Stream.of(strUuids.split(","))
+        if (strUuids == null || strUuids.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(strUuids.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .map(UUID::fromString)
                 .collect(Collectors.toList());
     }
