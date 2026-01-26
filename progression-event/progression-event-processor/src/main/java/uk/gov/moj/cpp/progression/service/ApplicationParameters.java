@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import lombok.Getter;
 import uk.gov.justice.services.common.configuration.Value;
 
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+@Getter
 public class ApplicationParameters {
 
     @Inject
@@ -163,133 +165,24 @@ public class ApplicationParameters {
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
 
-    public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
-        return onlineGuiltyPleaCourtHearingEnglishTemplateId;
-    }
+    /**
+     * URL for Crime Hearing Case Event service PCR notification endpoint.
+     * Local Development: Default value: http://localhost:8080/AMP/notifications/pcr
+     * For Higher environments
+     *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
+     *  Ingress URL or Kubernetes Discovery URL
+     */
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/AMP/notifications/pcr")
+    private String ampPcrNotificationUrl;
 
-    public String getOnlineGuiltyPleaCourtHearingWelshTemplateId() {
-        return onlineGuiltyPleaCourtHearingWelshTemplateId;
-    }
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryTimes", defaultValue = "3")
+    private String ampPcrNotificationRetryTimes;
 
-    public String getOnlineGuiltyPleaNoCourtHearingEnglishTemplateId() {
-        return onlineGuiltyPleaNoCourtHearingEnglishTemplateId;
-    }
-
-    public String getOnlineGuiltyPleaNoCourtHearingWelshTemplateId() {
-        return onlineGuiltyPleaNoCourtHearingWelshTemplateId;
-    }
-
-    public String getOnlineNotGuiltyPleaEnglishTemplateId() {
-        return onlineNotGuiltyPleaEnglishTemplateId;
-    }
-
-    public String getOnlineNotGuiltyPleaWelshTemplateId() {
-        return onlineNotGuiltyPleaWelshTemplateId;
-    }
-
-    public String getDefenceAssociationTemplateId() {
-        return defenceAssociationTemplateId;
-    }
-
-    public String getNcesEmailTemplateId() {
-
-        return ncesEmailTemplateId;
-    }
-
-    public String getApplicationTemplateId() {
-
-        return applicationTemplateId;
-    }
-
-    public String getDefenceInstructionTemplateId() {
-
-        return defenceInstructionTemplateId;
-    }
-
-    public String getDefenceDisassociationTemplateId() {
-
-        return defenceDisassociationTemplateId;
-    }
-
-    public String getAzureFunctionHostName() {
-        return azureFunctionHostName;
-    }
-
-    public String getAzureScanManagerContainerName() {
-        return azureScanManagerContainerName;
-    }
-
-    public String getSetCaseEjectedFunctionPath() {
-        return setCaseEjectedFunctionPath;
-    }
-
-    public String getRelayCaseOnCppFunctionPath() {
-        return relayCaseOnCppFunctionPath;
-    }
-
-    public String getDefendantProceedingsConcludedApimUrl() {
-        return defendantProceedingsConcludedApimUrl;
-    }
-
-    public String getSubscriptionKey() {
-        return subscriptionKey;
-    }
-
-    public String getCpsCourtDocumentTemplateId() {
-        return cpsCourtDocumentTemplateId;
-    }
-
-    public String getCpsDefendantCourtDocumentTemplateId() {
-        return cpsDefendantCourtDocumentTemplateId;
-    }
-
-    public String getNotifyDefenceOfNewMaterialTemplateId() {
-        return notifyDefenceOfNewMaterialTemplateId;
-    }
-
-    public String getSummonsApprovedAndSuppressedTemplateId() {
-        return summonsApprovedAndSuppressedTemplateId;
-    }
-
-    public String getSummonsApprovedAndNotSuppressedTemplateId() {
-        return summonsApprovedAndNotSuppressedTemplateId;
-    }
-
-    public String getSummonsRejectedTemplateId() {
-        return summonsRejectedTemplateId;
-    }
-
-    public String getEndClientHost() {
-        return endClientHost;
-    }
-
-    public String getUnscheduledHearingAllocationEmailTemplateId() {
-        return unscheduledHearingAllocationEmailTemplateId;
-    }
-
-    public String getCaseAtaGlanceURI() {
-        return caseAtaGlanceURI;
-    }
-
-    public String getStatDecSendAppointmentLetterTemplateId() {
-        return statDecSendAppointmentLetterTemplateId;
-    }
-
-    public String getOnlinePleaProsecutorTemplateId() {
-        return onlinePleaProsecutorTemplateId;
-    }
-
-    public String getNotifyHearingTemplateId() {
-        return notifyHearingTemplateId;
-    }
-
-    public String getRetryTimes() {
-        return retryTimes;
-    }
-
-    public String getRetryInterval() {
-        return retryInterval;
-    }
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryInterval", defaultValue = "1000")
+    public String ampPcrNotificationRetryInterval;
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();
