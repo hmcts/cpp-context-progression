@@ -5,8 +5,62 @@
         "defendants": [
           {
             "defendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
-            "convictingCourtId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-            "masterDefendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c"
+            "masterDefendantId": "c40785ef-9394-4c2e-9f9b-b0d819acea0c",
+            "personDefendant": {
+              "personDetails": {
+                "title": "Mr",
+                "gender": "NOT_SPECIFIED",
+                "address": {
+                  "address1": "59 Meadow Lane",
+                  "address2": "Huddersfield",
+                  "address3": "West Yorkshire",
+                  "address4": "Vernier",
+                  "address5": "Crescent",
+                  "postcode": "B1 1AA"
+                },
+                "contact": {
+                  "work": "07431234511",
+                  "primaryEmail": "test@gmail.com"
+                },
+                "lastName": "Dare",
+                "firstName": "Garfield",
+                "dateOfBirth": "1998-08-23",
+                "hearingLanguageNeeds": "ENGLISH",
+                "interpreterLanguageNeeds": "NA",
+                "documentationLanguageNeeds": "ENGLISH"
+              },
+              "arrestSummonsNumber": "2391NX0000214929564D"
+            },
+            "offences": [
+              {
+                "id": "96c5485b-f416-4632-955d-28063489ee6c",
+                "count": 0,
+                "wording": "Before 29 Dec 2025 at London attempted to rob Jonathan of Jonathan Villa  of a value unknown .",
+                "startDate": "2025-12-29",
+                "maxPenalty": "Indictable only",
+                "orderIndex": 1,
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceTitle": "Attempt robbery",
+                "convictionDate": "2025-11-09",
+                "endorsableFlag": false,
+                "convictingCourt": {
+                  "id": "48ed5a8b-cb31-3590-9aea-5a1a76a0dde8",
+                  "lja": {
+                    "ljaCode": "1300",
+                    "ljaName": "North and East Devon Magistrates' Court"
+                  },
+                  "name": "Exeter Magistrates' Court",
+                  "welshName": "Llys Ynadon Exeter"
+                },
+                "offenceDateCode": 2,
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "proceedingsConcluded": true,
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981."
+              }
+            ]
           }
         ],
         "prosecutionCaseId": "0109f3c4-5cff-4c86-85e1-787a21503fe0",

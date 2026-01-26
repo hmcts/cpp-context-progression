@@ -473,7 +473,7 @@ public class ProsecutionCaseQueryApiTest {
     }
 
     @Test
-    public void shouldHandleSearchInactiveMigratedcasesQuery() {
+    public void shouldHandleSearchInactiveMigratedCasesQuery() {
         final JsonObject prosecutionCasePayload = readJson(PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY_JSON, JsonObject.class);
 
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_SEARCH_INACTIVE_MIGRATED_CASE_QUERY, randomUUID());
