@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -138,18 +139,17 @@ public class ListingService {
 
     public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final String caseUrn) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_ANY_ALLOCATION_SEARCH_HEARINGS);
+        final LocalDate startDate = utcClock.now().toLocalDate();
         final JsonObject jsonPayLoad = Json.createObjectBuilder()
                 .add("caseUrn", caseUrn)
+                .add("startDate", startDate.toString())
                 .build();
         final HearingList hearingListed = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), HearingList.class).payload();
 
         if (hearingListed == null || hearingListed.getHearings() == null) {
             return Collections.emptyList();
         }
-        return hearingListed.getHearings().stream()
-                .filter(hearing -> hearing.getHearingDays() != null && hearing.getHearingDays().stream()
-                        .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(utcClock.now()) >= 0))
-                .collect(Collectors.toList());
+        return hearingListed.getHearings();
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
