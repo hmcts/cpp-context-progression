@@ -63,7 +63,8 @@
             ]
           }
         ],
-        "prosecutionCaseId": "0109f3c4-5cff-4c86-85e1-787a21503fe0",
+        "id": "0109f3c4-5cff-4c86-85e1-787a21503fe0",
+        "caseURN": "SCRDID98443",
         "migrationSourceSystem": {
           "migrationCaseStatus": "INACTIVE",
           "migrationSourceSystemName": "XHIBIT",

@@ -29,6 +29,7 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
     @Query(value = """
     SELECT CAST(jsonb_build_object('inactiveCaseSummary', jsonb_build_object(
         'id', p.id,
+        'caseURN', COALESCE(CAST(p.payload AS jsonb) -> 'prosecutionCaseIdentifier' -> 'caseURN', CAST('{}' AS jsonb)),
         'migrationSourceSystem', COALESCE(CAST(p.payload AS jsonb) -> 'migrationSourceSystem', CAST('{}' AS jsonb)),
         'defendants', jsonb_agg(jsonb_build_object(
           'defendantId', def ->> 'id',
@@ -41,7 +42,7 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
       LATERAL jsonb_array_elements(CAST(p.payload AS jsonb) -> 'defendants') AS def
       WHERE p.id IN (:caseIds)
       AND CAST(p.payload AS jsonb) -> 'migrationSourceSystem' ->> 'migrationCaseStatus' = 'INACTIVE'
-      GROUP BY p.id
+      GROUP BY p.id, p.payload
     """, isNative = true)
     List<String> findInactiveMigratedCaseSummaries(@QueryParam("caseIds") List<UUID> caseIds);
 }
