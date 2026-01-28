@@ -165,7 +165,6 @@ public class CourtDocumentQueryApi {
                 LOGGER.info("DefendantId from defence: "+defendantId);
                 final Courtdocuments courtdocuments = getCourtDocument(query, metadata, defendantId);
                 if (nonNull(courtdocuments) && isNotEmpty(courtdocuments.getDocumentIndices())) {
-                    //courtdocuments.getDocumentIndices().forEach(dci->dci.getDefendantIds().forEach(defId-> LOGGER.info("DefId from DOC Search "+defId.toString())));
                     final List<CourtDocumentIndex> listWithDefId = replaceMasterDefendantIdByDefendantId(courtdocuments.getDocumentIndices(), defendantId);
                     final List<CourtDocumentIndex> filteredList = getFilteredList(listWithDefId, finalDocumentList);
                     if (isNotEmpty(filteredList)) {
