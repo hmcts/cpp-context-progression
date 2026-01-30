@@ -149,7 +149,10 @@ public class ListingService {
         if (hearingListed == null || hearingListed.getHearings() == null) {
             return Collections.emptyList();
         }
-        return hearingListed.getHearings();
+        return hearingListed.getHearings().stream()
+                .filter(hearing -> hearing.getHearingDays() != null && hearing.getHearingDays().stream()
+                        .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(utcClock.now()) >= 0))
+                .collect(Collectors.toList());
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {

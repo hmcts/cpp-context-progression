@@ -220,18 +220,18 @@ public class ListingServiceTest {
 
         final Hearing hearing1 = Hearing.hearing()
                 .withHearingDays(Arrays.asList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusDays(2)).build(),
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(2)).build()
+                        HearingDay.hearingDay().withStartTime(now.minusDays(2)).build(),
+                        HearingDay.hearingDay().withStartTime(now.plusDays(2)).build()
                 ))
                 .build();
         final Hearing hearing2 = Hearing.hearing()
                 .withHearingDays(Collections.singletonList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(5)).build()
+                        HearingDay.hearingDay().withStartTime(now.plusDays(5)).build()
                 ))
                 .build();
         final Hearing hearing3 = Hearing.hearing()
                 .withHearingDays(Collections.singletonList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusWeeks(1)).build()
+                        HearingDay.hearingDay().withStartTime(now.minusWeeks(1)).build()
                 ))
                 .build();
 
@@ -251,8 +251,8 @@ public class ListingServiceTest {
         final JsonObject payload = (JsonObject) envelopeCaptor.getValue().payload();
         assertThat(payload.getString("caseUrn"), is("caseUrnValue"));
         assertThat(payload.getString("startDate"), is(now.toLocalDate().toString()));
-        assertThat(futureHearings.size(), is(3));
-        assertThat(futureHearings, containsInAnyOrder(hearing1, hearing2, hearing3));
+        assertThat(futureHearings.size(), is(2));
+        assertThat(futureHearings, containsInAnyOrder(hearing1, hearing2));
     }
 
     @Test
