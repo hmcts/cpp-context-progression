@@ -25,7 +25,7 @@ resources:
 pool:
   name: "MDV-ADO-AGENT-AKS-01"
   demands:
-    - identifier -equals centos8-j17
+    - identifier -equals ubuntu-j17
 
 
 variables:
