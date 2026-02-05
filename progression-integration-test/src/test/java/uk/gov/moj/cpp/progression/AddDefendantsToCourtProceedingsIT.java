@@ -1,5 +1,30 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyAllocationQuery;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyFutureAllocationQuery;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -27,37 +52,13 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import io.restassured.path.json.JsonPath;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyAllocationQuery;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyFutureAllocationQuery;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
@@ -92,7 +93,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String defendantId2 = randomUUID().toString();
         final String defendantId3 = randomUUID().toString();
 
-        setupListingAnyAllocationQuery(caseUrn, "stub-data/listing.any-allocation.search.hearings.json");
+        setupListingAnyAllocationQuery(caseUrn, LocalDate.now().toString(), "stub-data/listing.any-allocation.search.hearings.json");
 
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
@@ -125,7 +126,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
         final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        setupListingAnyFutureAllocationQuery("stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
+        setupListingAnyFutureAllocationQuery(caseUrn, startDateTime.substring(0, 10), "stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
