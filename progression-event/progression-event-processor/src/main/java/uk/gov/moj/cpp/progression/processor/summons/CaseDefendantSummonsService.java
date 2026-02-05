@@ -28,7 +28,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
@@ -124,7 +123,8 @@ public class CaseDefendantSummonsService {
 
         final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
         if (nonNull(summonsApprovedOutcome)) {
-            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), HearingLanguage.WELSH == defendantRequest.getHearingLanguageNeeds()));
+            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
+            summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
         }
         summonsDocumentContent.withStatementOfFacts(emptyIfBlank(prosecutionCaseQueried.getStatementOfFacts()));

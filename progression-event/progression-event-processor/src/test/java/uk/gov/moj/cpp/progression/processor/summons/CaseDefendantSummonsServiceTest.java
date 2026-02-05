@@ -243,7 +243,8 @@ public class CaseDefendantSummonsServiceTest {
         if (isEmpty(costValue)) {
             assertThat(summonsDocumentContent.getProsecutorCosts(), is(""));
         } else if (costValue.contains("£0")) {
-            assertThat(summonsDocumentContent.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
+            assertThat(summonsDocumentContent.getProsecutorCosts(), is("Unspecified"));
+            assertThat(summonsDocumentContent.getWelshProsecutorCosts(), is("Heb ei bennu"));
         } else {
             assertThat(summonsDocumentContent.getProsecutorCosts(), is(costValue));
         }
