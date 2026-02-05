@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-        <version>17.0.225-3RD-SNAPSHOT</version>
+        <version>17.0.226-RD-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-message</artifactId>
     <properties>
