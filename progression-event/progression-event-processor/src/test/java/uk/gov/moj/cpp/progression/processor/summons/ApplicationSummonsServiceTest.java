@@ -284,7 +284,8 @@ public class ApplicationSummonsServiceTest {
         if (isEmpty(costString)) {
             assertThat(applicationSummonsPayload.getProsecutorCosts(), is(""));
         } else if (costString.contains("£0")) {
-            assertThat(applicationSummonsPayload.getProsecutorCosts(), is(isWelsh ? "Heb ei bennu" : "Unspecified"));
+            assertThat(applicationSummonsPayload.getProsecutorCosts(), is("Unspecified"));
+            assertThat(applicationSummonsPayload.getWelshProsecutorCosts(), is("Heb ei bennu"));
         } else {
             assertThat(applicationSummonsPayload.getProsecutorCosts(), is(costString));
         }
