@@ -111,7 +111,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -777,7 +777,7 @@ public class CourtExtractTransformer {
         if (defendants.isPresent()) {
             final Defendants defendant = defendants.get();
             defendantBuilder.withDateOfBirth(defendant.getDateOfBirth());
-            defendantBuilder.withAge(defendant.getAge());
+            defendantBuilder.withAge(getDefendantPresentAge(defendant.getDateOfBirth(), defendant.getAge()));
             defendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
             List<AttendanceDayAndType> attendanceDays = new ArrayList<>(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearingsList, defendant)));
             final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings = new ArrayList<>(getExtractHearings(masterDefendantId, userId, hearingsList, hearingsAtAGlance, extractType, defendant, linkedApplicationDefendantIds));
@@ -807,6 +807,10 @@ public class CourtExtractTransformer {
         }
 
         return defendantBuilder.build();
+    }
+
+    private static String getDefendantPresentAge(final LocalDate dob, final String defaultAge) {
+        return nonNull(dob) ? Integer.toString(Period.between(dob, LocalDate.now()).getYears()) : defaultAge;
     }
 
     private  Optional<Defendants> getDefendantsFromCourtApplication(final GetHearingsAtAGlance hearingsAtAGlance, final List<UUID> linkedApplicationDefendantIds, final List<Hearings> hearingsList) {
