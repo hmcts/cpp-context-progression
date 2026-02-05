@@ -9,7 +9,7 @@
       "address2": "Furnburry Park Road",
       "address3": "London"
     },
-    "age": "43",
+    "age": "%AGE%",
     "arrestSummonsNumber": "DEF011631150",
     "attendanceDays": [
       {

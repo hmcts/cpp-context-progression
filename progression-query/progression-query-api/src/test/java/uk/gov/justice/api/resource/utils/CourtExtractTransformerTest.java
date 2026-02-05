@@ -122,6 +122,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1279,7 +1280,8 @@ public class CourtExtractTransformerTest {
         when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId,applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-has-cloned-offences.json"))));
+        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-has-cloned-offences.json")
+                .replace("%AGE%",Integer.toString(Period.between(courtExtractRequested.getDefendant().getDateOfBirth(), LocalDate.now()).getYears())))));
 
     }
 
