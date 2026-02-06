@@ -1946,6 +1946,184 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldApplyAllFallbackFields_whenLatestDefendantMissing_onOffencesUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final List<uk.gov.justice.core.courts.AssociatedPerson> associatedPersons = singletonList(
+                uk.gov.justice.core.courts.AssociatedPerson.associatedPerson()
+                        .withPerson(uk.gov.justice.core.courts.Person.person().withFirstName("Alex").build())
+                        .build()
+        );
+
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withIsAssociatedByLAA(false)
+                .build();
+
+        final DefenceOrganisation defenceOrganisation = DefenceOrganisation.defenceOrganisation()
+                .withLaaContractNumber("LAA-1")
+                .build();
+
+        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+                .withOrganisation(Organisation.organisation().withName("Org").build())
+                .build();
+
+        final List<DefendantJudicialResult> judicialResults = singletonList(defendantJudicialResult()
+                .withJudicialResultId(randomUUID())
+                .withLabel("result")
+                .build());
+
+        final PersonDefendant fallbackPersonDefendant = personDefendant()
+                .withBailStatus(uk.gov.justice.core.courts.BailStatus.bailStatus().withCode("B").build())
+                .build();
+
+        final Defendant fallbackDefendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withNumberOfPreviousConvictionsCited(3)
+                .withProsecutionAuthorityReference("AUTH-REF-1")
+                .withWitnessStatement("witness")
+                .withWitnessStatementWelsh("witness-welsh")
+                .withMitigation("mitigation")
+                .withMitigationWelsh("mitigation-welsh")
+                .withAssociatedPersons(associatedPersons)
+                .withDefenceOrganisation(defenceOrganisation)
+                .withPersonDefendant(fallbackPersonDefendant)
+                .withLegalEntityDefendant(legalEntityDefendant)
+                .withPncId("PNC-1")
+                .withAliases(singletonList("alias-1"))
+                .withIsYouth(true)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .withCroNumber("CRO-1")
+                .withDefendantCaseJudicialResults(judicialResults)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("AUTH-REF-1")
+                        .build())
+                .withDefendants(singletonList(fallbackDefendant))
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final Defendant latestDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(defendantId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        defendantsMap.put(defendantId, latestDefendant);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final Map<UUID, uk.gov.moj.cpp.progression.events.CustodialEstablishment> custodialMap = new HashMap<>();
+        custodialMap.put(defendantId, uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                .withId(randomUUID())
+                .withName("HMP Test")
+                .withCustody("Prison")
+                .build());
+        setField(caseAggregate, "defendantCustodialEstablishmentMap", custodialMap);
+
+        final DefendantCaseOffences defendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
+                .withDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .withLegalAidStatus(GRANTED.getDescription())
+                .build();
+
+        caseAggregate.apply(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(defendantCaseOffences)
+                .build());
+
+        @SuppressWarnings("unchecked")
+        final Map<UUID, Defendant> updatedMap = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantsMap", Map.class);
+        final Defendant updatedDefendant = updatedMap.get(defendantId);
+
+        assertThat(updatedDefendant, notNullValue());
+        assertThat(updatedDefendant.getIsYouth(), is(true));
+        assertThat(updatedDefendant.getProsecutionAuthorityReference(), is("AUTH-REF-1"));
+        assertThat(updatedDefendant.getWitnessStatement(), is("witness"));
+        assertThat(updatedDefendant.getMitigationWelsh(), is("mitigation-welsh"));
+        assertThat(updatedDefendant.getAssociatedPersons(), is(associatedPersons));
+        assertThat(updatedDefendant.getDefenceOrganisation(), is(defenceOrganisation));
+        assertThat(updatedDefendant.getLegalEntityDefendant(), is(legalEntityDefendant));
+        assertThat(updatedDefendant.getPncId(), is("PNC-1"));
+        assertThat(updatedDefendant.getAliases(), is(singletonList("alias-1")));
+        assertThat(updatedDefendant.getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
+        assertThat(updatedDefendant.getCroNumber(), is("CRO-1"));
+        assertThat(updatedDefendant.getDefendantCaseJudicialResults(), is(judicialResults));
+        assertThat(updatedDefendant.getPersonDefendant(), notNullValue());
+        assertThat(updatedDefendant.getPersonDefendant().getCustodialEstablishment(), notNullValue());
+    }
+
+    @Test
+    public void shouldSkipCustodialPersonUpdate_whenNoPersonDefendant_onOffencesUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Defendant fallbackDefendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("AUTH-REF-1")
+                        .build())
+                .withDefendants(singletonList(fallbackDefendant))
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final Defendant latestDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(defendantId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        defendantsMap.put(defendantId, latestDefendant);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final Map<UUID, uk.gov.moj.cpp.progression.events.CustodialEstablishment> custodialMap = new HashMap<>();
+        custodialMap.put(defendantId, uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                .withId(randomUUID())
+                .withName("HMP Test")
+                .withCustody("Prison")
+                .build());
+        setField(caseAggregate, "defendantCustodialEstablishmentMap", custodialMap);
+
+        final DefendantCaseOffences defendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
+                .withDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .withLegalAidStatus(GRANTED.getDescription())
+                .build();
+
+        caseAggregate.apply(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(defendantCaseOffences)
+                .build());
+
+        @SuppressWarnings("unchecked")
+        final Map<UUID, Defendant> updatedMap = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantsMap", Map.class);
+        final Defendant updatedDefendant = updatedMap.get(defendantId);
+
+        assertThat(updatedDefendant, notNullValue());
+        assertThat(updatedDefendant.getPersonDefendant(), is(nullValue()));
+    }
+
+    @Test
     public void shouldCheckYouthFlagForDefendantAndReportingRestrictionsForYouthForAllOffencesWhenDefendantAddedForCourtProceeding() {
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
