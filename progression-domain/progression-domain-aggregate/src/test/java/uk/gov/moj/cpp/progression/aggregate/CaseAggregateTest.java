@@ -1716,6 +1716,73 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldPreserveIsYouthAndExistingDefendantAttributes_whenOffencesUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final PersonDefendant originalPersonDefendant = personDefendant()
+                .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                        .withFirstName("Jane")
+                        .withLastName("Doe")
+                        .build())
+                .build();
+
+        final Defendant originalDefendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withPersonDefendant(originalPersonDefendant)
+                .withProsecutionAuthorityReference("AUTH-REF-1")
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase initialCase = prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("AUTH-REF-1")
+                        .build())
+                .withDefendants(singletonList(originalDefendant))
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(initialCase, null));
+
+        final DefendantUpdate update = DefendantUpdate.defendantUpdate()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withIsYouth(true)
+                .build();
+        caseAggregate.apply(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                .withDefendant(update)
+                .build());
+
+        final LaaReference laaReference = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId, laaReference).collect(toList());
+        caseAggregate.apply(eventStream);
+
+        @SuppressWarnings("unchecked")
+        final Map<UUID, Defendant> updatedMap = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantsMap", Map.class);
+        final Defendant updatedDefendant = updatedMap.get(defendantId);
+
+        assertThat(updatedDefendant, notNullValue());
+        assertThat(updatedDefendant.getIsYouth(), is(true));
+        assertThat(updatedDefendant.getProsecutionAuthorityReference(), is("AUTH-REF-1"));
+        assertThat(updatedDefendant.getPersonDefendant(), notNullValue());
+        assertThat(updatedDefendant.getPersonDefendant().getPersonDetails().getFirstName(), is("Jane"));
+
+        final ProsecutionCase prosecutionCaseInAggregate = ReflectionUtil.getValueOfField(this.caseAggregate, "prosecutionCase", ProsecutionCase.class);
+        final Optional<Defendant> prosecutionCaseDefendant = prosecutionCaseInAggregate.getDefendants().stream()
+                .filter(defendantItem -> defendantItem.getId().equals(defendantId))
+                .findFirst();
+
+        assertThat(prosecutionCaseDefendant.isPresent(), is(true));
+        assertThat(prosecutionCaseDefendant.get().getIsYouth(), is(true));
+        assertThat(prosecutionCaseDefendant.get().getProsecutionAuthorityReference(), is("AUTH-REF-1"));
+        assertThat(prosecutionCaseDefendant.get().getPersonDefendant(), notNullValue());
+        assertThat(prosecutionCaseDefendant.get().getPersonDefendant().getPersonDetails().getFirstName(), is("Jane"));
+    }
+
+    @Test
     public void shouldCheckYouthFlagForDefendantAndReportingRestrictionsForYouthForAllOffencesWhenDefendantAddedForCourtProceeding() {
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
