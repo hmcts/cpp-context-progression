@@ -1,9 +1,0 @@
-{
-  "defendant": {
-    "id": "RANDOM_DEFENDANT_ID",
-    "prosecutionCaseId": "RANDOM_CASE_ID",
-    "masterDefendantId": "RANDOM_DEFENDANT_ID",
-    "isYouth": true
-  },
-  "caseUrn": "RANDOM_REFERENCE"
-}
