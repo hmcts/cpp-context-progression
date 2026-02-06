@@ -1955,7 +1955,7 @@ class CaseAggregateTest {
         assertThat(updatedDefendant.getAssociatedPersons(), is(associatedPersons));
         assertThat(updatedDefendant.getLegalEntityDefendant(), is(legalEntityDefendant));
         assertThat(updatedDefendant.getPncId(), is("PNC-1"));
-        assertThat(updatedDefendant.getAliases(), is(singletonList("alias-1")));
+        assertThat(updatedDefendant.getAliases().get(0).getFirstName(), is("alias-1"));
         assertThat(updatedDefendant.getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
         assertThat(updatedDefendant.getCroNumber(), is("CRO-1"));
         assertThat(updatedDefendant.getPersonDefendant(), notNullValue());
