@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -121,6 +122,7 @@ import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -292,7 +294,7 @@ public class ReportsTransformerTest {
         assertThat(defendant.getHearings().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().get(0).getResults().size(), is(1));
-
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
     }
 
     @Test
@@ -311,7 +313,7 @@ public class ReportsTransformerTest {
 
         assertThat(defendant.getHearings().size(), is(5));
         assertThat(defendant.getHearings().stream().anyMatch(h-> isEmpty(h.getHearingDays())), is(true));
-
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
     }
 
     @Test
@@ -331,6 +333,7 @@ public class ReportsTransformerTest {
         assertThat(defendant.getHearings().size(), is(2));
         assertThat(defendant.getHearings().get(0).getId(), is(fromString("83c588bc-f457-4812-9620-0184d6708386")));
         assertThat(defendant.getHearings().get(1).getId(), is(fromString("52659deb-29a8-4bec-bf29-16077ff6d0ed")));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
 
     }
 
@@ -351,6 +354,7 @@ public class ReportsTransformerTest {
         assertThat(defendant.getHearings().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().get(0).getResults().size(), is(1));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
     }
 
     @Test
@@ -368,6 +372,7 @@ public class ReportsTransformerTest {
         final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
 
         assertThat(defendant.getHearings().size(), is(2));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
     }
 
     @Test
@@ -389,6 +394,7 @@ public class ReportsTransformerTest {
         assertThat(defendant.getHearings().get(0).getOffences().get(0).getResults().size(), is(1));
         assertThat(defendant.getHearings().get(1).getOffences().size(), is(1));
         assertThat(defendant.getHearings().get(1).getOffences().get(0).getResults().size(), is(1));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase1)));
     }
 
     @Test
@@ -423,6 +429,7 @@ public class ReportsTransformerTest {
         final CourtExtractRequested courtExtract2ndDefendant = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream().map(DefendantResults::getResult)).toList();
         assertThat(defendant2ndResults.size(), is(2));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase)));
     }
 
     private static void assertAttendanceDays(final List<AttendanceDayAndType> attendanceDays) {
@@ -438,6 +445,7 @@ public class ReportsTransformerTest {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createHearingsAtGlance(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is((1)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId().toString(), is((selectedHearingIds.get(0))));
@@ -446,6 +454,7 @@ public class ReportsTransformerTest {
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefenceCounsels().size(), is(1));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().size(), is(2));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getRepresentation().getApplicantRepresentation().getApplicantCounsels().size(), is(1));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase)));
     }
 
     @Test
@@ -453,10 +462,12 @@ public class ReportsTransformerTest {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlanceWithCourtApplicationParty(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is((1)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId().toString(), is((selectedHearingIds.get(0))));
         assertThat(courtExtractRequested.getIsAppealPending(), is(true));
+        assertThat(defendant.getAge(), is(getDefendantAge(defendant.getId(),prosecutionCase)));
     }
 
     @Test
@@ -485,6 +496,7 @@ public class ReportsTransformerTest {
         assertThat(breachApplication.getConvictionDate().toString(), is("2025-05-21"));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId().toString(), is((selectedHearingIds.get(1))));
         assertThat(courtExtractRequested.getIsAppealPending(), is(false));
+
     }
 
     @Test
@@ -523,7 +535,6 @@ public class ReportsTransformerTest {
         final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "court-extract/hearing.query.hearing.get-draft-result-v2.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-13");
         final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
-
 
         when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
         when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
@@ -828,6 +839,7 @@ public class ReportsTransformerTest {
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), HEARING_ID_2.toString());
         final GetHearingsAtAGlance hearingsAtAGlance = createCaseAtAGlanceWithDefendantHeardInYouthCourt();
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
         assertThat(courtExtractRequested.getPublishingCourt().getName(), is("liver pool"));
         assertThat(courtExtractRequested.getPublishingCourt().getWelshName(), is("Welsh liver pool"));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtCentre().getName(), is("Youth Court Name"));
@@ -842,6 +854,7 @@ public class ReportsTransformerTest {
         final List<Hearings> judicialResultsByMasterDefendantId = createHearingsWithJudicialResultsWithCourtExtract(MASTER_DEFENDANT_ID);
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlance(judicialResultsByMasterDefendantId), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
         verifyDefendantLevelResults(courtExtractRequested);
         verifyDefendantHearingsLevelResults(courtExtractRequested);
 
@@ -2180,6 +2193,11 @@ public class ReportsTransformerTest {
                                 .build()))
                         .build()))
                 .build();
+    }
+
+    private String getDefendantAge(final UUID defendantId, final ProsecutionCase pc) {
+        return pc.getDefendants().stream().filter(d -> d.getId().equals(defendantId)).findFirst().map(d -> Integer.toString(
+                Period.between(d.getPersonDefendant().getPersonDetails().getDateOfBirth(), LocalDate.now()).getYears())).orElse(EMPTY);
     }
 
 }

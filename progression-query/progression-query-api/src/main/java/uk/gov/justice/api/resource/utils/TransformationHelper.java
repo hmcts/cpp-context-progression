@@ -30,6 +30,7 @@ import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -232,14 +233,21 @@ public class TransformationHelper {
     }
 
     String getDefendantAge(final uk.gov.justice.core.courts.Defendant defendant) {
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())) {
-            final String dateOfBirthText = defendant.getPersonDefendant().getPersonDetails().getDateOfBirth().toString();
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            final LocalDate dateOfBirth = LocalDate.parse(dateOfBirthText, formatter);
-            final LocalDate now = LocalDate.now();
-            return Integer.toString(now.getYear() - dateOfBirth.getYear());
+        return Optional.ofNullable(defendant)
+                .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
+                .map(pd -> pd.getPersonDetails().getDateOfBirth())
+                .map(this::getDefendantAge)
+                .orElse(EMPTY);
+    }
+
+    String getDefendantAge(final LocalDate dateOfBirth) {
+        if (dateOfBirth == null) {
+            return EMPTY;
         }
-        return EMPTY;
+
+        return Integer.toString(
+                Period.between(dateOfBirth, LocalDate.now()).getYears()
+        );
     }
 
     List<HearingDays> transformHearingDays(final List<HearingDay> hearingDaysList) {

@@ -577,7 +577,7 @@ public class ReportsTransformer {
         if (defendants.isPresent()) {
             final Defendants defendant = defendants.get();
             defendantBuilder.withDateOfBirth(defendant.getDateOfBirth());
-            defendantBuilder.withAge(defendant.getAge());
+            defendantBuilder.withAge(transformationHelper.getDefendantAge(defendant.getDateOfBirth()));
             defendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
             defendantBuilder.withAddress(toAddress(defendant.getAddress()));
 
