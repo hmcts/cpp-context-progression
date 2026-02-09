@@ -616,18 +616,26 @@ public class CaseAggregate implements Aggregate {
                 final Set<uk.gov.justice.core.courts.Offence> offenceSet = new TreeSet<>((o1, o2) -> o1.getId().compareTo(o2.getId()));
                 offenceSet.addAll(prosecutionCaseOffencesUpdated.getDefendantCaseOffences().getOffences());
                 offenceSet.addAll(defendant.getOffences());
-                Defendant.Builder builder = Defendant.defendant().withValuesFrom(defendant);
+                final Defendant latestDefendant = this.defendantsMap.getOrDefault(defendant.getId(), defendant);
+                final Defendant.Builder builder = Defendant.defendant().withValuesFrom(latestDefendant);
+                applyDefendantFallbacks(defendant, latestDefendant, builder);
                 uk.gov.moj.cpp.progression.events.CustodialEstablishment custodialEstablishment = defendantCustodialEstablishmentMap.get(defendant.getId());
                 if (custodialEstablishment != null) {
                     final uk.gov.justice.core.courts.CustodialEstablishment.Builder custodialEstablishmentBuilder = uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment();
                     custodialEstablishmentBuilder.withCustody(custodialEstablishment.getCustody())
                             .withId(custodialEstablishment.getId())
                             .withName(custodialEstablishment.getName());
-                    Defendant latestDefendant = this.defendantsMap.get(defendant.getId());
-                    PersonDefendant personDefendant = PersonDefendant.personDefendant().withValuesFrom(defendant.getPersonDefendant())
-                            .withBailStatus(latestDefendant.getPersonDefendant().getBailStatus())
-                            .withCustodialEstablishment(custodialEstablishmentBuilder.build()).build();
-                    builder.withPersonDefendant(personDefendant);
+                    final PersonDefendant basePersonDefendant = nonNull(latestDefendant.getPersonDefendant())
+                            ? latestDefendant.getPersonDefendant()
+                            : defendant.getPersonDefendant();
+                    if (nonNull(basePersonDefendant)) {
+                        final PersonDefendant personDefendant = PersonDefendant.personDefendant().withValuesFrom(basePersonDefendant)
+                                .withBailStatus(latestDefendant.getPersonDefendant() != null
+                                        ? latestDefendant.getPersonDefendant().getBailStatus()
+                                        : basePersonDefendant.getBailStatus())
+                                .withCustodialEstablishment(custodialEstablishmentBuilder.build()).build();
+                        builder.withPersonDefendant(personDefendant);
+                    }
                 }
                 defendantList.add(builder.withOffences(offenceSet.stream().collect(toList()))
                         .build());
@@ -646,6 +654,61 @@ public class CaseAggregate implements Aggregate {
                         .collect(Collectors.toMap(uk.gov.justice.core.courts.Defendant::getId, Function.identity()))
         );
 
+
+    }
+
+    private void applyDefendantFallbacks(final Defendant fallbackDefendant, final Defendant latestDefendant, final Defendant.Builder builder) {
+        if (isNull(latestDefendant.getMasterDefendantId()) && nonNull(fallbackDefendant.getMasterDefendantId())) {
+            builder.withMasterDefendantId(fallbackDefendant.getMasterDefendantId());
+        }
+        if (isNull(latestDefendant.getProsecutionCaseId()) && nonNull(fallbackDefendant.getProsecutionCaseId())) {
+            builder.withProsecutionCaseId(fallbackDefendant.getProsecutionCaseId());
+        }
+        if (isNull(latestDefendant.getNumberOfPreviousConvictionsCited()) && nonNull(fallbackDefendant.getNumberOfPreviousConvictionsCited())) {
+            builder.withNumberOfPreviousConvictionsCited(fallbackDefendant.getNumberOfPreviousConvictionsCited());
+        }
+        if (isNull(latestDefendant.getProsecutionAuthorityReference()) && nonNull(fallbackDefendant.getProsecutionAuthorityReference())) {
+            builder.withProsecutionAuthorityReference(fallbackDefendant.getProsecutionAuthorityReference());
+        }
+        if (isNull(latestDefendant.getWitnessStatement()) && nonNull(fallbackDefendant.getWitnessStatement())) {
+            builder.withWitnessStatement(fallbackDefendant.getWitnessStatement());
+        }
+        if (isNull(latestDefendant.getWitnessStatementWelsh()) && nonNull(fallbackDefendant.getWitnessStatementWelsh())) {
+            builder.withWitnessStatementWelsh(fallbackDefendant.getWitnessStatementWelsh());
+        }
+        if (isNull(latestDefendant.getMitigation()) && nonNull(fallbackDefendant.getMitigation())) {
+            builder.withMitigation(fallbackDefendant.getMitigation());
+        }
+        if (isNull(latestDefendant.getMitigationWelsh()) && nonNull(fallbackDefendant.getMitigationWelsh())) {
+            builder.withMitigationWelsh(fallbackDefendant.getMitigationWelsh());
+        }
+        if (isNull(latestDefendant.getAssociatedPersons()) && nonNull(fallbackDefendant.getAssociatedPersons())) {
+            builder.withAssociatedPersons(fallbackDefendant.getAssociatedPersons());
+        }
+        if (isNull(latestDefendant.getDefenceOrganisation()) && nonNull(fallbackDefendant.getDefenceOrganisation())) {
+            builder.withDefenceOrganisation(fallbackDefendant.getDefenceOrganisation());
+        }
+        if (isNull(latestDefendant.getPersonDefendant()) && nonNull(fallbackDefendant.getPersonDefendant())) {
+            builder.withPersonDefendant(fallbackDefendant.getPersonDefendant());
+        }
+        if (isNull(latestDefendant.getLegalEntityDefendant()) && nonNull(fallbackDefendant.getLegalEntityDefendant())) {
+            builder.withLegalEntityDefendant(fallbackDefendant.getLegalEntityDefendant());
+        }
+        if (isNull(latestDefendant.getPncId()) && nonNull(fallbackDefendant.getPncId())) {
+            builder.withPncId(fallbackDefendant.getPncId());
+        }
+        if (isNull(latestDefendant.getAliases()) && nonNull(fallbackDefendant.getAliases())) {
+            builder.withAliases(fallbackDefendant.getAliases());
+        }
+        if (isNull(latestDefendant.getIsYouth()) && nonNull(fallbackDefendant.getIsYouth())) {
+            builder.withIsYouth(fallbackDefendant.getIsYouth());
+        }
+        if (isNull(latestDefendant.getAssociatedDefenceOrganisation()) && nonNull(fallbackDefendant.getAssociatedDefenceOrganisation())) {
+            builder.withAssociatedDefenceOrganisation(fallbackDefendant.getAssociatedDefenceOrganisation());
+        }
+        if (isNull(latestDefendant.getCroNumber()) && nonNull(fallbackDefendant.getCroNumber())) {
+            builder.withCroNumber(fallbackDefendant.getCroNumber());
+        }
 
     }
 
