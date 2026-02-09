@@ -3,7 +3,11 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
+<<<<<<< HEAD
         <version>17.0.225--SNAPSHOT</version>
+=======
+        <version>17.0.225-SNAPSHOT</version>
+>>>>>>> 2609582785 (updating poms for 17.0.225-SNAPSHOT development)
     </parent>
     <artifactId>progression-command-api</artifactId>
     <packaging>war</packaging>
