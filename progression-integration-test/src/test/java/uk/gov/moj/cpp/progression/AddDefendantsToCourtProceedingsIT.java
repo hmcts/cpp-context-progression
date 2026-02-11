@@ -126,9 +126,9 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
         final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        setupListingAnyFutureAllocationQuery(caseUrn, startDateTime.substring(0, 10), "stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
+        setupListingAnyFutureAllocationQuery(caseUrn, LocalDate.now().toString(), "stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
 
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
 
         final JsonObject prosecutionCaseJson = getJsonObject(pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId)));
 
