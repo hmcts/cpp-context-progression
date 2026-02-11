@@ -410,9 +410,10 @@ public class ListingStub {
                 });
     }
 
+    private static final String LISTING_ANY_ALLOCATION_PATH = "/listing-service/query/api/rest/listing/hearings/any-allocation";
+
     public static void setupListingAnyAllocationQuery(final String caseUrn, final String startDate, final String resource) {
-        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation?caseUrn={0}&startDate={1}", caseUrn, startDate);
-        stubFor(get(urlPathEqualTo(urlPath))
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -420,8 +421,7 @@ public class ListingStub {
     }
 
     public static void setupListingAnyFutureAllocationQuery(final String caseUrn, final String startDate, final String resource, final String startDateTime) {
-        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation?caseUrn={0}&startDate={1}", caseUrn, startDate);
-        stubFor(get(urlPathEqualTo(urlPath))
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -430,9 +430,7 @@ public class ListingStub {
 
     public static void stubListingSearchHearingsQuery(final String resource,
                                                       final String hearingId) {
-
-        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
-        stubFor(get(urlPathEqualTo(urlPath))
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
