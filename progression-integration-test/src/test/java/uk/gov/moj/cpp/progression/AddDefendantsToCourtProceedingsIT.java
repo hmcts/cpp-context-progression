@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
+class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
 
@@ -72,7 +72,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private final JmsMessageConsumerClient messageConsumerClientPublicCase = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE).getMessageConsumerClient();
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private String caseId;
     private String defendantId;
@@ -80,7 +80,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private String caseUrn;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         offenceId = randomUUID().toString();
@@ -88,16 +88,15 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
-        final String offenceId3 = randomUUID().toString();
+    void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
         final String defendantId2 = randomUUID().toString();
-        final String defendantId3 = randomUUID().toString();
-
-        setupListingAnyAllocationQuery(caseUrn, LocalDate.now().toString(), "stub-data/listing.any-allocation.search.hearings.json");
 
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
         verifyPostListCourtHearing(caseId, defendantId);
+
+        // Stub GET any-allocation with empty hearings so add-defendants processor gets empty list and sends POST for new hearing (defendant2)
+        setupListingAnyAllocationQuery(caseUrn, LocalDate.now().toString(), "stub-data/listing.any-allocation.search.hearings.empty.json");
 
         //Create payload for
         final String startDateTime = ZonedDateTime.now().plusWeeks(2).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
@@ -117,7 +116,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
+    void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 
         final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
         final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
@@ -126,8 +125,10 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
         final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        // Stub must use today's date: ListingService.getFutureHearings() sends startDate=utcClock.now().toLocalDate()
         setupListingAnyFutureAllocationQuery(caseUrn, LocalDate.now().toString(), "stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
 
+        // Use caseUrn so prosecution case URN matches the listing stub (processor calls getFutureHearings with case URN from view store)
         addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
 
         final JsonObject prosecutionCaseJson = getJsonObject(pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId)));
@@ -168,7 +169,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         //Verify the defendants and check the duplicate is not added
         verifyDefendantsAddedInViewStore(caseId, defendantId2);
 
-        //Verify public.progression.defendants-added-to-court-proceedings message in the public queue
+        //Verify public.progression.defendants-added-to-court-proceedings message in the queue
         verifyInMessagingQueueForDefendantsAddedToCourtHearings(caseId, defendantId2);
         verifyInMessagingQueueForDefendantsAddedToCase(caseId, defendantId2);
     }
