@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.103.3</version>
+        <version>17.103.9-M2</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -76,7 +76,7 @@
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.87</results.version>
         <notification.notify.version>17.0.24</notification.notify.version>
-        <unifiedsearch.version>17.0.26</unifiedsearch.version>
+        <unifiedsearch.version>17.103.2-DD-41592-SNAPSHOT</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
         <sjp.version>17.0.130</sjp.version>
