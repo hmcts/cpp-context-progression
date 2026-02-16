@@ -37,6 +37,7 @@ import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -81,7 +82,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ListingServiceTest {
 
     private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
-    private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
+    private static final String LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS = "public.progression.next-hearings-listed";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
@@ -275,7 +276,27 @@ public class ListingServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
-        assertThat(metadata.name(), is(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS));
+        assertThat(metadata.name(), is(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS));
+        assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
+
+        verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldRaisePublicEventWithoutHearingId() {
+        final JsonObject listNextHearingsJson = createObjectBuilder().build();
+        final ListNextHearingsV3 listNextHearings = getListNextHearingsV3();
+
+        when(objectToJsonObjectConverter.convert(eq(ListNextHearingsV3.listNextHearingsV3().withValuesFrom(listNextHearings).withHearingId(null).build())))
+                .thenReturn(listNextHearingsJson);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+        listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
+
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
+        assertThat(metadata.name(), is(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS));
         assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
 
         verifyNoMoreInteractions(sender);
@@ -353,6 +374,30 @@ public class ListingServiceTest {
                                 .build())
 
                         .build()))
+                .build();
+    }
+
+    private ListNextHearingsV3 getListNextHearingsV3() {
+        return ListNextHearingsV3.listNextHearingsV3()
+                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withEstimatedDuration("1 week")
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
+
+                        .build()))
+                .withHearingId(randomUUID())
                 .build();
     }
 

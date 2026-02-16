@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/public.progression.seeding-hearing-updated-with-next-hearings.json",
+  "type": "object",
+  "properties": {
+    "hearingDay": {
+      "type": "string"
+    },
+    "seedingHearingId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "oldNextHearingId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "newNextHearingId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "hearingDay",
+    "seedingHearingId",
+    "newNextHearingId"
+  ],
+  "additionalProperties": false
+}
