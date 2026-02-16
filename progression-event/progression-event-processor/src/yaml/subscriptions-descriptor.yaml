@@ -554,6 +554,9 @@ subscriptions_descriptor:
         - name: progression.event.remove-defendant-custodial-establishment-requested
           schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
 
+        - name: progression.event.hearing-confirmed-replayed
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-confirmed-replayed.json
+
         - name: progression.event.delete-previous-hearings-and-create-next-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
 

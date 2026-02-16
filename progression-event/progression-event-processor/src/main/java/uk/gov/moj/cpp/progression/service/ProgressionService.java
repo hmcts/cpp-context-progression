@@ -1294,10 +1294,7 @@ public class ProgressionService {
 
     public Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
         final Optional<JsonObject> hearingPayloadOptional = getHearing(event, hearingId.toString());
-        if (hearingPayloadOptional.isPresent()) {
-            return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
-        }
-        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId);
+        return hearingPayloadOptional.map(jsonObject -> jsonObjectConverter.convert(jsonObject.getJsonObject("hearing"), Hearing.class)).orElse(null);
     }
 
     public JsonObject retrieveApplication(final JsonEnvelope event, final UUID applicationId) {

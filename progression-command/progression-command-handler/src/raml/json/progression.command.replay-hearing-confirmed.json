@@ -1,0 +1,49 @@
+{
+  "confirmedHearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "description": "Sentence",
+      "id": "68b54831-5134-415b-9679-1ec7e4b84254"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "M0zkxWV06n",
+    "hearingLanguage": "WELSH",
+    "hearingDays": [
+      {
+        "sittingDay": "2018-11-12T09:27:12Z",
+        "listedDurationMinutes": 0
+      },
+      {
+        "sittingDay": "2018-11-12T09:27:12Z",
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "300067e1-5309-4ba8-8d74-f96a113ceb1a",
+      "roomId": "fdbaf0ab-c84d-4411-ab06-6ce6b7bc46a3"
+    },
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "offences": [
+              {
+                "id": "8a0a3668-0ff7-455b-9ca3-466d4083e406"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "judiciary": [
+      {
+        "isDeputy": true,
+        "judicialId": "8a0a3668-0ff7-455b-9ca3-466d4083e406",
+        "judicialRoleType": "MAGISTRATE",
+        "isBenchChairman": true
+      }
+    ]
+  }
+}
