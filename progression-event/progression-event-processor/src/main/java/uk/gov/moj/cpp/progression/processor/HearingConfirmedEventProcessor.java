@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
@@ -41,8 +42,9 @@ import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
-import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
+import uk.gov.justice.progression.courts.SeedingHearingUpdatedWithNextHearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -52,6 +54,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
@@ -80,10 +83,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -176,6 +181,19 @@ public class HearingConfirmedEventProcessor {
     @Inject
     private FeatureControlGuard featureControlGuard;
 
+    @Handles("progression.event.hearing-confirmed-replayed")
+    public void processHearingConfirmedReplayed(final JsonEnvelope jsonEnvelope){
+        final HearingConfirmedReplayed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmedReplayed.class);
+        final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
+        final Hearing hearingInProgression = hearingConfirmed.getHearingInProgression();
+        boolean sendNotificationToParties = false;
+        if (nonNull(hearingConfirmed.getSendNotificationToParties())) {
+            sendNotificationToParties = hearingConfirmed.getSendNotificationToParties();
+        }
+
+        confirmHearing(jsonEnvelope, sendNotificationToParties,confirmedHearing,hearingInProgression );
+    }
+
     @SuppressWarnings("squid:S3776")
     @Handles("public.listing.hearing-confirmed")
     public void processEvent(final JsonEnvelope jsonEnvelope) {
@@ -186,10 +204,22 @@ public class HearingConfirmedEventProcessor {
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
         final Hearing hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
+        if(isNull(hearingInProgression)){
+            sender.send(Enveloper
+                    .envelop(hearingConfirmed)
+                    .withName("progression.command.replay-hearing-confirmed")
+                    .withMetadataFrom(jsonEnvelope));
+            return;
+        }
         boolean sendNotificationToParties = false;
         if (nonNull(hearingConfirmed.getSendNotificationToParties())) {
             sendNotificationToParties = hearingConfirmed.getSendNotificationToParties();
         }
+        confirmHearing(jsonEnvelope, sendNotificationToParties,confirmedHearing,hearingInProgression );
+
+    }
+
+    private void confirmHearing(final JsonEnvelope jsonEnvelope, final boolean sendNotificationToParties, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression){
 
         triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
@@ -482,12 +512,26 @@ public class HearingConfirmedEventProcessor {
             updateHearingForPartialAllocation(jsonEnvelope, confirmedHearing, deltaProsecutionCases);
             HearingListingNeeds newHearingForRemainingUnallocatedOffences;
             if (nonNull(seedingHearing)) {
-                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDeltaSeededProsecutionCases(confirmedHearing, hearingInProgression, seedingHearing);
+                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
                 final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(deltaSeededProsecutionCases, hearingInitiate.getHearing(), hearingInProgression, seedingHearing);
                 listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
                 newHearingForRemainingUnallocatedOffences = listNextHearings.getHearings().get(0);
-                final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap = partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearingInProgression, seedingHearing);
-                processCommandUpdateRelatedHearing(jsonEnvelope, newHearingForRemainingUnallocatedOffences, relatedSeedingHearingsProsecutionCasesMap);
+                final Set<SeedingHearing> relatedSeedingHearings = deltaProsecutionCases.stream()
+                        .flatMap(pc -> pc.getDefendants().stream())
+                        .flatMap(defendant -> defendant.getOffences().stream())
+                        .map(Offence::getSeedingHearing)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+                final Set<UUID> confirmedSeedingHearings = confirmedHearing.getProsecutionCases().stream()
+                        .flatMap(pc -> pc.getDefendants().stream())
+                        .flatMap(defendant -> defendant.getOffences().stream())
+                        .map(ConfirmedOffence::getSeedingHearing)
+                        .filter(Objects::nonNull)
+                        .map(SeedingHearing::getSeedingHearingId)
+                        .collect(Collectors.toSet());
+
+                processCommandUpdateRelatedHearing(jsonEnvelope, relatedSeedingHearings, confirmedSeedingHearings, confirmedHearing.getId(), listNextHearings.getHearings().get(0).getId());
 
             } else {
                 final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
@@ -509,20 +553,22 @@ public class HearingConfirmedEventProcessor {
      * "command.update-related-hearing" for each related seedingHearing.
      *
      * @param jsonEnvelope
-     * @param hearingListingNeed
-     * @param relatedSeedingHearingsProsecutionCasesMap
+     * @param relatedSeedingHearings
+     * @param confirmedSeedingHearings
+     * @param oldNextHearing
+     * @param newNextHearing
      */
-    private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope, final HearingListingNeeds hearingListingNeed, final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap) {
-        for (final Map.Entry<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearing : relatedSeedingHearingsProsecutionCasesMap.entrySet()) {
-            final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
-                    .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
-                            .withId(hearingListingNeed.getId())
-                            .withProsecutionCases(relatedSeedingHearing.getValue())
-                            .build())
-                    .withSeedingHearing(relatedSeedingHearing.getKey())
-                    .build();
-            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.update-related-hearing").apply(objectToJsonObjectConverter.convert(updateRelatedHearingCommand)));
-        }
+    private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope,  final Set<SeedingHearing> relatedSeedingHearings, Set<UUID> confirmedSeedingHearings , final UUID oldNextHearing, final UUID newNextHearing) {
+        relatedSeedingHearings.stream().forEach(seedingHearing -> {
+            final SeedingHearingUpdatedWithNextHearings.Builder builder = SeedingHearingUpdatedWithNextHearings.seedingHearingUpdatedWithNextHearings();
+            builder.withHearingDay(seedingHearing.getSittingDay());
+            builder.withSeedingHearingId(seedingHearing.getSeedingHearingId());
+            builder.withNewNextHearingId(newNextHearing);
+            if(! confirmedSeedingHearings.contains(seedingHearing.getSeedingHearingId())){
+               builder.withOldNextHearingId(oldNextHearing);
+            }
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.seeding-hearing-updated-with-next-hearings").apply(objectToJsonObjectConverter.convert(builder.build())));
+        });
     }
 
     private void assignDefendantRequestFromCurrentHearingToExtendHearing(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate, final HearingListingNeeds hearingListingNeeds) {

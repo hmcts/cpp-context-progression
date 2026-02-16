@@ -84,4 +84,11 @@ public class CourtApplicationCaseRepositoryTest {
         assertThat(actual.size(), is(0));
     }
 
+    @Test
+    public void shouldFindCourtApplicationCaseEntityByApplicationIdAndCaseId() {
+        CourtApplicationCaseEntity byApplicationIdAndCaseId = courtApplicationCaseRepository.findByApplicationIdAndCaseId(APPLICATION_ID, CASE_ID);
+        assertThat(byApplicationIdAndCaseId.getCourtApplication(), is(notNullValue()));
+        assertThat(byApplicationIdAndCaseId.getCourtApplication().getApplicationId(), is(APPLICATION_ID));
+    }
+
 }
