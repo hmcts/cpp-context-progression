@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.UpdateHearingWithNewDefendant;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
@@ -53,13 +54,17 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.jobstore.api.ExecutionService;
+import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -91,6 +96,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -143,10 +149,22 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     @Mock
     private SummonsHearingRequestService summonsHearingRequestService;
 
+    @Mock
+    private ApplicationParameters applicationParameters;
+
+    @Mock
+    private ExecutionService executionService;
+
+    @Spy
+    private UtcClock utcClock;
+
     final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<ExecutionInfo> executeCaptor;
 
     @Captor
     private ArgumentCaptor<UUID> uuidCaptor;
@@ -208,30 +226,147 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     }
 
     @Test
-    public void shouldHandleCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmpty() throws Exception {
+    void shouldRetryCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmpty() throws Exception {
         final UUID userId = randomUUID();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(applicationParameters.getAddDefendantRetryIntervals()).thenReturn("1-5-10-30-60-90-120");
+        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder().withName("progression.event.defendants-added-to-court-proceedings")
+                .withId(randomUUID())
+                .withCausation(randomUUID(), randomUUID())
+                .build());
 
         defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
-        prosecutionCaseJsonObject = of(getProsecutionCaseResponse());
-        final GetHearingsAtAGlance hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
-
-        final List<Hearing> futureHearings = createFutureHearings();
         //When
         when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class))
                 .thenReturn(defendantsAddedToCourtProceedings);
 
+
+        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
+                defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(Optional.empty());
+        //Then
+        eventProcessor.process(jsonEnvelope);
+
+        verify(sender, never()).send(envelopeCaptor.capture());
+
+        verify(executionService, times(1)).executeWith(executeCaptor.capture());
+
+        assertThat(executeCaptor.getValue().getJobData().getJsonObject("metadata").getString("name"), is("progression.command.replay-defendants-added-to-court-proceedings"));
+        assertThat(executeCaptor.getValue().getJobData().getJsonObject("payload").getInt("interval"), is(1));
+    }
+
+
+    @Test
+    void shouldRetryReplayedCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmpty() throws Exception {
+        final UUID userId = randomUUID();
+        //Given
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(applicationParameters.getAddDefendantRetryIntervals()).thenReturn("1-5-10-30-60-90-120");
+        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder().withName("progression.event.defendants-added-to-court-proceedings")
+                .withId(randomUUID())
+                .withCausation(randomUUID(), randomUUID())
+                .build());
+
+        defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
+        ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = ReplayedDefendantsAddedToCourtProceedings.replayedDefendantsAddedToCourtProceedings()
+                .withDefendants(defendantsAddedToCourtProceedings.getDefendants())
+                .withListHearingRequests(defendantsAddedToCourtProceedings.getListHearingRequests())
+                .withInterval(2) // after the last retry
+                .build();
+
+        //When
+        when(jsonObjectToObjectConverter.convert(payload, ReplayedDefendantsAddedToCourtProceedings.class))
+                .thenReturn(replayedDefendantsAddedToCourtProceedings);
+
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(Optional.empty());
+        //Then
+        eventProcessor.processReplay(jsonEnvelope);
+
+        verify(sender, never()).send(envelopeCaptor.capture());
+
+        verify(executionService, times(1)).executeWith(executeCaptor.capture());
+
+        assertThat(executeCaptor.getValue().getJobData().getJsonObject("metadata").getString("name"), is("progression.command.replay-defendants-added-to-court-proceedings"));
+        assertThat(executeCaptor.getValue().getJobData().getJsonObject("payload").getInt("interval"), is(3));
+    }
+
+    @Test
+    void shouldRaisePublicEventAfterReplayed() throws Exception {
+        //Given
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder().withName("progression.event.defendants-added-to-court-proceedings")
+                .withId(randomUUID())
+                .withCausation(randomUUID(), randomUUID())
+                .build());
+
+        defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
+        ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = ReplayedDefendantsAddedToCourtProceedings.replayedDefendantsAddedToCourtProceedings()
+                .withDefendants(defendantsAddedToCourtProceedings.getDefendants())
+                .withListHearingRequests(defendantsAddedToCourtProceedings.getListHearingRequests())
+                .withInterval(2) // after the last retry
+                .build();
+
+        //When
+        when(jsonObjectToObjectConverter.convert(payload, ReplayedDefendantsAddedToCourtProceedings.class))
+                .thenReturn(replayedDefendantsAddedToCourtProceedings);
+
+        prosecutionCaseJsonObject = of(getProsecutionCaseResponse());
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withCaseURN("caseUrn")
                         .build())
                 .build();
-
-        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
-                defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(Optional.empty());
+        final GetHearingsAtAGlance hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(prosecutionCaseJsonObject);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
+                ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
+                GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
         //Then
-        assertThrows(CaseNotFoundException.class, () -> eventProcessor.process(jsonEnvelope));
+        eventProcessor.processReplay(jsonEnvelope);
+
+        verify(executionService,never()).executeWith(executeCaptor.capture());
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
+
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("public.progression.defendants-added-to-case"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload().containsKey("interval"), is(false));
+
+
+        verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
+        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+    }
+
+    @Test
+    void shouldRaiseExceptionCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmptyAfterReplays() throws Exception {
+        final UUID userId = randomUUID();
+        //Given
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(applicationParameters.getAddDefendantRetryIntervals()).thenReturn("1-5-10-30-60-90-120");
+
+        defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
+        ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = ReplayedDefendantsAddedToCourtProceedings.replayedDefendantsAddedToCourtProceedings()
+                .withDefendants(defendantsAddedToCourtProceedings.getDefendants())
+                .withListHearingRequests(defendantsAddedToCourtProceedings.getListHearingRequests())
+                .withInterval(7) // after the last retry
+                .build();
+
+        //When
+        when(jsonObjectToObjectConverter.convert(payload, ReplayedDefendantsAddedToCourtProceedings.class))
+                .thenReturn(replayedDefendantsAddedToCourtProceedings);
+
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(Optional.empty());
+
+        //Then
+        assertThrows(CaseNotFoundException.class, () -> eventProcessor.processReplay(jsonEnvelope));
     }
 
     public List<Hearing> createFutureHearings() {
