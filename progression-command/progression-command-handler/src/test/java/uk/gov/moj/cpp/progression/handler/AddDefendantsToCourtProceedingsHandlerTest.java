@@ -25,7 +25,7 @@ import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedingsV2;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -93,7 +93,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
     private Requester requester;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedings.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedingsV2.class);
 
     @InjectMocks
     private AddDefendantsToCourtProceedingsHandler addDefendantsToCourtProceedingsHandler;
@@ -106,6 +106,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
         assertThat(new AddDefendantsToCourtProceedingsHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.add-defendants-to-court-proceedings")
+
                 ));
     }
 
@@ -175,17 +176,16 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
-
         assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata()
-                                .withName("progression.event.defendants-added-to-court-proceedings"),
+                                .withName("progression.event.defendants-added-to-court-proceedings-v2"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.defendants", notNullValue()))
                         ).isJson(allOf(
                                 withJsonPath("$.defendants[0].isYouth", equalTo(true)))
                         ).isJson(allOf(
-                                withJsonPath("$.listHearingRequests", notNullValue()))
+                                withJsonPath("$.listingHearingRequests", notNullValue()))
                         ).isJson(allOf(
                                 withJsonPath("$.defendants[0].offences[0].reportingRestrictions[0].label", equalTo(YOUTH_RESTRICTION)))
                         ).isJson(allOf(

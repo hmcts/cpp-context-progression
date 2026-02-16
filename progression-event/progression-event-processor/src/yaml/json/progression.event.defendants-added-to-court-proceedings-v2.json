@@ -1,0 +1,79 @@
+{
+  "defendants": [
+    {
+      "associatedPersons": [
+        {
+          "person": {
+            "firstName": "KkVdydyYdA",
+            "gender": "MALE",
+            "lastName": "WLMjUgwGKd",
+            "middleName": "jrllcExhIF"
+          }
+        }
+      ],
+      "courtProceedingsInitiated": "2025-12-30T12:10:56.707Z",
+      "id": "79fb0359-16c9-4817-9aab-ebae9d4eeea3",
+      "isYouth": false,
+      "masterDefendantId": "79fb0359-16c9-4817-9aab-ebae9d4eeea3",
+      "offences": [
+        {
+          "count": 0,
+          "id": "062dc9e1-8fd9-4cda-bf1b-1d55f1c3ba49",
+          "offenceCode": "TFL123",
+          "offenceDefinitionId": "3b587bb6-aa86-4ca5-a722-de86c5c13c36",
+          "offenceTitle": "TFL Ticket Dodger",
+          "startDate": "2019-05-01",
+          "wording": "TFL ticket dodged"
+        }
+      ],
+      "personDefendant": {
+        "personDetails": {
+          "dateOfBirth": "1981-01-05",
+          "firstName": "DDEYFEDOxp",
+          "gender": "MALE",
+          "lastName": "iNVaqPqtIg",
+          "middleName": "DLtVPViMCb"
+        }
+      },
+      "prosecutionAuthorityReference": "SLXnRukBseSoXDA",
+      "prosecutionCaseId": "5ab61975-eccf-479e-97e3-073f01f41c93"
+    }
+  ],
+  "listingHearingRequests": [
+    {
+      "hearingId": "488151ef-7ca2-4dfc-8766-ff05028fa388",
+      "hearingListingStatus": "HEARING_INITIALISED",
+      "listHearingRequest": {
+        "courtCentre": {
+          "id": "e3114db1-1683-483e-afb3-b87fde5a7777",
+          "name": "Court Name 5"
+        },
+        "earliestStartDateTime": "2026-01-27T12:10:52.966Z",
+        "estimateMinutes": 20,
+        "estimatedDuration": "1 week",
+        "hearingType": {
+          "description": "TO_JAIL",
+          "id": "da3962ca-57a3-4e52-af1e-d9aa41e7f39d"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "listDefendantRequests": [
+          {
+            "defendantId": "79fb0359-16c9-4817-9aab-ebae9d4eeea3",
+            "defendantOffences": [
+              "062dc9e1-8fd9-4cda-bf1b-1d55f1c3ba49"
+            ],
+            "prosecutionCaseId": "5ab61975-eccf-479e-97e3-073f01f41c93",
+            "summonsApprovedOutcome": {
+              "personalService": true,
+              "prosecutorCost": "£300.00",
+              "prosecutorEmailAddress": "test@test.com",
+              "summonsSuppressed": false
+            },
+            "summonsRequired": "FIRST_HEARING"
+          }
+        ],
+        "listedStartDateTime": "2026-01-27T12:10:52.966Z"
+      }
+    }
+  ]
+}

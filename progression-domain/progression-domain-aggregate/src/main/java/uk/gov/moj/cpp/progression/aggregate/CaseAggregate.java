@@ -46,6 +46,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.CaseRetentionLengthCalculated.caseRetentionLengthCalculated;
 import static uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated;
 import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
+import static uk.gov.moj.cpp.progression.ListingHearingRequest.listingHearingRequest;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
@@ -84,102 +85,7 @@ import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
-import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
-import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
-import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
-import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
-import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
-import uk.gov.justice.core.courts.CaseEjected;
-import uk.gov.justice.core.courts.CaseEjectedViaBdf;
-import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
-import uk.gov.justice.core.courts.CaseLinkedToHearing;
-import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
-import uk.gov.justice.core.courts.CaseMarkersUpdated;
-import uk.gov.justice.core.courts.CaseNoteAddedV2;
-import uk.gov.justice.core.courts.CaseNoteEditedV2;
-import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
-import uk.gov.justice.core.courts.Cases;
-import uk.gov.justice.core.courts.CivilFees;
-import uk.gov.justice.core.courts.ContactNumber;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtHearingRequest;
-import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
-import uk.gov.justice.core.courts.CpsProsecutorUpdated;
-import uk.gov.justice.core.courts.CustodialEstablishment;
-import uk.gov.justice.core.courts.CustodyTimeLimit;
-import uk.gov.justice.core.courts.DefenceOrganisation;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantCaseOffences;
-import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
-import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
-import uk.gov.justice.core.courts.DefendantUpdate;
-import uk.gov.justice.core.courts.Defendants;
-import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
-import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
-import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
-import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
-import uk.gov.justice.core.courts.EditFormRequested;
-import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.FinancialDataAdded;
-import uk.gov.justice.core.courts.FinancialMeansDeleted;
-import uk.gov.justice.core.courts.FormCreated;
-import uk.gov.justice.core.courts.FormDefendants;
-import uk.gov.justice.core.courts.FormDefendantsUpdated;
-import uk.gov.justice.core.courts.FormFinalised;
-import uk.gov.justice.core.courts.FormType;
-import uk.gov.justice.core.courts.FormUpdated;
-import uk.gov.justice.core.courts.FundingType;
-import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
-import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
-import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.LockStatus;
-import uk.gov.justice.core.courts.Marker;
-import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.OffenceListingNumbers;
-import uk.gov.justice.core.courts.OnlinePleasAllocation;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.PetDefendants;
-import uk.gov.justice.core.courts.PetDetailReceived;
-import uk.gov.justice.core.courts.PetDetailUpdated;
-import uk.gov.justice.core.courts.PetFormCreated;
-import uk.gov.justice.core.courts.PetFormDefendantUpdated;
-import uk.gov.justice.core.courts.PetFormFinalised;
-import uk.gov.justice.core.courts.PetFormReceived;
-import uk.gov.justice.core.courts.PetFormReleased;
-import uk.gov.justice.core.courts.PetFormUpdated;
-import uk.gov.justice.core.courts.PetOperationFailed;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseCreated;
-import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseSubject;
-import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
-import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
-import uk.gov.justice.core.courts.Prosecutor;
-import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
-import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
-import uk.gov.justice.core.courts.ReportingRestriction;
-import uk.gov.justice.core.courts.UpdatedOrganisation;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
@@ -192,10 +98,13 @@ import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationUpdated;
 import uk.gov.justice.progression.courts.RelatedCaseRequestedForAdhocHearing;
+import uk.gov.moj.cpp.progression.HearingDetail;
+import uk.gov.moj.cpp.progression.ListingHearingRequest;
 import uk.gov.moj.cpp.progression.aggregate.convertor.DefendateUpdateConverter;
 import uk.gov.moj.cpp.progression.aggregate.rules.DartsRetentionPolicyHelper;
 import uk.gov.moj.cpp.progression.aggregate.rules.HearingInfo;
@@ -265,11 +174,13 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -277,12 +188,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -299,7 +212,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S2384", "pmd:NullAssignment", "squid:S134", "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -2092381865833271661L;
+    private static final long serialVersionUID = -2092381865833271662L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -335,6 +248,7 @@ public class CaseAggregate implements Aggregate {
     //hearing collections
     private final Set<UUID> hearingIds = new HashSet<>();
     private final List<ListHearingRequest> listHearingRequestsToBeAdded = new ArrayList<>();
+    private final Map<UUID, HearingDetail> hearingDetailMap = new HashMap<>();
     private final Set<UUID> deletedHearingIds = new HashSet<>();
 
     //offence collections
@@ -436,25 +350,17 @@ public class CaseAggregate implements Aggregate {
                             }
                         }
                 ),
-                when(DefendantsAddedToCourtProceedings.class).apply(
-                        e ->
-                        {
-                            if (!e.getDefendants().isEmpty()) {
-                                e.getDefendants().forEach(
-                                        defendant -> {
-                                            addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
-                                            this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
-                                            updateDefendantProceedingConcluded(defendant, false);
-                                            this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
-                                        });
-                            }
-                            this.prosecutionCase.getDefendants().addAll(e.getDefendants());
-                        }
-                ),
+                when(EnrichHearingInitiated.class).apply(this::updateHearingRequestMap),
+                when(DefendantsAddedToCourtProceedings.class).apply(e -> onDefendantsAddedToCourtProceedings(e.getDefendants())),
+                when(DefendantsAddedToCourtProceedingsV2.class).apply(e -> {
+                    updateHearingRequestMap(e.getListingHearingRequests());
+                    onDefendantsAddedToCourtProceedings(e.getDefendants());
+                }),
                 when(CaseLinkedToHearing.class).apply(this::caseLinkedToHearing),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
                 when(FinancialMeansDeleted.class).apply(this::deleteFinancialData),
                 when(HearingResultedCaseUpdated.class).apply(this::updateDefendantProceedingConcludedAndCaseStatus),
+                when(HearingResulted.class).apply(e -> hearingDetailMap.remove(e.getHearing().getId())),
                 when(HearingConfirmedCaseStatusUpdated.class).apply(this::hearingConfirmedCaseStatusUpdated),
                 when(DefendantDefenceOrganisationAssociated.class).apply(this::updateDefendantAssociatedDefenceOrganisation),
                 when(DefendantDefenceOrganisationDisassociated.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
@@ -552,11 +458,24 @@ public class CaseAggregate implements Aggregate {
                         this.defendantCustodialEstablishmentMap.remove(e.getDefendantId())
                 ),
                 otherwiseDoNothing());
+    }
 
+    private void onDefendantsAddedToCourtProceedings(final List<Defendant> defendants) {
+        if (!defendants.isEmpty()) {
+            defendants.forEach(
+                    defendant -> {
+                        addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
+                        this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
+                        updateDefendantProceedingConcluded(defendant, false);
+                        this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
+                    });
+        }
+        this.prosecutionCase.getDefendants().addAll(defendants);
     }
 
     private void caseLinkedToHearing(final CaseLinkedToHearing caseLinkedToHearing) {
         if (!this.deletedHearingIds.contains(caseLinkedToHearing.getHearingId())) {
+
             this.hearingIds.add(caseLinkedToHearing.getHearingId());
             this.latestHearingId = caseLinkedToHearing.getHearingId();
         }
@@ -1081,7 +1000,7 @@ public class CaseAggregate implements Aggregate {
         LOGGER.debug("Defendants Added To CourtProceedings");
 
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
-                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d -> d, (i, d) -> d)).values().stream().collect(toList());
+                addedDefendants.stream().filter(d -> !this.defendantCaseOffences.containsKey(d.getId())).collect(toMap(uk.gov.justice.core.courts.Defendant::getId, d -> d, (i, d) -> d)).values().stream().toList();
 
         if (newDefendantsList.isEmpty()) {
             return apply(Stream.of(DefendantsNotAddedToCourtProceedings.defendantsNotAddedToCourtProceedings()
@@ -1092,20 +1011,102 @@ public class CaseAggregate implements Aggregate {
         }
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
 
-        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).toList();
 
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
                 uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
-                ).build()).collect(toList());
-        final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
+                ).build()).toList();
+        final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(Defendant::getId).toList();
         updatedDefendantsWithYouthFlag.removeIf(x -> updatedDefendantIds.contains(x.getId()));
         updatedDefendantsWithYouthFlag.addAll(updatedDefendantsWitMasterDefendantIdsSet);
         updatedDefendantsWithYouthFlag.forEach(defendantWithYouthFlag -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendantWithYouthFlag, listHearingRequests));
-        return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+
+        final List<ListingHearingRequest> listingHearingRequestList = listHearingRequests.stream()
+                .map(this::mapListHearingRequests)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+        return apply(Stream.of(DefendantsAddedToCourtProceedingsV2.defendantsAddedToCourtProceedingsV2()
                 .withDefendants(updatedDefendantsWithYouthFlag)
-                .withListHearingRequests(listHearingRequests)
+                .withListingHearingRequests(listingHearingRequestList)
                 .build())
         );
+    }
+
+    public Stream<Object> enrichHearingInitiate(final Hearing hearing) {
+        return apply(Stream.of(EnrichHearingInitiated.enrichHearingInitiated()
+                        .withHearingId(hearing.getId())
+                        .withCourtCentreId(hearing.getCourtCentre().getId())
+                        .withCourtRoomId(hearing.getCourtCentre().getRoomId())
+                        .withHearingDateTime(hearing.getHearingDays().stream().map(HearingDay::getSittingDay).toList())
+                        .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING).build()));
+    }
+
+    private Optional<ListingHearingRequest> mapListHearingRequests(final ListHearingRequest listHearingRequest) {
+        final ZonedDateTime startDateTime = getHearingDatetime(listHearingRequest);
+
+        if ( !(startDateTime == null || startDateTime.toLocalDate().isBefore(LocalDate.now()))) {
+            final ListingHearingRequest hearingRequest = hearingDetailMap.values().stream()
+                    .filter(isAnyMatchingFutureHearingExists(listHearingRequest))
+                    .map(hearing -> listingHearingRequest()
+                            .withHearingId(hearing.getHearingId())
+                            .withListHearingRequest(listHearingRequest)
+                            .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                            .build())
+                    .findFirst()
+                    .orElse(listingHearingRequest()
+                            .withHearingId(randomUUID())
+                            .withListHearingRequest(listHearingRequest)
+                            .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                            .build());
+            return Optional.of(hearingRequest);
+        }
+
+        return Optional.empty();
+    }
+
+    private void updateHearingRequestMap(final List<ListingHearingRequest> hearingRequestList) {
+        hearingRequestList.forEach(request ->
+                        hearingDetailMap.putIfAbsent(request.getHearingId(),
+                                HearingDetail.hearingDetail()
+                                        .withHearingId(request.getHearingId())
+                                        .withCourtCentreId(request.getListHearingRequest().getCourtCentre().getId())
+                                        .withCourtRoomId(request.getListHearingRequest().getCourtCentre().getRoomId())
+                                        .withHearingDateTime(singletonList(getHearingDatetime(request.getListHearingRequest())))
+                                        .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                                        .build()));
+    }
+
+    private ZonedDateTime getHearingDatetime(final ListHearingRequest listHearingRequest) {
+        return nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
+    }
+
+    private void updateHearingRequestMap(final EnrichHearingInitiated hearingInitiated) {
+        hearingDetailMap.put(hearingInitiated.getHearingId(), HearingDetail.hearingDetail()
+                .withHearingId(hearingInitiated.getHearingId())
+                .withCourtCentreId(hearingInitiated.getCourtCentreId())
+                .withCourtRoomId(hearingInitiated.getCourtRoomId())
+                .withHearingDateTime(hearingInitiated.getHearingDateTime())
+                .withHearingListingStatus(hearingInitiated.getHearingListingStatus())
+                .build());
+    }
+
+    private Predicate<HearingDetail> isAnyMatchingFutureHearingExists(final ListHearingRequest listHearingRequest) {
+        return hearingDetail -> checkForSameCourtCentre(listHearingRequest, hearingDetail)
+                        && checkForSameHearingDateTime(listHearingRequest, hearingDetail);
+    }
+
+    private boolean checkForSameCourtCentre(final ListHearingRequest listHearingRequest, final HearingDetail hearingDetails) {
+        return nonNull(listHearingRequest.getCourtCentre()) &&
+                Objects.equals(hearingDetails.getCourtCentreId(), listHearingRequest.getCourtCentre().getId());
+    }
+
+    private boolean checkForSameHearingDateTime(final ListHearingRequest listHearingRequest, final HearingDetail hearingDetail) {
+        final Instant hearingRequestDateTime = listHearingRequest.getListedStartDateTime().truncatedTo(ChronoUnit.MINUTES).toInstant();
+
+        return hearingDetail.getHearingDateTime().stream()
+                .anyMatch( hdt ->  hearingRequestDateTime.equals(hdt.truncatedTo(ChronoUnit.MINUTES).toInstant()));
     }
 
     /**
@@ -3964,4 +3965,5 @@ public class CaseAggregate implements Aggregate {
         }
         return newReference;
     }
+
 }

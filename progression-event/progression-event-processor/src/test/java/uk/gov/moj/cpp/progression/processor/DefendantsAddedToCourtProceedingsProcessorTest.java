@@ -38,6 +38,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedingsV2;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -58,6 +59,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.ListingHearingRequest;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -79,6 +81,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
@@ -707,6 +710,194 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                 .withClientCorrelationId(randomUUID().toString())
                 .withStreamId(randomUUID())
                 .withUserId((Objects.isNull(userId) ? randomUUID() : userId).toString());
+    }
+
+    @Test
+    void shouldHandleDefendantsAddedToCourtProceedingsV2Event() throws Exception {
+        final UUID userId = randomUUID();
+        final DefendantsAddedToCourtProceedingsV2 defendantsAddedToCourtProceedingsV2 = buildDefendantsAddedToCourtProceedingsV2();
+        prosecutionCaseJsonObject = of(getProsecutionCaseResponse());
+        
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withCaseURN("caseUrn")
+                        .build())
+                .build();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings-v2").build());
+        when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedingsV2.class))
+                .thenReturn(defendantsAddedToCourtProceedingsV2);
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedingsV2.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(prosecutionCaseJsonObject);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
+                ProsecutionCase.class)).thenReturn(prosecutionCase);
+
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedingsV2));
+
+        eventProcessor.processV2(jsonEnvelope);
+        
+        verify(sender, times(6)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("public.progression.defendants-added-to-case"));
+    }
+
+    @Test
+    public void shouldHandleDefendantsAddedToCourtProceedingsV2EventWhenCaseNotFound() throws Exception {
+        final UUID userId = randomUUID();
+        final DefendantsAddedToCourtProceedingsV2 defendantsAddedToCourtProceedingsV2 = buildDefendantsAddedToCourtProceedingsV2();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings-v2").build());
+        when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedingsV2.class))
+                .thenReturn(defendantsAddedToCourtProceedingsV2);
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedingsV2.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(Optional.empty());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedingsV2));
+
+        assertThrows(CaseNotFoundException.class, () -> eventProcessor.processV2(jsonEnvelope));
+    }
+
+    @Test
+    public void shouldHandleDefendantsAddedToCourtProceedingsV2WithHearingInitialisedStatus() throws Exception {
+        final UUID userId = randomUUID();
+        final DefendantsAddedToCourtProceedingsV2 defendantsAddedToCourtProceedingsV2 = buildDefendantsAddedToCourtProceedingsV2WithHearingInitialised();
+        prosecutionCaseJsonObject = of(getProsecutionCaseResponse());
+        
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withCaseURN("caseUrn")
+                        .build())
+                .build();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings-v2").build());
+        when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedingsV2.class))
+                .thenReturn(defendantsAddedToCourtProceedingsV2);
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class),
+                eq(defendantsAddedToCourtProceedingsV2.getDefendants().get(0).getProsecutionCaseId().toString()))).thenReturn(prosecutionCaseJsonObject);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
+                ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(List.class), any(), any())).thenReturn(listCourtHearing);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedingsV2));
+
+
+        eventProcessor.processV2(jsonEnvelope);
+        
+        verify(listingService).listCourtHearing(any(JsonEnvelope.class), eq(listCourtHearing));
+        verify(progressionService).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), eq(listCourtHearing));
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(JsonEnvelope.class), any(List.class), any(UUID.class));
+    }
+
+    private DefendantsAddedToCourtProceedingsV2 buildDefendantsAddedToCourtProceedingsV2() {
+        final List<Defendant> defendantsList = new ArrayList<>();
+        final Offence offence = offence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
+                .withOffenceCode("TFL123")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.now().minusWeeks(1))
+                .withCount(0)
+                .build();
+
+        final Defendant defendant = defendant()
+                .withId(DEFENDANT_ID_1)
+                .withProsecutionCaseId(PROSECUTION_CASE_ID)
+                .withOffences(singletonList(offence))
+                .build();
+
+        defendantsList.add(defendant);
+
+        final HearingType hearingType = hearingType().withId(randomUUID()).withDescription("TO_TRIAL").build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).build();
+
+        final ListDefendantRequest listDefendantRequest = listDefendantRequest()
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withDefendantOffences(singletonList(defendant.getOffences().get(0).getId()))
+                .withDefendantId(defendant.getId())
+                .build();
+
+        final ListHearingRequest listHearingRequest = listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(singletonList(listDefendantRequest))
+                .withListedStartDateTime(ZonedDateTime.now().plusWeeks(2))
+                .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
+                .withEstimateMinutes(20)
+                .build();
+
+        final uk.gov.moj.cpp.progression.ListingHearingRequest listingHearingRequest = uk.gov.moj.cpp.progression.ListingHearingRequest.listingHearingRequest()
+                .withHearingId(randomUUID())
+                .withListHearingRequest(listHearingRequest)
+                .withHearingListingStatus(uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING)
+                .build();
+
+        return DefendantsAddedToCourtProceedingsV2.defendantsAddedToCourtProceedingsV2()
+                .withDefendants(defendantsList)
+                .withListingHearingRequests(singletonList(listingHearingRequest))
+                .build();
+    }
+
+    private JsonObject buildDefendantsAddedToCourtProceedings(DefendantsAddedToCourtProceedingsV2 v2payload) {
+
+        final DefendantsAddedToCourtProceedings addedToCourtProceedings = defendantsAddedToCourtProceedings()
+                .withDefendants(v2payload.getDefendants())
+                .withListHearingRequests(v2payload.getListingHearingRequests().stream().map(ListingHearingRequest::getListHearingRequest).toList())
+                .build();
+
+        return new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()).convert(addedToCourtProceedings);
+    }
+
+    private DefendantsAddedToCourtProceedingsV2 buildDefendantsAddedToCourtProceedingsV2WithHearingInitialised() {
+        final List<Defendant> defendantsList = new ArrayList<>();
+        final Offence offence = offence()
+                .withId(randomUUID())
+                .withOffenceDefinitionId(randomUUID())
+                .withOffenceCode("TFL123")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.now().minusWeeks(1))
+                .withCount(0)
+                .build();
+
+        final Defendant defendant = defendant()
+                .withId(DEFENDANT_ID_1)
+                .withProsecutionCaseId(PROSECUTION_CASE_ID)
+                .withOffences(singletonList(offence))
+                .build();
+
+        defendantsList.add(defendant);
+
+        final HearingType hearingType = hearingType().withId(randomUUID()).withDescription("TO_TRIAL").build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).build();
+
+        final ListDefendantRequest listDefendantRequest = listDefendantRequest()
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withDefendantOffences(singletonList(defendant.getOffences().get(0).getId()))
+                .withDefendantId(defendant.getId())
+                .build();
+
+        final ListHearingRequest listHearingRequest = listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(singletonList(listDefendantRequest))
+                .withListedStartDateTime(ZonedDateTime.now().plusWeeks(2))
+                .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
+                .withEstimateMinutes(20)
+                .build();
+
+        final uk.gov.moj.cpp.progression.ListingHearingRequest listingHearingRequest = uk.gov.moj.cpp.progression.ListingHearingRequest.listingHearingRequest()
+                .withHearingId(randomUUID())
+                .withListHearingRequest(listHearingRequest)
+                .withHearingListingStatus(uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED)
+                .build();
+
+        return DefendantsAddedToCourtProceedingsV2.defendantsAddedToCourtProceedingsV2()
+                .withDefendants(defendantsList)
+                .withListingHearingRequests(singletonList(listingHearingRequest))
+                .build();
     }
 
 }
