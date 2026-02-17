@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -59,6 +58,7 @@ import uk.gov.justice.progression.courts.CustodyTimeLimitClockStopped;
 import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
@@ -66,12 +66,14 @@ import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
+import uk.gov.justice.progression.courts.MarkedHearingConfirmedForReplay;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
+import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -99,6 +101,7 @@ import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -111,7 +114,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 8888819367477517207L;
+    private static final long serialVersionUID = 8888819367477517208L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -129,6 +132,7 @@ public class HearingAggregate implements Aggregate {
     private final List<AddedOffencesMovedToHearing> addedOffencesMovedToHearings = new ArrayList<>();
     private Boolean isHearingInitiateEnriched = false;
     private List<ProsecutionCase> seededProsecutionCases = null;
+    private MarkedHearingConfirmedForReplay markedHearingConfirmedForReplay =null;
 
     private ZonedDateTime resultSharedDateTime;
 
@@ -177,6 +181,12 @@ public class HearingAggregate implements Aggregate {
                 when(HearingForApplicationCreatedV2.class).apply(e -> {
                     setHearing(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
+                }),
+                when(MarkedHearingConfirmedForReplay.class).apply(e -> {
+                    this.markedHearingConfirmedForReplay = e;
+                }),
+                when(HearingConfirmedReplayed.class).apply(e -> {
+                    this.markedHearingConfirmedForReplay = null;
                 }),
 
                 when(HearingVerdictUpdated.class).apply(e -> {
@@ -524,6 +534,7 @@ public class HearingAggregate implements Aggregate {
         prosecutionCaseDefendantListingStatusChanged.withHearing(hearingWithOriginalListingNumbers);
 
         streamBuilder.add(prosecutionCaseDefendantListingStatusChanged.build());
+        addReplayEvent(streamBuilder, hearingWithOriginalListingNumbers);
         final Stream<Object> events = apply(streamBuilder.build());
         return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
     }
@@ -679,6 +690,7 @@ public class HearingAggregate implements Aggregate {
         prosecutionCaseDefendantListingStatusChanged.withListNextHearings(listNextHearings);
 
         streamBuilder.add(prosecutionCaseDefendantListingStatusChanged.build());
+        addReplayEvent(streamBuilder, hearingWithOriginalListingNumbers);
         final Stream<Object> events = apply(streamBuilder.build());
         return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
     }
@@ -1058,13 +1070,18 @@ public class HearingAggregate implements Aggregate {
 
     private void setHearing(final Hearing hearing) {
 
-        Hearing updatedHearing = dedupAllReportingRestrictions(hearing);
-        updatedHearing = deDupAllApplications(updatedHearing);
+        Hearing updatedHearing = getDeDupHearing(hearing);
         if (isNull(this.hearing) || isNull(this.hearing.getProsecutionCases())) {
             this.hearing = updatedHearing;
         } else {
             updateHearingWithSeedingHearings(updatedHearing);
         }
+    }
+
+    private Hearing getDeDupHearing(final Hearing hearing){
+        Hearing updatedHearing = dedupAllReportingRestrictions(hearing);
+        updatedHearing = deDupAllApplications(updatedHearing);
+        return updatedHearing;
     }
 
     private void updateHearingWithSeedingHearings(final Hearing updatedHearing) {
@@ -2217,12 +2234,11 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences, final List<Offence> newOffences) {
         if (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults()) {
             LOGGER.info("Hearing with id {} and the status: {} is either not yet set or not shared, offence can be updated\"", hearing.getId(), hearingListingStatus);
-            final Set<UUID> existingOffences = this.hearing.getProsecutionCases().stream()
+            final Map<UUID, Offence> existingOffences = this.hearing.getProsecutionCases().stream()
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .filter(defendant -> defendant.getId().equals(defendantId))
                     .flatMap(defendant -> defendant.getOffences().stream())
-                    .map(Offence::getId)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toMap(Offence::getId, Function.identity(), (oldValue, newValue) -> isNull(newValue.getSeedingHearing()) ? oldValue : newValue));
 
             final HearingOffencesUpdatedV2.Builder hearingOffencesUpdatedV2Builder = HearingOffencesUpdatedV2.hearingOffencesUpdatedV2()
                     .withDefendantId(defendantId)
@@ -2230,7 +2246,8 @@ public class HearingAggregate implements Aggregate {
                     .withNewOffences(newOffences);
 
             if (updatedOffences != null) {
-                hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.contains(offence.getId()))
+                hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.keySet().contains(offence.getId()))
+                        .map(off -> Offence.offence().withValuesFrom(off).withSeedingHearing(existingOffences.get(off.getId()).getSeedingHearing()).build())
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())));
             }
             final HearingOffencesUpdatedV2 hearingOffencesUpdatedV2 = hearingOffencesUpdatedV2Builder.build();
@@ -3539,4 +3556,28 @@ public class HearingAggregate implements Aggregate {
                         offence.getVerdict().getVerdictType().getId().equals(DEFENDANT_FOUND_UNDER_A_DISABILITY));
     }
 
+    public Stream<Object> replayHearingConfirmed(final ReplayHearingConfirmed replayHearingConfirmed) {
+        if(isNull(this.getHearing())) {
+            return apply(Stream.of(MarkedHearingConfirmedForReplay.markedHearingConfirmedForReplay()
+                    .withConfirmedHearing(replayHearingConfirmed.getConfirmedHearing())
+                    .withSendNotificationToParties(replayHearingConfirmed.getSendNotificationToParties())
+                    .build()));
+        } else {
+            return apply(Stream.of(HearingConfirmedReplayed.hearingConfirmedReplayed()
+                    .withConfirmedHearing(replayHearingConfirmed.getConfirmedHearing())
+                    .withHearingInProgression(this.getHearing())
+                    .withSendNotificationToParties(replayHearingConfirmed.getSendNotificationToParties())
+                    .build()));
+        }
+    }
+
+    private void addReplayEvent(final Stream.Builder<Object> streamBuilder, final Hearing hearing) {
+        if(!isNull(this.markedHearingConfirmedForReplay)){
+            streamBuilder.add(HearingConfirmedReplayed.hearingConfirmedReplayed()
+                    .withConfirmedHearing(this.markedHearingConfirmedForReplay.getConfirmedHearing())
+                    .withSendNotificationToParties(this.markedHearingConfirmedForReplay.getSendNotificationToParties())
+                    .withHearingInProgression(getDeDupHearing(hearing))
+                    .build());
+        }
+    }
 }
