@@ -1,17 +1,9 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
-
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
 import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
@@ -25,12 +17,12 @@ import uk.gov.justice.listing.courts.CourtListPublished;
 import uk.gov.justice.listing.courts.PublishCourtList;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
-import uk.gov.justice.progression.courts.CourtRegisterNotified;
 import uk.gov.justice.progression.courts.CourtRegisterNotifiedV2;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 
-import java.time.LocalDate;
+import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +31,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
 
 public class CourtCentreAggregate implements Aggregate {
     private static final long serialVersionUID = 1054L;
@@ -49,6 +51,9 @@ public class CourtCentreAggregate implements Aggregate {
     private ZonedDateTime registerDate;
 
     private final Map<UUID, PrisonCourtRegisterDocumentRequest> prisonCourtRegisterMap = new HashMap<>();
+
+    @Inject
+    private transient FeatureControlGuard featureControlGuard;
 
     @Override
     public Object apply(final Object event) {
@@ -70,7 +75,7 @@ public class CourtCentreAggregate implements Aggregate {
 
                     if (isNotEmpty(courtRegisterWithRecipients)) {
                         this.courtRegisterRecipients = courtRegisterWithRecipients.stream().findFirst().get().getRecipients();
-                        if (isNull(courtCentreId)){
+                        if (isNull(courtCentreId)) {
                             this.courtCentreId = courtRegisterWithRecipients.stream().findFirst().get().getCourtCentreId();
                             this.registerDate = courtRegisterWithRecipients.stream().findFirst().get().getRegisterDate();
                         }
@@ -123,12 +128,10 @@ public class CourtCentreAggregate implements Aggregate {
 
 
     public Stream<Object> recordPrisonCourtRegisterGenerated(final UUID courtCentreId, final NotifyPrisonCourtRegister notifyPrisonCourtRegister) {
-
         final UUID payloadFileId = notifyPrisonCourtRegister.getPayloadFileId();
 
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = prisonCourtRegisterMap.get(payloadFileId);
-
-        return apply(Stream.of(PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated()
+        PrisonCourtRegisterGenerated pcrEvent1 = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated()
                 .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
                 .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
                 .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
@@ -137,7 +140,24 @@ public class CourtCentreAggregate implements Aggregate {
                 .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
                 .withId(notifyPrisonCourtRegister.getId())
                 .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
-                .build()));
+                .build();
+
+        if (nonNull(featureControlGuard) && featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)) {
+            PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                    .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
+                    .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
+                    .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
+                    .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
+                    .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
+                    .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
+                    .withMaterialId(notifyPrisonCourtRegister.getMaterialId())
+                    .withId(notifyPrisonCourtRegister.getId())
+                    .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
+                    .build();
+            return apply(Stream.of(pcrEvent1, pcrEvent2));
+        } else {
+            return apply(Stream.of(pcrEvent1));
+        }
     }
 
     public Stream<Object> recordPrisonCourtRegisterDocumentSent(final UUID courtCentreId, final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent) {
@@ -169,9 +189,15 @@ public class CourtCentreAggregate implements Aggregate {
                 .withId(recordPrisonCourtRegisterFailed.getId())
                 .build()));
     }
+
     //should be used only in test
     public void setCourtRegisterRecipients(final List<CourtRegisterRecipient> courtRegisterRecipients) {
         this.courtRegisterRecipients = Collections.unmodifiableList(courtRegisterRecipients);
+    }
+
+    //should be used to inject featureControlGuard after aggregate is loaded from event store
+    public void setFeatureControlGuard(final FeatureControlGuard featureControlGuard) {
+        this.featureControlGuard = featureControlGuard;
     }
 
     public Stream<Object> publishCourtList(final UUID courtCentreId, final PublishCourtList publishCourtList) {
