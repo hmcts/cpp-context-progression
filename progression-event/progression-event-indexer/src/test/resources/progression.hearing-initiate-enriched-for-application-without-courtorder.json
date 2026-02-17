@@ -1,0 +1,699 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "4e0ff098-02d0-4da5-8da4-c3d250e19dce",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "834e2c6d-c213-4fa3-aeba-f1eab8166cc4",
+                "caseReference": "42MR2358000",
+                "defendantId": "e112adf9-e85b-42cb-afce-5d490ac18ddc"
+              }
+            ],
+            "masterDefendantId": "e112adf9-e85b-42cb-afce-5d490ac18ddc",
+            "personDefendant": {
+              "arrestSummonsNumber": "0700TY0115000000001X",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "3 No address",
+                  "address2": "Another Town",
+                  "address3": "A County",
+                  "postcode": "SS14 2EW"
+                },
+                "dateOfBirth": "1985-05-05",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Bravo",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Tango",
+                "nationalityCode": "GBR",
+                "nationalityDescription": "British",
+                "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                "title": "Mr"
+              },
+              "policeBailConditions": "Non contact with the complainant either directly or indirectly ",
+              "policeBailStatus": {
+                "code": "B",
+                "description": "Conditional bail",
+                "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2026-01-27",
+        "applicationReference": "42MR2358000",
+        "applicationStatus": "LISTED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "offences": [
+              {
+                "committingCourt": {
+                  "courtCentreId": "7f9765ed-2371-3beb-9abb-502e27c49015",
+                  "courtHouseCode": "AZ",
+                  "courtHouseName": "Basildon Magistrates' Court",
+                  "courtHouseShortName": "Basildon Magistrates' Court",
+                  "courtHouseType": "MAGISTRATES"
+                },
+                "convictingCourt": {
+                  "code": "C42BS00",
+                  "courtLocationCode": "0461",
+                  "id": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+                  "name": "Basildon Crown Court",
+                  "roomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb"
+                },
+                "convictionDate": "2025-09-18",
+                "count": 2,
+                "endorsableFlag": false,
+                "id": "f88e664f-52f8-4559-a669-de3986b621f6",
+                "indictmentParticular": "On or in 21/08/25 at No Town had in your possession a quantity of cocaine a controlled drug of class A in contravention of section 5(1) of the Misuse of Drugs Act 1971.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "OF61131",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c46a0c83-8be4-3931-9c64-19d50a964c00",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the Person Act 1861.",
+                "offenceLegislationWelsh": "Yn groes i adran 20 Deddf Troseddau Corfforol 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "offenceTitleWelsh": "Clwyfo / peri niwed corfforol difrifol heb fwriadu",
+                "orderIndex": 2,
+                "plea": {
+                  "offenceId": "f88e664f-52f8-4559-a669-de3986b621f6",
+                  "originatingHearingId": "c33f6645-4cbf-45af-8678-d781005c5a4c",
+                  "pleaDate": "2025-09-18",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-21",
+                "wording": "On or in 21 Aug 2025 at No Town had in your possession a quantity of cocaine a controlled drug of class A in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+              },
+              {
+                "committingCourt": {
+                  "courtCentreId": "7f9765ed-2371-3beb-9abb-502e27c49015",
+                  "courtHouseCode": "AZ",
+                  "courtHouseName": "Basildon Magistrates' Court",
+                  "courtHouseShortName": "Basildon Magistrates' Court",
+                  "courtHouseType": "MAGISTRATES"
+                },
+                "convictingCourt": {
+                  "code": "C42BS00",
+                  "courtLocationCode": "0461",
+                  "id": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+                  "name": "Basildon Crown Court",
+                  "roomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb"
+                },
+                "convictionDate": "2025-09-18",
+                "count": 3,
+                "endorsableFlag": false,
+                "id": "ffc80c0f-33ef-47fb-947a-22a98050d99e",
+                "indictmentParticular": "On or in 21/08/25 at No Town had in your possession a quantity of cocaine a controlled drug of class A in contravention of section 5(1) of the Misuse of Drugs Act 1971.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "EW:12M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "MD71210",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "013ae345-edb4-376f-b7a3-86c42d8a09f4",
+                "offenceLegislation": "Contrary to section5(2) of, and Schedule4 to, the Misuse of Drugs Act 1971.",
+                "offenceLegislationWelsh": "Yn groes i Adran 5(2) ac Atodlen 4 Deddf Camddefnydd Cyffuriau 1971. ||",
+                "offenceTitle": "Possess a controlled drug of Class A - Cocaine",
+                "offenceTitleWelsh": "Bod â meddiant cyffur rheoledig - cocên||",
+                "orderIndex": 3,
+                "plea": {
+                  "offenceId": "ffc80c0f-33ef-47fb-947a-22a98050d99e",
+                  "originatingHearingId": "c33f6645-4cbf-45af-8678-d781005c5a4c",
+                  "pleaDate": "2025-09-18",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-21",
+                "wording": "On or in 21 Aug 2025 at No Town had in your possession a quantity of cocaine a controlled drug of class A in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-09-18",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "979b522c-e3c8-4208-8df7-1d6261451379",
+                  "originatingHearingId": "c33f6645-4cbf-45af-8678-d781005c5a4c",
+                  "sequenceNumber": 100
+                },
+                "aquittalDate": "2025-09-25",
+                "committingCourt": {
+                  "courtCentreId": "7f9765ed-2371-3beb-9abb-502e27c49015",
+                  "courtHouseCode": "AZ",
+                  "courtHouseName": "Basildon Magistrates' Court",
+                  "courtHouseShortName": "Basildon Magistrates' Court",
+                  "courtHouseType": "MAGISTRATES"
+                },
+                "count": 1,
+                "endorsableFlag": false,
+                "id": "979b522c-e3c8-4208-8df7-1d6261451379",
+                "indictmentParticular": "On or in 21/08/25 at No Town unlawfully and maliciously caused grievous bodily harm to Nobody with intent to do him grievous bodily harm.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 3,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "OF61017",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "d255303c-a5df-3b2a-b30c-82c66e17f268",
+                "offenceLegislation": "Contrary to section 18 of the Offences Against the Person Act 1861.",
+                "offenceLegislationWelsh": "Yn groes i adran 18 Deddf Troseddau Corfforol 1861.",
+                "offenceTitle": "Section 18 - grievous bodily harm with intent",
+                "offenceTitleWelsh": "Adran 18 - niwed corfforol difrifol gan fwriadu",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "979b522c-e3c8-4208-8df7-1d6261451379",
+                  "originatingHearingId": "c33f6645-4cbf-45af-8678-d781005c5a4c",
+                  "pleaDate": "2025-09-18",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-21",
+                "wording": "On or in 21 Aug 2025 at No Town unlawfully and maliciously caused grievous bodily harm to Nobody with intent to do him grievous bodily harm."
+              },
+              {
+                "count": 4,
+                "dvlaOffenceCode": "",
+                "id": "111b59a4-7d68-46d8-b5f2-63362fe396c7",
+                "indictmentParticular": "On or in 21 Aug 2025 at No Town  in the county of Any County had in your possession a quantity of amphetamine, a controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "maxPenalty": "EW:3M &/or £2500",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "MD71220",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "50bcf07f-a1c0-3ec9-8290-e62976843e42",
+                "offenceLegislation": "Contrary to section 5(2) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+                "offenceTitle": "Possess a controlled drug of Class B - Amphetamine",
+                "orderIndex": 4,
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-21",
+                "wording": "On or in 21 Aug 2025 at No Town  in the county of Any County had in your possession a quantity of amphetamine, a controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+              },
+              {
+                "count": 5,
+                "dateHeldInCustodySince": "2025-10-14",
+                "dvlaOffenceCode": "",
+                "id": "77e5303c-c46a-4e0c-a312-818c29c25de6",
+                "indictmentParticular": "On or in 15 Jun 2025 at No Ship, Committed an act of Piracy with attempted murder.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 8,
+                "maxPenalty": "",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "PI37001",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "9275cf42-ba30-3ba3-93a4-4a55dfa78cfe",
+                "offenceLegislation": "",
+                "offenceTitle": "Piracy with attempted murder",
+                "orderIndex": 5,
+                "proceedingsConcluded": true,
+                "startDate": "2025-06-15",
+                "wording": "On or in 15 Jun 2025 at No Ship, Committed an act of Piracy with attempted murder."
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-10-13",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "de6e7d0b-e51c-4e36-97aa-c6699cbfb313",
+                  "originatingHearingId": "ed89f555-7f1b-400b-8db9-bfa3810b1e3f",
+                  "sequenceNumber": 90
+                },
+                "convictingCourt": {
+                  "code": "C42BS00",
+                  "courtLocationCode": "0461",
+                  "id": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+                  "name": "Basildon Crown Court",
+                  "roomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb"
+                },
+                "convictionDate": "2025-10-13",
+                "dateHeldInCustodySince": "2025-10-14",
+                "dvlaOffenceCode": "",
+                "id": "de6e7d0b-e51c-4e36-97aa-c6699cbfb313",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 4,
+                "maxPenalty": "S:3M &/or Ultd Fine",
+                "modeOfTrial": "Summary",
+                "offenceCode": "BA76001",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "9bc5150b-117d-36de-93d4-550385ea9f1f",
+                "offenceLegislation": "Contrary to section 6(1) of the Bail Act 1976.",
+                "offenceTitle": "Fail to surrender to police / court bail at the appointed time",
+                "orderIndex": 8,
+                "plea": {
+                  "offenceId": "de6e7d0b-e51c-4e36-97aa-c6699cbfb313",
+                  "originatingHearingId": "ed89f555-7f1b-400b-8db9-bfa3810b1e3f",
+                  "pleaDate": "2025-10-13",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-10-10",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "BA76001",
+                    "offenceDefinitionId": "9bc5150b-117d-36de-93d4-550385ea9f1f",
+                    "offenceLegislation": "Contrary to section 6(1) of the Bail Act 1976.",
+                    "offenceTitle": "Fail to surrender to police / court bail at the appointed time"
+                  },
+                  "offenceId": "de6e7d0b-e51c-4e36-97aa-c6699cbfb313",
+                  "originatingHearingId": "ed89f555-7f1b-400b-8db9-bfa3810b1e3f",
+                  "verdictDate": "2025-10-13",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY",
+                    "cjsVerdictCode": "G",
+                    "description": "Proved",
+                    "id": "eabbf4cc-a7a3-3776-b168-0a677e21c251",
+                    "sequence": 200,
+                    "verdictCode": "FPR"
+                  }
+                },
+                "wording": "On or in 10 Oct 2025 at No Town failed without reasonable cause to surrender to custody at No Where  Crown Court having been released on bail in criminal proceedings on 10 Oct 2025 at Basildon Crown Court."
+              },
+              {
+                "count": 6,
+                "dateHeldInCustodySince": "2025-10-14",
+                "dvlaOffenceCode": "",
+                "id": "3839406a-aee7-4579-a8a7-4e85abed67d2",
+                "indictmentParticular": "On or in 15 Jun 2025 at No Town at a time when you believed or it would have been reasonable for you to suspect that a relevant offence, namely Salmon, had been committed in relation to fish to which section 32 of the Salmon Act 1986 applied, namely Salmon, received that fish, or undertook or assisted in its retention, removal or disposal or arranged to do so.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 15,
+                "maxPenalty": "EW:Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "SF86001",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "057395e1-0d13-38ff-8762-d7b4ec957f80",
+                "offenceLegislation": "Contrary to Section 32 of the Salmon Act 1986",
+                "offenceTitle": "Handling fish in suspicious circumstances",
+                "orderIndex": 6,
+                "proceedingsConcluded": true,
+                "reportingRestrictions": [
+                  {
+                    "id": "c4cdf90a-6e98-4186-8b4d-43ce8936eec2",
+                    "judicialResultId": "1ae2797d-88f7-435e-82f7-cab44adcdc2b",
+                    "label": "Direction under Section 45A of the Youth Justice and Criminal Evidence Act 1999",
+                    "orderedDate": "2025-12-03"
+                  }
+                ],
+                "startDate": "2025-06-15",
+                "wording": "On or in 15 Jun 2025 at No Town at a time when you believed or it would have been reasonable for you to suspect that a relevant offence, namely Salmon, had been committed in relation to fish to which section 32 of the Salmon Act 1986 applied, namely Salmon, received that fish, or undertook or assisted in its retention, removal or disposal or arranged to do so."
+              },
+              {
+                "count": 7,
+                "dateHeldInCustodySince": "2025-10-14",
+                "dvlaOffenceCode": "",
+                "id": "1446d128-f10f-493c-bc29-4c1682deb48a",
+                "indictmentParticular": "On or in 5th May 2024 at Any Town, unlawfully and maliciously administered to Anyone a poison or other destructive or noxious thing, namely Arsonic, so as thereby to endanger the life of or inflict grievous bodily harm on the said Somebody.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 10,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "OF61060",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "00354580-c098-37be-ac15-cee86aacdc16",
+                "offenceLegislation": "Contrary to section 23 of the Offences Against the Person Act 1861.",
+                "offenceTitle": "Administer poison with intent to endanger life / inflict grievous bodily harm",
+                "orderIndex": 7,
+                "proceedingsConcluded": true,
+                "reportingRestrictions": [
+                  {
+                    "id": "f43f9076-3165-4aff-98bf-4b85ae7b76b2",
+                    "judicialResultId": "c08085e0-5f11-44e8-87d8-3395f4609395",
+                    "label": "Direction under Section 45A of the Youth Justice and Criminal Evidence Act 1999",
+                    "orderedDate": "2025-12-03"
+                  }
+                ],
+                "startDate": "2024-05-05",
+                "wording": "On or in 05 May 2024 at Any Town, unlawfully and maliciously administered to Somebody a poison or other destructive or noxious thing, namely Arsonic , so as thereby to endanger the life of or inflict grievous bodily harm on the said Sombody."
+              },
+              {
+                "count": 8,
+                "dvlaOffenceCode": "",
+                "id": "2e9eb464-fb92-4671-8091-796debe0bf91",
+                "indictmentParticular": "On or in 17 Oct 2025 at No Town conspired together with No Body and No One to cause grievous bodily harm to another with intent to do him grievous bodily harm.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 2,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "OF61017C",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c591a4fa-65d6-3d17-80bc-2b29d7bcc921",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Law Act 1977.",
+                "offenceTitle": "Conspire to cause grievous bodily harm with intent",
+                "orderIndex": 9,
+                "startDate": "2025-10-17",
+                "wording": "On or in 17 Oct 2025 at No Town conspired together with No Body and No One to cause grievous bodily harm to another with intent to do him grievous bodily harm."
+              },
+              {
+                "count": 9,
+                "dvlaOffenceCode": "",
+                "id": "d4d60dfa-5229-453f-a9ef-9accf98ae990",
+                "indictmentParticular": "On or in 10 Dec 2025 at No Where obtained possession of salmon  as the result of acting together with another to fish for or take freshwater fish in inland waters in the Tweed district at No Where except by rod and line .",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 2,
+                "maxPenalty": "EW:3M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "RT06023",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a7fe14ab-c814-31f0-b1e0-2ddd996e238a",
+                "offenceLegislation": "Contrary to Articles 28 and 30 of the Scotland Act 1998 (River Tweed) Order 2006.",
+                "offenceTitle": "Possess salmon/trout/instrument/explosive/poison re: committing fishing offence with others in Tweed district",
+                "orderIndex": 10,
+                "startDate": "2025-12-10",
+                "wording": "On or in 10 Dec 2025 at No Where obtained possession of salmon  as the result of acting together with another to fish for or take freshwater fish in inland waters in the Tweed district at No Where except by rod and line ."
+              }
+            ],
+            "prosecutionCaseId": "834e2c6d-c213-4fa3-aeba-f1eab8166cc4",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "County House",
+                "address2": "100 New London Road",
+                "address3": "Chelmsford",
+                "address4": "Essex",
+                "postcode": "CM2 0RG"
+              },
+              "majorCreditorCode": "2070C",
+              "prosecutionAuthorityCode": "CPS-EEE",
+              "prosecutionAuthorityId": "92575f4d-5c8d-3624-aa1e-89f34e007c2a",
+              "prosecutionAuthorityName": "CPS East of England (Essex)",
+              "caseURN": "42MR2358000"
+            }
+          }
+        ],
+        "courtApplicationPayment": {
+          "feeStatus": "NOT_APPLICABLE"
+        },
+        "courtCivilApplication": {
+          "isCivil": false
+        },
+        "id": "f356ec6f-63ac-473a-a1f1-0c57e10f8ddb",
+        "proceedingsConcluded": false,
+        "respondents": [
+          {
+            "id": "49e97283-f36f-4728-8768-372bcc93be7d",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "County House",
+                "address2": "100 New London Road",
+                "address3": "Chelmsford",
+                "address4": "Essex",
+                "postcode": "CM2 0RG"
+              },
+              "majorCreditorCode": "2070C",
+              "name": "CPS East of England (Essex)",
+              "prosecutionAuthorityCode": "CPS-EEE",
+              "prosecutionAuthorityId": "92575f4d-5c8d-3624-aa1e-89f34e007c2a"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "4e0ff098-02d0-4da5-8da4-c3d250e19dce",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "834e2c6d-c213-4fa3-aeba-f1eab8166cc4",
+                "caseReference": "42MR2358000",
+                "defendantId": "e112adf9-e85b-42cb-afce-5d490ac18ddc"
+              }
+            ],
+            "masterDefendantId": "e112adf9-e85b-42cb-afce-5d490ac18ddc",
+            "personDefendant": {
+              "arrestSummonsNumber": "0700TY0115000000001X",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "U",
+                "description": "Unconditional bail",
+                "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "3 No address",
+                  "address2": "Another Town",
+                  "address3": "A County",
+                  "postcode": "SS14 2EW"
+                },
+                "dateOfBirth": "1985-05-05",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Bravo",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Tango",
+                "nationalityCode": "GBR",
+                "nationalityDescription": "British",
+                "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                "title": "Mr"
+              },
+              "policeBailConditions": "Non contact with the complainant either directly or indirectly ",
+              "policeBailStatus": {
+                "code": "B",
+                "description": "Conditional bail",
+                "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Application within criminal proceedings for case number {1}. Nature of application: {2}",
+          "applicationWordingWelsh": "Cais mewn achos troseddol am rif achos <Case number>. Natur y cais: <Nature of application>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2025-03-17T09:12:13",
+          "code": "AP00501",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "fde5dd50-fb49-4100-8c46-4c10096fb136",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2025-03-17T14:00:39.862Z",
+          "legislation": "Refer to nature of application.",
+          "legislationWelsh": "Cyfeiriwch at natur y cais.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": true,
+          "prosecutorThirdPartyFlag": false,
+          "pssId": 601781,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application within criminal proceedings",
+          "typeWelsh": "Cais o fewn achos troseddol",
+          "validFrom": "2007-01-07"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "Basildon Combined Court",
+        "address2": "The Gore",
+        "address3": "Basildon",
+        "address4": "Essex",
+        "address5": "",
+        "postcode": "SS14 2EW"
+      },
+      "code": "C42BS00",
+      "courtHearingLocation": "C42BS00",
+      "id": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+      "lja": {
+        "ljaCode": "1971",
+        "ljaName": "South Essex Magistrates' Court"
+      },
+      "name": "Basildon Crown Court",
+      "roomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb",
+      "roomName": "Courtroom 01"
+    },
+    "estimatedDuration": "20 MINUTES",
+    "hasSharedResults": false,
+    "hearingDays": [
+      {
+        "courtCentreId": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+        "courtRoomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2026-02-17T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "452a9859-7c22-42e3-a7bc-e88319691340",
+    "judiciary": [
+      {
+        "firstName": "Samantha Ceri",
+        "judicialId": "210cf037-53ad-3ae1-8a0f-91682c0f6886",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "210cf037-53ad-3ae1-8a0f-91682c0f6886",
+          "judiciaryType": "Circuit Judge"
+        },
+        "lastName": "Leigh",
+        "title": ""
+      }
+    ],
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "classOfCase": "Class 1",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2025-09-19T14:16:11.950Z",
+            "id": "e112adf9-e85b-42cb-afce-5d490ac18ddc",
+            "isYouth": false,
+            "masterDefendantId": "e112adf9-e85b-42cb-afce-5d490ac18ddc",
+            "offences": [
+              {
+                "count": 8,
+                "dvlaOffenceCode": "",
+                "id": "2e9eb464-fb92-4671-8091-796debe0bf91",
+                "indictmentParticular": "On or in 17 Oct 2025 at No Town conspired together with No Body and No One to cause grievous bodily harm to another with intent to do him grievous bodily harm.",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 4,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "OF61017C",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c591a4fa-65d6-3d17-80bc-2b29d7bcc921",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Law Act 1977.",
+                "offenceTitle": "Conspire to cause grievous bodily harm with intent",
+                "orderIndex": 9,
+                "proceedingsConcluded": false,
+                "startDate": "2025-10-17",
+                "wording": "On or in 17 Oct 2025 at No Town conspired together with No Body and No One to cause grievous bodily harm to another with intent to do him grievous bodily harm."
+              },
+              {
+                "count": 9,
+                "dvlaOffenceCode": "",
+                "id": "d4d60dfa-5229-453f-a9ef-9accf98ae990",
+                "indictmentParticular": "On or in 10 Dec 2025 at No Where obtained possession of salmon  as the result of acting together with another to fish for or take freshwater fish in inland waters in the Tweed district at No Where except by rod and line .",
+                "isDisposed": false,
+                "lastAdjournDate": "2026-02-02",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 4,
+                "maxPenalty": "EW:3M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "RT06023",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a7fe14ab-c814-31f0-b1e0-2ddd996e238a",
+                "offenceLegislation": "Contrary to Articles 28 and 30 of the Scotland Act 1998 (River Tweed) Order 2006.",
+                "offenceTitle": "Possess salmon/trout/instrument/explosive/poison re: committing fishing offence with others in Tweed district",
+                "orderIndex": 10,
+                "proceedingsConcluded": false,
+                "startDate": "2025-12-10",
+                "wording": "On or in 10 Dec 2025 at No Where obtained possession of salmon  as the result of acting together with another to fish for or take freshwater fish in inland waters in the Tweed district at No Where except by rod and line ."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "0700TY0115000000001X",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "U",
+                "description": "Unconditional bail",
+                "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "3 No address",
+                  "address2": "Another Town",
+                  "address3": "A County",
+                  "postcode": "SS14 2EW"
+                },
+                "dateOfBirth": "1985-05-05",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Bravo",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Tango",
+                "nationalityCode": "GBR",
+                "nationalityDescription": "British",
+                "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                "title": "Mr"
+              },
+              "policeBailConditions": "Non contact with the complainant either directly or indirectly ",
+              "policeBailStatus": {
+                "code": "B",
+                "description": "Conditional bail",
+                "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+              }
+            },
+            "prosecutionCaseId": "834e2c6d-c213-4fa3-aeba-f1eab8166cc4"
+          }
+        ],
+        "id": "834e2c6d-c213-4fa3-aeba-f1eab8166cc4",
+        "initiationCode": "O",
+        "isRetrial": false,
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "County House",
+            "address2": "100 New London Road",
+            "address3": "Chelmsford",
+            "address4": "Essex",
+            "postcode": "CM2 0RG"
+          },
+          "majorCreditorCode": "2070C",
+          "prosecutionAuthorityCode": "CPS-EEE",
+          "prosecutionAuthorityId": "92575f4d-5c8d-3624-aa1e-89f34e007c2a",
+          "prosecutionAuthorityName": "CPS East of England (Essex)",
+          "caseURN": "42MR2358000"
+        },
+        "trialReceiptType": "Indictable"
+      }
+    ],
+    "shadowListedOffences": [],
+    "type": {
+      "description": "Sentence",
+      "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+    }
+  }
+}

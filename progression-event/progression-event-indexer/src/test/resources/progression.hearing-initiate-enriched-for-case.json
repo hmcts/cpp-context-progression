@@ -1,0 +1,146 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "The Law Courts",
+        "address2": "Alexandra Road",
+        "address3": "Wimbledon",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW19 7JP"
+      },
+      "code": "B01OK00",
+      "courtHearingLocation": "B01OK05",
+      "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Wimbledon Magistrates' Court",
+      "roomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+      "roomName": "Courtroom 05"
+    },
+    "hasSharedResults": false,
+    "hearingDays": [
+      {
+        "courtCentreId": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+        "courtRoomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2026-02-11T12:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "138076c2-f8b4-4f5f-b84d-fed34b338763",
+    "isGroupProceedings": false,
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2026-02-11T15:57:41.840Z",
+            "id": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45",
+            "isYouth": false,
+            "masterDefendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45",
+            "offences": [
+              {
+                "arrestDate": "2022-10-28",
+                "chargeDate": "2022-10-28",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "1c5ce88a-1763-46c9-8483-caffc67823b9",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+                "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+                "offenceTitle": "Robbery",
+                "offenceTitleWelsh": "Ysbeilio/Lladrad",
+                "orderIndex": 1,
+                "startDate": "2022-10-28",
+                "wording": "Contrary to section 8(1) of the Theft Act 1968."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2213NX00000005113715",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0205113715",
+                  "mobile": "07775113715",
+                  "primaryEmail": "REDDY.TEST015113715@gmail.com"
+                },
+                "dateOfBirth": "1999-11-15",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Luigi",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Deonte",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "prosecutionAuthorityReference": "2213NX00000005113715",
+            "prosecutionCaseId": "eb1bb182-dec2-4894-9f53-ebd21f722a35"
+          }
+        ],
+        "id": "eb1bb182-dec2-4894-9f53-ebd21f722a35",
+        "initiationCode": "C",
+        "originatingOrganisation": "130SU01",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "20NX5113715"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  }
+}
