@@ -8,6 +8,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -69,12 +71,14 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -2546,6 +2550,36 @@ public class HearingAggregateTest {
         assertThat(applicationHearingDefendantUpdated.getHearing().getId(), is(hearingId));
         assertThat(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getAddress().getAddress1(), is("addressNew"));
         assertThat(courtApplication.getApplicant().getUpdatedOn(), is(notNullValue()));
+
+    }
+
+    @Test
+    public
+     void testApplicationUnique(){
+        UUID app1 = UUID.randomUUID();
+        UUID app2 = UUID.randomUUID();
+        UUID app3 = UUID.randomUUID();
+        UUID app4 = UUID.randomUUID();
+        UUID app5 = UUID.randomUUID();
+
+
+        List<CourtApplication> courtApplicationList = asList(CourtApplication.courtApplication().withId(app1).build(),
+                CourtApplication.courtApplication().withId(app1).build(),
+                CourtApplication.courtApplication().withId(app2).build(),
+                CourtApplication.courtApplication().withId(app1).build(),
+                CourtApplication.courtApplication().withId(app1).build(),
+                CourtApplication.courtApplication().withId(app2).build(),
+                CourtApplication.courtApplication().withId(app3).build(),
+                CourtApplication.courtApplication().withId(app4).build(),
+                CourtApplication.courtApplication().withId(app5).build(),
+                CourtApplication.courtApplication().withId(app4).build(),
+                CourtApplication.courtApplication().withId(app5).build());
+
+        List<CourtApplication> uniqueApplications = courtApplicationList.stream()
+                .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(CourtApplication::getId))),
+                        ArrayList::new));
+        System.out.println(courtApplicationList.size());
+        System.out.println(uniqueApplications.size());
 
     }
 

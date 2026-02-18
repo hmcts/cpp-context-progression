@@ -25,7 +25,7 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     private Sender sender;
 
     @InjectMocks
-    private RemoveDeletedHearingChildEntriesByBdfCommandApi commandApi;
+    private HearingDataFixByBdfCommandApi commandApi;
 
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;

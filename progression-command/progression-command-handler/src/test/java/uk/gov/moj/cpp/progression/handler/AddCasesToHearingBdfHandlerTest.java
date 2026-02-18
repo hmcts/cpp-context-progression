@@ -70,7 +70,7 @@ class AddCasesToHearingBdfHandlerTest {
     ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @InjectMocks
-    private AddCasesToHearingBdfHandler addCasesToHearingBdfHandler;
+    private HearingDataFixByBdfHandler addCasesToHearingBdfHandler;
 
     private ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
 

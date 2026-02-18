@@ -3,12 +3,15 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparingInt;
+import static java.util.Objects.compare;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
@@ -1435,6 +1438,53 @@ public class HearingAggregate implements Aggregate {
             return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
         }
         return Stream.empty();
+    }
+
+    /**
+     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW. The aggregate function is
+     * being added to be invoked only by the BDF, purpose of this function to raise
+     * 'progression.event.hearing.remove.duplicate.application.bdf' event to remove the duplicate application from hearing.
+     *
+     * @param hearingId The hearing id
+     * @return The Stream object
+     */
+    public Stream<Object> removeDuplicateApplicationByBdf(final UUID hearingId) {
+        if (isNull(hearing) && hearing.getCourtApplications().isEmpty() && hearing.getCourtApplications().size() == 1) {
+            return Stream.empty();
+        }
+
+
+        List<CourtApplication> uniqueApplications = hearing.getCourtApplications().stream()
+                .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(CourtApplication::getId))),
+                        ArrayList::new));
+
+
+        hearing = Hearing.hearing().withValuesFrom(hearing).withCourtApplications(uniqueApplications).build();
+
+//        return apply(Stream.of(RemoveDuplica.offencesRemovedFromHearing()
+//                .withHearingId(hearingId)
+//                .withOffenceIds(offencesToBeRemoved)
+//                .withDefendantIds(defendantsToBeRemoved)
+//                .withProsecutionCaseIds(prosecutionCasesToBeRemoved)
+//                .withIsResultFlow(isResultFlow)
+//                .build()));
+
+        final Stream.Builder builder = Stream.builder();
+//        if (nonNull(hearingListingStatus) && !hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)) {
+//            builder.add(HearingDeleted.hearingDeleted()
+//                    .withHearingId(hearingId)
+//                    .withCourtApplicationIds(courtApplicationIds)
+//                    .withProsecutionCaseIds(prosecutionCaseIds)
+//                    .build());
+//        }
+//        if (isNotEmpty(prosecutionCaseIds)) {
+//            builder.add(OffenceInHearingDeleted.offenceInHearingDeleted()
+//                    .withProsecutionCaseIds(prosecutionCaseIds)
+//                    .withOffenceIds(offenceIds)
+//                    .build());
+//        }
+        final Stream<Object> deleteEvent = apply(builder.build());
+        return Stream.concat(Stream.concat(deleteEvent, populateHearingToProbationCaseWorker()), populateHearingToVEP());
     }
 
     private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {
