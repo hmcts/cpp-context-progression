@@ -1,0 +1,462 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "allegationOrComplaintEndDate": "2026-02-12",
+        "allegationOrComplaintStartDate": "2026-02-12",
+        "applicant": {
+          "id": "1ebb5b4c-0de3-485a-a84e-b1af5d0b6121",
+          "notificationRequired": true,
+          "organisation": {
+            "address": {
+              "address1": "Divisional Enforcement Hub",
+              "address2": "Queensway House",
+              "address3": "The Hedges",
+              "address4": "St Georges",
+              "address5": "Worle",
+              "postcode": "BS22 7BB"
+            },
+            "contact": {
+              "primaryEmail": "swps.enforcementhub@justice.gov.uk",
+              "work": "01934 887400"
+            },
+            "id": "8983812b-b9da-4891-836a-bda1453d8b7c",
+            "isProbationBreach": true,
+            "name": "Probation Service - South West"
+          },
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2026-02-12",
+        "applicationReference": "20NX5113715",
+        "applicationResultCodeForLaa": "UNKNOWN_RESULT",
+        "applicationStatus": "LISTED",
+        "applicationDecisionSoughtByDate": "2019-06-27",
+        "commissionerOfOath": false,
+        "courtApplicationPayment": {
+          "feeStatus": "NOT_APPLICABLE"
+        },
+        "courtCivilApplication": {
+          "isCivil": false
+        },
+        "courtOrder": {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": true,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "arrestDate": "2022-10-28",
+                "chargeDate": "2022-10-28",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "1c5ce88a-1763-46c9-8483-caffc67823b9",
+                "isDisposed": false,
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "CJ03522",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+                "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+                "offenceTitle": "Robbery",
+                "offenceTitleWelsh": "Ysbeilio/Lladrad",
+                "orderIndex": 1,
+                "startDate": "2022-10-28",
+                "wording": "Original CaseURN: 20NX5113715, Re-sentenced Original code : TH68023, Original details: Contrary to section 8(1) of the Theft Act 1968."
+              },
+              "prosecutionCaseId": "eb1bb182-dec2-4894-9f53-ebd21f722a35",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Criminal Justice Department",
+                  "address2": "Derbyshire Constabulary",
+                  "address3": "Butterley Hall",
+                  "address4": "Ripley",
+                  "address5": "Derby",
+                  "postcode": "DE5 3RS"
+                },
+                "contact": {
+                  "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+                },
+                "majorCreditorCode": "PO30",
+                "prosecutionAuthorityCode": "DERPF",
+                "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+                "prosecutionAuthorityName": "Derbyshire Police",
+                "prosecutionAuthorityOUCode": "0300000",
+                "caseURN": "20NX5113715"
+              }
+            }
+          ],
+          "defendantIds": [
+            "4c3076a0-6a70-489c-9334-4d4ef9dbbe45"
+          ],
+          "endDate": "2026-03-22",
+          "expiryDate": "2027-03-22",
+          "id": "865777f0-2a09-4598-9452-caae1981dbca",
+          "isSJPOrder": false,
+          "isUnpaidWork": true,
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "masterDefendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45",
+          "orderDate": "2026-02-11",
+          "orderingCourt": {
+            "address": {
+              "address1": "The Law Courts",
+              "address2": "Alexandra Road",
+              "address3": "Wimbledon",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW19 7JP"
+            },
+            "code": "B01OK00",
+            "courtHearingLocation": "B01OK05",
+            "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Wimbledon Magistrates' Court",
+            "roomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+            "roomName": "Courtroom 05"
+          },
+          "orderingHearingId": "138076c2-f8b4-4f5f-b84d-fed34b338763",
+          "startDate": "2026-02-11"
+        },
+        "defendantASN": "2391NX0000691224424D",
+        "hasSummonsSupplied": false,
+        "id": "19567599-0938-4177-9aef-ccbca8153a8e",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "INTERMEDIARY",
+            "committedToCC": false,
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": false,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "36f1c99a-ed7c-4d75-a3a5-ff0191ab87f6",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "428e2b37-88f9-4f9c-beda-450b96bac466",
+                "label": "Prosecution costs",
+                "promptReference": "prosecutionCosts",
+                "promptSequence": 100,
+                "type": "CURR",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "YOTs",
+                  "Prosecuting Authorities"
+                ],
+                "value": "£120.00",
+                "welshValue": "£120.00"
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "04d5d843-f530-43e4-927f-57942b310d5c",
+                "label": "THIS SUMMONS IS FOR PERSONAL SERVICE",
+                "promptReference": "tHISSUMMONSISFORPERSONALSERVICE",
+                "promptSequence": 200,
+                "type": "BOOLEAN",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "Probation",
+                  "NCES",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "true",
+                "welshValue": "true"
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "1d068bf5-5149-4bb2-b333-7c8b288ca119",
+                "label": "This summons will be served by a Prosecutor",
+                "promptReference": "thisSummonsWillBeServedByAProsecutor",
+                "promptSequence": 300,
+                "type": "BOOLEAN",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "true",
+                "welshValue": "true"
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+                "label": "Prosecutor's email address (used summons notification)",
+                "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+                "promptSequence": 400,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "swps.enforcementhub@justice.gov.uk",
+                "welshValue": "swps.enforcementhub@justice.gov.uk"
+              }
+            ],
+            "judicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+            "label": "Summons approved",
+            "lastSharedDateTime": "2026-02-12",
+            "level": "C",
+            "lifeDuration": false,
+            "orderedDate": "2026-02-12",
+            "orderedHearingId": "46d9476d-f5eb-423c-8ae1-4ee9a5760901",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 54700,
+            "resultText": "SA - Summons approved",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "36f1c99a-ed7c-4d75-a3a5-ff0191ab87f6",
+            "rootJudicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+            "sentToCC": false,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "proceedingsConcluded": false,
+        "respondents": [
+          {
+            "id": "c7029d54-ca1b-4556-aa5b-b7aba5b0fdf2",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "eb1bb182-dec2-4894-9f53-ebd21f722a35",
+                  "caseReference": "20NX5113715",
+                  "defendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45"
+                }
+              ],
+              "masterDefendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45",
+              "personDefendant": {
+                "arrestSummonsNumber": "2213NX00000005113715",
+                "bailStatus": {
+                  "code": "A",
+                  "description": "Not applicable",
+                  "id": "86009c70-759d-3308-8de4-194886ff9a77"
+                },
+                "driverNumber": "VANFL002222OW9PH",
+                "personDetails": {
+                  "address": {
+                    "address1": "9999A9999AAAA",
+                    "address2": "Woodlane",
+                    "address3": "addressline 3",
+                    "address4": "Bristol",
+                    "address5": "Avon"
+                  },
+                  "contact": {
+                    "home": "0205113715",
+                    "mobile": "07775113715",
+                    "primaryEmail": "REDDY.TEST015113715@gmail.com"
+                  },
+                  "dateOfBirth": "1999-11-15",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "White",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Luigi",
+                  "gender": "MALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Deonte",
+                  "title": "Mr"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          }
+        ],
+        "subject": {
+          "id": "c7029d54-ca1b-4556-aa5b-b7aba5b0fdf2",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "eb1bb182-dec2-4894-9f53-ebd21f722a35",
+                "caseReference": "20NX5113715",
+                "defendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45"
+              }
+            ],
+            "masterDefendantId": "4c3076a0-6a70-489c-9334-4d4ef9dbbe45",
+            "personDefendant": {
+              "arrestSummonsNumber": "2213NX00000005113715",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0205113715",
+                  "mobile": "07775113715",
+                  "primaryEmail": "REDDY.TEST015113715@gmail.com"
+                },
+                "dateOfBirth": "1999-11-15",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Luigi",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Deonte",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": true
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Failed without reasonable excuse to comply with the requirements of a community order made by {1} on {2} by {3}",
+          "applicationWordingWelsh": "Heb esgus rhesymol, bu i chi fethu cydymffurfio â gofynion gorchymyn cymunedol a wnaed gan <Court name> ar <Date of Order> drwy <Details of failure>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "GENERIC_BREACH",
+          "categoryCode": "CB",
+          "changeDate": "2024-10-17T16:22:29",
+          "code": "CJ03510",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "BOO",
+          "id": "7e38f0b0-b2b5-4881-a5a6-04d9e47c0be3",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2025-02-24T18:18:56.622Z",
+          "legislation": "In accordance with Part 2 of Schedule 8 to the Criminal Justice Act 2003.",
+          "legislationWelsh": "Yn unol ag Adran 2 Atodlen 8 Deddf Cyfiawnder Troseddol 2003.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "NOT_APPLICABLE",
+          "offenceActiveOrder": "COURT_ORDER",
+          "pleaApplicableFlag": true,
+          "prefix": "Resentenced",
+          "prosecutorThirdPartyFlag": false,
+          "pssId": 627327,
+          "resentencingActivationCode": "CJ03522",
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "BREACH",
+          "type": "Failing to comply with the requirements of a community order",
+          "typeWelsh": "Methu â chydymffurfio â gofynion gorchymyn cymunedol",
+          "validFrom": "2009-05-04"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "Norwich Place",
+        "address2": "Bexleyheath",
+        "address3": "Kent",
+        "address4": "",
+        "address5": "",
+        "postcode": "DA6 7ND"
+      },
+      "code": "B01BH00",
+      "courtHearingLocation": "B01BH01",
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "lja": {
+        "ljaCode": "2575",
+        "ljaName": "South East London Magistrates' Court"
+      },
+      "name": "Bexley Magistrates' Court",
+      "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+      "roomName": "Courtroom 01"
+    },
+    "hasSharedResults": false,
+    "isBoxHearing": false,
+    "hearingDays": [
+      {
+        "courtCentreId": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+        "courtRoomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2026-02-12T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "31ef0571-ab4c-443a-99cf-dd61b3450bd2",
+    "jurisdictionType": "MAGISTRATES",
+    "shadowListedOffences": [],
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ],
+    "type": {
+      "description": "Breach of Order",
+      "id": "136dfc3a-a874-32ce-8493-e50849590b49"
+    }
+  }
+}

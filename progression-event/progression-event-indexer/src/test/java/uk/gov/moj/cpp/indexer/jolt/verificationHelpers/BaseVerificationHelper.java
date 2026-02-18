@@ -84,26 +84,30 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
                                   final JsonObject outputCase, final int caseIndex, final String inputApplicationPath, final int inputApplicationIndex) {
         final String outputCaseDocumentsPath = format(OUTPUT_CASE_JSON_PATH, caseIndex);
 
-        final String id = ((JsonString) inputCourtApplication.read(inputApplicationPath + "id")).getString();
+        final String applicationId = ((JsonString) inputCourtApplication.read(inputApplicationPath + "id")).getString();
         final String applicationReference = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReference")).getString();
         final String applicationType = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".type.type")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationReceivedDate")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read(inputApplicationPath + ".applicationDecisionSoughtByDate")).getString();
         final boolean isLinkedApplication = inputCourtApplication.read(inputApplicationPath).toString().contains("courtApplicationCases");
+        final boolean isBreachApplication = !inputCourtApplication.read(inputApplicationPath).toString().contains("courtApplicationCases") && inputCourtApplication.read(inputApplicationPath).toString().contains("courtOrder");
 
         try {
             if(isLinkedApplication){
                 with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", not(equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString())))
                         .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
                         .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
-            }
-            else {
+            } else if(isBreachApplication){
+                with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", not(equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + "courtOrder.courtOrderOffences[0].prosecutionCaseId")))))
+                        .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
+                        .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
+            } else {
                 with(outputCase.toString()).assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputCourtApplication.read(inputApplicationPath + ".id")).getString()))
                         .assertNotDefined(outputCaseDocumentsPath + ".caseStatus")
                         .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("APPLICATION"));
             }
             with(outputCase.toString())
-                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationId", is(id))
+                    .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationId", is(applicationId))
                     .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationReference", is(applicationReference))
                     .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].applicationType", is(applicationType))
                     .assertThat(outputCaseDocumentsPath + ".applications["+ inputApplicationIndex +"].receivedDate", is(applicationReceivedDate))

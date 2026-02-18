@@ -10,6 +10,9 @@ unified_search_descriptor:
      - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
        transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-v2-spec.json
        index_name: crime_case_index
+     - name: progression.hearing-initiate-enriched
+       transformer_config: progression.hearing-initiate-enriched-spec.json
+       index_name: crime_case_index
      - name: progression.event.prosecutionCase-defendant-listing-status-changed-v3
        transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-v3-spec.json
        index_name: crime_case_index

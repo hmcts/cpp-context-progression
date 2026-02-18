@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;
@@ -19,9 +18,9 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Spy;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +37,6 @@ public class DefendantsListingStatusChangedV2TransformerTest {
 
     final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
-    @Inject
     private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
     @BeforeEach
