@@ -5,9 +5,12 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -32,7 +35,6 @@ import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
-import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
@@ -60,6 +62,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.moj.cpp.progression.court.EventHearingRemoveDuplicateApplicationBdf;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.io.File;
@@ -69,12 +72,14 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,7 +94,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class HearingAggregateTest {
@@ -6455,6 +6461,83 @@ public class HearingAggregateTest {
         final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent =
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getNotifyNCES(), is(true));
+    }
+
+    @Test
+    public void shouldCreateEventHearingRemoveDuplicateApplicationBdf() {
+        // Given
+        List<CourtApplication> courtApplicationList = getDuplicateCourtApplications();
+
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtApplications(courtApplicationList)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.removeDuplicateApplicationByBdf();
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+
+        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf =
+                (EventHearingRemoveDuplicateApplicationBdf) events.get(0);
+        assertThat(hearingRemoveDuplicateApplicationBdf.getHearing().getCourtApplications().size(), is(5));
+    }
+
+    @Test
+    public void shouldCreateEventHearingRemoveDuplicateApplicationBdfWithNoApplication() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.removeDuplicateApplicationByBdf();
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+
+        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf =
+                (EventHearingRemoveDuplicateApplicationBdf) events.get(0);
+        assertTrue(hearingRemoveDuplicateApplicationBdf.getHearing().getCourtApplications() == null);
+    }
+
+    private List<CourtApplication> getDuplicateCourtApplications() {
+        // Given set of 5 unique court applications
+        UUID caId1 = UUID.randomUUID();
+        UUID caId2 = UUID.randomUUID();
+        UUID caId3 = UUID.randomUUID();
+        UUID caId4 = UUID.randomUUID();
+        UUID caId5 = UUID.randomUUID();
+
+        List<CourtApplication> courtApplicationList = asList(CourtApplication.courtApplication().withId(caId1).build(),
+                CourtApplication.courtApplication().withId(caId1).build(),
+                CourtApplication.courtApplication().withId(caId2).build(),
+                CourtApplication.courtApplication().withId(caId1).build(),
+                CourtApplication.courtApplication().withId(caId1).build(),
+                CourtApplication.courtApplication().withId(caId2).build(),
+                CourtApplication.courtApplication().withId(caId3).build(),
+                CourtApplication.courtApplication().withId(caId4).build(),
+                CourtApplication.courtApplication().withId(caId5).build(),
+                CourtApplication.courtApplication().withId(caId4).build(),
+                CourtApplication.courtApplication().withId(caId5).build());
+        return courtApplicationList;
     }
 
 
