@@ -1,0 +1,24 @@
+========================================
+ Progression Summary
+ Environment : STE
+ Case URN    : QE122004121
+ Extracted   : 2026-02-18 16:56:53
+========================================
+
+INVESTIGATION SCOPE
+-------------------
+Queried contexts  : LISTING_EVENTSTORE LISTING_VIEWSTORE PROGRESSION_EVENTSTORE PROGRESSION_VIEWSTORE SJP_EVENTSTORE SJP_VIEWSTORE HEARING_EVENTSTORE HEARING_VIEWSTORE STAGING_PROSECUTORS_SPI_EVENTSTORE STAGING_PROSECUTORS_SPI_VIEWSTORE
+
+PROSECUTION CASE ID
+-------------------
+875fabd6-744c-41ff-997a-f97087d3afc4  (source: progressionviewstore)
+
+HEARING(S)
+----------
+hearing_id                                confirmed_date  listing_status
+----------------------------------------  ------------  --------------
+22f1d495-964e-4d5a-88ca-6b1d2e72740c      2026-02-18    HEARING_RESULTED
+
+DEFENDANT(S)
+------------
+74db1f38-4757-4abc-ab41-094c3b8aa7f2
