@@ -2072,7 +2072,13 @@ public class HearingAggregate implements Aggregate {
                 offenceResult.add(Offence.offence().withValuesFrom(offenceInPayloadDefOptional.get()).build());
             }
         });
-        return Defendant.defendant().withValuesFrom(defendantInPayloadCase).withOffences(new ArrayList<>(offenceResult)).build();
+        final Defendant.Builder builder = Defendant.defendant()
+                .withValuesFrom(defendantInPayloadCase)
+                .withOffences(new ArrayList<>(offenceResult));
+        if (isNull(defendantInPayloadCase.getIsYouth()) && nonNull(defendantInHearingCase.getIsYouth())) {
+            builder.withIsYouth(defendantInHearingCase.getIsYouth());
+        }
+        return builder.build();
     }
 
     public Stream<Object> addCasesForUpdatedRelatedHearing(final UUID seedingHearingId) {

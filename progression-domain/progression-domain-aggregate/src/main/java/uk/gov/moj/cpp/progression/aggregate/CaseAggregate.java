@@ -3730,11 +3730,15 @@ public class CaseAggregate implements Aggregate {
         final ProsecutionCase caseForHearing = ProsecutionCase.prosecutionCase().withValuesFrom(this.getProsecutionCase())
                 .withDefendants(this.getProsecutionCase().getDefendants().stream()
                         .filter(def -> defendantsIds.contains(def.getId()))
-                        .map(def -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(def)
-                                .withOffences(ofNullable(this.defendantCaseOffences.get(def.getId())).map(Collection::stream).orElseGet(Stream::empty)
-                                        .filter(off -> offenceIds.contains(off.getId())).toList())
-
-                                .build())
+                        .map(def -> {
+                            final uk.gov.justice.core.courts.Defendant latestDefendant = this.defendantsMap.getOrDefault(def.getId(), def);
+                            final uk.gov.justice.core.courts.Defendant.Builder builder = uk.gov.justice.core.courts.Defendant.defendant()
+                                    .withValuesFrom(latestDefendant);
+                            applyDefendantFallbacks(def, latestDefendant, builder);
+                            return builder.withOffences(ofNullable(this.defendantCaseOffences.get(def.getId())).map(Collection::stream).orElseGet(Stream::empty)
+                                            .filter(off -> offenceIds.contains(off.getId())).toList())
+                                    .build();
+                        })
                         .collect(Collectors.toList()))
                 .build();
 

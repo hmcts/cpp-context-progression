@@ -40,6 +40,7 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -6369,6 +6370,65 @@ public class HearingAggregateTest {
         final List<Object> events = eventStream.collect(toList());
         assertThat(events.size(), is(2));
 
+    }
+
+    @Test
+    public void shouldPreserveIsYouthFromHearing_whenPayloadMissing_onAdhocRelatedHearingUpdate() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Defendant hearingDefendant = Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withIsYouth(true)
+                .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase hearingCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(hearingDefendant))
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(hearingCase))
+                .build();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        final Defendant payloadDefendant = Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase payloadCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(payloadDefendant))
+                .build();
+
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(payloadCase)))
+                .build();
+
+        final Stream<Object> events = hearingAggregate.updateRelatedHearingForAdhocHearing(hearingListingNeeds, false);
+        final Optional<RelatedHearingUpdatedForAdhocHearing> relatedHearingUpdated = events
+                .filter(RelatedHearingUpdatedForAdhocHearing.class::isInstance)
+                .map(RelatedHearingUpdatedForAdhocHearing.class::cast)
+                .findFirst();
+
+        assertThat(relatedHearingUpdated.isPresent(), is(true));
+        final Defendant mergedDefendant = relatedHearingUpdated.get()
+                .getHearingRequest()
+                .getProsecutionCases()
+                .get(0)
+                .getDefendants()
+                .get(0);
+        assertThat(mergedDefendant.getIsYouth(), is(true));
     }
 
     @Test

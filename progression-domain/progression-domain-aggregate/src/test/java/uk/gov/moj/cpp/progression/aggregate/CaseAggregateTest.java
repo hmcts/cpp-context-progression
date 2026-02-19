@@ -7930,6 +7930,76 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldMergeDefendantAttributes_whenRaisingRelatedCaseRequestedForAdhocHearingEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final PersonDefendant fallbackPersonDefendant = personDefendant()
+                .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                        .withFirstName("Jane")
+                        .build())
+                .build();
+
+        final Defendant fallbackDefendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withIsYouth(false)
+                .withProsecutionAuthorityReference("FALLBACK")
+                .withPersonDefendant(fallbackPersonDefendant)
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("FALLBACK")
+                        .build())
+                .withDefendants(singletonList(fallbackDefendant))
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final Defendant latestDefendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withIsYouth(true)
+                .withProsecutionAuthorityReference("LATEST")
+                .withPersonDefendant(null)
+                .build();
+
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        defendantsMap.put(defendantId, latestDefendant);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final Map<UUID, List<uk.gov.justice.core.courts.Offence>> defendantCaseOffences = new HashMap<>();
+        defendantCaseOffences.put(defendantId, singletonList(offence().withId(offenceId).build()));
+        setField(caseAggregate, "defendantCaseOffences", defendantCaseOffences);
+
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .withDefendantOffences(singletonList(offenceId))
+                        .build()))
+                .build();
+
+        final Stream<Object> objectStream = caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true);
+        final Optional<RelatedCaseRequestedForAdhocHearing> relatedCaseRequestedForAdhocHearing = objectStream
+                .filter(s -> s instanceof RelatedCaseRequestedForAdhocHearing)
+                .map(RelatedCaseRequestedForAdhocHearing.class::cast)
+                .findFirst();
+
+        assertThat(relatedCaseRequestedForAdhocHearing.isPresent(), is(true));
+        final Defendant mergedDefendant = relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0);
+        assertThat(mergedDefendant.getIsYouth(), is(true));
+        assertThat(mergedDefendant.getProsecutionAuthorityReference(), is("LATEST"));
+        assertThat(mergedDefendant.getPersonDefendant(), notNullValue());
+        assertThat(mergedDefendant.getPersonDefendant().getPersonDetails().getFirstName(), is("Jane"));
+    }
+
+    @Test
     public void shouldRequestAndRemovedCustodialEstablishmentForDefendant() {
         final UUID caseId = randomUUID();
         final UUID hearingId = randomUUID();
