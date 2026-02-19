@@ -12,6 +12,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -49,6 +50,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -162,6 +164,66 @@ public class ListNewHearingIT extends AbstractIT {
                 withJsonPath("$.hearing.defenceCounsels[0].id", CoreMatchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d"))
         );
 
+    }
+
+    @Test
+    public void shouldPreserveYouthFlagInAdhocRelatedHearingPayload() throws IOException, JSONException {
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+
+        final String caseId2 = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
+
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId2);
+
+        final JsonObject hearingPayload;
+        final JsonObject listHearingRequests;
+
+        JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME)
+                .withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED)
+                .getMessageConsumerClient();
+        initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString(),
+                ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString());
+
+        pollProsecutionCasesProgressionFor(caseId,
+                getProsecutionCaseMatchers(caseId, defendantId, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+        final JsonObject payload = retrieveMessageBody(messageConsumerListHearingRequested).get();
+        hearingPayload = payload.getJsonObject("hearing");
+        listHearingRequests = payload.getJsonArray("listHearingRequests").getJsonObject(0);
+
+        messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME)
+                .withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED)
+                .getMessageConsumerClient();
+
+        addProsecutionCaseToCrownCourtFirstHearing(caseId2, defendantId2, false);
+        pollProsecutionCasesProgressionFor(caseId2,
+                getProsecutionCaseMatchers(caseId2, defendantId2, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+
+        final JsonArray casePayload = retrieveMessageBody(messageConsumerListHearingRequested).get()
+                .getJsonObject("hearing")
+                .getJsonArray("prosecutionCases");
+
+        final ProsecutionCaseUpdateDefendantHelper updateDefendantHelper = new ProsecutionCaseUpdateDefendantHelper(caseId2, defendantId2);
+        updateDefendantHelper.updateYouthFlagForDefendant();
+
+        pollProsecutionCasesProgressionFor(caseId2,
+                withJsonPath("$.prosecutionCase.defendants[0].isYouth", is(true)));
+
+        JsonObjectBuilder payloadBuilder = prepareAdhocHearingPayload(hearingPayload, listHearingRequests, casePayload);
+
+        final JmsMessageConsumerClient publicEvent = newPublicJmsMessageConsumerClientProvider()
+                .withEventNames("public.progression.related-hearing-updated-for-adhoc-hearing")
+                .getMessageConsumerClient();
+
+        postCommand(getWriteUrl("/listnewhearing"), "application/vnd.progression.list-new-hearing+json", payloadBuilder.build().toString());
+
+        final JsonPath message = retrieveMessageAsJsonPath(publicEvent);
+        assertNotNull(message);
+        assertThat(message.prettify(), isJson(allOf(
+                withJsonPath("$.hearingId", is(hearingPayload.getString("id"))),
+                withJsonPath("$.prosecutionCases[?(@.id=='" + caseId2 + "')].defendants[0].isYouth", hasItem(true))
+        )));
     }
 
     @Test
