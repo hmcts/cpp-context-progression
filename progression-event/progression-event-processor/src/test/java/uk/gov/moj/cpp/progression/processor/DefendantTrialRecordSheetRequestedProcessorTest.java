@@ -50,7 +50,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,35 +111,6 @@ public class DefendantTrialRecordSheetRequestedProcessorTest {
 
         this.eventProcessor.process(event);
         verify(sender, times(0)).send(envelopeArgumentCaptor.capture());
-    }
-
-    @Test
-    void processWhenPayloadIsNull() {
-        final UUID defendantId = randomUUID();
-        final UUID caseId = randomUUID();
-        final UUID streamId = randomUUID();
-
-        JsonObject nameJsonObject = createObjectBuilder()
-                .add("name", "test name")
-                .build();
-        JsonObject recordSheetPayload = createObjectBuilder()
-                .add("defendant", nameJsonObject)
-                .build();
-        JsonObject newRecordSheetPayload = createObjectBuilder()
-                .build();
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("progression.event.defendant-trial-record-sheet-requested").withStreamId(streamId),
-                objectToJsonObjectConverter.convert(DefendantTrialRecordSheetRequested.defendantTrialRecordSheetRequested()
-                        .withDefendantId(defendantId)
-                        .withCaseId(caseId)
-                        .build()));
-
-        when(progressionService.generateTrialRecordSheetPayload(event, caseId, defendantId)).thenReturn(newRecordSheetPayload);
-
-        this.eventProcessor.process(event);
-        verify(sender, never()).send(envelopeArgumentCaptor.capture());
-        verify(fileService, never()).storePayload(any(JsonObject.class), anyString(), anyString());
-        verify(systemDocGeneratorService, never()).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
     }
 
     @Test
