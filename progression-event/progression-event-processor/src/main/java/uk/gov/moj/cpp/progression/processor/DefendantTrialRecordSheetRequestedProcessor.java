@@ -74,6 +74,7 @@ public class DefendantTrialRecordSheetRequestedProcessor {
     @Inject
     private UtcClock utcClock;
 
+
     private static final String RECORD_SHEET_TEMPLATE = "RecordSheet";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String RECORD_SHEET_ORIG_SOURCE = "RECORD_SHEET";
