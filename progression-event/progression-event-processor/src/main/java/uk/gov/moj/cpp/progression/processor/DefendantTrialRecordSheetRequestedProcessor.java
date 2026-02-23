@@ -89,6 +89,9 @@ public class DefendantTrialRecordSheetRequestedProcessor {
         UUID streamId = jsonEnvelope.metadata().streamId().orElse(defendantTrialRecordSheetRequested.getCaseId());
         JsonObject recordSheetPayload = progressionService.generateTrialRecordSheetPayload(jsonEnvelope, defendantTrialRecordSheetRequested.getCaseId(), defendantTrialRecordSheetRequested.getDefendantId());
         recordSheetPayload = recordSheetPayload.containsKey(PAYLOAD) ? recordSheetPayload.getJsonObject(PAYLOAD) : null;
+        if(isNull(recordSheetPayload)){
+            return;
+        }
 
         Optional.ofNullable(recordSheetPayload)
                 .filter(r -> r.containsKey(DEFENDANT))
