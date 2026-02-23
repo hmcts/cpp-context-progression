@@ -74,6 +74,7 @@ public class DefendantTrialRecordSheetRequestedProcessor {
     @Inject
     private UtcClock utcClock;
 
+
     private static final String RECORD_SHEET_TEMPLATE = "RecordSheet";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String RECORD_SHEET_ORIG_SOURCE = "RECORD_SHEET";
@@ -88,6 +89,9 @@ public class DefendantTrialRecordSheetRequestedProcessor {
         UUID streamId = jsonEnvelope.metadata().streamId().orElse(defendantTrialRecordSheetRequested.getCaseId());
         JsonObject recordSheetPayload = progressionService.generateTrialRecordSheetPayload(jsonEnvelope, defendantTrialRecordSheetRequested.getCaseId(), defendantTrialRecordSheetRequested.getDefendantId());
         recordSheetPayload = recordSheetPayload.containsKey(PAYLOAD) ? recordSheetPayload.getJsonObject(PAYLOAD) : null;
+        if(isNull(recordSheetPayload)){
+            return;
+        }
 
         Optional.ofNullable(recordSheetPayload)
                 .filter(r -> r.containsKey(DEFENDANT))
