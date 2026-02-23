@@ -72,6 +72,7 @@ import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
+import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -1435,6 +1436,22 @@ public class HearingAggregate implements Aggregate {
             return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
         }
         return Stream.empty();
+    }
+
+    /**
+     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW. The aggregate function is
+     * being added to be invoked only by the BDF, purpose of this function to raise
+     * 'progression.event.hearing.remove.duplicate.application.bdf' event to remove the duplicate application from hearing.
+     *
+     * @return The Stream object
+     */
+    public Stream<Object> removeDuplicateApplicationByBdf(final UUID hearingId) {
+        if (isNull(hearing)) {
+            return Stream.empty();
+        }
+
+        return apply(Stream.of(RemoveDuplicateApplicationBdf.removeDuplicateApplicationBdf()
+                .withHearingId(hearingId).build()));
     }
 
     private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {

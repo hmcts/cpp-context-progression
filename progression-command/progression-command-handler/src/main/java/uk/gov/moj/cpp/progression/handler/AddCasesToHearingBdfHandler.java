@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.handler;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.InsertCaseBdf;
+import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
 import uk.gov.justice.progression.courts.application.CasesBdf;
 import uk.gov.justice.progression.courts.application.DefendantsBdf;
@@ -76,6 +77,15 @@ public class AddCasesToHearingBdfHandler {
 
     }
 
+    @Handles("progression.command.remove-duplicate-application-bdf")
+    public void removeDuplicateApplication(final Envelope<RemoveDuplicateApplicationBdf> removeDuplicateApplicationBdf) throws EventStreamException {
+
+        final RemoveDuplicateApplicationBdf removeDuplicateApplicationFromHearing = removeDuplicateApplicationBdf.payload();
+        final EventStream eventStream = eventSource.getStreamById(removeDuplicateApplicationFromHearing.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.removeDuplicateApplicationByBdf(removeDuplicateApplicationFromHearing.getHearingId());
+        appendEventsToStream(removeDuplicateApplicationBdf, eventStream, events);
+    }
 
     private static ProsecutionCase filterCase(final ProsecutionCase pc, final AddCaseToHearingBdf addCaseToHearingBdf) {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(pc)

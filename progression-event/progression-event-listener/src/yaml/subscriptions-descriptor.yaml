@@ -410,6 +410,8 @@ subscriptions_descriptor:
         - name: progression.event.case-inserted-bdf
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-inserted-bdf.json
 
+        - name: progression.event.remove-duplicate-application-bdf
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.remove-duplicate-application-bdf.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

@@ -40,6 +40,7 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -6455,6 +6456,30 @@ public class HearingAggregateTest {
         final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent =
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getNotifyNCES(), is(true));
+    }
+
+    @Test
+    public void shouldRemoveDuplicateApplication() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.removeDuplicateApplicationByBdf(hearingId);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+
+        final RemoveDuplicateApplicationBdf event =
+                (RemoveDuplicateApplicationBdf) events.get(0);
+        assertThat(event.getHearingId(), is(hearingId));
     }
 
 

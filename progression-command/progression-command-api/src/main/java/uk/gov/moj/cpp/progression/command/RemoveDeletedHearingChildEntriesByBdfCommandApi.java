@@ -57,4 +57,17 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApi {
                 .withName("progression.command.insert-case-bdf")
                 .withMetadataFrom(envelope));
     }
+
+    @Handles("progression.remove-duplicate-application-bdf")
+    public void removeDuplicateApplication(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.hearing.remove.duplicate.application.bdf'
+         * event to remove the duplicate application from the hearing.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.remove-duplicate-application-bdf")
+                .withMetadataFrom(envelope));
+    }
 }

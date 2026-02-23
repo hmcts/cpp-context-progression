@@ -1270,6 +1270,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.add-case-to-hearing-bdf+json
             name: progression.add-case-to-hearing-bdf
+        (mapping):
+            requestType: application/vnd.progression.remove-duplicate-application-bdf+json
+            name: progression.remove-duplicate-application-bdf
         ...
       body:
         application/vnd.progression.update-defendant-listing-status+json:
@@ -1297,6 +1300,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.add-case-to-hearing-bdf.json
             schema:
              !include json/schema/progression.add-case-to-hearing-bdf.json
+        application/vnd.progression.remove-duplicate-application-bdf+json:
+          example:
+            !include json/progression.remove-duplicate-application-bdf.json
+          schema:
+            !include json/schema/progression.remove-duplicate-application-bdf.json
       responses:
             202:
                 description: OK
