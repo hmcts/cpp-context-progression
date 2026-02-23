@@ -32,7 +32,7 @@ import javax.inject.Inject;
 import javax.json.JsonValue;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
-public class HearingDataFixByBdfHandler {
+public class AddCasesToHearingBdfHandler {
 
     @Inject
     private EventSource eventSource;
@@ -78,13 +78,14 @@ public class HearingDataFixByBdfHandler {
 
     }
 
-    @Handles("progression.command.remove-duplicate-application-bdf")
+    @Handles("progression.command.handler.remove-duplicate-application-bdf")
     public void removeDuplicateApplication(final Envelope<RemoveDuplicateApplicationBdf> removeDuplicateApplicationBdf) throws EventStreamException {
 
         final RemoveDuplicateApplicationBdf removeDuplicateApplicationFromHearing = removeDuplicateApplicationBdf.payload();
         final EventStream eventStream = eventSource.getStreamById(removeDuplicateApplicationFromHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.deleteHearingOnlyByBdf(removeDuplicateApplicationFromHearing.getHearingId());
+        final Stream<Object> events = hearingAggregate.removeDuplicateApplicationByBdf();
+        //appendEventsToStream(removeDuplicateApplicationBdf, eventStream, events);
         eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(removeDuplicateApplicationBdf)));
     }
 

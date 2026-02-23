@@ -2,9 +2,6 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
-import static java.util.Comparator.comparingInt;
-import static java.util.Objects.compare;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -48,8 +45,6 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
-import uk.gov.justice.core.courts.HearingExtended;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -91,6 +86,7 @@ import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.ApplicationLaaReferenceUpdatedForHearing;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedingsHelper;
+import uk.gov.moj.cpp.progression.court.EventHearingRemoveDuplicateApplicationBdf;
 import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
@@ -101,7 +97,19 @@ import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1445,46 +1453,28 @@ public class HearingAggregate implements Aggregate {
      * being added to be invoked only by the BDF, purpose of this function to raise
      * 'progression.event.hearing.remove.duplicate.application.bdf' event to remove the duplicate application from hearing.
      *
-     * @param hearingId The hearing id
      * @return The Stream object
      */
-    public Stream<Object> removeDuplicateApplicationByBdf(final UUID hearingId) {
-        if (isNull(hearing) && hearing.getCourtApplications().isEmpty() && hearing.getCourtApplications().size() == 1) {
+    public Stream<Object> removeDuplicateApplicationByBdf() {
+        if (isNull(hearing)) {
             return Stream.empty();
         }
 
+        if (isNull(hearing.getCourtApplications()) || hearing.getCourtApplications().isEmpty()) {
+            return apply(Stream.of(EventHearingRemoveDuplicateApplicationBdf.eventHearingRemoveDuplicateApplicationBdf()
+                    .withHearing(hearing)
+                    .build()));
+        }
 
         List<CourtApplication> uniqueApplications = hearing.getCourtApplications().stream()
                 .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(CourtApplication::getId))),
                         ArrayList::new));
 
-
         hearing = Hearing.hearing().withValuesFrom(hearing).withCourtApplications(uniqueApplications).build();
 
-//        return apply(Stream.of(RemoveDuplica.offencesRemovedFromHearing()
-//                .withHearingId(hearingId)
-//                .withOffenceIds(offencesToBeRemoved)
-//                .withDefendantIds(defendantsToBeRemoved)
-//                .withProsecutionCaseIds(prosecutionCasesToBeRemoved)
-//                .withIsResultFlow(isResultFlow)
-//                .build()));
-
-        final Stream.Builder builder = Stream.builder();
-//        if (nonNull(hearingListingStatus) && !hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)) {
-//            builder.add(HearingDeleted.hearingDeleted()
-//                    .withHearingId(hearingId)
-//                    .withCourtApplicationIds(courtApplicationIds)
-//                    .withProsecutionCaseIds(prosecutionCaseIds)
-//                    .build());
-//        }
-//        if (isNotEmpty(prosecutionCaseIds)) {
-//            builder.add(OffenceInHearingDeleted.offenceInHearingDeleted()
-//                    .withProsecutionCaseIds(prosecutionCaseIds)
-//                    .withOffenceIds(offenceIds)
-//                    .build());
-//        }
-        final Stream<Object> deleteEvent = apply(builder.build());
-        return Stream.concat(Stream.concat(deleteEvent, populateHearingToProbationCaseWorker()), populateHearingToVEP());
+        return apply(Stream.of(EventHearingRemoveDuplicateApplicationBdf.eventHearingRemoveDuplicateApplicationBdf()
+                .withHearing(hearing)
+                .build()));
     }
 
     private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {

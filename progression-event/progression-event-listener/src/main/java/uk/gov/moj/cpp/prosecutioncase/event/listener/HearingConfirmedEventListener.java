@@ -6,7 +6,10 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
+import java.io.StringReader;
 import java.util.Comparator;
+
+import javax.json.Json;
 import javax.json.JsonObject;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
@@ -25,6 +28,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.JsonReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,5 +96,34 @@ public class HearingConfirmedEventListener {
             }
 
         }
+    }
+
+//    @Handles("progression.event-hearing-remove-duplicate-application-bdf")
+//    public void processHearingRemoveDuplicateApplicationBdfEvent(final Envelope<EventHearingRemoveDuplicateApplicationBdf> removeDuplicateApplicationBdf) {
+//        final Hearing hearingPayload = removeDuplicateApplicationBdf.payload().getHearing();
+//
+//        if (LOGGER.isInfoEnabled()) {
+//            LOGGER.info("received event progression.event-hearing-remove-duplicate-application-bdf in listener for hearing id {} ", hearingPayload.getId());
+//        }
+//
+//        final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingPayload.getId());
+//        final JsonObject dbHearingJson = jsonFromString(dbHearingEntity.getPayload());
+//        final Hearing dbHearingObject = jsonObjectToObjectConverter.convert(dbHearingJson, Hearing.class);
+//
+//        final Hearing updatedHearingWithUniqueApplication = Hearing.hearing().withValuesFrom(dbHearingObject)
+//                .withCourtApplications(hearingPayload.getCourtApplications())
+//                .build();
+//
+//        final String updatedHearingWithUniqueApplicationPayload = objectToJsonObjectConverter.convert(updatedHearingWithUniqueApplication).toString();
+//        dbHearingEntity.setPayload(updatedHearingWithUniqueApplicationPayload);
+//        hearingRepository.save(dbHearingEntity);
+//    }
+
+    private static JsonObject jsonFromString(String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+
+        return object;
     }
 }
