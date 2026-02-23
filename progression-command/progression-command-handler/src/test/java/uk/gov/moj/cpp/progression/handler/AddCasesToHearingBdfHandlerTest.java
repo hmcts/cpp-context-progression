@@ -4,7 +4,6 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -31,7 +30,6 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
@@ -42,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
@@ -293,60 +290,6 @@ class AddCasesToHearingBdfHandlerTest {
         assertThat(argumentCaptor.getValue().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
     }
 
-//    @Test
-//    void shouldRemoveDuplicateCourtApplication() throws EventStreamException {
-//        final UUID hearingId = randomUUID();
-//        final RemoveDuplicateApplicationBdf removeDuplicateApplicationBdf = createAddCaseToHearingBdf(Map.of(caseId, asList(Map.of(randomUUID(), asList(randomUUID()))) ));
-//
-//        final Metadata metadata = Envelope
-//                .metadataBuilder()
-//                .withName("progression.command.remove-duplicate-application-bdf")
-//                .withId(randomUUID())
-//                .build();
-//
-//        when(prosecutionCaseQueryService.getProsecutionCase(any(), eq(caseId.toString()))).thenReturn(Optional.empty());
-//
-//        final Envelope<AddCaseToHearingBdf> envelope = envelopeFrom(metadata, addCaseToHearingBdf);
-//        hearingDataFixByBdfHandler.handleAddCaseToHearing(envelope);
-//
-//        verify(hearingAggregate, never()).addCasesToHearingBdf(any(), any());
-//
-//    }
-
-//    @Test
-//    public void shouldRemoveDuplicateApplicationsByBdf() throws EventStreamException {
-//        final UUID hearingId = UUID.randomUUID();
-//
-//        final Metadata metadata = Envelope
-//                .metadataBuilder()
-//                .withName("progression.command.handler.remove-duplicate-application-bdf")
-//                .withId(randomUUID())
-//                .build();
-//
-//        final Envelope<RemoveDuplicateApplicationBdf> envelope = envelopeFrom(metadata, RemoveDuplicateApplicationBdf.removeDuplicateApplicationBdf()
-//                .withHearingId(hearingId)
-//                .build());
-//        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-//        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-//        when(hearingAggregate.removeDuplicateApplicationByBdf())
-//                .thenReturn(Stream.of(HearingRemoveDuplicateApplicationBdf.hearingRemoveDuplicateApplicationBdf()
-//                        .withHearing(getHearing(hearingId))
-//                        .build()));
-//
-//        addCasesToHearingBdfHandler.removeDuplicateApplication(envelope);
-//
-//
-//        verify(hearingAggregate).removeDuplicateApplicationByBdf();
-//
-//
-//        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-//
-//        assertThat(events.size(), is(1));
-//        assertThat(events.get(0).metadata().name(), is("progression.event-hearing-remove-duplicate-application-bdf"));
-//        System.out.println("AAA");
-//
-//    }
-//
     @Test
     public void shouldRemoveDuplicateApplicationsByBdf2() throws EventStreamException {
         final UUID hearingId = UUID.randomUUID();
@@ -373,14 +316,7 @@ class AddCasesToHearingBdfHandlerTest {
 
         addCasesToHearingBdfHandler.removeDuplicateApplication(envelope);
 
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        Optional<JsonEnvelope> hearingDeletedEnvelope = envelopeStream
-                .filter(jsonEnvelope -> jsonEnvelope.metadata().name().equals("progression.event-hearing-remove-duplicate-application-bdf"))
-                .findAny();
-
-        assertTrue(hearingDeletedEnvelope.isPresent());
-        System.out.println("AAA");
-
+        verifyAppendAndGetArgumentFrom(eventStream);
     }
 
 

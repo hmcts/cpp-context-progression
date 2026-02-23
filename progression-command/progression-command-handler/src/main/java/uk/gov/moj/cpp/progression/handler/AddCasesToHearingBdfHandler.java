@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.handler;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.DeleteHearing;
 import uk.gov.justice.progression.courts.InsertCaseBdf;
 import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
@@ -85,8 +84,7 @@ public class AddCasesToHearingBdfHandler {
         final EventStream eventStream = eventSource.getStreamById(removeDuplicateApplicationFromHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.removeDuplicateApplicationByBdf();
-        //appendEventsToStream(removeDuplicateApplicationBdf, eventStream, events);
-        eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(removeDuplicateApplicationBdf)));
+        appendEventsToStream(removeDuplicateApplicationBdf, eventStream, events);
     }
 
     private static ProsecutionCase filterCase(final ProsecutionCase pc, final AddCaseToHearingBdf addCaseToHearingBdf) {

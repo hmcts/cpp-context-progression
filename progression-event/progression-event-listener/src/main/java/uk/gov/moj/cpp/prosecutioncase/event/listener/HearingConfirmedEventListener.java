@@ -20,6 +20,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.progression.court.EventHearingRemoveDuplicateApplicationBdf;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
@@ -98,26 +99,26 @@ public class HearingConfirmedEventListener {
         }
     }
 
-//    @Handles("progression.event-hearing-remove-duplicate-application-bdf")
-//    public void processHearingRemoveDuplicateApplicationBdfEvent(final Envelope<EventHearingRemoveDuplicateApplicationBdf> removeDuplicateApplicationBdf) {
-//        final Hearing hearingPayload = removeDuplicateApplicationBdf.payload().getHearing();
-//
-//        if (LOGGER.isInfoEnabled()) {
-//            LOGGER.info("received event progression.event-hearing-remove-duplicate-application-bdf in listener for hearing id {} ", hearingPayload.getId());
-//        }
-//
-//        final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingPayload.getId());
-//        final JsonObject dbHearingJson = jsonFromString(dbHearingEntity.getPayload());
-//        final Hearing dbHearingObject = jsonObjectToObjectConverter.convert(dbHearingJson, Hearing.class);
-//
-//        final Hearing updatedHearingWithUniqueApplication = Hearing.hearing().withValuesFrom(dbHearingObject)
-//                .withCourtApplications(hearingPayload.getCourtApplications())
-//                .build();
-//
-//        final String updatedHearingWithUniqueApplicationPayload = objectToJsonObjectConverter.convert(updatedHearingWithUniqueApplication).toString();
-//        dbHearingEntity.setPayload(updatedHearingWithUniqueApplicationPayload);
-//        hearingRepository.save(dbHearingEntity);
-//    }
+    @Handles("progression.event-hearing-remove-duplicate-application-bdf")
+    public void processHearingRemoveDuplicateApplicationBdfEvent(final Envelope<EventHearingRemoveDuplicateApplicationBdf> removeDuplicateApplicationBdf) {
+        final Hearing hearingPayload = removeDuplicateApplicationBdf.payload().getHearing();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("received event progression.event-hearing-remove-duplicate-application-bdf in listener for hearing id {} ", hearingPayload.getId());
+        }
+
+        final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingPayload.getId());
+        final JsonObject dbHearingJson = jsonFromString(dbHearingEntity.getPayload());
+        final Hearing dbHearingObject = jsonObjectToObjectConverter.convert(dbHearingJson, Hearing.class);
+
+        final Hearing updatedHearingWithUniqueApplication = Hearing.hearing().withValuesFrom(dbHearingObject)
+                .withCourtApplications(hearingPayload.getCourtApplications())
+                .build();
+
+        final String updatedHearingWithUniqueApplicationPayload = objectToJsonObjectConverter.convert(updatedHearingWithUniqueApplication).toString();
+        dbHearingEntity.setPayload(updatedHearingWithUniqueApplicationPayload);
+        hearingRepository.save(dbHearingEntity);
+    }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
         final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));

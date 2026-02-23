@@ -20,6 +20,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.progression.court.EventHearingRemoveDuplicateApplicationBdf;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.util.FileUtil;
@@ -59,8 +60,8 @@ public class HearingConfirmedEventListenerTest {
     private HearingConfirmedEventListener hearingConfirmedEventListener;
 
     private final StringToJsonObjectConverter converter = new StringToJsonObjectConverter();
-//    @Mock
-//    private Envelope<EventHearingRemoveDuplicateApplicationBdf> bdfEnvelope;
+    @Mock
+    private Envelope<EventHearingRemoveDuplicateApplicationBdf> bdfEnvelope;
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
@@ -93,53 +94,53 @@ public class HearingConfirmedEventListenerTest {
         assertThat(confirmedDate.toString(), is(LocalDate.now().toString()));
     }
 
-//    @Test
-//    public void shouldUpdateHearingWithUniqueCourtApplications() throws IOException {
-//        final String hearingPayloadString = FileUtil.getPayload("json/hearing-with-unique-application.json");
-//        JsonObject jsonObject = converter.convert(hearingPayloadString);
-//
-//        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf = this.jsonObjectToObjectConverter.convert(jsonObject, EventHearingRemoveDuplicateApplicationBdf.class);
-//        final UUID hearingId = hearingRemoveDuplicateApplicationBdf.getHearing().getId();
-//        final HearingEntity hearingEntity = createHearingEntity(hearingId);
-//
-//        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
-//        when(bdfEnvelope.payload()).thenReturn(hearingRemoveDuplicateApplicationBdf);
-//        hearingConfirmedEventListener.processHearingRemoveDuplicateApplicationBdfEvent(bdfEnvelope);
-//
-//        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
-//
-//        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
-//        HearingEntity savedHearingEntity = savedHearingEntities.stream().filter(savedDbHeairng -> savedDbHeairng.getHearingId().equals(hearingId))
-//                .findFirst().get();
-//        final Hearing savedHearingObject = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
-//
-//        assertThat(savedHearingObject, notNullValue());
-//        assertTrue(savedHearingObject.getCourtApplications().size() == 1);
-//    }
+    @Test
+    public void shouldUpdateHearingWithUniqueCourtApplications() throws IOException {
+        final String hearingPayloadString = FileUtil.getPayload("json/hearing-with-unique-application.json");
+        JsonObject jsonObject = converter.convert(hearingPayloadString);
 
-//    @Test
-//    public void shouldUpdateHearingWithUniqueCourtApplications2() throws IOException {
-//        final String hearingPayloadString = FileUtil.getPayload("json/hearing-without-application.json");
-//        JsonObject jsonObject = converter.convert(hearingPayloadString);
-//
-//        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf = this.jsonObjectToObjectConverter.convert(jsonObject, EventHearingRemoveDuplicateApplicationBdf.class);
-//        final UUID hearingId = hearingRemoveDuplicateApplicationBdf.getHearing().getId();
-//        final HearingEntity hearingEntity = createHearingEntity(hearingId);
-//
-//        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
-//        when(bdfEnvelope.payload()).thenReturn(hearingRemoveDuplicateApplicationBdf);
-//        hearingConfirmedEventListener.processHearingRemoveDuplicateApplicationBdfEvent(bdfEnvelope);
-//
-//        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
-//
-//        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
-//        HearingEntity savedHearingEntity = savedHearingEntities.stream().filter(savedDbHeairng -> savedDbHeairng.getHearingId().equals(hearingId))
-//                .findFirst().get();
-//        final Hearing savedHearingObject = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
-//
-//        assertThat(savedHearingObject, notNullValue());
-//        assertTrue(savedHearingObject.getCourtApplications() == null);
-//    }
+        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf = this.jsonObjectToObjectConverter.convert(jsonObject, EventHearingRemoveDuplicateApplicationBdf.class);
+        final UUID hearingId = hearingRemoveDuplicateApplicationBdf.getHearing().getId();
+        final HearingEntity hearingEntity = createHearingEntity(hearingId);
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(bdfEnvelope.payload()).thenReturn(hearingRemoveDuplicateApplicationBdf);
+        hearingConfirmedEventListener.processHearingRemoveDuplicateApplicationBdfEvent(bdfEnvelope);
+
+        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
+        HearingEntity savedHearingEntity = savedHearingEntities.stream().filter(savedDbHeairng -> savedDbHeairng.getHearingId().equals(hearingId))
+                .findFirst().get();
+        final Hearing savedHearingObject = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
+
+        assertThat(savedHearingObject, notNullValue());
+        assertTrue(savedHearingObject.getCourtApplications().size() == 1);
+    }
+
+    @Test
+    public void shouldUpdateHearingWithUniqueCourtApplicationsbyBdfWithoutApplication() throws IOException {
+        final String hearingPayloadString = FileUtil.getPayload("json/hearing-without-application.json");
+        JsonObject jsonObject = converter.convert(hearingPayloadString);
+
+        final EventHearingRemoveDuplicateApplicationBdf hearingRemoveDuplicateApplicationBdf = this.jsonObjectToObjectConverter.convert(jsonObject, EventHearingRemoveDuplicateApplicationBdf.class);
+        final UUID hearingId = hearingRemoveDuplicateApplicationBdf.getHearing().getId();
+        final HearingEntity hearingEntity = createHearingEntity(hearingId);
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(bdfEnvelope.payload()).thenReturn(hearingRemoveDuplicateApplicationBdf);
+        hearingConfirmedEventListener.processHearingRemoveDuplicateApplicationBdfEvent(bdfEnvelope);
+
+        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
+        HearingEntity savedHearingEntity = savedHearingEntities.stream().filter(savedDbHeairng -> savedDbHeairng.getHearingId().equals(hearingId))
+                .findFirst().get();
+        final Hearing savedHearingObject = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
+
+        assertThat(savedHearingObject, notNullValue());
+        assertTrue(savedHearingObject.getCourtApplications() == null);
+    }
 
     private HearingEntity createHearingEntity(final UUID hearingId) throws IOException {
         String hearingPayload =  FileUtil.getPayload("json/hearing-with-duplicate-applications.json");

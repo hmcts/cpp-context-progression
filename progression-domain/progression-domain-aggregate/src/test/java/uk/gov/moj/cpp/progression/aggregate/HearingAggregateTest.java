@@ -6506,7 +6506,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldCreateEventHearingRemoveDuplicateApplicationBdf2() {
+    public void shouldCreateEventHearingRemoveDuplicateApplicationBdfWithNoApplication() {
         // Given
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
