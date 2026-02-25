@@ -60,6 +60,7 @@ import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
+import uk.gov.justice.progression.courts.HearingInitiateEnrichedInUnifiedSearch;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
@@ -472,7 +473,14 @@ public class HearingAggregate implements Aggregate {
                     .build();
 
             addNewOffencesToHearing(enrichedHearing);
-            return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
+
+            final Stream.Builder<Object> streamBuilder = Stream.builder();
+            streamBuilder.add(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build());
+            if (hearingIsBreachTypeApplication(hearing)) {
+                streamBuilder.add(HearingInitiateEnrichedInUnifiedSearch.hearingInitiateEnrichedInUnifiedSearch().withHearing(enrichedHearing).build());
+            }
+
+            return apply(streamBuilder.build());
         }
 
 
@@ -484,7 +492,24 @@ public class HearingAggregate implements Aggregate {
         }
         final Hearing enrichedHearing = enrichedHearingBuilder.build();
         addNewOffencesToHearing(enrichedHearing);
-        return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build());
+        if (hearingIsBreachTypeApplication(hearing)) {
+            streamBuilder.add(HearingInitiateEnrichedInUnifiedSearch.hearingInitiateEnrichedInUnifiedSearch().withHearing(enrichedHearing).build());
+        }
+
+        return apply(streamBuilder.build());
+    }
+
+    private boolean hearingIsBreachTypeApplication(final Hearing hearing) {
+        return isNotEmpty(hearing.getCourtApplications()) && isAnyApplicationHasCourtOrder(hearing.getCourtApplications());
+    }
+
+    private boolean isAnyApplicationHasCourtOrder(final List<CourtApplication> courtApplications) {
+        return courtApplications.stream()
+                .map(CourtApplication::getCourtOrder)
+                .anyMatch(java.util.Objects::nonNull);
     }
 
     public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus, final List<ListHearingRequest> listHearingRequests) {
