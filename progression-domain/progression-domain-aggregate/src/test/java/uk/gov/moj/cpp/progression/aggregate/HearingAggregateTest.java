@@ -32,7 +32,7 @@ import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
-import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
+import uk.gov.justice.progression.courts.HearingInitiateEnrichedInUnifiedSearch;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
@@ -4554,14 +4554,50 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldEnrichInitiateHearing(){
+    public void shouldEnrichInitiateHearingWhenHearingHasNoApplications(){
         final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
                 .setJurisdictionType(JurisdictionType.CROWN)
                 .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
                 .setConvicted(false)).build();
         final Stream<Object> eventStream = hearingAggregate.enrichInitiateHearing(hearing);
-        final List events = eventStream.collect(toList());
-        assertThat(events.get(0), Matchers.instanceOf(HearingInitiateEnriched.class));
+        final List<Object> events = eventStream.toList();
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), instanceOf(HearingInitiateEnriched.class));
+    }
+
+    @Test
+    public void shouldEnrichInitiateHearingWhenHearingHasApplicationsButNoCourtOrder(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)
+                .setCourtApplication(singletonList(CourtApplication.courtApplication().withId(randomUUID()).build()))
+        ).build();
+        final Stream<Object> eventStream = hearingAggregate.enrichInitiateHearing(hearing);
+        final List<Object> events = eventStream.toList();
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), instanceOf(HearingInitiateEnriched.class));
+    }
+
+    @Test
+    public void shouldEnrichInitiateHearingWhenHearingHasApplicationsAndCourtOrder(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)
+                .setCourtApplication(singletonList(CourtApplication.courtApplication()
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withId(randomUUID())
+                                .build())
+                        .withId(randomUUID())
+                        .build()))
+        ).build();
+        final Stream<Object> eventStream = hearingAggregate.enrichInitiateHearing(hearing);
+        final List<Object> events = eventStream.toList();
+        assertThat(events.size(), is(2));
+        assertThat(events.get(0), instanceOf(HearingInitiateEnriched.class));
+        assertThat(events.get(1), instanceOf(HearingInitiateEnrichedInUnifiedSearch.class));
+        assertThat(((HearingInitiateEnriched)events.get(0)).getHearing(), equalTo(((HearingInitiateEnrichedInUnifiedSearch)events.get(1)).getHearing()));
     }
 
     @Test

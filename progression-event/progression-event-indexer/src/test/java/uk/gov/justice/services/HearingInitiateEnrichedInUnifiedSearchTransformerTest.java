@@ -25,13 +25,13 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class HearingInitiateEnrichedTransformerTest {
+public class HearingInitiateEnrichedInUnifiedSearchTransformerTest {
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @InjectMocks
-    private HearingInitiateEnrichedTransformer hearingInitiateEnrichedTransformer;
+    private HearingInitiateEnrichedInUnifiedSearchTransformer hearingInitiateEnrichedInUnifiedSearchTransformer;
 
     private HearingVerificationHelper hearingVerificationHelper = new HearingVerificationHelper();
 
@@ -46,32 +46,12 @@ public class HearingInitiateEnrichedTransformerTest {
     }
 
     @Test
-    public void shouldNotTransformHearingInitiateEnrichedWhenNoApplicationOnHearing() {
-
-        final JsonObject inputJson = readJson("/progression.hearing-initiate-enriched-for-case.json");
-        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
-        final JsonObject output = objectToJsonObjectConverter.convert(hearingInitiateEnrichedTransformer.transform(input));
-
-        assertThat(output.getJsonArray("caseDocuments").size(), is(0));
-    }
-
-    @Test
-    public void shouldNotTransformHearingInitiateEnrichedWhenApplicationHasNoCourtOrderOnHearing() {
-
-        final JsonObject inputJson = readJson("/progression.hearing-initiate-enriched-for-application-without-courtorder.json");
-        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
-        final JsonObject output = objectToJsonObjectConverter.convert(hearingInitiateEnrichedTransformer.transform(input));
-
-        assertThat(output.getJsonArray("caseDocuments").size(), is(0));
-    }
-
-    @Test
     public void shouldTransformHearingInitiateEnrichedWhenApplicationHasCourtOrderOnHearing() {
 
         final JsonObject inputJson = readJson("/progression.hearing-initiate-enriched.json");
         final DocumentContext inputDC = JsonPath.parse(inputJson);
         final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
-        final JsonObject output = objectToJsonObjectConverter.convert(hearingInitiateEnrichedTransformer.transform(input));
+        final JsonObject output = objectToJsonObjectConverter.convert(hearingInitiateEnrichedInUnifiedSearchTransformer.transform(input));
 
         jsonValidator.validate(output, "/json/schema/crime-case-index-schema.json");
 

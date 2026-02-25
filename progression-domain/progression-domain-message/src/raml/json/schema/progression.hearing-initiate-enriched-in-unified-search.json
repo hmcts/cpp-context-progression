@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/hearing-initiate-enriched.json",
+  "id": "http://justice.gov.uk/progression/courts/hearing-initiate-enriched-in-unified-search.json",
   "type": "object",
   "properties": {
     "hearing": {
