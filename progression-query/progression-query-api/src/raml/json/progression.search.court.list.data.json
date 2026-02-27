@@ -1,0 +1,112 @@
+{
+  "listType": "public",
+  "courtCentreName": "Lavender Hill Magistrates' Court",
+  "courtCentreAddress1": "176A Lavender Hill London",
+  "courtCentreAddress2": "   SW11 1JU",
+  "welshCourtCentreName": "Llys Ynadon Lavender Hill",
+  "welshCourtCentreAddress1": " ",
+  "welshCourtCentreAddress2": "   SW11 1JU",
+  "hearingDates": [
+    {
+      "hearingDate": "2022-04-07",
+      "hearingDateWelsh": "7 Ebrill 2022",
+      "courtRooms": [
+        {
+          "courtRoomName": "Courtroom 01",
+          "welshCourtRoomName": "Courtroom 01",
+          "judiciaryNames": "Miss Atkins JP, Mrs Colman, District Judge (MC) Daber",
+          "welshJudiciaryNames": "Atkins, Mrs Colman, Daber",
+          "timeslots": [
+            {
+              "hearings": [
+                {
+                  "id": "1a0f21ad-d9dc-4e42-9fb3-da2c5de0d7c2",
+                  "sequence": 1,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "38GD1087222",
+                  "caseId": "f0ea8a39-a9b7-4298-9d45-3cd2f64fcddc",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "id": "4e652c88-6efa-49b1-84a9-dc5b6aac5b64",
+                      "organisationName": "",
+                      "firstName": "Kiana",
+                      "surname": "Hammes",
+                      "dateOfBirth": "6 Feb 1980",
+                      "age": "42",
+                      "nationality": "",
+                      "address": {
+                        "address1": "Address line 1",
+                        "address2": "Address line 2",
+                        "address3": "Address line 3",
+                        "address4": "Address line 4",
+                        "address5": "West Keelymouth",
+                        "postcode": "TW14 9XD"
+                      },
+                      "reportingRestrictions": [],
+                      "offences": [
+                        {
+                          "id": "9e3cdd89-0fd6-4bc3-9a5c-5e82f8658899",
+                          "offenceTitle": "Use / install a television set without a licence",
+                          "welshOffenceTitle": "Defnyddio / gosod set deledu heb drwydded",
+                          "offenceWording": "From 8 March 2022, used a television receiver without a licence."
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "26018ad1-dbb1-47ee-a3cb-425fd2d5b7ee",
+                  "sequence": 2,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "63GD6903522",
+                  "caseId": "a848c547-9993-46f8-bd99-6b8690cde6d9",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "id": "707f81d2-d519-48d1-a94f-8f0acd72112b",
+                      "organisationName": "",
+                      "firstName": "Yessenia",
+                      "surname": "Marks",
+                      "dateOfBirth": "27 Aug 1989",
+                      "age": "32",
+                      "nationality": "",
+                      "address": {
+                        "address1": "Address line 1",
+                        "address2": "Address line 2",
+                        "postcode": "TW14 9XD"
+                      },
+                      "reportingRestrictions": [],
+                      "offences": [
+                        {
+                          "id": "c524ac7b-d923-4502-a644-ca6220601c77",
+                          "offenceTitle": "Use / install a television set without a licence",
+                          "offenceWording": "From 8 March 2022, used a television receiver without a licence."
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "templateName": "PublicCourtList",
+  "ouCode": "B01LY00",
+  "courtId": "f8254db1-1683-483e-afb3-b87fde5a0a26"
+}

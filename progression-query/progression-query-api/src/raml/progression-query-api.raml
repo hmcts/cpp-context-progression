@@ -1467,6 +1467,57 @@ protocols: [ HTTP, HTTPS ]
         body:
           application/vnd.progression.search.court.list+json:
 
+
+/courtlistdata:
+  description: get court list data as JSON (same parameters as /courtlist, no document generation or pubhub)
+  get:
+    description: |
+      Returns the court list payload as JSON. Same query parameters and access control as /courtlist.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.search.court.list.data+json
+          name: progression.search.court.list.data
+      (mapping):
+          responseType: application/vnd.progression.search.prison.court.list.data+json
+          name: progression.search.prison.court.list.data
+      ...
+    queryParameters:
+      courtCentreId:
+        description: reference data id for the court centre
+        type: string
+        required: true
+      courtRoomId:
+        description: reference data id for the court room
+        type: string
+        required: false
+      listId:
+        description: court list name ( e.g. PUBLIC, STANDARD, ALPHABETICAL, USHERS_CROWN, USHERS_MAGISTRATE, ONLINE_PUBLIC)
+        type: string
+        required: true
+      startDate:
+        description: hearing start date in format 'YYYY-MM-DD'.
+        type: date
+        required: true
+      endDate:
+        description: hearing end date in format 'YYYY-MM-DD'
+        type: date
+        required: true
+      restricted:
+        description: only applicable for standard courtlist. Set true to get restricted standard court list
+        type: boolean
+        required: false
+        default: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.search.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+          application/vnd.progression.search.prison.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+
+
 /prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
   uriParameters:
     prosecutionCaseId:

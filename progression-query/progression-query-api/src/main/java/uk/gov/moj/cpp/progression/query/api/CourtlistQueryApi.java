@@ -23,4 +23,14 @@ public class CourtlistQueryApi {
     public JsonEnvelope searchPrisonCourtlist(final JsonEnvelope query) {
         return courtlistQueryView.searchPrisonCourtlist(query);
     }
+
+    @Handles("progression.search.court.list.data")
+    public JsonEnvelope searchCourtlistData(final JsonEnvelope query) {
+        return courtlistQueryView.searchCourtlist(query);
+    }
+
+    @Handles("progression.search.prison.court.list.data")
+    public JsonEnvelope searchPrisonCourtlistData(final JsonEnvelope query) {
+        return courtlistQueryView.searchPrisonCourtlist(query);
+    }
 }

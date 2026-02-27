@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/search/court.list.data.json",
+  "type": "object",
+  "description": "Court list data payload (same structure as court list document payload, with optional ouCode and courtId from reference data)",
+  "required": ["listType", "courtCentreName", "hearingDates"],
+  "properties": {
+    "listType": {
+      "type": "string",
+      "description": "Type of list e.g. public, ushers_crown, ushers_magistrate"
+    },
+    "courtCentreName": {
+      "type": "string",
+      "description": "Name of the court centre"
+    },
+    "courtCentreAddress1": { "type": "string" },
+    "courtCentreAddress2": { "type": "string" },
+    "welshCourtCentreName": { "type": "string" },
+    "welshCourtCentreAddress1": { "type": "string" },
+    "welshCourtCentreAddress2": { "type": "string" },
+    "hearingDates": {
+      "type": "array",
+      "description": "Hearing dates with court rooms, time slots and hearings",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hearingDate": { "type": "string" },
+          "hearingDateWelsh": { "type": "string" },
+          "courtRooms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "courtRoomName": { "type": "string" },
+                "welshCourtRoomName": { "type": "string" },
+                "judiciaryNames": { "type": "string" },
+                "welshJudiciaryNames": { "type": "string" },
+                "timeslots": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hearings": {
+                        "type": "array",
+                        "items": { "type": "object" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": {
+      "type": "string",
+      "description": "Document template name (e.g. PublicCourtList, UshersMagistrateList)"
+    },
+    "ouCode": {
+      "type": "string",
+      "description": "Organisation unit code from reference data (when available)"
+    },
+    "courtId": {
+      "type": "string",
+      "description": "Court centre UUID from reference data (when available)",
+      "format": "uuid"
+    }
+  }
+}

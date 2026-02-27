@@ -1,18 +1,14 @@
 package uk.gov.justice.api.resource;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
-import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.query.api.service.CourtlistQueryService;
 import uk.gov.justice.api.resource.service.StagingPubHubService;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.core.annotation.Adapter;
@@ -32,9 +28,7 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -81,6 +75,9 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
     @Inject
+    private CourtlistQueryService courtlistQueryService;
+
+    @Inject
     private InterceptorChainProcessor interceptorChainProcessor;
 
     @Inject
@@ -88,9 +85,6 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
 
     @Inject
     private StagingPubHubService stagingPubHubService;
-
-    @Inject
-    private ReferenceDataService referenceDataService;
 
     @Override
     public Response getCourtlist(final String courtCentreId, final String courtRoomId, final String listId,
@@ -107,45 +101,14 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
     }
 
     private Response getCourtListInternal(final String courtCentreId, final String courtRoomId, final String listId, final String startDate, final String endDate, final boolean restricted, final UUID userId, final String courtListAction) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
-                .add("courtCentreId", courtCentreId)
-                .add("listId", listId)
-                .add("startDate", startDate)
-                .add("endDate", endDate)
-                .add("restricted", restricted);
+        final JsonEnvelope queryEnvelope = courtlistQueryService.buildCourtlistQueryEnvelope(
+                courtCentreId, courtRoomId, listId, startDate, endDate, restricted, userId, courtListAction);
+        final JsonEnvelope document = interceptorChainProcessor.process(interceptorContextWithInput(queryEnvelope)).get();
 
-        if (nonNull(courtRoomId)) {
-            payloadBuilder.add("courtRoomId", courtRoomId);
-        }
-
-        final JsonEnvelope documentQuery = envelopeFrom(
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(courtListAction)
-                        .withUserId(userId.toString())
-                        .build(),
-                payloadBuilder.build());
-
-        final JsonEnvelope document = interceptorChainProcessor.process(interceptorContextWithInput(documentQuery)).get();
-
-        final JsonObjectBuilder standardListJsonObjectBuilder = Json.createObjectBuilder();
-
-        document
-                .payloadAsJsonObject()
-                .keySet()
-                .forEach(key -> standardListJsonObjectBuilder
-                        .add(key, document.payloadAsJsonObject().get(key))
-                );
-
-        final Optional<JsonObject> courtCentreDataOptional = referenceDataService.getCourtCenterDataByCourtName(document, document.payloadAsJsonObject().getString("courtCentreName"));
-        if (courtCentreDataOptional.isPresent()) {
-            final JsonObject courtCentreData = courtCentreDataOptional.get();
-            standardListJsonObjectBuilder.add("ouCode", courtCentreData.getJsonString("oucode"));
-            standardListJsonObjectBuilder.add("courtId", courtCentreData.getJsonString("id"));
-        }
+        final JsonObject enrichedPayload = courtlistQueryService.buildEnrichedPayload(document);
 
         if (!PRISON_COURT_LIST.equalsIgnoreCase(listId)) {
-            stagingPubHubService.publishStandardList(standardListJsonObjectBuilder.build(), userId);
+            stagingPubHubService.publishStandardList(enrichedPayload, userId);
         }
 
         return getDocumentContent(document);
