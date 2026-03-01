@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-eventprocessorstore</artifactId>
-        <version>17.0.229-cct-1981-SNAPSHOT</version>
+        <version>17.0.230-cct-1981-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>progression-eventprocessorstore-liquibase</artifactId>
