@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class AddDefendantsToCourtProceedingsIT extends AbstractIT {
+public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
 
@@ -72,7 +72,7 @@ class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private final JmsMessageConsumerClient messageConsumerClientPublicCase = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE).getMessageConsumerClient();
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private String caseId;
     private String defendantId;
@@ -80,7 +80,7 @@ class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private String caseUrn;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         offenceId = randomUUID().toString();
@@ -88,7 +88,7 @@ class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
+    public void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
         final String defendantId2 = randomUUID().toString();
 
         //Create prosecution case
@@ -116,7 +116,7 @@ class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    void shouldListHearingRequestsInvokePublicMessage() throws Exception {
+    public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 
         final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
         final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
@@ -169,7 +169,7 @@ class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         //Verify the defendants and check the duplicate is not added
         verifyDefendantsAddedInViewStore(caseId, defendantId2);
 
-        //Verify public.progression.defendants-added-to-court-proceedings message in the queue
+        //Verify public.progression.defendants-added-to-court-proceedings message in the public queue
         verifyInMessagingQueueForDefendantsAddedToCourtHearings(caseId, defendantId2);
         verifyInMessagingQueueForDefendantsAddedToCase(caseId, defendantId2);
     }
