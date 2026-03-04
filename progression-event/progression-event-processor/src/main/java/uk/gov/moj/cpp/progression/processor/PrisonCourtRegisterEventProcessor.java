@@ -216,10 +216,10 @@ public class PrisonCourtRegisterEventProcessor {
 
     /**
      * Handles the prison-court-register-generated-v2 event by sending PCR notification to the CrimeHearingCaseEvent service.
-     * 
+     *
      * This method processes the V2 event for prison court register generation and sends a notification
      * to the Crime Court Hearing service via a direct service-to-service call (not through APIM).
-     * 
+     *
      */
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-generated-v2")
@@ -232,15 +232,15 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         PcrEventPayload pcrEventPayload = ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-        
+
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
-                ? envelope.payloadAsJsonObject().getString("id") 
+                ? envelope.payloadAsJsonObject().getString("id")
                 : fileId.toString();
         final String url = applicationParameters.getAmpPcrNotificationUrl();
-            final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
+        final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
                     fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
-            retryHelper()
+        retryHelper()
                     .withSupplier(() -> {
                         Response response = ampClientService.post(url, pcrEventPayload);
                         int statusCode = response.getStatus();

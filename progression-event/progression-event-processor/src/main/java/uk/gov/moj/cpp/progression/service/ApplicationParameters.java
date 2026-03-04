@@ -167,13 +167,13 @@ public class ApplicationParameters {
 
     /**
      * URL for Crime Hearing Case Event service PCR notification endpoint.
-     * Local Development: Default value: http://localhost:8080/AMP/notifications/pcr
+     * Local Development: Default value: http://localhost:8080/AMP/notifications
      * For Higher environments
      *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
      *  Ingress URL or Kubernetes Discovery URL
      */
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/AMP/notifications/pcr")
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/AMP/notifications")
     private String ampPcrNotificationUrl;
 
     @Inject
