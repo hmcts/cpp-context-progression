@@ -238,9 +238,9 @@ public class PrisonCourtRegisterEventProcessor {
                 ? envelope.payloadAsJsonObject().getString("id")
                 : fileId.toString();
         final String url = applicationParameters.getAmpPcrNotificationUrl();
-        final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
+            final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
                     fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
-        retryHelper()
+            retryHelper()
                     .withSupplier(() -> {
                         Response response = ampClientService.post(url, pcrEventPayload);
                         int statusCode = response.getStatus();

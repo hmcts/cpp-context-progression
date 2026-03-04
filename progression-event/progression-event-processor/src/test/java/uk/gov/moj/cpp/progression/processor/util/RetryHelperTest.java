@@ -75,7 +75,7 @@ public class RetryHelperTest {
 
         when(supplier.getAsInt()).thenReturn(420);
 
-        String ampUrl = "http://localhost:8080/AMP/notifications";
+        String ampUrl = "http://localhost:8080/AMP/notifications/pcr";
         String payload = "test-payload";
 
         RetryHelper.Builder builder = retryHelper()
@@ -100,7 +100,7 @@ public class RetryHelperTest {
         UUID fileId = UUID.randomUUID();
         UUID materialId = UUID.randomUUID();
         String prisonCourtRegisterId = "test-prison-court-register-id";
-        String ampUrl = "http://localhost:8080/AMP/notifications";
+        String ampUrl = "http://localhost:8080/AMP/notifications/pcr";
 
         assertThrows(CrimeHearingCaseEventPcrNotificationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
