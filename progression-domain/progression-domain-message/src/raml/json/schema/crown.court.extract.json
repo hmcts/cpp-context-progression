@@ -37,6 +37,10 @@
     },
     "parentGuardian": {
       "$ref": "#/definitions/parentGuardian"
+    },
+    "isCivil": {
+      "description": "Marker to indicate that MoJ offence reference data should be used as opposed to criminal offence reference data",
+      "type": "boolean"
     }
   },
   "required": [
