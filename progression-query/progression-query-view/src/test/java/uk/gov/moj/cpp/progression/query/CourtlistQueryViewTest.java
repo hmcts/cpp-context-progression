@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -576,6 +577,8 @@ public class CourtlistQueryViewTest {
         assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
         assertThat(result.getJsonArray("offences"), notNullValue());
         assertThat(result.getString("organisationName"), is(""));
+        assertThat(result.getString("asn"), is(""));
+        assertThat(result.getString("gender"), is(""));
     }
 
     @Test
@@ -589,6 +592,8 @@ public class CourtlistQueryViewTest {
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("organisationName"), is("Acme Organisation"));
         assertThat(result.getString("welshOrganisationName"), is(""));
+        assertThat(result.getString("asn"), is(""));
+        assertThat(result.getString("gender"), is(""));
     }
 
     @Test
@@ -599,6 +604,7 @@ public class CourtlistQueryViewTest {
                                 .withFirstName("Alice")
                                 .withLastName("Brown")
                                 .withDateOfBirth(LocalDate.of(1992, 3, 10))
+                                .withGender(Gender.FEMALE)
                                 .build())
                         .build())
                 .build();
@@ -608,6 +614,8 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("surname"), is("Brown"));
         assertThat(result.getString("dateOfBirth"), is("10 Mar 1992"));
         assertThat(result.getString("organisationName"), is(""));
+        assertThat(result.getString("asn"), is(""));
+        assertThat(result.getString("gender"), is("FEMALE"));
         assertThat(result.getJsonArray("offences"), notNullValue());
     }
 
@@ -617,8 +625,10 @@ public class CourtlistQueryViewTest {
         when(person.getFirstName()).thenReturn("Bob");
         when(person.getLastName()).thenReturn("Wilson");
         when(person.getDateOfBirth()).thenReturn(LocalDate.of(1988, 7, 5));
+        when(person.getGender()).thenReturn(Gender.MALE);
         final PersonDefendant personDefendant = mock(PersonDefendant.class);
         when(personDefendant.getPersonDetails()).thenReturn(person);
+        when(personDefendant.getArrestSummonsNumber()).thenReturn("APPLICANT-ASN-001");
         final MasterDefendant masterDefendant = mock(MasterDefendant.class);
         when(masterDefendant.getPersonDefendant()).thenReturn(personDefendant);
         final CourtApplicationParty applicant = mock(CourtApplicationParty.class);
@@ -630,6 +640,8 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("firstName"), is("Bob"));
         assertThat(result.getString("surname"), is("Wilson"));
         assertThat(result.getString("dateOfBirth"), is("5 Jul 1988"));
+        assertThat(result.getString("asn"), is("APPLICANT-ASN-001"));
+        assertThat(result.getString("gender"), is("MALE"));
     }
 
     @Test
@@ -649,6 +661,8 @@ public class CourtlistQueryViewTest {
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("organisationName"), is("Corporate Defendant Ltd"));
+        assertThat(result.getString("asn"), is(""));
+        assertThat(result.getString("gender"), is(""));
     }
 
     @Test
@@ -662,6 +676,8 @@ public class CourtlistQueryViewTest {
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("name"), is("Solicitors Ltd"));
         assertThat(result.getString("organisationName"), is(""));
+        assertThat(result.getString("asn"), is(""));
+        assertThat(result.getString("gender"), is(""));
         assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
         assertThat(result.getJsonArray("offences"), notNullValue());
     }

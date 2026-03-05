@@ -64,6 +64,8 @@
                                     "dateOfBirth": { "type": "string" },
                                     "age": { "type": "string" },
                                     "nationality": { "type": "string" },
+                                    "asn": { "type": "string" },
+                                    "gender": { "type": "string" },
                                     "address": { "type": "object" },
                                     "reportingRestrictions": { "type": "array" },
                                     "offences": { "type": "array" }

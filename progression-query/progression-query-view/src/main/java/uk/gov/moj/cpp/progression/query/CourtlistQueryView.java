@@ -431,14 +431,16 @@ public class CourtlistQueryView {
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
-                addApplicantPersonFields(applicantBuilder, masterDefendant.getPersonDefendant().getPersonDetails(), "", "");
+                final PersonDefendant pd = masterDefendant.getPersonDefendant();
+                final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
+                addApplicantPersonFields(applicantBuilder, pd.getPersonDetails(), "", "", asn);
             } else if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())) {
                 final Organisation org = masterDefendant.getLegalEntityDefendant().getOrganisation();
                 addApplicantOrganisationFields(applicantBuilder, org.getName(), ofNullable(org.getName()).orElse(""), true);
             }
         } else if (nonNull(applicant.getPersonDetails())) {
             final String orgName = ofNullable(applicant.getOrganisation()).map(org -> ofNullable(org.getName()).orElse("")).orElse("");
-            addApplicantPersonFields(applicantBuilder, applicant.getPersonDetails(), orgName, "");
+            addApplicantPersonFields(applicantBuilder, applicant.getPersonDetails(), orgName, "", "");
         } else if (nonNull(applicant.getOrganisation())) {
             final Organisation org = applicant.getOrganisation();
             addApplicantOrganisationFields(applicantBuilder, ofNullable(org.getName()).orElse(""), "", false);
@@ -461,7 +463,8 @@ public class CourtlistQueryView {
         return applicantBuilder.build();
     }
 
-    private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String organisationName, final String welshOrganisationName) {
+    private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String organisationName,
+                                           final String welshOrganisationName, final String asn) {
         final String fullName = String.format(STRING_STRING, ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
         applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
         applicantBuilder.add(ORGANISATION_NAME, organisationName);
@@ -472,6 +475,8 @@ public class CourtlistQueryView {
         ofNullable(person.getDateOfBirth()).ifPresent(dob -> applicantBuilder.add(DATE_OF_BIRTH, dob.format(DOB_FORMATTER)));
         ofNullable(getAge(person.getDateOfBirth())).ifPresent(age -> applicantBuilder.add(AGE, String.valueOf(age)));
         applicantBuilder.add(NATIONALITY, ofNullable(person.getNationalityDescription()).orElse(""));
+        applicantBuilder.add(ASN, ofNullable(asn).orElse(""));
+        applicantBuilder.add(GENDER, ofNullable(person.getGender()).map(Object::toString).orElse(""));
         ofNullable(person.getAddress()).ifPresent(addr -> applicantBuilder.add(ADDRESS, objectToJsonObjectConverter.convert(addr)));
     }
 
@@ -485,6 +490,8 @@ public class CourtlistQueryView {
         applicantBuilder.add(DATE_OF_BIRTH, "");
         applicantBuilder.add(AGE, "");
         applicantBuilder.add(NATIONALITY, "");
+        applicantBuilder.add(ASN, "");
+        applicantBuilder.add(GENDER, "");
         if (withEmptyAddress) {
             applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         }
@@ -499,6 +506,8 @@ public class CourtlistQueryView {
         applicantBuilder.add(DATE_OF_BIRTH, "");
         applicantBuilder.add(AGE, "");
         applicantBuilder.add(NATIONALITY, "");
+        applicantBuilder.add(ASN, "");
+        applicantBuilder.add(GENDER, "");
     }
 
     private JsonArray buildApplicantReportingRestrictions(final CourtApplication courtApplication, final List<UUID> offencesForApplications) {
