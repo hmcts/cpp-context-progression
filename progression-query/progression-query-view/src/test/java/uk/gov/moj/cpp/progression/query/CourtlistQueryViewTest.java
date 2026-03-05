@@ -652,6 +652,21 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
+    public void buildApplicantForCourtApplication_shouldBuildApplicantFromRepresentationOrganisation() throws Exception {
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withRepresentationOrganisation(Organisation.organisation().withName("Solicitors Ltd").build())
+                        .build())
+                .build();
+        final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
+                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+        assertThat(result.getString("name"), is("Solicitors Ltd"));
+        assertThat(result.getString("organisationName"), is(""));
+        assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
+        assertThat(result.getJsonArray("offences"), notNullValue());
+    }
+
+    @Test
     public void buildApplicantReportingRestrictions_shouldReturnEmptyArrayWhenNoOffencesMatch() throws Exception {
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withCourtApplicationCases(emptyList())
