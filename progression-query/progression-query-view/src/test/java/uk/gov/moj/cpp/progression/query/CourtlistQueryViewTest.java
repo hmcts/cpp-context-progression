@@ -427,6 +427,33 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
+    public void shouldAddLjaInformationIncludingWelshLjaNameWhenCourtCentreHasLjaDetails() throws IOException {
+        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
+        final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.all.json");
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
+        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.all.json").get(0).getProsecutionCases().get(0);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.search.court.list").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
+
+        assertThat(actual.containsKey("ljaCode"), is(true));
+        assertThat(actual.getString("ljaCode"), is("2577"));
+        assertThat(actual.containsKey("ljaName"), is(true));
+        assertThat(actual.getString("ljaName"), is("South West London Magistrates' Court"));
+        assertThat(actual.containsKey("welshLjaName"), is(true));
+        assertThat(actual.getString("welshLjaName"), is("East Hampshire Magistrates' Court"));
+    }
+
+    @Test
     public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases_WhenHearingISPresentInListingButMissingInProgression() throws IOException {
         final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case-oneHearing-missing-in-progression.json"));
         final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.all.json");
