@@ -103,6 +103,37 @@ public class CourtlistQueryView {
     private final String PROSECUTOR_TYPE = "prosecutorType";
     private final String DEFENCE_COUNSELS = "defenceCounsels";
     private final String PROSECUTION_COUNSELS = "prosecutionCounsels";
+    private static final String APPLICATION_OFFENCES = "applicationOffences";
+    private static final String ORGANISATION_NAME = "organisationName";
+    private static final String WELSH_ORGANISATION_NAME = "welshOrganisationName";
+    private static final String FIRST_NAME = "firstName";
+    private static final String SURNAME = "surname";
+    private static final String WELSH_SURNAME = "welshSurname";
+    private static final String AGE = "age";
+    private static final String NATIONALITY = "nationality";
+    private static final String ADDRESS = "address";
+    private static final String LABEL = "label";
+    private static final String LJA_CODE = "ljaCode";
+    private static final String LJA_NAME = "ljaName";
+    private static final String WELSH_LJA_NAME = "welshLjaName";
+    private static final String GENDER = "gender";
+    private static final String DEFENCE_ORGANIZATION = "defenceOrganization";
+    private static final String ASN = "asn";
+    private static final String OFFENCE_CODE = "offenceCode";
+    private static final String OFFENCE_TITLE = "offenceTitle";
+    private static final String OFFENCE_WORDING = "offenceWording";
+    private static final String WELSH_OFFENCE_TITLE = "welshOffenceTitle";
+    private static final String OFFENCE_LEGISLATION = "offenceLegislation";
+    private static final String MAX_PENALTY = "maxPenalty";
+    private static final String PLEA = "plea";
+    private static final String PLEA_DATE = "pleaDate";
+    private static final String CONVICTED_ON = "convictedOn";
+    private static final String ADJOURNED_DATE = "adjournedDate";
+    private static final String ADJOURNED_HEARING_TYPE = "adjournedHearingType";
+    private static final String ALCOHOL_READING_AMOUNT = "alcoholReadingAmount";
+    private static final String ALCOHOL_READING_METHOD_DESCRIPTION = "alcoholReadingMethodDescription";
+    private static final String MIDDLE_NAME = "middleName";
+    private static final String LAST_NAME = "lastName";
     @Inject
     private ListingService listingService;
     @Inject
@@ -172,8 +203,8 @@ public class CourtlistQueryView {
     }
 
     private List<UUID> getApplicationOffenceListingNumbers(final JsonObject hearingJson) {
-        if (hearingJson.containsKey("applicationOffences")) {
-            return hearingJson.getJsonArray("applicationOffences").stream()
+        if (hearingJson.containsKey(APPLICATION_OFFENCES)) {
+            return hearingJson.getJsonArray(APPLICATION_OFFENCES).stream()
                     .map(jsonValue -> ((JsonObject) jsonValue))
                     .map(jsonObject -> fromString(jsonObject.getString(ID)))
                     .collect(toList());
@@ -399,86 +430,74 @@ public class CourtlistQueryView {
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
-                final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
-                final String fullName = String.format("%s %s", ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
-                applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
-                applicantBuilder.add("organisationName", "");
-                applicantBuilder.add("welshOrganisationName", "");
-                ofNullable(person.getFirstName()).ifPresent(fn -> applicantBuilder.add("firstName", fn));
-                applicantBuilder.add("surname", ofNullable(person.getLastName()).orElse(""));
-                applicantBuilder.add("welshSurname", ofNullable(person.getLastName()).orElse(""));
-                ofNullable(person.getDateOfBirth()).ifPresent(dob -> applicantBuilder.add(DATE_OF_BIRTH, dob.format(DOB_FORMATTER)));
-                ofNullable(getAge(person.getDateOfBirth())).ifPresent(age -> applicantBuilder.add("age", String.valueOf(age)));
-                applicantBuilder.add("nationality", ofNullable(person.getNationalityDescription()).orElse(""));
-                ofNullable(person.getAddress()).ifPresent(addr -> applicantBuilder.add("address", objectToJsonObjectConverter.convert(addr)));
+                addApplicantPersonFields(applicantBuilder, masterDefendant.getPersonDefendant().getPersonDetails(), "", "");
             } else if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())) {
                 final Organisation org = masterDefendant.getLegalEntityDefendant().getOrganisation();
-                applicantBuilder.add(NAME, ofNullable(org.getName()).orElse(""));
-                applicantBuilder.add("organisationName", ofNullable(org.getName()).orElse(""));
-                applicantBuilder.add("welshOrganisationName", ofNullable(org.getName()).orElse(""));
-                applicantBuilder.add("firstName", "");
-                applicantBuilder.add("surname", "");
-                applicantBuilder.add("welshSurname", "");
-                applicantBuilder.add(DATE_OF_BIRTH, "");
-                applicantBuilder.add("age", "");
-                applicantBuilder.add("nationality", "");
-                applicantBuilder.add("address", createObjectBuilder().build());
+                addApplicantOrganisationFields(applicantBuilder, org.getName(), ofNullable(org.getName()).orElse(""), true);
             }
         } else if (nonNull(applicant.getPersonDetails())) {
-            final Person person = applicant.getPersonDetails();
-            final String fullName = String.format("%s %s", ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
-            applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
-            applicantBuilder.add("organisationName", ofNullable(applicant.getOrganisation()).map(org -> ofNullable(org.getName()).orElse("")).orElse(""));
-            applicantBuilder.add("welshOrganisationName", "");
-            ofNullable(person.getFirstName()).ifPresent(fn -> applicantBuilder.add("firstName", fn));
-            applicantBuilder.add("surname", ofNullable(person.getLastName()).orElse(""));
-            applicantBuilder.add("welshSurname", "");
-            ofNullable(person.getDateOfBirth()).ifPresent(dob -> applicantBuilder.add(DATE_OF_BIRTH, dob.format(DOB_FORMATTER)));
-            ofNullable(getAge(person.getDateOfBirth())).ifPresent(age -> applicantBuilder.add("age", String.valueOf(age)));
-            applicantBuilder.add("nationality", ofNullable(person.getNationalityDescription()).orElse(""));
-            ofNullable(person.getAddress()).ifPresent(addr -> applicantBuilder.add("address", objectToJsonObjectConverter.convert(addr)));
+            final String orgName = ofNullable(applicant.getOrganisation()).map(org -> ofNullable(org.getName()).orElse("")).orElse("");
+            addApplicantPersonFields(applicantBuilder, applicant.getPersonDetails(), orgName, "");
         } else if (nonNull(applicant.getOrganisation())) {
             final Organisation org = applicant.getOrganisation();
-            applicantBuilder.add(NAME, ofNullable(org.getName()).orElse(""));
-            applicantBuilder.add("organisationName", ofNullable(org.getName()).orElse(""));
-            applicantBuilder.add("welshOrganisationName", "");
-            applicantBuilder.add("firstName", "");
-            applicantBuilder.add("surname", "");
-            applicantBuilder.add("welshSurname", "");
-            applicantBuilder.add(DATE_OF_BIRTH, "");
-            applicantBuilder.add("age", "");
-            applicantBuilder.add("nationality", "");
-            ofNullable(org.getAddress()).ifPresent(addr -> applicantBuilder.add("address", objectToJsonObjectConverter.convert(addr)));
+            addApplicantOrganisationFields(applicantBuilder, ofNullable(org.getName()).orElse(""), "", false);
+            ofNullable(org.getAddress()).ifPresent(addr -> applicantBuilder.add(ADDRESS, objectToJsonObjectConverter.convert(addr)));
         } else if (nonNull(applicant.getProsecutingAuthority())) {
             final ProsecutingAuthority pa = applicant.getProsecutingAuthority();
             final String paName = ofNullable(pa.getName()).orElse(pa.getProsecutionAuthorityCode());
             applicantBuilder.add(NAME, ofNullable(paName).orElse(""));
-            applicantBuilder.add("organisationName", "");
-            applicantBuilder.add("welshOrganisationName", "");
-            applicantBuilder.add("firstName", "");
-            applicantBuilder.add("surname", "");
-            applicantBuilder.add("welshSurname", "");
-            applicantBuilder.add(DATE_OF_BIRTH, "");
-            applicantBuilder.add("age", "");
-            applicantBuilder.add("nationality", "");
-            applicantBuilder.add("address", createObjectBuilder().build());
+            addApplicantEmptyFields(applicantBuilder);
+            applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         } else if (nonNull(applicant.getRepresentationOrganisation())) {
             final String repName = applicant.getRepresentationOrganisation().getName();
             applicantBuilder.add(NAME, ofNullable(repName).orElse(""));
-            applicantBuilder.add("organisationName", "");
-            applicantBuilder.add("welshOrganisationName", "");
-            applicantBuilder.add("firstName", "");
-            applicantBuilder.add("surname", "");
-            applicantBuilder.add("welshSurname", "");
-            applicantBuilder.add(DATE_OF_BIRTH, "");
-            applicantBuilder.add("age", "");
-            applicantBuilder.add("nationality", "");
-            applicantBuilder.add("address", createObjectBuilder().build());
+            addApplicantEmptyFields(applicantBuilder);
+            applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         }
 
         applicantBuilder.add(REPORTING_RESTRICTIONS, buildApplicantReportingRestrictions(courtApplication, offencesForApplications));
         applicantBuilder.add(OFFENCES, buildApplicationOffences(courtApplication, offencesForApplications));
         return applicantBuilder.build();
+    }
+
+    private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String organisationName, final String welshOrganisationName) {
+        final String fullName = String.format("%s %s", ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
+        applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
+        applicantBuilder.add(ORGANISATION_NAME, organisationName);
+        applicantBuilder.add(WELSH_ORGANISATION_NAME, welshOrganisationName);
+        ofNullable(person.getFirstName()).ifPresent(fn -> applicantBuilder.add(FIRST_NAME, fn));
+        applicantBuilder.add(SURNAME, ofNullable(person.getLastName()).orElse(""));
+        applicantBuilder.add(WELSH_SURNAME, ofNullable(person.getLastName()).orElse(""));
+        ofNullable(person.getDateOfBirth()).ifPresent(dob -> applicantBuilder.add(DATE_OF_BIRTH, dob.format(DOB_FORMATTER)));
+        ofNullable(getAge(person.getDateOfBirth())).ifPresent(age -> applicantBuilder.add(AGE, String.valueOf(age)));
+        applicantBuilder.add(NATIONALITY, ofNullable(person.getNationalityDescription()).orElse(""));
+        ofNullable(person.getAddress()).ifPresent(addr -> applicantBuilder.add(ADDRESS, objectToJsonObjectConverter.convert(addr)));
+    }
+
+    private void addApplicantOrganisationFields(final JsonObjectBuilder applicantBuilder, final String organisationName, final String welshOrganisationName, final boolean withEmptyAddress) {
+        applicantBuilder.add(NAME, organisationName);
+        applicantBuilder.add(ORGANISATION_NAME, organisationName);
+        applicantBuilder.add(WELSH_ORGANISATION_NAME, welshOrganisationName);
+        applicantBuilder.add(FIRST_NAME, "");
+        applicantBuilder.add(SURNAME, "");
+        applicantBuilder.add(WELSH_SURNAME, "");
+        applicantBuilder.add(DATE_OF_BIRTH, "");
+        applicantBuilder.add(AGE, "");
+        applicantBuilder.add(NATIONALITY, "");
+        if (withEmptyAddress) {
+            applicantBuilder.add(ADDRESS, createObjectBuilder().build());
+        }
+    }
+
+    private void addApplicantEmptyFields(final JsonObjectBuilder applicantBuilder) {
+        applicantBuilder.add(ORGANISATION_NAME, "");
+        applicantBuilder.add(WELSH_ORGANISATION_NAME, "");
+        applicantBuilder.add(FIRST_NAME, "");
+        applicantBuilder.add(SURNAME, "");
+        applicantBuilder.add(WELSH_SURNAME, "");
+        applicantBuilder.add(DATE_OF_BIRTH, "");
+        applicantBuilder.add(AGE, "");
+        applicantBuilder.add(NATIONALITY, "");
     }
 
     private JsonArray buildApplicantReportingRestrictions(final CourtApplication courtApplication, final List<UUID> offencesForApplications) {
@@ -504,8 +523,8 @@ public class CourtlistQueryView {
             offence.getReportingRestrictions().stream()
                     .filter(rr -> rr != null && rr.getLabel() != null && seenLabels.add(rr.getLabel()))
                     .forEach(rr -> arrayBuilder.add(createObjectBuilder()
-                            .add("id", ofNullable(rr.getId()).map(UUID::toString).orElse(""))
-                            .add("label", rr.getLabel())
+                            .add(ID, ofNullable(rr.getId()).map(UUID::toString).orElse(""))
+                            .add(LABEL, rr.getLabel())
                             .build()));
         }
     }
@@ -596,9 +615,9 @@ public class CourtlistQueryView {
                         });
             }
             defendantBuilder.add(ID, masterDefendant.getMasterDefendantId().toString());
-            ofNullable(person.getFirstName()).ifPresent(firstName -> defendantBuilder.add("firstName", firstName));
-            defendantBuilder.add("surname", person.getLastName());
-            defendantBuilder.add("gender", person.getGender().toString());
+            ofNullable(person.getFirstName()).ifPresent(firstName -> defendantBuilder.add(FIRST_NAME, firstName));
+            defendantBuilder.add(SURNAME, person.getLastName());
+            defendantBuilder.add(GENDER, person.getGender().toString());
 
             //Replace defendant name found from Listing
             final JsonObject defeFromListingJsonObject = defendantFromListingBuilder.build();
@@ -611,18 +630,18 @@ public class CourtlistQueryView {
 
             final Integer defendantAge = getAge(person.getDateOfBirth());
             if (nonNull(defendantAge)) {
-                defendantBuilder.add("age", defendantAge);
+                defendantBuilder.add(AGE, defendantAge);
             }
-            ofNullable(person.getAddress()).ifPresent(address -> defendantBuilder.add("address", objectToJsonObjectConverter.convert(address)));
+            ofNullable(person.getAddress()).ifPresent(address -> defendantBuilder.add(ADDRESS, objectToJsonObjectConverter.convert(address)));
             ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
-            ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription -> defendantBuilder.add("nationality", nationalityDescription));
+            ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription -> defendantBuilder.add(NATIONALITY, nationalityDescription));
             if (isNotEmpty(hearing.getDefenceCounsels())) {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
         }
-        ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add("asn", asn));
+        ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add(ASN, asn));
         //TODO not sure about defenceOrganization
-        defendantBuilder.add("defenceOrganization", "-");
+        defendantBuilder.add(DEFENCE_ORGANIZATION, "-");
         if (isNotEmpty(hearing.getProsecutionCounsels())) {
             defendantBuilder.add(PROSECUTION_COUNSELS, buildProsecutionCounsels(hearing.getProsecutionCounsels(), caseIdList));
         }
@@ -639,18 +658,18 @@ public class CourtlistQueryView {
 
         final PersonDefendant personDefendant = defendant.getPersonDefendant();
         if (nonNull(personDefendant)) {
-            defendantJsonBuilder.add("gender", personDefendant.getPersonDetails().getGender().toString());
-            ofNullable(personDefendant.getArrestSummonsNumber()).ifPresent(arrestSummonsNumber -> defendantJsonBuilder.add("asn", arrestSummonsNumber));
+            defendantJsonBuilder.add(GENDER, personDefendant.getPersonDetails().getGender().toString());
+            ofNullable(personDefendant.getArrestSummonsNumber()).ifPresent(arrestSummonsNumber -> defendantJsonBuilder.add(ASN, arrestSummonsNumber));
         } else {
             if (nonNull(defendant.getLegalEntityDefendant())) {
-                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getName()).ifPresent(name -> defendantJsonBuilder.add("name", name));
-                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getAddress()).ifPresent(address -> defendantJsonBuilder.add("address", objectToJsonObjectConverter.convert(address)));
+                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getName()).ifPresent(name -> defendantJsonBuilder.add(NAME, name));
+                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getAddress()).ifPresent(address -> defendantJsonBuilder.add(ADDRESS, objectToJsonObjectConverter.convert(address)));
             }
         }
 
         final Optional<String> defenceOrganisation = findDefenceOrg(defendant);
 
-        defenceOrganisation.ifPresent(org -> defendantJsonBuilder.add("defenceOrganization", org));
+        defenceOrganisation.ifPresent(org -> defendantJsonBuilder.add(DEFENCE_ORGANIZATION, org));
 
         final List<Offence> offencesFromHearing = getOffencesFromHearing(defendant, hearing, prosecutionCase);
 
@@ -719,24 +738,24 @@ public class CourtlistQueryView {
     }
 
     private void addOffenceInformation(final JsonObjectBuilder offenceBuilder, final Offence offence) {
-        offenceBuilder.add("offenceCode", offence.getOffenceCode());
-        offenceBuilder.add("offenceTitle", offence.getOffenceTitle());
-        offenceBuilder.add("offenceWording", offence.getWording());
+        offenceBuilder.add(OFFENCE_CODE, offence.getOffenceCode());
+        offenceBuilder.add(OFFENCE_TITLE, offence.getOffenceTitle());
+        offenceBuilder.add(OFFENCE_WORDING, offence.getWording());
         ofNullable(offence.getListingNumber()).ifPresent(listingNumber -> offenceBuilder.add(LISTING_NUMBER, listingNumber));
-        ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
-        ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
-        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add("maxPenalty", maxPenalty));
+        ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add(WELSH_OFFENCE_TITLE, welshOffenceTitle));
+        ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add(OFFENCE_LEGISLATION, offenceLegislation));
+        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add(MAX_PENALTY, maxPenalty));
     }
 
     private void addApplicationInformation(final JsonObjectBuilder offenceBuilder, final CourtApplication courtApplication) {
         final CourtApplicationType type = courtApplication.getType();
 
-        offenceBuilder.add("offenceTitle", type.getType());
+        offenceBuilder.add(OFFENCE_TITLE, type.getType());
 
-        ofNullable(type.getCode()).ifPresent(offenceCode -> offenceBuilder.add("offenceCode", offenceCode));
-        ofNullable(type.getTypeWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
-        ofNullable(type.getLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
-        ofNullable(courtApplication.getApplicationParticulars()).ifPresent(offenceWording -> offenceBuilder.add("offenceWording", offenceWording));
+        ofNullable(type.getCode()).ifPresent(offenceCode -> offenceBuilder.add(OFFENCE_CODE, offenceCode));
+        ofNullable(type.getTypeWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add(WELSH_OFFENCE_TITLE, welshOffenceTitle));
+        ofNullable(type.getLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add(OFFENCE_LEGISLATION, offenceLegislation));
+        ofNullable(courtApplication.getApplicationParticulars()).ifPresent(offenceWording -> offenceBuilder.add(OFFENCE_WORDING, offenceWording));
     }
 
     private void buildOffence(final JsonObjectBuilder offenceBuilder, final Offence offence, final Offence offenceFromHearing) {
@@ -745,10 +764,10 @@ public class CourtlistQueryView {
         if (nonNull(offence.getOffenceFacts())) {
             final OffenceFacts offenceFacts = offence.getOffenceFacts();
             ofNullable(offenceFacts.getAlcoholReadingAmount())
-                    .ifPresent(alcoholReadingAmount -> offenceBuilder.add("alcoholReadingAmount", alcoholReadingAmount));
+                    .ifPresent(alcoholReadingAmount -> offenceBuilder.add(ALCOHOL_READING_AMOUNT, alcoholReadingAmount));
 
             ofNullable(offenceFacts.getAlcoholReadingMethodDescription())
-                    .ifPresent(alcoholReadingMethodDescription -> offenceBuilder.add("alcoholReadingMethodDescription", alcoholReadingMethodDescription));
+                    .ifPresent(alcoholReadingMethodDescription -> offenceBuilder.add(ALCOHOL_READING_METHOD_DESCRIPTION, alcoholReadingMethodDescription));
         }
 
 
@@ -768,16 +787,16 @@ public class CourtlistQueryView {
             setPleaAndPleaDateIfNotIndicatedNotGuilty(offenceBuilder, pLea.getIndicatedPleaValue().name(), pLea.getIndicatedPleaDate());
         }
 
-        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add("maxPenalty", maxPenalty));
-        ofNullable(offence.getConvictionDate()).ifPresent(convictedOn -> offenceBuilder.add("convictedOn", convictedOn.format(DATE_FORMATTER)));
-        ofNullable(offence.getLastAdjournDate()).ifPresent(adjournedDate -> offenceBuilder.add("adjournedDate", adjournedDate.format(DATE_FORMATTER)));
-        ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add("adjournedHearingType", adjournedHearingType.replaceAll("\n", ",")));
+        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add(MAX_PENALTY, maxPenalty));
+        ofNullable(offence.getConvictionDate()).ifPresent(convictedOn -> offenceBuilder.add(CONVICTED_ON, convictedOn.format(DATE_FORMATTER)));
+        ofNullable(offence.getLastAdjournDate()).ifPresent(adjournedDate -> offenceBuilder.add(ADJOURNED_DATE, adjournedDate.format(DATE_FORMATTER)));
+        ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add(ADJOURNED_HEARING_TYPE, adjournedHearingType.replaceAll("\n", ",")));
     }
 
     private void setPleaAndPleaDateIfNotIndicatedNotGuilty(final JsonObjectBuilder offenceBuilder, final String plea, LocalDate pleaDate) {
         if (!plea.equals(IndicatedPleaValue.INDICATED_NOT_GUILTY.name())) {
-            offenceBuilder.add("plea", plea);
-            offenceBuilder.add("pleaDate", pleaDate.format(DATE_FORMATTER));
+            offenceBuilder.add(PLEA, plea);
+            offenceBuilder.add(PLEA_DATE, pleaDate.format(DATE_FORMATTER));
         }
     }
 
@@ -800,9 +819,9 @@ public class CourtlistQueryView {
 
     private JsonObject buildCounsel(final String firstName, final String middleName, final String lastName) {
         final JsonObjectBuilder counsel = Json.createObjectBuilder();
-        ofNullable(firstName).ifPresent(fn -> counsel.add("firstName", fn));
-        ofNullable(middleName).ifPresent(mn -> counsel.add("middleName", mn));
-        ofNullable(lastName).ifPresent(ln -> counsel.add("lastName", ln));
+        ofNullable(firstName).ifPresent(fn -> counsel.add(FIRST_NAME, fn));
+        ofNullable(middleName).ifPresent(mn -> counsel.add(MIDDLE_NAME, mn));
+        ofNullable(lastName).ifPresent(ln -> counsel.add(LAST_NAME, ln));
         return counsel.build();
     }
 
@@ -815,10 +834,10 @@ public class CourtlistQueryView {
         if (nonNull(courtCentre)) {
             final LjaDetails ljaDetails = courtCentre.getLja();
             if (nonNull(ljaDetails)) {
-                documentPayload = addProperty(documentPayload, "ljaCode", ljaDetails.getLjaCode());
-                documentPayload = addProperty(documentPayload, "ljaName", ljaDetails.getLjaName());
+                documentPayload = addProperty(documentPayload, LJA_CODE, ljaDetails.getLjaCode());
+                documentPayload = addProperty(documentPayload, LJA_NAME, ljaDetails.getLjaName());
                 if (nonNull(ljaDetails.getWelshLjaName())) {
-                    documentPayload = addProperty(documentPayload, "welshLjaName", ljaDetails.getWelshLjaName());
+                    documentPayload = addProperty(documentPayload, WELSH_LJA_NAME, ljaDetails.getWelshLjaName());
                 }
             }
         }
