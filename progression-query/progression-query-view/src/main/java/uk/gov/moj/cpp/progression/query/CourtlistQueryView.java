@@ -89,6 +89,7 @@ public class CourtlistQueryView {
     private static final DateTimeFormatter DATE_FORMATTER = ofPattern(STANDARD.getValue());
     private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy");
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtlistQueryView.class);
+    public static final String STRING_STRING = "%s %s";
     private final String ID = "id";
     private final String CASE_ID = "caseId";
     private final String DEFENDANTS = "defendants";
@@ -394,7 +395,7 @@ public class CourtlistQueryView {
             partyBuilder.add(NAME, applicant.getOrganisation().getName());
         } else if (applicant.getPersonDetails() != null) {
             final Person person = applicant.getPersonDetails();
-            partyBuilder.add(NAME, String.format("%s %s", person.getFirstName(), person.getLastName()));
+            partyBuilder.add(NAME, String.format(STRING_STRING, person.getFirstName(), person.getLastName()));
             ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> partyBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
         } else if (applicant.getRepresentationOrganisation() != null && applicant.getRepresentationOrganisation().getName() != null) {
             partyBuilder.add(NAME, applicant.getRepresentationOrganisation().getName());
@@ -414,7 +415,7 @@ public class CourtlistQueryView {
         if (masterDefendant.getPersonDefendant() != null
             && masterDefendant.getPersonDefendant().getPersonDetails() != null) {
             final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
-            partyBuilder.add(NAME, String.format("%s %s", person.getFirstName(), person.getLastName()));
+            partyBuilder.add(NAME, String.format(STRING_STRING, person.getFirstName(), person.getLastName()));
             ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> partyBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
         } else if (masterDefendant.getLegalEntityDefendant() != null
                    && masterDefendant.getLegalEntityDefendant().getOrganisation() != null
@@ -461,7 +462,7 @@ public class CourtlistQueryView {
     }
 
     private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String organisationName, final String welshOrganisationName) {
-        final String fullName = String.format("%s %s", ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
+        final String fullName = String.format(STRING_STRING, ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
         applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
         applicantBuilder.add(ORGANISATION_NAME, organisationName);
         applicantBuilder.add(WELSH_ORGANISATION_NAME, welshOrganisationName);
@@ -790,7 +791,7 @@ public class CourtlistQueryView {
         ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add(MAX_PENALTY, maxPenalty));
         ofNullable(offence.getConvictionDate()).ifPresent(convictedOn -> offenceBuilder.add(CONVICTED_ON, convictedOn.format(DATE_FORMATTER)));
         ofNullable(offence.getLastAdjournDate()).ifPresent(adjournedDate -> offenceBuilder.add(ADJOURNED_DATE, adjournedDate.format(DATE_FORMATTER)));
-        ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add(ADJOURNED_HEARING_TYPE, adjournedHearingType.replaceAll("\n", ",")));
+        ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add(ADJOURNED_HEARING_TYPE, adjournedHearingType.replace("\n", ",")));
     }
 
     private void setPleaAndPleaDateIfNotIndicatedNotGuilty(final JsonObjectBuilder offenceBuilder, final String plea, LocalDate pleaDate) {
