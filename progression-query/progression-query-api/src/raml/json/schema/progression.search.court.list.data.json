@@ -101,6 +101,10 @@
       "type": "string",
       "description": "Court centre UUID from reference data (when available)",
       "format": "uuid"
+    },
+    "isWelsh": {
+      "type": "boolean",
+      "description": "Whether the court centre is a Welsh court (from reference data when available)"
     }
   }
 }

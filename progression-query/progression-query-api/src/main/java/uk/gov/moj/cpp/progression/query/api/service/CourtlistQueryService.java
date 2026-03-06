@@ -55,7 +55,7 @@ public class CourtlistQueryService {
     }
 
     /**
-     * Builds a JSON payload from the document, enriched with court centre data (ouCode, courtId, courtIdNumeric)
+     * Builds a JSON payload from the document, enriched with court centre data (ouCode, courtId, courtIdNumeric, isWelsh)
      * when available from reference data. courtIdNumeric is taken from reference data field "courtId", default "0".
      */
     public JsonObject buildEnrichedPayload(final JsonEnvelope document) {
@@ -70,6 +70,7 @@ public class CourtlistQueryService {
                         builder.add("ouCode", courtCentreData.getJsonString("oucode"));
                         builder.add("courtId", courtCentreData.getJsonString("id"));
                         builder.add("courtIdNumeric", courtCentreData.getString("courtId", "0"));
+                        builder.add("isWelsh", courtCentreData.getBoolean("isWelsh", false));
                     });
         }
 

@@ -144,5 +144,6 @@
   ],
   "templateName": "PublicCourtList",
   "ouCode": "B01LY00",
-  "courtId": "f8254db1-1683-483e-afb3-b87fde5a0a26"
+  "courtId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+  "isWelsh": false
 }
