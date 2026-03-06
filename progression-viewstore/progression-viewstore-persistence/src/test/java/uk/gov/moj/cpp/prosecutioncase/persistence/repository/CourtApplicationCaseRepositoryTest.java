@@ -90,5 +90,4 @@ public class CourtApplicationCaseRepositoryTest {
         assertThat(byApplicationIdAndCaseId.getCourtApplication(), is(notNullValue()));
         assertThat(byApplicationIdAndCaseId.getCourtApplication().getApplicationId(), is(APPLICATION_ID));
     }
-
 }
