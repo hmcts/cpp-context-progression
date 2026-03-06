@@ -92,6 +92,10 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: progression.event.replayed-defendants-added-to-court-proceedings
+          schema_uri: http://justice.gov.uk/core/courts/replayed-defendants-added-to-court-proceedings.json
+
+
         - name: progression.event.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 
@@ -553,6 +557,9 @@ subscriptions_descriptor:
 
         - name: progression.event.remove-defendant-custodial-establishment-requested
           schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
+
+        - name: progression.event.hearing-confirmed-replayed
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-confirmed-replayed.json
 
         - name: progression.event.delete-previous-hearings-and-create-next-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
