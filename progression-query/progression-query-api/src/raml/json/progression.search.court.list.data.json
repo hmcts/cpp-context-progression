@@ -70,8 +70,44 @@
                   "hearingType": "First hearing",
                   "welshHearingType": "Gwrandawiad Cyntaf",
                   "caseNumber": "63GD6903522",
-                  "caseId": "a848c547-9993-46f8-bd99-6b8690cde6d9",
-                  "prosecutorType": "CITYPF",
+                  "courtApplicationId": "528fe634-20f3-474b-a110-4c6141c58c99",
+                  "courtApplication": {
+                    "applicationType": "Application for first hearing summons for criminal case",
+                    "applicationParticulars": "Application particulars text",
+                    "applicant": {
+                      "name": "John Smith",
+                      "organisationName": "",
+                      "welshOrganisationName": "",
+                      "firstName": "John",
+                      "surname": "Smith",
+                      "welshSurname": "",
+                      "dateOfBirth": "15 Aug 1965",
+                      "age": "60",
+                      "nationality": "",
+                      "address": {
+                        "address1": "1 Police House",
+                        "address2": "Street Description",
+                        "address3": "Locality",
+                        "address4": "Town",
+                        "address5": "",
+                        "postcode": "TW14 9XD"
+                      },
+                      "reportingRestrictions": [],
+                      "offences": [
+                        {
+                          "id": "2e098e56-6d6d-4434-bbb0-fb26d342ff05",
+                          "offenceCode": "PS90010",
+                          "offenceTitle": "Public service vehicle - passenger use altered / defaced travel mandate",
+                          "offenceWording": "Application particulars wording",
+                          "listingNumber": 1,
+                          "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990."
+                        }
+                      ]
+                    },
+                    "respondents": [
+                      { "name": "Police" }
+                    ]
+                  },
                   "defendants": [
                     {
                       "id": "707f81d2-d519-48d1-a94f-8f0acd72112b",

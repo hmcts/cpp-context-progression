@@ -42,7 +42,43 @@
                     "properties": {
                       "hearings": {
                         "type": "array",
-                        "items": { "type": "object" }
+                        "items": {
+                          "type": "object",
+                          "description": "Hearing entry; when courtApplicationId is present, courtApplication contains application details",
+                          "properties": {
+                            "courtApplication": {
+                              "type": "object",
+                              "description": "Present for application hearings; application type, particulars, applicant and respondents",
+                              "properties": {
+                                "applicationType": { "type": "string" },
+                                "applicationParticulars": { "type": "string" },
+                                "applicant": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" },
+                                    "organisationName": { "type": "string" },
+                                    "welshOrganisationName": { "type": "string" },
+                                    "firstName": { "type": "string" },
+                                    "surname": { "type": "string" },
+                                    "welshSurname": { "type": "string" },
+                                    "dateOfBirth": { "type": "string" },
+                                    "age": { "type": "string" },
+                                    "nationality": { "type": "string" },
+                                    "asn": { "type": "string" },
+                                    "gender": { "type": "string" },
+                                    "address": { "type": "object" },
+                                    "reportingRestrictions": { "type": "array" },
+                                    "offences": { "type": "array" }
+                                  }
+                                },
+                                "respondents": {
+                                  "type": "array",
+                                  "items": { "type": "object", "properties": { "name": { "type": "string" } } }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }

@@ -119,4 +119,24 @@ public class DefaultQueryApiCourtlistdataResourceTest {
         verify(interceptorChainProcessor).process(org.mockito.ArgumentMatchers.any());
         verify(courtlistQueryService).buildEnrichedPayload(interceptorResponse);
     }
+
+    @Test
+    public void shouldPassRestrictedFlagWhenGetCourtlistdata() {
+        final JsonEnvelope interceptorResponse = envelopeFrom(
+                metadataWithRandomUUID(COURT_LIST_DATA_QUERY_NAME),
+                FileUtil.jsonFromPath("stub-data/progression.search.court.list.json"));
+        final JsonObject enrichedPayload = FileUtil.jsonFromPath("stub-data/stagingpubhub.command.publish-standard-list.json");
+
+        when(courtlistQueryService.buildCourtlistQueryEnvelope(any(), any(), any(), any(), any(), anyBoolean(), any(), any()))
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(COURT_LIST_DATA_QUERY_NAME), FileUtil.jsonFromPath("stub-data/progression.search.court.list.json")));
+        when(interceptorChainProcessor.process(any())).thenReturn(of(interceptorResponse));
+        when(courtlistQueryService.buildEnrichedPayload(interceptorResponse)).thenReturn(enrichedPayload);
+
+        defaultQueryApiCourtlistdataResource.getCourtlistdata(
+                courtCentreId, courtRoomId, listId, startDate, endDate, true, userId);
+
+        verify(courtlistQueryService).buildCourtlistQueryEnvelope(
+                eq(courtCentreId), eq(courtRoomId), eq(listId), eq(startDate), eq(endDate),
+                eq(true), eq(userId), eq(COURT_LIST_DATA_QUERY_NAME));
+    }
 }
