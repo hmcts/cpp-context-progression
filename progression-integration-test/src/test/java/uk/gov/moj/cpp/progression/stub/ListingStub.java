@@ -1,9 +1,6 @@
 package uk.gov.moj.cpp.progression.stub;
 
 
-import java.time.Duration;
-import java.util.stream.Stream;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
@@ -14,8 +11,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import static java.text.MessageFormat.format;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
@@ -24,14 +19,20 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
-import org.apache.http.HttpHeaders;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
-import org.json.JSONException;
-import org.json.JSONObject;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
+import java.time.Duration;
+import java.util.stream.Stream;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
+import org.apache.http.HttpHeaders;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ListingStub {
 
@@ -409,18 +410,18 @@ public class ListingStub {
                 });
     }
 
-    public static void setupListingAnyAllocationQuery(final String caseUrn, String resource) {
-        final String urlPath = format("/listing-service/query/api/rest/listing/{0}", caseUrn);
-        stubFor(get(urlPathEqualTo(urlPath))
+    private static final String LISTING_ANY_ALLOCATION_PATH = "/listing-service/query/api/rest/listing/hearings/any-allocation";
+
+    public static void setupListingAnyAllocationQuery(final String caseUrn, final String startDate, final String resource) {
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource))));
     }
 
-    public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime) {
-        final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
-        stubFor(get(urlPathEqualTo(urlPath))
+    public static void setupListingAnyFutureAllocationQuery(final String caseUrn, final String startDate, final String resource, final String startDateTime) {
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -429,9 +430,7 @@ public class ListingStub {
 
     public static void stubListingSearchHearingsQuery(final String resource,
                                                       final String hearingId) {
-
-        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
-        stubFor(get(urlPathEqualTo(urlPath))
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
