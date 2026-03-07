@@ -39,7 +39,8 @@ public class CourtlistQueryService {
                 .add("listId", listId)
                 .add("startDate", startDate)
                 .add("endDate", endDate)
-                .add("restricted", restricted);
+                .add("restricted", restricted)
+                .add("includeApplications", true);
 
         if (nonNull(courtRoomId)) {
             payloadBuilder.add("courtRoomId", courtRoomId);

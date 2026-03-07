@@ -56,8 +56,17 @@ class CourtlistQueryServiceTest {
         assertThat(payload.getString("startDate"), is(START_DATE));
         assertThat(payload.getString("endDate"), is(END_DATE));
         assertThat(payload.getBoolean("restricted"), is(false));
+        assertThat(payload.getBoolean("includeApplications"), is(true));
         assertThat(result.metadata().userId(), is(Optional.of(userId.toString())));
         assertThat(result.metadata().name(), is(COURT_LIST_ACTION));
+    }
+
+    @Test
+    void buildCourtlistQueryEnvelope_shouldIncludeIncludeApplicationsTrueForListing() {
+        final JsonEnvelope result = courtlistQueryService.buildCourtlistQueryEnvelope(
+                COURT_CENTRE_ID, null, LIST_ID, START_DATE, END_DATE, false, null, COURT_LIST_ACTION);
+
+        assertThat(result.payloadAsJsonObject().getBoolean("includeApplications"), is(true));
     }
 
     @Test
