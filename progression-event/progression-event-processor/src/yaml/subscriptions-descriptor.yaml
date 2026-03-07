@@ -181,6 +181,9 @@ subscriptions_descriptor:
         - name: progression.event.prison-court-register-generated
           schema_uri: http://justice.gov.uk/progression/courts/prison-court-register-generated.json
 
+        - name: progression.event.prison-court-register-generated-v2
+          schema_uri: http://justice.gov.uk/core/courts/prison-court-register-generated-v2.json
+
         - name: progression.event.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/now-document-requested.json
 
