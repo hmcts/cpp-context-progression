@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
@@ -23,11 +24,20 @@ import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
+import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
+import uk.gov.moj.cpp.progression.service.amp.mappers.AmpPcrMapper;
+import uk.gov.moj.cpp.progression.service.amp.service.AmpClientService;
+import uk.gov.moj.cpp.progression.exception.CrimeHearingCaseEventPcrNotificationException;
+import static java.lang.Integer.parseInt;
+import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.Response;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +86,6 @@ public class PrisonCourtRegisterEventProcessor {
     private Sender sender;
 
     @Inject
-
     private ApplicationParameters applicationParameters;
 
     @Inject
@@ -97,6 +106,10 @@ public class PrisonCourtRegisterEventProcessor {
     private ProgressionService progressionService;
     @Inject
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
+    @Inject
+    private AmpPcrMapper ampPcrMapper;
+    @Inject
+    private AmpClientService ampClientService;
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
@@ -182,19 +195,10 @@ public class PrisonCourtRegisterEventProcessor {
         final PrisonCourtRegisterDefendant defendant = prisonCourtRegisterGenerated.getDefendant();
         final PrisonCourtRegisterHearingVenue hearingVenue = prisonCourtRegisterGenerated.getHearingVenue();
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
-
-
-        final JsonArray recipients = payload.getJsonArray(FIELD_RECIPIENTS);
-
         final String emailSubject = String.format("RESULTS SUMMARY: %s; %s; %s; %s",
                 getCourtHouse(hearingVenue), defendant.getName(), getDefendantDateOfBirth(defendant), generateURN(defendant));
-
-        recipients.stream().map(JsonObject.class::cast)
-                .filter(recipient -> recipient.containsKey("emailAddress1"))
-                .flatMap(recipient -> Stream.of(
-                        new EmailPair(recipient.getString("emailAddress1"), recipient.getString("emailTemplateName")))
-                )
-                .filter(pair -> !Strings.isNullOrEmpty(pair.getEmail()))
+        List<EmailPair> emailRecipients = filterEmailRecipients(envelope.payloadAsJsonObject());
+        emailRecipients
                 .forEach(pair -> {
                     final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
                     notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, UUID.randomUUID().toString());
@@ -210,15 +214,68 @@ public class PrisonCourtRegisterEventProcessor {
                 });
     }
 
+    /**
+     * Handles the prison-court-register-generated-v2 event by sending PCR notification to the CrimeHearingCaseEvent service.
+     * 
+     * This method processes the V2 event for prison court register generation and sends a notification
+     * to the Crime Court Hearing service via a direct service-to-service call (not through APIM).
+     * 
+     */
+    @SuppressWarnings("squid:S1160")
+    @Handles("progression.event.prison-court-register-generated-v2")
+    public void sendPrisonCourtRegisterV2(final JsonEnvelope envelope)  throws InterruptedException{
+        LOGGER.info("progression.event.prison-court-register-generated-v2 {}", envelope.payload());
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = converter.convert(envelope.payloadAsJsonObject(), PrisonCourtRegisterGeneratedV2.class);
+        List<EmailPair> emailRecipients = filterEmailRecipients(envelope.payloadAsJsonObject());
+        String emailRecipient = emailRecipients.size()>0
+                ? emailRecipients.get(0).getEmail()
+                : "";
+        Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
+        PcrEventPayload pcrEventPayload = ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, emailRecipient, createdAt);
+        
+        final UUID fileId = prisonCourtRegisterGenerated.getFileId();
+        final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
+                ? envelope.payloadAsJsonObject().getString("id") 
+                : fileId.toString();
+        final String url = applicationParameters.getAmpPcrNotificationUrl();
+            final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
+                    fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
+            retryHelper()
+                    .withSupplier(() -> {
+                        Response response = ampClientService.post(url, pcrEventPayload);
+                        int statusCode = response.getStatus();
+                        LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", statusCode);
+                        return statusCode;
+                    })
+                    .withAmpPcrNotificationUrl(url)
+                    .withPayload(payloadDescription)
+                    .withRetryTimes(parseInt(applicationParameters.getAmpPcrNotificationRetryTimes()))
+                    .withRetryInterval(parseInt(applicationParameters.getAmpPcrNotificationRetryInterval()))
+                    .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, pcrEventPayload.getMaterialId(), prisonCourtRegisterId, url))
+                    .withPredicate(statusCode -> statusCode > 429)
+                    .build()
+                    .postWithRetry();
+    }
+
+    private List<EmailPair> filterEmailRecipients(JsonObject payload){
+        final JsonArray emailRecipients = payload.getJsonArray(FIELD_RECIPIENTS);
+        return emailRecipients.stream().map(JsonObject.class::cast)
+                .filter(recipient -> recipient.containsKey("emailAddress1"))
+                .flatMap(recipient -> Stream.of(new EmailPair(recipient.getString("emailAddress1"), recipient.getString("emailTemplateName")))
+                )
+                .filter(pair -> !Strings.isNullOrEmpty(pair.getEmail()))
+                .toList();
+    }
+
     private String getDefendantDateOfBirth(final PrisonCourtRegisterDefendant defendant) {
-        if(nonNull(defendant.getDateOfBirth())) {
+        if (nonNull(defendant.getDateOfBirth())) {
             return defendant.getDateOfBirth();
         }
         return EMPTY;
     }
 
     private String getCourtHouse(final PrisonCourtRegisterHearingVenue hearingVenue) {
-        if(nonNull(hearingVenue) && nonNull(hearingVenue.getCourtHouse())){
+        if (nonNull(hearingVenue) && nonNull(hearingVenue.getCourtHouse())) {
             return hearingVenue.getCourtHouse();
         }
         return EMPTY;
@@ -244,7 +301,7 @@ public class PrisonCourtRegisterEventProcessor {
     }
 
     private String generateURN(PrisonCourtRegisterDefendant defendant) {
-        if(nonNull(defendant.getProsecutionCasesOrApplications()) && !defendant.getProsecutionCasesOrApplications().isEmpty()) {
+        if (nonNull(defendant.getProsecutionCasesOrApplications()) && !defendant.getProsecutionCasesOrApplications().isEmpty()) {
             return defendant.getProsecutionCasesOrApplications().get(0).getCaseOrApplicationReference();
         }
         return EMPTY;

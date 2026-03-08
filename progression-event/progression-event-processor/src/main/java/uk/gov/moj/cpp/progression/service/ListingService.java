@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
 public class ListingService {
 
     private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
-    private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
+    private static final String LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS = "public.progression.next-hearings-listed";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
@@ -81,15 +82,20 @@ public class ListingService {
             LOGGER.debug("Posting next hearings to listing for hearing '{}' ", listNextHearings.getHearingId());
         }
 
-        sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
+        sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
     }
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
-        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
         }
-        sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
+        final ListNextHearingsV3 publicEventPayload = ListNextHearingsV3.listNextHearingsV3()
+                .withValuesFrom(listNextHearings)
+                .withHearingId(null)
+                .build();
+        final JsonObject publicEventPayloadJson = objectToJsonObjectConverter.convert(publicEventPayload);
+        sender.send(Enveloper.envelop(publicEventPayloadJson).withName(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
     }
 
     public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final ListUnscheduledCourtHearing listUnscheduledCourtHearing) {
@@ -138,8 +144,10 @@ public class ListingService {
 
     public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final String caseUrn) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_ANY_ALLOCATION_SEARCH_HEARINGS);
+        final LocalDate startDate = utcClock.now().toLocalDate();
         final JsonObject jsonPayLoad = Json.createObjectBuilder()
                 .add("caseUrn", caseUrn)
+                .add("startDate", startDate.toString())
                 .build();
         final HearingList hearingListed = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), HearingList.class).payload();
 
