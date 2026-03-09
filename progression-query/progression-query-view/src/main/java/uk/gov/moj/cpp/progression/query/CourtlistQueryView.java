@@ -433,14 +433,13 @@ public class CourtlistQueryView {
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
                 final PersonDefendant pd = masterDefendant.getPersonDefendant();
                 final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
-                addApplicantPersonFields(applicantBuilder, pd.getPersonDetails(), "", "", asn);
+                addApplicantPersonFields(applicantBuilder, pd.getPersonDetails(), asn);
             } else if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())) {
                 final Organisation org = masterDefendant.getLegalEntityDefendant().getOrganisation();
                 addApplicantOrganisationFields(applicantBuilder, org.getName(), ofNullable(org.getName()).orElse(""), true);
             }
         } else if (nonNull(applicant.getPersonDetails())) {
-            final String orgName = ofNullable(applicant.getOrganisation()).map(org -> ofNullable(org.getName()).orElse("")).orElse("");
-            addApplicantPersonFields(applicantBuilder, applicant.getPersonDetails(), orgName, "", "");
+            addApplicantPersonFields(applicantBuilder, applicant.getPersonDetails(), "");
         } else if (nonNull(applicant.getOrganisation())) {
             final Organisation org = applicant.getOrganisation();
             addApplicantOrganisationFields(applicantBuilder, ofNullable(org.getName()).orElse(""), "", false);
@@ -449,12 +448,10 @@ public class CourtlistQueryView {
             final ProsecutingAuthority pa = applicant.getProsecutingAuthority();
             final String paName = ofNullable(pa.getName()).orElse(pa.getProsecutionAuthorityCode());
             applicantBuilder.add(NAME, ofNullable(paName).orElse(""));
-            addApplicantEmptyFields(applicantBuilder);
             applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         } else if (nonNull(applicant.getRepresentationOrganisation())) {
             final String repName = applicant.getRepresentationOrganisation().getName();
             applicantBuilder.add(NAME, ofNullable(repName).orElse(""));
-            addApplicantEmptyFields(applicantBuilder);
             applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         }
 
@@ -463,12 +460,9 @@ public class CourtlistQueryView {
         return applicantBuilder.build();
     }
 
-    private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String organisationName,
-                                           final String welshOrganisationName, final String asn) {
+    private void addApplicantPersonFields(final JsonObjectBuilder applicantBuilder, final Person person, final String asn) {
         final String fullName = String.format(STRING_STRING, ofNullable(person.getFirstName()).orElse(""), ofNullable(person.getLastName()).orElse("")).trim();
         applicantBuilder.add(NAME, fullName.isEmpty() ? "" : fullName);
-        applicantBuilder.add(ORGANISATION_NAME, organisationName);
-        applicantBuilder.add(WELSH_ORGANISATION_NAME, welshOrganisationName);
         ofNullable(person.getFirstName()).ifPresent(fn -> applicantBuilder.add(FIRST_NAME, fn));
         applicantBuilder.add(SURNAME, ofNullable(person.getLastName()).orElse(""));
         applicantBuilder.add(WELSH_SURNAME, ofNullable(person.getLastName()).orElse(""));
@@ -484,31 +478,11 @@ public class CourtlistQueryView {
         applicantBuilder.add(NAME, organisationName);
         applicantBuilder.add(ORGANISATION_NAME, organisationName);
         applicantBuilder.add(WELSH_ORGANISATION_NAME, welshOrganisationName);
-        applicantBuilder.add(FIRST_NAME, "");
-        applicantBuilder.add(SURNAME, "");
-        applicantBuilder.add(WELSH_SURNAME, "");
-        applicantBuilder.add(DATE_OF_BIRTH, "");
-        applicantBuilder.add(AGE, "");
-        applicantBuilder.add(NATIONALITY, "");
-        applicantBuilder.add(ASN, "");
-        applicantBuilder.add(GENDER, "");
         if (withEmptyAddress) {
             applicantBuilder.add(ADDRESS, createObjectBuilder().build());
         }
     }
 
-    private void addApplicantEmptyFields(final JsonObjectBuilder applicantBuilder) {
-        applicantBuilder.add(ORGANISATION_NAME, "");
-        applicantBuilder.add(WELSH_ORGANISATION_NAME, "");
-        applicantBuilder.add(FIRST_NAME, "");
-        applicantBuilder.add(SURNAME, "");
-        applicantBuilder.add(WELSH_SURNAME, "");
-        applicantBuilder.add(DATE_OF_BIRTH, "");
-        applicantBuilder.add(AGE, "");
-        applicantBuilder.add(NATIONALITY, "");
-        applicantBuilder.add(ASN, "");
-        applicantBuilder.add(GENDER, "");
-    }
 
     private JsonArray buildApplicantReportingRestrictions(final CourtApplication courtApplication, final List<UUID> offencesForApplications) {
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();

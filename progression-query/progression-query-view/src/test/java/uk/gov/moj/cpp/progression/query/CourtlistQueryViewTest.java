@@ -603,9 +603,9 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("name"), is("CPS"));
         assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
         assertThat(result.getJsonArray("offences"), notNullValue());
-        assertThat(result.getString("organisationName"), is(""));
-        assertThat(result.getString("asn"), is(""));
-        assertThat(result.getString("gender"), is(""));
+        assertThat(result.containsKey("organisationName"), is(false));
+        assertThat(result.containsKey("asn"), is(false));
+        assertThat(result.containsKey("gender"), is(false));
     }
 
     @Test
@@ -619,8 +619,14 @@ public class CourtlistQueryViewTest {
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("organisationName"), is("Acme Organisation"));
         assertThat(result.getString("welshOrganisationName"), is(""));
-        assertThat(result.getString("asn"), is(""));
-        assertThat(result.getString("gender"), is(""));
+        assertThat(result.containsKey("firstName"), is(false));
+        assertThat(result.containsKey("surname"), is(false));
+        assertThat(result.containsKey("welshSurname"), is(false));
+        assertThat(result.containsKey("dateOfBirth"), is(false));
+        assertThat(result.containsKey("age"), is(false));
+        assertThat(result.containsKey("nationality"), is(false));
+        assertThat(result.containsKey("asn"), is(false));
+        assertThat(result.containsKey("gender"), is(false));
     }
 
     @Test
@@ -640,7 +646,8 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("firstName"), is("Alice"));
         assertThat(result.getString("surname"), is("Brown"));
         assertThat(result.getString("dateOfBirth"), is("10 Mar 1992"));
-        assertThat(result.getString("organisationName"), is(""));
+        assertThat(result.containsKey("organisationName"), is(false));
+        assertThat(result.containsKey("welshOrganisationName"), is(false));
         assertThat(result.getString("asn"), is(""));
         assertThat(result.getString("gender"), is("FEMALE"));
         assertThat(result.getJsonArray("offences"), notNullValue());
@@ -688,8 +695,14 @@ public class CourtlistQueryViewTest {
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("organisationName"), is("Corporate Defendant Ltd"));
-        assertThat(result.getString("asn"), is(""));
-        assertThat(result.getString("gender"), is(""));
+        assertThat(result.containsKey("firstName"), is(false));
+        assertThat(result.containsKey("surname"), is(false));
+        assertThat(result.containsKey("welshSurname"), is(false));
+        assertThat(result.containsKey("dateOfBirth"), is(false));
+        assertThat(result.containsKey("age"), is(false));
+        assertThat(result.containsKey("nationality"), is(false));
+        assertThat(result.containsKey("asn"), is(false));
+        assertThat(result.containsKey("gender"), is(false));
     }
 
     @Test
@@ -702,9 +715,9 @@ public class CourtlistQueryViewTest {
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
         assertThat(result.getString("name"), is("Solicitors Ltd"));
-        assertThat(result.getString("organisationName"), is(""));
-        assertThat(result.getString("asn"), is(""));
-        assertThat(result.getString("gender"), is(""));
+        assertThat(result.containsKey("organisationName"), is(false));
+        assertThat(result.containsKey("asn"), is(false));
+        assertThat(result.containsKey("gender"), is(false));
         assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
         assertThat(result.getJsonArray("offences"), notNullValue());
     }
