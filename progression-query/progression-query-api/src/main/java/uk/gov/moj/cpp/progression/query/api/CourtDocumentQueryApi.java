@@ -203,7 +203,7 @@ public class CourtDocumentQueryApi {
                 .filter(newCourtDocumentIndex ->
                         !("case level".equalsIgnoreCase(newCourtDocumentIndex.getCategory()) &&
                                 existingDocumentList.stream().anyMatch(existingDocumentIndex -> existingDocumentIndex.getDocument().getCourtDocumentId().equals(newCourtDocumentIndex.getDocument().getCourtDocumentId())))
-                ).collect(toList());
+                ).toList();
     }
 
     private Courtdocuments getCourtDocument(final JsonEnvelope query, final Metadata metadata, final UUID defendantId) {
@@ -302,7 +302,7 @@ public class CourtDocumentQueryApi {
 
         final List<ReferenceDataService.ReferenceHearingDetails> hearingsOfTypeTrial = hearingTypes.values().stream()
                 .filter(ReferenceDataService.ReferenceHearingDetails::getTrialTypeFlag)
-                .collect(toList());
+                .toList();
 
         return hearingsOfTypeTrial.stream().anyMatch(type -> type.getHearingTypeCode().equals(referenceHearingDetails.getHearingTypeCode()));
     }
