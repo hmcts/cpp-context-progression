@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsToRemove;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
@@ -30,14 +34,17 @@ import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -118,6 +125,43 @@ public class ListHearingRequestedProcessor {
                         .withName("progression.command.list-new-hearing")
                         .withMetadataFrom(jsonEnvelope));
 
+    }
+
+    @Handles("public.listing.hearing-listed")
+    public void handlePublicHearingListed(final JsonEnvelope jsonEnvelope) {
+        final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
+        if (payload == null || !payload.containsKey("hearing")) {
+            return;
+        }
+
+        final Hearing hearing = jsonObjectToObjectConverter.convert(payload.getJsonObject("hearing"), Hearing.class);
+        if (hearing.getProsecutionCases() == null || hearing.getProsecutionCases().isEmpty()) {
+            return;
+        }
+
+        final List<ProsecutionCase> firstListingCases = hearing.getProsecutionCases().stream()
+                .filter(prosecutionCase -> isFirstHearingListing(jsonEnvelope, prosecutionCase.getId()))
+                .collect(Collectors.toList());
+
+        if (!firstListingCases.isEmpty()) {
+            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, firstListingCases);
+        }
+    }
+
+    private boolean isFirstHearingListing(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId) {
+        final Optional<JsonObject> prosecutionCaseJson = progressionService.getProsecutionCaseDetailById(jsonEnvelope, prosecutionCaseId.toString());
+        if (prosecutionCaseJson.isEmpty() || !prosecutionCaseJson.get().containsKey("prosecutionCase")) {
+            return false;
+        }
+
+        final ProsecutionCase prosecutionCaseEntity = jsonObjectToObjectConverter.convert(
+                prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+
+        return ofNullable(prosecutionCaseEntity.getDefendants()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(Defendant::getOffences)
+                .flatMap(offences -> ofNullable(offences).map(Collection::stream).orElseGet(Stream::empty))
+                .map(Offence::getListingNumber)
+                .noneMatch(Objects::nonNull);
     }
 
     @Handles("public.listing.hearing-partially-updated")
