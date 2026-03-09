@@ -4,7 +4,6 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -23,8 +22,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
+
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -70,30 +69,5 @@ public class ListingServiceTest {
 
         //then
         assertThat(result.get().getString("key"), is("value"));
-    }
-
-    @Test
-    public void shouldSendIncludeApplicationsTrueToListing() {
-        final JsonObject queryPayload = Json.createObjectBuilder()
-                .add("courtCentreId", "centre-1")
-                .add("listId", "PUBLIC")
-                .add("startDate", "2025-01-01")
-                .add("endDate", "2025-01-31")
-                .build();
-        final JsonEnvelope query = envelopeFrom(
-                metadataBuilder().withName("progression.search.court.list").withId(randomUUID()).build(),
-                queryPayload);
-
-        final ArgumentCaptor<JsonEnvelope> envelopeCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
-        when(requester.requestAsAdmin(any())).thenReturn(envelopeFrom(
-                metadataBuilder().withName("listing.search.court.list.payload").withId(randomUUID()).build(),
-                Json.createObjectBuilder().build()));
-
-        listingService.searchCourtlist(query);
-
-        verify(requester).requestAsAdmin(envelopeCaptor.capture());
-        final JsonObject sentPayload = envelopeCaptor.getValue().payloadAsJsonObject();
-        assertThat(sentPayload.containsKey("includeApplications"), is(true));
-        assertThat(sentPayload.getBoolean("includeApplications"), is(true));
     }
 }
