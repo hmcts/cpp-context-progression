@@ -54,19 +54,20 @@ public class PrisonCourtRegisterEventListener {
 
     @Handles("progression.event.prison-court-register-generated")
     public void generatePrisonCourtRegister(final JsonEnvelope event) {
+        LOGGER.info("generatePrisonCourtRegister");
         final JsonObject payload = event.payloadAsJsonObject();
         final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = jsonObjectToObjectConverter.convert(payload, PrisonCourtRegisterGenerated.class);
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity;
-        if(isNull(prisonCourtRegisterGenerated.getId())) {
+        if (isNull(prisonCourtRegisterGenerated.getId())) {
             // this is for old events , catch-up or replay DLQs
             final String defendantId = Optional.ofNullable(prisonCourtRegisterGenerated.getDefendant().getMasterDefendantId()).map(UUID::toString).orElse("");
-            try{
+            try {
                 prisonCourtRegisterEntity = prisonCourtRegisterRepository.findByCourtCentreIdAndHearingIdAndDefendantId(prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId().toString(), defendantId);
                 prisonCourtRegisterEntity.setFileId(prisonCourtRegisterGenerated.getFileId());
             } catch (Exception e) {
                 // this update is not important for the old events
                 LOGGER.error("Found courtCentreId {} and hearingId {} defendantId {}", prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId(), defendantId);
-                LOGGER.error("Error generating prison court register " , e);
+                LOGGER.error("Error generating prison court register ", e);
             }
         } else {
             prisonCourtRegisterEntity = prisonCourtRegisterRepository.findById(prisonCourtRegisterGenerated.getId());

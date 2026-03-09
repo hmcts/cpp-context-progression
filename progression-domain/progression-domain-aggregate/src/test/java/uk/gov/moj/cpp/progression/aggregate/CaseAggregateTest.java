@@ -68,6 +68,7 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseEjectedViaBdf;
+import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
@@ -1340,6 +1341,28 @@ class CaseAggregateTest {
         assertThat(((DefendantsAddedToCourtProceedings) object).getDefendants().size(), is(2));
     }
 
+    @Test
+    void shouldDefendantsAddedReplayedWhenCaseNotInsertedYet() {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final List<Object> eventStream = caseAggregate.replayDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests(), 1).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(ReplayedDefendantsAddedToCourtProceedings.class)));
+
+    }
 
     @Test
     public void shouldCreateProsecutionCaseAndUpdateMasterDefendantId() {

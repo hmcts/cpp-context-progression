@@ -37,6 +37,7 @@ import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -69,7 +70,8 @@ import javax.json.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -81,7 +83,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ListingServiceTest {
 
     private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
-    private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
+    private static final String LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS = "public.progression.next-hearings-listed";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
@@ -215,25 +217,27 @@ public class ListingServiceTest {
         final UUID hearingId = randomUUID();
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
         final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_ANY_ALLOCATION_SEARCH_HEARINGS).build();
+        final ZonedDateTime now = ZonedDateTime.parse("2026-01-01T00:00:00Z");
 
         final Hearing hearing1 = Hearing.hearing()
                 .withHearingDays(Arrays.asList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusDays(2)).build(),
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(2)).build()
+                        HearingDay.hearingDay().withStartTime(now.minusDays(2)).build(),
+                        HearingDay.hearingDay().withStartTime(now.plusDays(2)).build()
                 ))
                 .build();
         final Hearing hearing2 = Hearing.hearing()
                 .withHearingDays(Collections.singletonList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().plusDays(5)).build()
+                        HearingDay.hearingDay().withStartTime(now.plusDays(5)).build()
                 ))
                 .build();
         final Hearing hearing3 = Hearing.hearing()
                 .withHearingDays(Collections.singletonList(
-                        HearingDay.hearingDay().withStartTime(ZonedDateTime.now().minusWeeks(1)).build()
+                        HearingDay.hearingDay().withStartTime(now.minusWeeks(1)).build()
                 ))
                 .build();
 
         when(envelope.metadata()).thenReturn(metadata);
+        when(utcClock.now()).thenReturn(now);
         when(requester.requestAsAdmin(any(Envelope.class), eq(HearingList.class))).thenReturn(Envelope.envelopeFrom(metadata, new HearingList(
                 Arrays.asList(
                         hearing1,
@@ -243,7 +247,11 @@ public class ListingServiceTest {
         )));
         final List<Hearing> futureHearings = listingService.getFutureHearings(envelope, "caseUrnValue");
 
-        verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(HearingList.class));
+        final ArgumentCaptor<Envelope> envelopeCaptor = ArgumentCaptor.forClass(Envelope.class);
+        verify(requester, times(1)).requestAsAdmin(envelopeCaptor.capture(), eq(HearingList.class));
+        final JsonObject payload = (JsonObject) envelopeCaptor.getValue().payload();
+        assertThat(payload.getString("caseUrn"), is("caseUrnValue"));
+        assertThat(payload.getString("startDate"), is(now.toLocalDate().toString()));
         assertThat(futureHearings.size(), is(2));
         assertThat(futureHearings, containsInAnyOrder(hearing1, hearing2));
     }
@@ -275,7 +283,27 @@ public class ListingServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
-        assertThat(metadata.name(), is(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS));
+        assertThat(metadata.name(), is(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS));
+        assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
+
+        verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldRaisePublicEventWithoutHearingId() {
+        final JsonObject listNextHearingsJson = createObjectBuilder().build();
+        final ListNextHearingsV3 listNextHearings = getListNextHearingsV3();
+
+        when(objectToJsonObjectConverter.convert(eq(ListNextHearingsV3.listNextHearingsV3().withValuesFrom(listNextHearings).withHearingId(null).build())))
+                .thenReturn(listNextHearingsJson);
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+        listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
+
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
+        assertThat(metadata.name(), is(LISTING_PUBLIC_SEND_LIST_NEXT_HEARINGS));
         assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
 
         verifyNoMoreInteractions(sender);
@@ -353,6 +381,30 @@ public class ListingServiceTest {
                                 .build())
 
                         .build()))
+                .build();
+    }
+
+    private ListNextHearingsV3 getListNextHearingsV3() {
+        return ListNextHearingsV3.listNextHearingsV3()
+                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(randomUUID())
+                        .withCourtCentre(createCourtCenter())
+                        .withCourtApplications(createCourtApplications())
+                        .withEstimatedMinutes(15)
+                        .withEstimatedDuration("1 week")
+                        .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
+                                .withJudicialId(randomUUID())
+                                .build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription("SENTENCING")
+                                .build())
+
+                        .build()))
+                .withHearingId(randomUUID())
                 .build();
     }
 
