@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
@@ -45,6 +46,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -504,6 +506,47 @@ public class CourtlistQueryViewTest {
         assertThat(result.size(), is(2));
         assertThat(result.contains(fromString(id1)), is(true));
         assertThat(result.contains(fromString(id2)), is(true));
+    }
+
+    @Test
+    public void addWelshOffenceTitleFromListingIfMissing_shouldUseListingWelshTitleWhenProgressionHasNone() throws Exception {
+        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+        final Offence offenceWithoutWelsh = Offence.offence()
+                .withId(randomUUID())
+                .withOffenceCode("TTH105HY")
+                .withOffenceTitle("ROBBERY")
+                .build();
+        final JsonObject offenceFromListing = Json.createObjectBuilder()
+                .add("welshOffenceTitle", "Listing Welsh Title")
+                .build();
+
+        invokePrivateMethod("addWelshOffenceTitleFromListingIfMissing",
+                new Class<?>[]{JsonObjectBuilder.class, Offence.class, JsonObject.class},
+                offenceBuilder, offenceWithoutWelsh, offenceFromListing);
+
+        final JsonObject result = offenceBuilder.build();
+        assertThat(result.getString("welshOffenceTitle"), is("Listing Welsh Title"));
+    }
+
+    @Test
+    public void addWelshOffenceTitleFromListingIfMissing_shouldNotAddWhenProgressionAlreadyHasWelshTitle() throws Exception {
+        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+        final Offence offenceWithWelsh = Offence.offence()
+                .withId(randomUUID())
+                .withOffenceCode("TTH105HY")
+                .withOffenceTitle("ROBBERY")
+                .withOffenceTitleWelsh("Progression Welsh Title")
+                .build();
+        final JsonObject offenceFromListing = Json.createObjectBuilder()
+                .add("welshOffenceTitle", "Listing Welsh Title")
+                .build();
+
+        invokePrivateMethod("addWelshOffenceTitleFromListingIfMissing",
+                new Class<?>[]{JsonObjectBuilder.class, Offence.class, JsonObject.class},
+                offenceBuilder, offenceWithWelsh, offenceFromListing);
+
+        final JsonObject result = offenceBuilder.build();
+        assertThat(result.containsKey("welshOffenceTitle"), is(false));
     }
 
     @Test

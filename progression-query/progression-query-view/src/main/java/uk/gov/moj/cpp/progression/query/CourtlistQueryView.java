@@ -678,6 +678,7 @@ public class CourtlistQueryView {
                                         buildOffence(offenceBuilder, offence, null);
                                     }
                                     addOffenceInformation(offenceBuilder, offence);
+                                    addWelshOffenceTitleFromListingIfMissing(offenceBuilder, offence, offenceFromListing);
                                     offencesArray.add(offenceBuilder.build());
                                 }
                             });
@@ -729,6 +730,18 @@ public class CourtlistQueryView {
         ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add(WELSH_OFFENCE_TITLE, welshOffenceTitle));
         ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add(OFFENCE_LEGISLATION, offenceLegislation));
         ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add(MAX_PENALTY, maxPenalty));
+    }
+
+    private void addWelshOffenceTitleFromListingIfMissing(final JsonObjectBuilder offenceBuilder, final Offence offence, final JsonObject offenceFromListing) {
+        final boolean progressionHasNoWelshTitle = offence.getOffenceTitleWelsh() == null || offence.getOffenceTitleWelsh().isEmpty();
+        final boolean listingHasWelshTitle = offenceFromListing.containsKey(WELSH_OFFENCE_TITLE)
+                && !offenceFromListing.isNull(WELSH_OFFENCE_TITLE);
+        if (progressionHasNoWelshTitle && listingHasWelshTitle) {
+            final String welshFromListing = offenceFromListing.getString(WELSH_OFFENCE_TITLE);
+            if (welshFromListing != null && !welshFromListing.isEmpty()) {
+                offenceBuilder.add(WELSH_OFFENCE_TITLE, welshFromListing);
+            }
+        }
     }
 
     private void addApplicationInformation(final JsonObjectBuilder offenceBuilder, final CourtApplication courtApplication) {
