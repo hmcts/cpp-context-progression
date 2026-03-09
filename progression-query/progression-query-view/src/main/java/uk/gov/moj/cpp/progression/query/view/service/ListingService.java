@@ -15,9 +15,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ListingService {
@@ -35,21 +33,9 @@ public class ListingService {
         final MetadataBuilder metadataBuilder = metadataFrom(envelope.metadata())
                 .withName("listing.search.court.list.payload");
 
-        final JsonObject payloadWithIncludeApplications = ensureIncludeApplications(envelope.payloadAsJsonObject());
-        final JsonEnvelope requestEnvelope = envelopeFrom(metadataBuilder, payloadWithIncludeApplications);
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataBuilder, envelope.payloadAsJsonObject());
         final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
         return nonNull(jsonResultEnvelope) ? ofNullable(jsonResultEnvelope.payloadAsJsonObject()) : Optional.empty();
 
-    }
-
-    /**
-     * Ensures includeApplications=true is in the payload so listing returns court list with applications.
-     * Set here so the param is always sent to listing regardless of how the upstream envelope was built.
-     */
-    private static JsonObject ensureIncludeApplications(final JsonObject payload) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
-        payload.keySet().forEach(key -> builder.add(key, payload.get(key)));
-        builder.add("includeApplications", true);
-        return builder.build();
     }
 }

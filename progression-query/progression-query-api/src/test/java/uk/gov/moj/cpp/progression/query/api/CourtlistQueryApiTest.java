@@ -3,18 +3,24 @@ package uk.gov.moj.cpp.progression.query.api;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.query.CourtlistQueryView;
+import uk.gov.moj.cpp.progression.query.api.service.CourtlistQueryService;
 
+import java.lang.reflect.Field;
+import java.util.UUID;
+
+import javax.json.Json;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 @ExtendWith(MockitoExtension.class)
 public class CourtlistQueryApiTest {
-
 
     @Mock
     private JsonEnvelope query;
@@ -23,33 +29,60 @@ public class CourtlistQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private CourtlistQueryView courtlistQueryView;
+    private CourtlistQueryService courtlistQueryService;
 
-    @InjectMocks
+    private StubCourtlistQueryView stubCourtlistQueryView;
     private CourtlistQueryApi courtListQueryApi;
 
+    @BeforeEach
+    public void setUp() throws Exception {
+        stubCourtlistQueryView = new StubCourtlistQueryView();
+        courtListQueryApi = new CourtlistQueryApi();
+        setField(courtListQueryApi, "courtlistQueryView", stubCourtlistQueryView);
+        setField(courtListQueryApi, "courtlistQueryService", courtlistQueryService);
+    }
 
     @Test
     public void shouldHandleApplicationQuery() {
-        when(courtlistQueryView.searchCourtlist(query)).thenReturn(response);
+        stubCourtlistQueryView.setSearchCourtlistResponse(response);
         assertThat(courtListQueryApi.searchCourtlist(query), equalTo(response));
     }
 
     @Test
     public void shouldHandlePrisonCourtListQuery() {
-        when(courtlistQueryView.searchPrisonCourtlist(query)).thenReturn(response);
+        stubCourtlistQueryView.setSearchPrisonCourtlistResponse(response);
         assertThat(courtListQueryApi.searchPrisonCourtlist(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleSearchCourtlistDataQuery() {
-        when(courtlistQueryView.searchCourtlist(query)).thenReturn(response);
-        assertThat(courtListQueryApi.searchCourtlistData(query), equalTo(response));
+        stubCourtlistQueryView.setSearchCourtlistResponse(response);
+        var enrichedPayload = Json.createObjectBuilder().build();
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(enrichedPayload);
+        var metadata = metadataBuilder().withId(UUID.randomUUID()).withName("test").build();
+        when(query.metadata()).thenReturn(metadata);
+        when(query.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
+        var result = courtListQueryApi.searchCourtlistData(query);
+        assertThat(result.metadata().name(), equalTo(metadata.name()));
+        assertThat(result.payloadAsJsonObject(), equalTo(enrichedPayload));
     }
 
     @Test
     public void shouldHandleSearchPrisonCourtlistDataQuery() {
-        when(courtlistQueryView.searchPrisonCourtlist(query)).thenReturn(response);
-        assertThat(courtListQueryApi.searchPrisonCourtlistData(query), equalTo(response));
+        stubCourtlistQueryView.setSearchPrisonCourtlistResponse(response);
+        var enrichedPayload = Json.createObjectBuilder().build();
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(enrichedPayload);
+        var metadata = metadataBuilder().withId(UUID.randomUUID()).withName("test").build();
+        when(query.metadata()).thenReturn(metadata);
+        when(query.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
+        var result = courtListQueryApi.searchPrisonCourtlistData(query);
+        assertThat(result.metadata().name(), equalTo(metadata.name()));
+        assertThat(result.payloadAsJsonObject(), equalTo(enrichedPayload));
+    }
+
+    private static void setField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 }
