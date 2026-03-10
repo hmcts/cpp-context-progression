@@ -1507,6 +1507,11 @@ protocols: [ HTTP, HTTPS ]
         type: boolean
         required: false
         default: false
+      includeApplications:
+        description: when true, listing returns court list with court applications; when false, applications are excluded
+        type: boolean
+        required: false
+        default: true
     responses:
       200:
         body:

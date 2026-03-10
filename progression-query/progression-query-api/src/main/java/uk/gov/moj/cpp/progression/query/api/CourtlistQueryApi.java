@@ -53,14 +53,16 @@ public class CourtlistQueryApi {
     }
 
     /**
-     * Ensures includeApplications=true is in the payload so listing returns court list with applications.
-     * Set here so the param is always sent to listing regardless of how the upstream envelope was built.
+     * Ensures includeApplications is in the payload for listing. Uses optional query param when present, otherwise defaults to true.
      */
     private static JsonEnvelope ensureIncludeApplications(final JsonEnvelope query) {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         final JsonObject payload = query.payloadAsJsonObject();
         payload.keySet().forEach(key -> builder.add(key, payload.get(key)));
-        builder.add("includeApplications", true);
+        final boolean includeApplications = payload.containsKey("includeApplications")
+                ? payload.getBoolean("includeApplications")
+                : false;
+        builder.add("includeApplications", includeApplications);
         return envelopeFrom(query.metadata(), builder.build());
     }
 }
