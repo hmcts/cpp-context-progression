@@ -54,9 +54,12 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 public class ReferBoxWorkApplicationIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.court-application-proceedings-edited";
 
     private final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
     private final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForCourtApplicationProceedingsEdited = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED).getMessageConsumerClient();
+
 
     private String applicationId;
     private String caseId;
@@ -100,6 +103,9 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
         editCourtProceedingsForCourtApplication(applicationId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing-edit.json");
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, "TS12345");
         verifyPublicEventForHearingExtended("2020-01-12T05:27:17.210Z", "B01LY00", "MAGISTRATES");
+
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventsConsumerForCourtApplicationProceedingsEdited);
+        assertTrue(message.isPresent());
 
         pollForApplicationAtAGlance(applicationId,
                 withJsonPath("$.applicationId", is(applicationId)),
