@@ -1815,7 +1815,7 @@ public class CourtApplicationProcessorTest {
         verify(sender, times(2)).send(captor.capture());
 
         final List<Envelope> currentEvents = captor.getAllValues();
-        assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED));
+        assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED));
 
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(captor.getValue().payload());
         assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));

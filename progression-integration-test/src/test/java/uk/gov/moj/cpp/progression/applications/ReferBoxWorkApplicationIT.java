@@ -58,7 +58,7 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
 
     private final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
     private final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).getMessageConsumerClient();
-    private final JmsMessageConsumerClient publicEventsConsumerForCourtApplicationProceedingsEdited = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForCourtApplicationProceedingsEdited = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED).getMessageConsumerClient();
 
 
     private String applicationId;
