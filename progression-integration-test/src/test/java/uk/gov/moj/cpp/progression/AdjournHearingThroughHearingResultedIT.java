@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.progression;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -17,7 +14,6 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
@@ -30,11 +26,19 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetProvisionalBookedSlotsForNonExistingBookingId;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListNextHearingRequestsAsStreamV2;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,10 +107,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String adjournedHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, singletonList(hearingId));
 
-        final JmsMessageConsumerClient publicEventNextHearingListed = JmsMessageConsumerClientProvider
-                .newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.next-hearings-listed").getMessageConsumerClient();
-
-
         final JsonEnvelope publicEventResultedEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject("public.events.hearing.hearing-resulted.application-adjourned-to-next-hearing-with-court-order.json", caseId,
                 hearingId, defendantId, courtApplicationId, adjournedHearingId, caseUrnAlsoActingAsRandomReferences, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventResultedEnvelope);
@@ -127,20 +127,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, adjournOffenceUpdatedMatchers);
 
-
-        verifyListNextHearingPublicEvent(publicEventNextHearingListed, hearingId, "1 week");
-    }
-
-    private void verifyListNextHearingPublicEvent(final JmsMessageConsumerClient publicEventNextHearingListed, final String hearingId, final String estimatedDuration) {
-        final Optional<JsonObject> message = retrieveMessageBody(publicEventNextHearingListed);
-        assertTrue(message.isPresent());
-        final JsonObject payload = message.get();
-        if (payload.containsKey("hearings") &&
-                payload.getJsonArray("hearings").getJsonObject(0).containsKey("estimatedDuration")) {
-            final String seedingHearingId = payload.getJsonObject("seedingHearing").getString("seedingHearingId");
-            final String estimatedDurationPayload = payload.getJsonArray("hearings").getJsonObject(0).getString("estimatedDuration");
-            assertTrue( seedingHearingId.equals(hearingId) && estimatedDurationPayload.equals(estimatedDuration));
-        }
+        verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
     }
 
 
@@ -223,14 +210,11 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String adjournedHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, singletonList(hearingId));
 
-        final JmsMessageConsumerClient publicEventNextHearingListed = JmsMessageConsumerClientProvider
-                .newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.next-hearings-listed").getMessageConsumerClient();
-
         final JsonEnvelope publicEventResultedEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case-V2.json", caseId,
                 hearingId, defendantId, courtApplicationId, adjournedHearingId, caseUrnAlsoActingAsRandomReferences, newCourtCentreId, newCourtCentreName, "2021-05-26"));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventResultedEnvelope);
 
-        verifyListNextHearingPublicEvent(publicEventNextHearingListed, hearingId, "1 week");
+        verifyPostListCourtHearingV2();
 
         pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
@@ -250,6 +234,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
                 hearingId, defendantId, courtApplicationId, adjournedHearingId, caseUrnAlsoActingAsRandomReferences, newCourtCentreId, newCourtCentreName, "2021-05-27"));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventResultedEnvelope2);
 
+        verifyPostListCourtHearingV2();
 
         pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
@@ -269,6 +254,8 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
                 hearingId, defendantId, courtApplicationId, adjournedHearingId, caseUrnAlsoActingAsRandomReferences, newCourtCentreId, newCourtCentreName, "2021-05-25"));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventResultedEnvelope3);
 
+        verifyPostListCourtHearingV2();
+
         pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].lastAdjournDate", is("2021-05-27")),
@@ -276,6 +263,8 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         );
 
         pollProsecutionCasesProgressionFor(caseId, adjournOffenceUpdatedMatchers2);
+
+        verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

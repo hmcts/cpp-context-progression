@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.stub;
 
 
+import java.time.Duration;
+import java.util.stream.Stream;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
@@ -11,6 +14,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import static java.text.MessageFormat.format;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
@@ -19,20 +24,14 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
+import org.apache.http.HttpHeaders;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
-import static uk.gov.justice.services.common.http.HeaderConstants.ID;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import java.time.Duration;
-import java.util.stream.Stream;
-
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import org.apache.http.HttpHeaders;
 import org.json.JSONException;
 import org.json.JSONObject;
+import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class ListingStub {
 
