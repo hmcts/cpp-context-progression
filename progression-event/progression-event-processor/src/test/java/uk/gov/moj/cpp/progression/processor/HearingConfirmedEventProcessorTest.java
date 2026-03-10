@@ -45,7 +45,6 @@ import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
-import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -54,13 +53,13 @@ import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -162,6 +161,9 @@ public class HearingConfirmedEventProcessorTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
 
     @Mock
+    private Function<Object, JsonEnvelope> publicEnveloperFunction;
+
+    @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Mock
@@ -174,7 +176,7 @@ public class HearingConfirmedEventProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> senderJsonEnvelopeCaptor;
     @Captor
-    private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
+    private ArgumentCaptor<JsonObject> envelopeCaptor;
     @Mock
     private HearingNotificationHelper hearingNotificationHelper;
 
@@ -214,7 +216,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -277,7 +279,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID caseId = randomUUID();
         final UUID courtCentreId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -356,7 +358,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -418,7 +420,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
@@ -470,7 +472,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
@@ -529,6 +531,7 @@ public class HearingConfirmedEventProcessorTest {
 
     }
 
+
     @Test
     public void shouldHandleHearingConfirmedWithCasesEventMessageWhenPartialHearingConfirmWithSeedingHearing() throws Exception {
         final UUID offence1Id = randomUUID();
@@ -538,10 +541,11 @@ public class HearingConfirmedEventProcessorTest {
         final UUID caseId = randomUUID();
         final UUID seedingHearing1Id = randomUUID();
         final UUID seedingHearing2Id = randomUUID();
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearing1Id).build();
-        final SeedingHearing seedingHearing2 = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearing2Id).build();
+        final String sittingDay = "2025-05-01";
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearing1Id).withSittingDay(sittingDay).build();
+        final SeedingHearing seedingHearing2 = SeedingHearing.seedingHearing().withSeedingHearingId(seedingHearing2Id).withSittingDay(sittingDay).build();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offence1Id);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offence1Id,seedingHearing);
         final UUID hearingId = randomUUID();
 
         final Hearing hearing = Hearing.hearing()
@@ -573,8 +577,6 @@ public class HearingConfirmedEventProcessorTest {
                         .build()))
                 .build();
 
-        final JsonObject hearingJson = createHearingJson(objectToJsonObjectConverter.convert(hearing));
-
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
                 .withType(HearingType.hearingType()
@@ -583,8 +585,7 @@ public class HearingConfirmedEventProcessorTest {
                         .build())
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
                 .build();
-        final JsonObject prosecutionCaseJson = createProsecutionCaseJson(offence1Id, defendantId, caseId);
-        final ProsecutionCase prosecutionCase = createProsecutionCase(offence1Id, defendantId, caseId);
+
         final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withDefendants(singletonList(Defendant.defendant()
@@ -622,16 +623,31 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-related-hearing")).thenReturn(enveloperFunction);
-        when(partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearing, seedingHearing)).thenReturn(relatedSeedingHearingsProsecutionCasesMap);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.seeding-hearing-updated-with-next-hearings")).thenReturn(publicEnveloperFunction);
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
         verify(progressionService).updateHearingForPartialAllocation(envelope, updateHearingForPartialAllocation);
         verify(listingService).listNextCourtHearings(envelope, listNextHearings);
-        verify(sender, times(4)).send(finalEnvelope);
+        verify(sender, times(3)).send(finalEnvelope);
+        verify(publicEnveloperFunction, times(2)).apply(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().size(), is(2));
+        envelopeCaptor.getAllValues().stream().filter(event -> event.getString("seedingHearingId").equals(seedingHearing1Id.toString()))
+                .forEach(event -> {
+                    assertThat(event.getString("hearingDay"), is(sittingDay));
+                    assertThat(event.getString("seedingHearingId"), is(seedingHearing1Id.toString()));
+                    assertThat(event.containsKey("oldNextHearingId"), is(false));
+                    assertThat(event.getString("newNextHearingId"), is(listNextHearings.getHearings().get(0).getId().toString()));
+                });
 
+        envelopeCaptor.getAllValues().stream().filter(event -> event.getString("seedingHearingId").equals(seedingHearing2Id.toString()))
+                .forEach(event -> {
+                    assertThat(event.getString("hearingDay"), is(sittingDay));
+                    assertThat(event.getString("seedingHearingId"), is(seedingHearing2Id.toString()));
+                    assertThat(event.getString("oldNextHearingId"), is(hearingId.toString()));
+                    assertThat(event.getString("newNextHearingId"), is(listNextHearings.getHearings().get(0).getId().toString()));
+                });
 
     }
 
@@ -641,7 +657,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -685,7 +701,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
@@ -709,12 +725,65 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
+    public void shouldProcessHearingConfirmedReplayedAndConfirmHearing() {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(hearingId)
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId).build()))
+                .build();
+
+        final HearingConfirmedReplayed hearingConfirmedReplayed = HearingConfirmedReplayed.hearingConfirmedReplayed()
+                .withConfirmedHearing(confirmedHearing)
+                .withHearingInProgression(hearingInProgression)
+                .withSendNotificationToParties(false)
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingConfirmedReplayed.class)).thenReturn(hearingConfirmedReplayed);
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+
+        eventProcessor.processHearingConfirmedReplayed(envelope);
+
+        verify(jsonObjectToObjectConverter).convert(payload, HearingConfirmedReplayed.class);
+        verify(progressionService).transformConfirmedHearing(any(), eq(envelope), any());
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(sender, times(2)).send(any());
+    }
+
+    @Test
     public void shouldProcessHearingConfirmedForFullyExtendHearing() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -763,7 +832,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
@@ -790,7 +859,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
 
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId, null);
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
@@ -864,7 +933,7 @@ public class HearingConfirmedEventProcessorTest {
     @Test
     public void shouldHandleHearingConfirmedWithCaseAndApplicationsEventMessage() {
         final UUID hearingId = randomUUID();
-        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(randomUUID(), randomUUID(), randomUUID());
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(randomUUID(), randomUUID(), randomUUID(), null);
         final List<UUID> courtApplicationIds = singletonList(randomUUID());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(hearingId)
@@ -1324,23 +1393,24 @@ public class HearingConfirmedEventProcessorTest {
     }
 
 
-    private ConfirmedProsecutionCase createConfirmedProsecutionCase(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId) {
+    private ConfirmedProsecutionCase createConfirmedProsecutionCase(final UUID prosecutionCaseId, final UUID defendantId, final UUID offenceId, final SeedingHearing seedingHearing) {
         return ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withDefendants(singletonList(createConfirmedDefendant(defendantId, offenceId)))
+                .withDefendants(singletonList(createConfirmedDefendant(defendantId, offenceId, seedingHearing)))
                 .withId(prosecutionCaseId)
                 .build();
     }
 
-    private ConfirmedDefendant createConfirmedDefendant(final UUID defendantId, final UUID offenceId) {
+    private ConfirmedDefendant createConfirmedDefendant(final UUID defendantId, final UUID offenceId, final SeedingHearing seedingHearing) {
         return ConfirmedDefendant.confirmedDefendant()
                 .withId(defendantId)
-                .withOffences(singletonList(createConfirmedOffence(offenceId)))
+                .withOffences(singletonList(createConfirmedOffence(offenceId,seedingHearing)))
                 .build();
     }
 
-    private ConfirmedOffence createConfirmedOffence(final UUID offenceId) {
+    private ConfirmedOffence createConfirmedOffence(final UUID offenceId, final SeedingHearing seedingHearing) {
         return ConfirmedOffence.confirmedOffence()
                 .withId(offenceId)
+                .withSeedingHearing(seedingHearing)
                 .build();
     }
 
