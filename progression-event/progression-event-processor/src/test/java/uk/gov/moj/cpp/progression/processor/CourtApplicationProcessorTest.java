@@ -160,7 +160,7 @@ public class CourtApplicationProcessorTest {
     private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED = "public.progression.hearing-resulted-application-updated";
 
-    private static final String PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.court-application-proceedings-edited";
+    private static final String PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.application-proceedings-edited";
 
     @InjectMocks
     private CourtApplicationProcessor courtApplicationProcessor;

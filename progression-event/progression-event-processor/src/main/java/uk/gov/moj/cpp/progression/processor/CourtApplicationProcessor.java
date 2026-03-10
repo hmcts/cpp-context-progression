@@ -159,7 +159,7 @@ public class CourtApplicationProcessor {
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_APPLICATION_DEFENDANT = "progression.command.update.hearing.application.defendant";
     public static final String PUBLIC_PROGRESSION_DEFENDANT_ADDRESS_CHANGED = "public.progression.defendant-address-changed";
 
-    private static final String PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.court-application-proceedings-edited";
+    private static final String PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.application-proceedings-edited";
 
     @Inject
     private ListingService listingService;
@@ -475,7 +475,7 @@ public class CourtApplicationProcessor {
             sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_TO_HEARING), updateHearingPayload.build()));
         }
 
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENT_COURT_APPLICATION_PROCEEDINGS_EDITED), event.payloadAsJsonObject()));
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED), event.payloadAsJsonObject()));
 
         final BoxHearingRequest boxHearingRequest = courtApplicationProceedingsEdited.getBoxHearing();
         final JsonObjectBuilder publicPayload = createObjectBuilder();
