@@ -78,6 +78,12 @@ public class ReferCasesToCourtHandler  {
 
     private Defendant transformDefendant(final ReferredDefendant referredDefendant) {
         final ReferredPerson personDetails = referredDefendant.getPersonDefendant().getPersonDetails();
+        LOGGER.info("ALI***" +
+                uk.gov.justice.core.courts.Person.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation().toString()
+        );
         return Defendant.defendant()
                 .withId(referredDefendant.getId())
                 .withPncId(referredDefendant.getPersonDefendant().getPncId())
