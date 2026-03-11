@@ -3184,58 +3184,6 @@ public class HearingAggregateTest {
     }
 
     @Test
-    void shouldUpdatePleaOfOffencesOfProsecutionCase_DoesNotUpdateAllocationDecisionForCivilCase() {
-        final UUID hearingId = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID caseId1 = randomUUID();
-
-        final Hearing hearing = Hearing.hearing()
-                .withId(hearingId)
-                .withJurisdictionType(JurisdictionType.CROWN)
-                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
-                        .withId(caseId1)
-                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
-                                .withId(randomUUID())
-                                .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                .withId(offenceId1)
-                                                .withPlea(Plea.plea().withOffenceId(offenceId1).build())
-                                                .withCivilOffence(CivilOffence.civilOffence()
-                                                        .withIsExParte(true)
-                                                        .build())
-                                                .withAllocationDecision(AllocationDecision.allocationDecision()
-                                                        .withAllocationDecisionDate(LocalDate.now())
-                                                        .build())
-                                                .build(),
-                                        Offence.offence()
-                                                .withId(offenceId1)
-                                                .withListingNumber(11)
-                                                .build())))
-                                .build()
-                        )))
-                        .build()
-                )))
-                .build();
-
-        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
-        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
-                .withOffenceId(offenceId1)
-                        .withAllocationDecision(AllocationDecision.allocationDecision()
-                                .withAllocationDecisionDate(LocalDate.now())
-                                .build())
-                .withPlea(Plea.plea().withPleaValue(GUILTY).withOffenceId(offenceId1).build())
-                .build()).toList();
-
-        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
-
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getPlea().getOffenceId(), is(offenceId1));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications(), is(nullValue()));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getAllocationDecision(), is(nullValue()));
-
-    }
-
-    @Test
     public void shouldUpdatePleaOfOffencesOfCourtApplicationCase() {
         final UUID hearingId = randomUUID();
         final UUID offenceId1 = randomUUID();
@@ -3275,49 +3223,6 @@ public class HearingAggregateTest {
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getId(), is(offenceId2));
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getPlea().getOffenceId(), is(offenceId2));
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getPlea().getPleaValue(), is(GUILTY));
-    }
-
-    @Test
-    void shouldUpdatePleaOfOffencesOfCourtApplicationCase_DoesNotUpdateAllocationDecisionForCivilCase() {
-        final UUID hearingId = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID applicationId = randomUUID();
-
-        final Hearing hearing = Hearing.hearing()
-                .withId(hearingId)
-                .withJurisdictionType(JurisdictionType.CROWN)
-                .withCourtApplications(singletonList(CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
-                                .withOffences(new ArrayList<>(singletonList(Offence.offence()
-                                        .withId(offenceId1)
-                                        .withCivilOffence(CivilOffence.civilOffence()
-                                                .withIsExParte(true)
-                                                .build())
-                                        .withAllocationDecision(AllocationDecision.allocationDecision()
-                                                .withAllocationDecisionDate(LocalDate.now())
-                                                .build())
-                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
-                                        .build())))
-                                .build()))
-                        .build()))
-                .build();
-
-        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
-        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
-                .withOffenceId(offenceId1)
-                        .withAllocationDecision(AllocationDecision.allocationDecision()
-                                .withAllocationDecisionDate(LocalDate.now())
-                                .build())
-                .withPlea(Plea.plea().withOffenceId(offenceId1).withPleaValue(GUILTY).build())
-                .build()).toList();
-
-        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
-
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(offenceId1));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getPlea().getOffenceId(), is(offenceId1));
-        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getAllocationDecision(), is(nullValue()));
     }
 
     @Test

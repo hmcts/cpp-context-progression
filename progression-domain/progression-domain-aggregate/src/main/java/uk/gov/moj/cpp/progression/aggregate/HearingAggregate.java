@@ -2516,17 +2516,17 @@ public class HearingAggregate implements Aggregate {
     }
 
     private Offence getOffenceWithNewPlea(final Offence offence, final PleaModel pleaModel) {
-        boolean isCivil = nonNull(offence.getCivilOffence());
         if (pleaModel.getOffenceId().equals(offence.getId())) {
             return Offence.offence().withValuesFrom(offence)
                     .withPlea(ofNullable(pleaModel.getPlea()).orElse(offence.getPlea()))
                     .withIndicatedPlea(ofNullable(pleaModel.getIndicatedPlea()).orElse(offence.getIndicatedPlea()))
-                    .withAllocationDecision(!isCivil ? ofNullable(pleaModel.getAllocationDecision()).orElse(offence.getAllocationDecision()) : null)
+                    .withAllocationDecision(ofNullable(pleaModel.getAllocationDecision()).orElse(offence.getAllocationDecision()))
                     .build();
         } else {
             return offence;
         }
     }
+
 
     private void updateOffenceInHearing(final HearingOffencesUpdated hearingOffencesUpdated) {
         if (isNotEmpty(this.hearing.getProsecutionCases()) &&
