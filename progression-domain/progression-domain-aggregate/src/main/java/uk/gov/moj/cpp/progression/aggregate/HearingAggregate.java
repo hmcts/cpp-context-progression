@@ -2528,6 +2528,7 @@ public class HearingAggregate implements Aggregate {
         }
     }
 
+
     private void updateOffenceInHearing(final HearingOffencesUpdated hearingOffencesUpdated) {
         if (isNotEmpty(this.hearing.getProsecutionCases()) &&
                 (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults())) {
