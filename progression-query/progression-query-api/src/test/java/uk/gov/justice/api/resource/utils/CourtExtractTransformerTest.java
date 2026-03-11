@@ -17,7 +17,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -451,19 +450,6 @@ public class CourtExtractTransformerTest {
         final CourtExtractRequested courtExtract2ndDefendant = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream().map(DefendantResults::getResult)).toList();
         assertThat(defendant2ndResults.size(), is(2));
-    }
-
-    @Test
-    void testTransformToCourtExtract_shouldReturnIsCivilFlag(){
-        String defendantId = "5c75653a-e264-4b59-a419-66221b725a58";
-
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-multiple-defendants.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase1 = createProsecutionCase(true);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "RecordSheet", emptyList(), randomUUID(), prosecutionCase1);
-        assertTrue(courtExtractRequested.getIsCivil());
     }
 
     private static void assertAttendanceDays(final List<AttendanceDayAndType> attendanceDays) {
@@ -1838,10 +1824,6 @@ public class CourtExtractTransformerTest {
     }
 
     private ProsecutionCase createProsecutionCase() {
-        return createProsecutionCase(false);
-    }
-
-    private ProsecutionCase createProsecutionCase(boolean isCivil) {
         final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
                 .withPersonDefendant(createPersonDefendant())
                 .withAssociatedPersons(asList(AssociatedPerson.associatedPerson()
@@ -1884,7 +1866,7 @@ public class CourtExtractTransformerTest {
             add(defendant_2nd);
         }};
 
-        return ProsecutionCase.prosecutionCase()
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(CASE_ID)
                 .withDefendants(defendants)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
@@ -1892,8 +1874,9 @@ public class CourtExtractTransformerTest {
                         .withProsecutionAuthorityCode("code")
                         .withProsecutionAuthorityReference(PAR)
                         .build())
-                .withIsCivil(isCivil)
                 .build();
+
+        return prosecutionCase;
     }
 
     private GetHearingsAtAGlance createHearingsAtGlance() {
