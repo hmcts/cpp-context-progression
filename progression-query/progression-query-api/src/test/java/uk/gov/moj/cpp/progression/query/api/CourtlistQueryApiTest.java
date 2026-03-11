@@ -80,6 +80,45 @@ public class CourtlistQueryApiTest {
         assertThat(result.payloadAsJsonObject(), equalTo(enrichedPayload));
     }
 
+    @Test
+    public void searchCourtlistData_shouldPassIncludeApplicationsTrueWhenPresentInPayload() {
+        stubCourtlistQueryView.setSearchCourtlistResponse(response);
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(Json.createObjectBuilder().build());
+        when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
+        when(query.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().add("includeApplications", true).build());
+
+        courtListQueryApi.searchCourtlistData(query);
+
+        var envelopePassedToView = stubCourtlistQueryView.getLastSearchCourtlistQuery();
+        assertThat(envelopePassedToView.payloadAsJsonObject().getBoolean("includeApplications"), equalTo(true));
+    }
+
+    @Test
+    public void searchCourtlistData_shouldPassIncludeApplicationsFalseWhenPresentInPayload() {
+        stubCourtlistQueryView.setSearchCourtlistResponse(response);
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(Json.createObjectBuilder().build());
+        when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
+        when(query.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().add("includeApplications", false).build());
+
+        courtListQueryApi.searchCourtlistData(query);
+
+        var envelopePassedToView = stubCourtlistQueryView.getLastSearchCourtlistQuery();
+        assertThat(envelopePassedToView.payloadAsJsonObject().getBoolean("includeApplications"), equalTo(false));
+    }
+
+    @Test
+    public void searchCourtlistData_shouldDefaultIncludeApplicationsToFalseWhenMissingFromPayload() {
+        stubCourtlistQueryView.setSearchCourtlistResponse(response);
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(Json.createObjectBuilder().build());
+        when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
+        when(query.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
+
+        courtListQueryApi.searchCourtlistData(query);
+
+        var envelopePassedToView = stubCourtlistQueryView.getLastSearchCourtlistQuery();
+        assertThat(envelopePassedToView.payloadAsJsonObject().getBoolean("includeApplications"), equalTo(false));
+    }
+
     private static void setField(Object target, String fieldName, Object value) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
