@@ -262,7 +262,6 @@ public class CaseAtAGlanceHelper {
                 final Optional<Plea> plea = getPlea(defendant.getId(), offence);
                 final Optional<IndicatedPlea> indicatedPlea = getIndicatedPlea(defendant.getId(), offence);
                 final Optional<Verdict> verdict = getVerdict(defendant.getId(), offence);
-                final boolean isCivil = ofNullable(prosecutionCase.getIsCivil()).orElse(false);
 
                 caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
                 caagDefendantOffenceBuilder.withId(offence.getId());
@@ -278,7 +277,7 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh());
                 caagDefendantOffenceBuilder.withStartDate(offence.getStartDate());
                 caagDefendantOffenceBuilder.withEndDate(offence.getEndDate());
-                caagDefendantOffenceBuilder.withAllocationDecision(!isCivil ? offence.getAllocationDecision() : null);
+                caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
                 caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
                 plea.ifPresent(caagDefendantOffenceBuilder::withPlea);
                 indicatedPlea.ifPresent(caagDefendantOffenceBuilder::withIndicatedPlea);
