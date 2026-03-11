@@ -17,6 +17,7 @@ import javax.json.JsonObjectBuilder;
 @ServiceComponent(Component.QUERY_API)
 public class CourtlistQueryApi {
 
+    public static final String INCLUDE_APPLICATIONS = "includeApplications";
     @Inject
     private CourtlistQueryView courtlistQueryView;
 
@@ -59,10 +60,10 @@ public class CourtlistQueryApi {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         final JsonObject payload = query.payloadAsJsonObject();
         payload.keySet().forEach(key -> builder.add(key, payload.get(key)));
-        final boolean includeApplications = payload.containsKey("includeApplications")
-                ? payload.getBoolean("includeApplications")
+        final boolean includeApplications = payload.containsKey(INCLUDE_APPLICATIONS)
+                ? payload.getBoolean(INCLUDE_APPLICATIONS)
                 : false;
-        builder.add("includeApplications", includeApplications);
+        builder.add(INCLUDE_APPLICATIONS, includeApplications);
         return envelopeFrom(query.metadata(), builder.build());
     }
 }
