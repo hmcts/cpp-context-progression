@@ -612,6 +612,7 @@ public class HearingAtAGlanceService {
     private static List<Offences> getDefendantOffences(final Defendant defendant) {
         final List<Offences> offencesList = new ArrayList<>();
         defendant.getOffences().forEach(offence -> {
+            final boolean isCivil = nonNull(offence.getCivilOffence());
             final Offences offences = Offences.offences()
                     .withId(offence.getId())
                     .withOrderIndex(offence.getOrderIndex())
@@ -630,7 +631,7 @@ public class HearingAtAGlanceService {
                     .withConvictingCourt(offence.getConvictingCourt())
                     .withNotifiedPlea(offence.getNotifiedPlea())
                     .withIndicatedPlea(offence.getIndicatedPlea())
-                    .withAllocationDecision(offence.getAllocationDecision())
+                    .withAllocationDecision(!isCivil ? offence.getAllocationDecision() : null)
                     .withPleas(getOffencePleas(offence.getPlea()))
                     .withVerdicts(getOffenceVerdicts(offence.getVerdict()))
                     .withJudicialResults(getJudicialResults(offence.getJudicialResults()))
