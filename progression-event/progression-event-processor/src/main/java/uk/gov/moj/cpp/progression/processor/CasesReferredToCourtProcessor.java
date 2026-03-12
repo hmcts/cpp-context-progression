@@ -148,7 +148,7 @@ public class CasesReferredToCourtProcessor {
         ListCourtHearing listCourtHearing;
         try {
             sjpCourtReferral.getProsecutionCases().forEach(referredProsecutionCase -> {
-                searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
+                searchForDuplicateCasesByUrn(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getProsecutionAuthorityReference());
                 searchForDuplicateCasesByUrn(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getCaseURN());
