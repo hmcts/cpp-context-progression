@@ -67,7 +67,7 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.103.128</referencedata.version>
-        <listing.version>17.103.150-rel-3rd-line-2605-SNAPSHOT</listing.version>
+        <listing.version>17.103.149</listing.version>
         <hearing.version>17.0.144</hearing.version>
         <usersgroups.version>17.104.46</usersgroups.version>
         <defence.version>17.0.85</defence.version>
