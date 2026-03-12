@@ -44,7 +44,7 @@ import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
-import uk.gov.justice.progression.courts.SeedingHearingUpdatedWithNextHearings;
+import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -83,12 +83,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -511,26 +509,12 @@ public class HearingConfirmedEventProcessor {
             updateHearingForPartialAllocation(jsonEnvelope, confirmedHearing, deltaProsecutionCases);
             HearingListingNeeds newHearingForRemainingUnallocatedOffences;
             if (nonNull(seedingHearing)) {
-                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
+                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDeltaSeededProsecutionCases(confirmedHearing, hearingInProgression, seedingHearing);
                 final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(deltaSeededProsecutionCases, hearingInitiate.getHearing(), hearingInProgression, seedingHearing);
                 listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
                 newHearingForRemainingUnallocatedOffences = listNextHearings.getHearings().get(0);
-                final Set<SeedingHearing> relatedSeedingHearings = deltaProsecutionCases.stream()
-                        .flatMap(pc -> pc.getDefendants().stream())
-                        .flatMap(defendant -> defendant.getOffences().stream())
-                        .map(Offence::getSeedingHearing)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
-
-                final Set<UUID> confirmedSeedingHearings = confirmedHearing.getProsecutionCases().stream()
-                        .flatMap(pc -> pc.getDefendants().stream())
-                        .flatMap(defendant -> defendant.getOffences().stream())
-                        .map(ConfirmedOffence::getSeedingHearing)
-                        .filter(Objects::nonNull)
-                        .map(SeedingHearing::getSeedingHearingId)
-                        .collect(Collectors.toSet());
-
-                processCommandUpdateRelatedHearing(jsonEnvelope, relatedSeedingHearings, confirmedSeedingHearings, confirmedHearing.getId(), listNextHearings.getHearings().get(0).getId());
+                final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap = partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearingInProgression, seedingHearing);
+                processCommandUpdateRelatedHearing(jsonEnvelope, newHearingForRemainingUnallocatedOffences, relatedSeedingHearingsProsecutionCasesMap);
 
             } else {
                 final ListCourtHearing listCourtHearing = partialHearingConfirmService.transformToListCourtHearing(deltaProsecutionCases, hearingInitiate.getHearing(), hearingInProgression);
@@ -552,22 +536,20 @@ public class HearingConfirmedEventProcessor {
      * "command.update-related-hearing" for each related seedingHearing.
      *
      * @param jsonEnvelope
-     * @param relatedSeedingHearings
-     * @param confirmedSeedingHearings
-     * @param oldNextHearing
-     * @param newNextHearing
+     * @param hearingListingNeed
+     * @param relatedSeedingHearingsProsecutionCasesMap
      */
-    private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope,  final Set<SeedingHearing> relatedSeedingHearings, Set<UUID> confirmedSeedingHearings , final UUID oldNextHearing, final UUID newNextHearing) {
-        relatedSeedingHearings.stream().forEach(seedingHearing -> {
-            final SeedingHearingUpdatedWithNextHearings.Builder builder = SeedingHearingUpdatedWithNextHearings.seedingHearingUpdatedWithNextHearings();
-            builder.withHearingDay(seedingHearing.getSittingDay());
-            builder.withSeedingHearingId(seedingHearing.getSeedingHearingId());
-            builder.withNewNextHearingId(newNextHearing);
-            if(! confirmedSeedingHearings.contains(seedingHearing.getSeedingHearingId())){
-               builder.withOldNextHearingId(oldNextHearing);
-            }
-            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.seeding-hearing-updated-with-next-hearings").apply(objectToJsonObjectConverter.convert(builder.build())));
-        });
+    private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope, final HearingListingNeeds hearingListingNeed, final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap) {
+        for (final Map.Entry<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearing : relatedSeedingHearingsProsecutionCasesMap.entrySet()) {
+            final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
+                    .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                            .withId(hearingListingNeed.getId())
+                            .withProsecutionCases(relatedSeedingHearing.getValue())
+                            .build())
+                    .withSeedingHearing(relatedSeedingHearing.getKey())
+                    .build();
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.update-related-hearing").apply(objectToJsonObjectConverter.convert(updateRelatedHearingCommand)));
+        }
     }
 
     private void assignDefendantRequestFromCurrentHearingToExtendHearing(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate, final HearingListingNeeds hearingListingNeeds) {
