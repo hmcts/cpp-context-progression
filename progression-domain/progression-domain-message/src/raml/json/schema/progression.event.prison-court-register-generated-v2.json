@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://justice.gov.uk/core/courts/prison-court-register-generated-v2.json",
+    "type": "object",
+    "properties": {
+        "courtCentreId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "materialId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "prisonCourtRegisterStreamId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hearingDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "hearingId": {
+            "description": "The hearing id of the hearing shared",
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "fileId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hearingVenue": {
+            "description": "The venue of the court register",
+            "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterHearingVenue.json"
+        },
+        "recipients": {
+            "description": "The recipients of the court register",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterRecipient.json"
+            }
+        },
+        "defendant": {
+            "description": "The defendant that is the subject of the court register",
+            "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDefendant.json"
+        }
+    },
+    "required": [
+        "courtCentreId",
+        "hearingDate",
+        "hearingId",
+        "fileId",
+        "recipients",
+        "defendant"
+    ],
+    "additionalProperties": false
+}
