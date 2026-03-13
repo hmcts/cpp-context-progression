@@ -20,7 +20,7 @@ public class RetentionPolicyPriorityHelper {
         //no initialisation
     }
 
-    public static RetentionPolicy getRetentionPolicyByPriority(final Collection<RetentionPolicy> retentionPolicyCollection) {
+    public static RetentionPolicy getRetentionPolicyByPriority2(final Collection<RetentionPolicy> retentionPolicyCollection) {
         final List<RetentionPolicy> retentionPolicies = new ArrayList<>(retentionPolicyCollection);
         retentionPolicies.sort((retentionPolicy1, retentionPolicy2) -> {
             if (retentionPolicy1.getPolicyType().getPriority() > retentionPolicy2.getPolicyType().getPriority()) {
@@ -35,8 +35,48 @@ public class RetentionPolicyPriorityHelper {
                 return -1;
             }
         });
+        retentionPolicies.forEach(rp ->
+        {
+            System.out.println("PolicyType: "+rp.getPolicyType().toString());
+            System.out.println("Priority: "+rp.getPolicyType().getPriority());
+            System.out.println("Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
 
-        return retentionPolicies.get(0);
+        });
+        return retentionPolicies.get(retentionPolicies.size()-1);
+    }
+
+    public static RetentionPolicy getRetentionPolicyByPriority(final Collection<RetentionPolicy> retentionPolicyCollection) {
+        final List<RetentionPolicy> retentionPolicies = new ArrayList<>(retentionPolicyCollection);
+
+        retentionPolicies.sort((retentionPolicy1, retentionPolicy2) -> {
+            int priorityCompare = Integer.compare(
+                    retentionPolicy1.getPolicyType().getPriority(),
+                    retentionPolicy2.getPolicyType().getPriority());
+
+            if (priorityCompare != 0) {
+                return -priorityCompare;
+            }
+
+            if ((retentionPolicy1.getPolicyType() == CUSTODIAL && retentionPolicy2.getPolicyType() == CUSTODIAL) ||
+                    (retentionPolicy1.getPolicyType() == REMITTAL && retentionPolicy2.getPolicyType() == REMITTAL)) {
+
+                return Integer.compare(
+                        retentionPolicy1.getPeriodDays(),
+                        retentionPolicy2.getPeriodDays());
+            }
+
+            return 0;
+        });
+
+        retentionPolicies.forEach(rp ->
+        {
+            System.out.println("PolicyType: "+rp.getPolicyType().toString()+", " +" Priority: "+rp.getPolicyType().getPriority()+", " +" Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
+            //System.out.println(" Priority: "+rp.getPolicyType().getPriority());
+            //System.out.println("Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
+
+        });
+
+        return retentionPolicies.get(retentionPolicies.size()-1);
     }
 
     public static int periodToDays(final String periodStr) {

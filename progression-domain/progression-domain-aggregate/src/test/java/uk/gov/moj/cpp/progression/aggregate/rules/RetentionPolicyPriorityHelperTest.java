@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.LIF
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NON_CUSTODIAL;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NOT_GUILTY;
 
+
 import uk.gov.justice.core.courts.JurisdictionType;
 
 import java.util.ArrayList;
@@ -50,6 +51,19 @@ public class RetentionPolicyPriorityHelperTest {
     public void shouldReturnRetentionPolicyWithHighSentenceWhenThePrioritySame() {
         final List<RetentionPolicy> retentionPolicies = new ArrayList<>();
         retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "1Y1M1D", hearingInfo));
+        retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "1Y0M0D", hearingInfo));
+        retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "1Y0M1D", hearingInfo));
+
+        final RetentionPolicy retentionPolicyByPriority = getRetentionPolicyByPriority(retentionPolicies);
+
+        assertThat(retentionPolicyByPriority.getPolicyType(), is(CUSTODIAL));
+        assertThat(retentionPolicyByPriority.getPeriodDays(), is(396));
+    }
+
+    @Test
+    public void shouldReturnRetentionPolicyWhenThePriorityAndSentenceIsDifferent() {
+        final List<RetentionPolicy> retentionPolicies = new ArrayList<>();
+        retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "1Y1M1D", hearingInfo));
         retentionPolicies.add(new RetentionPolicy(ACQUITTAL, "1Y0M0D", hearingInfo));
         retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "1Y0M1D", hearingInfo));
 
@@ -59,5 +73,15 @@ public class RetentionPolicyPriorityHelperTest {
         assertThat(retentionPolicyByPriority.getPeriodDays(), is(396));
     }
 
+    @Test
+    public void shouldReturnRetentionPolicyWithHighSentenceWhenThePriorityIsSame() {
+        final List<RetentionPolicy> retentionPolicies = new ArrayList<>();
+        retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "9Y0M0D", hearingInfo));
+        retentionPolicies.add(new RetentionPolicy(CUSTODIAL, "8Y0M0D", hearingInfo));
 
+        final RetentionPolicy retentionPolicyByPriority = getRetentionPolicyByPriority(retentionPolicies);
+
+        assertThat(retentionPolicyByPriority.getPolicyType(), is(CUSTODIAL));
+        assertThat(retentionPolicyByPriority.getPeriodDays(), is(3285));
+    }
 }
