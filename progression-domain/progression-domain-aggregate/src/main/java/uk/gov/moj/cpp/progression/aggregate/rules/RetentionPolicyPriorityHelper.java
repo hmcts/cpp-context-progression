@@ -20,31 +20,6 @@ public class RetentionPolicyPriorityHelper {
         //no initialisation
     }
 
-    public static RetentionPolicy getRetentionPolicyByPriority2(final Collection<RetentionPolicy> retentionPolicyCollection) {
-        final List<RetentionPolicy> retentionPolicies = new ArrayList<>(retentionPolicyCollection);
-        retentionPolicies.sort((retentionPolicy1, retentionPolicy2) -> {
-            if (retentionPolicy1.getPolicyType().getPriority() > retentionPolicy2.getPolicyType().getPriority()) {
-                return 1;
-            } else if (retentionPolicy1.getPolicyType().getPriority() == retentionPolicy2.getPolicyType().getPriority()
-                    && ((retentionPolicy1.getPolicyType() == CUSTODIAL && retentionPolicy2.getPolicyType() == CUSTODIAL)
-                    || (retentionPolicy1.getPolicyType() == REMITTAL && retentionPolicy2.getPolicyType() == REMITTAL))) {
-
-                return retentionPolicy1.getPeriodDays() > retentionPolicy2.getPeriodDays()
-                        ? 1 : 0;
-            } else {
-                return -1;
-            }
-        });
-        retentionPolicies.forEach(rp ->
-        {
-            System.out.println("PolicyType: "+rp.getPolicyType().toString());
-            System.out.println("Priority: "+rp.getPolicyType().getPriority());
-            System.out.println("Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
-
-        });
-        return retentionPolicies.get(retentionPolicies.size()-1);
-    }
-
     public static RetentionPolicy getRetentionPolicyByPriority(final Collection<RetentionPolicy> retentionPolicyCollection) {
         final List<RetentionPolicy> retentionPolicies = new ArrayList<>(retentionPolicyCollection);
 
@@ -66,14 +41,6 @@ public class RetentionPolicyPriorityHelper {
             }
 
             return 0;
-        });
-
-        retentionPolicies.forEach(rp ->
-        {
-            System.out.println("PolicyType: "+rp.getPolicyType().toString()+", " +" Priority: "+rp.getPolicyType().getPriority()+", " +" Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
-            //System.out.println(" Priority: "+rp.getPolicyType().getPriority());
-            //System.out.println("Period: "+rp.getPeriod() +", Days: "+rp.getPeriodDays());
-
         });
 
         return retentionPolicies.get(retentionPolicies.size()-1);
