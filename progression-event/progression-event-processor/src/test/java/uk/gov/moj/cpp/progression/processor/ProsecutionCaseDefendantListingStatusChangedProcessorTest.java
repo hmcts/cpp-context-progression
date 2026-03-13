@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
