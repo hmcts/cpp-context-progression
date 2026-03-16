@@ -92,6 +92,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 
@@ -202,7 +203,7 @@ public class HearingConfirmedEventProcessor {
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
         final Hearing hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
-        if(isNull(hearingInProgression)){
+        if(isNull(hearingInProgression) && CollectionUtils.isEmpty(hearingConfirmed.getConfirmedHearing().getCourtApplicationIds())){
             sender.send(Enveloper
                     .envelop(hearingConfirmed)
                     .withName("progression.command.replay-hearing-confirmed")
