@@ -710,7 +710,7 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
-    public void shouldNotReplayApplicationHearing(){
+    void shouldNotReplayApplicationHearing(){
             final UUID offenceId = randomUUID();
             final UUID defendantId = randomUUID();
             final UUID caseId = randomUUID();
@@ -741,7 +741,7 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
-    public void shouldReplayNonApplicationHearing(){
+    void shouldReplayNonApplicationHearing(){
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
@@ -778,7 +778,7 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessHearingConfirmedReplayedAndConfirmHearing() {
+    void shouldProcessHearingConfirmedReplayedAndConfirmHearing() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
