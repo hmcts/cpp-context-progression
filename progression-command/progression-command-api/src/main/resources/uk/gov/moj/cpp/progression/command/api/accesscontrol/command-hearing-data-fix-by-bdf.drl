@@ -13,5 +13,14 @@ rule "Command - remove deleted hearing child entries by bdf"
     $outcome.setSuccess(true);
 end
 
+rule "Command - remove duplicate application from hearing by bdf"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.remove-duplicate-application-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
 
 
