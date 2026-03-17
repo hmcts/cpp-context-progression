@@ -86,7 +86,6 @@
         <correspondence.version>17.0.11</correspondence.version>
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
-
         <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency>
         <dbunit-maven-plugin.version>1.0-beta-3</dbunit-maven-plugin.version>
         <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
