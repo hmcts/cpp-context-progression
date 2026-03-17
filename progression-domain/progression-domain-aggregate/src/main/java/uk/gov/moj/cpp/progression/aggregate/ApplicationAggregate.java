@@ -131,6 +131,7 @@ import uk.gov.moj.cpp.progression.events.HearingApplicationLaaReferenceUpdateRec
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 import uk.gov.moj.cpp.progression.laa.LaaRepresentationOrder;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -155,6 +156,7 @@ public class ApplicationAggregate implements Aggregate {
     private static final long serialVersionUID = 1331113876243908502L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
@@ -1019,7 +1021,8 @@ public class ApplicationAggregate implements Aggregate {
         }
 
         final int ARN_LENGTH = 10;
-        return RandomStringUtils.randomAlphanumeric(ARN_LENGTH).toUpperCase();
+
+        return RandomStringUtils.random(ARN_LENGTH, 0, 0, true, true, null, SECURE_RANDOM).toUpperCase();
     }
 
     private boolean isApplicationReferredToExistingHearing(final CourtHearingRequest courtHearing) {
