@@ -551,6 +551,8 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         //Then
         verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
         verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusCode", is(statusCode)));
     }
 
 

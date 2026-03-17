@@ -9,12 +9,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -22,7 +20,6 @@ import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCivilProsecutionCaseMatchers;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.FeeStatus;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper;
@@ -62,8 +59,6 @@ class EditCivilApplicationFeeIT extends AbstractIT {
     private String earliestStartDateTime;
     private String defendantDOB;
     private String feesId;
-
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
@@ -136,14 +131,12 @@ class EditCivilApplicationFeeIT extends AbstractIT {
     }
 
     private void verifyUpdatedApplicationFeeStatus(final String applicationId, final CourtApplicationPayment updatedCourtApplicationPayment) {
-
-        final String payload = getApplicationFor(applicationId);
-        JsonObject json = stringToJsonObjectConverter.convert(payload);
-        final JsonObject jsonObject = json.getJsonObject("courtApplication").getJsonObject("courtApplicationPayment");
-        assertEquals(updatedCourtApplicationPayment.getFeeStatus().toString(), jsonObject.getString("feeStatus"));
-        assertEquals(updatedCourtApplicationPayment.getPaymentReference(), jsonObject.getString("paymentReference"));
-        assertEquals(updatedCourtApplicationPayment.getContestedFeeStatus().toString(), jsonObject.getString("contestedFeeStatus"));
-        assertEquals(updatedCourtApplicationPayment.getContestedPaymentReference(), jsonObject.getString("contestedPaymentReference"));
+        pollForApplication(applicationId,
+                withJsonPath("$.courtApplication.courtApplicationPayment.feeStatus", equalTo(updatedCourtApplicationPayment.getFeeStatus().toString())),
+                withJsonPath("$.courtApplication.courtApplicationPayment.paymentReference", equalTo(updatedCourtApplicationPayment.getPaymentReference())),
+                withJsonPath("$.courtApplication.courtApplicationPayment.contestedFeeStatus", equalTo(updatedCourtApplicationPayment.getContestedFeeStatus().toString())),
+                withJsonPath("$.courtApplication.courtApplicationPayment.contestedPaymentReference", equalTo(updatedCourtApplicationPayment.getContestedPaymentReference()))
+        );
     }
 
     private static void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {

@@ -32,6 +32,7 @@ import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -108,6 +109,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         statusDescription = "Desc";
         applicationReference = "AB746921";
         stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
         stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", statusCode, statusDescription);
@@ -129,7 +131,9 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         pollHearingWithStatusInitialised(hearingId);
 
         intiateCourtProceedingForApplicationUpdateForRepOrder(applicationId, subjectId, offenceId, caseId, defendantId, applicationReference, laaContractNumber, "applications/progression.initiate-court-proceedings-for-application-reporder.json");
-        pollForApplication(applicationId);
+        pollForApplication(applicationId,
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", is(offenceId)));
 
         final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_APPLICATION_ORGANISATION_CHANGED).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationChangedDefence = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_CASE_DEFENDANT_CHANGED).getMessageConsumerClient();
@@ -140,6 +144,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         final JmsMessageConsumerClient messageConsumerClientPublicForLAAReferenceChangedDefence = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPrivateForLaaReferenceUpdatedForHearing = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_APPLICATION_OFFENCES_UPDATED_FOR_HEARING).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPrivateForRepOrcerUpdatedForHearing = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_APPLICATION_REPORDER_UPDATED_FOR_HEARING).getMessageConsumerClient();
+
         //When
         sleepToBeRefactored();
         receiveRepresentationOrderForApplication(applicationId, subjectId, offenceId, statusCode, laaContractNumber, applicationReference, userId);
@@ -149,11 +154,11 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
 
         //Verify
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, getApplicationMatchers());
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, buildProsecutionCaseLaaMatchers()));
         verifyInMessagingQueueForApplication(messageConsumerClientPublicForLAAReferenceChanged);
         verifyInMessagingQueueForApplication(messageConsumerClientPublicForLAAReferenceChangedDefence);
         verifyInMessagingQueue(messageConsumerClientPrivateForLaaReferenceUpdatedForHearing);
         verifyInMessagingQueue(messageConsumerClientPrivateForRepOrcerUpdatedForHearing);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, buildProsecutionCaseLaaMatchers()));
     }
 
     private List<Matcher<? super ReadContext>> buildProsecutionCaseLaaMatchers() {
@@ -187,6 +192,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.subject.id", is(subjectId)));
         return matchers.toArray(new Matcher[0]);
     }
+
 
     @AfterAll
     public static void teardownOnce() {

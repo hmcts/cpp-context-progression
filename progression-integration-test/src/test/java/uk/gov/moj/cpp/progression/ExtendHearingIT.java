@@ -99,6 +99,7 @@ public class ExtendHearingIT extends AbstractIT {
         addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId1, defendantId1, offenceId1);
         final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId1, defendantId1);
         doHearingConfirmedAndVerify(existingHearingId, caseId1, defendantId1, courtCentreId, userId, offenceId1);
+        pollHearingWithStatusInitialised(existingHearingId);
         pollForHearing(existingHearingId,
                 withJsonPath("$.hearing.prosecutionCases.length()", is(1))
         );
