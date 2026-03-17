@@ -792,6 +792,50 @@ public class CourtApplicationEventListenerTest {
         verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
     }
 
+    @Test
+    public void shouldHandleCourtApplicationAddedWillBeSkippedIfWeHaveApplicationAndCaseInsideTable() {
+        final UUID applicationId = randomUUID();
+        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
+        persistedEntity.setApplicationId(applicationId);
+        persistedEntity.setPayload(payload.toString());
+        final UUID caseId = randomUUID();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(
+                        singletonList(
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseId)
+                                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                                .withCaseURN("CaseURN")
+                                                .build())
+                                        .build()
+                        )
+                )
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence()
+                                        .withJudicialResults(null)
+
+                                        .build())
+                                .withProsecutionCaseId(caseId)
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("CaseURN").build())
+                                .build()))
+                        .build())
+                .build();
+        CourtApplicationCaseEntity courtApplicationCase = new CourtApplicationCaseEntity();
+        courtApplicationCase.setCaseReference(caseId.toString());
+        courtApplicationCase.setCourtApplication(persistedEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
+                .thenReturn(courtApplicationAddedToCase);
+        when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
+        when(courtApplicationCaseRepository.findByApplicationIdAndCaseId(courtApplication.getId(),caseId)).thenReturn(courtApplicationCase);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
+        eventListener.processCourtApplicationAddedToCase(envelope);
+        verify(courtApplicationCaseRepository, times(0)).save(any());
+    }
+
     private static CourtApplicationParty buildOriginalDefendant(boolean isPersonDefendant, final UUID masterDefendantId) {
         final Address originalAddress = Address.address().withAddress1("Old Address 1").withAddress2("Old Address 2").withPostcode("RG2 1WE").build();
         if(isPersonDefendant) {

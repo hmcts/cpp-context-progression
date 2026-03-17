@@ -5,6 +5,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -41,12 +43,15 @@ public class EmailNowNotificationChannel {
     }
 
     private String toString(Notification notification) {
+        Map<String,String> personalisation =  notification.getPersonalisation() == null
+                ? Collections.emptyMap()
+                :  notification.getPersonalisation();
         return String.format("to: %s from: %s templateId: %s notificationId: %s personalization: %s",
                 notification.getSendToAddress(),
                 notification.getReplyToAddress(),
                 notification.getTemplateId(),
                 notification.getNotificationId(),
-                notification.getPersonalisation().entrySet().stream()
+                personalisation.entrySet().stream()
                         .map(entry -> "" + entry.getKey() + "=" + entry.getValue())
                         .collect(Collectors.joining(","))
         );
