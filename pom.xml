@@ -84,6 +84,7 @@
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
         <correspondence.version>17.0.11</correspondence.version>
+
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
         <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency>
