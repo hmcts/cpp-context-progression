@@ -167,7 +167,7 @@ public class RecordApplicationLAAReferenceIT extends AbstractIT {
         pollHearingWithStatusInitialised(hearingId);
 
 
-        intiateCourtProceedingForApplication(applicationId, caseId, defendantId, subjectId, hearingId, "applications/progression.initiate-court-proceedings-for-application.json");
+        intiateCourtProceedingForApplication(applicationId, caseId, defendantId, subjectId, hearingId, "applications/progression.initiate-court-proceedings-for-application-without-offences.json");
         pollForApplication(applicationId);
         //Record LAA reference
         //When
