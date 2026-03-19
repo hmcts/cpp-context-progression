@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-viewstore</artifactId>
-        <version>17.0.237-3RDL-2607-SNAPSHOT</version>
+        <version>17.0.238-RDL-2607-SNAPSHOT</version>
     </parent>
 
     <artifactId>progression-viewstore-liquibase</artifactId>
