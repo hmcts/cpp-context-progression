@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReplayDefendantsAddedToCourtProceedings;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -83,6 +84,18 @@ public class AddDefendantsToCourtProceedingsHandler {
                 addDefendantsToCourtProceedings.getListHearingRequests(), offencesJsonObjectOptional);
 
         appendEventsToStream(addDefendantEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.replay-defendants-added-to-court-proceedings")
+    public void handleReplay(final Envelope<ReplayDefendantsAddedToCourtProceedings> replayAddDefendantEnvelope) throws EventStreamException {
+        final EventStream eventStream = eventSource.getStreamById(replayAddDefendantEnvelope.payload().getDefendants().get(0).getProsecutionCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.replayDefendantsAddedToCourtProceedings(
+                replayAddDefendantEnvelope.payload().getDefendants(),
+                replayAddDefendantEnvelope.payload().getListHearingRequests(),
+                replayAddDefendantEnvelope.payload().getInterval());
+
+        appendEventsToStream(replayAddDefendantEnvelope, eventStream, events);
     }
 
     private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {

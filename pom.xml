@@ -59,7 +59,6 @@
             **/uk/gov/justice/services/domain/CaseDocuments.java,
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
-
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
@@ -67,7 +66,7 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.103.128</referencedata.version>
-        <listing.version>17.103.151</listing.version>
+        <listing.version>17.103.149</listing.version>
         <hearing.version>17.0.144</hearing.version>
         <usersgroups.version>17.104.46</usersgroups.version>
         <defence.version>17.0.85</defence.version>
