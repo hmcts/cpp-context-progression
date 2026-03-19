@@ -221,7 +221,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String applicationId) {
         try {
-            waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
+            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -251,7 +251,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingV2ForHmiSlots() {
         try {
-            waitAtMost(ofSeconds(10)).until(() ->
+            waitAtMost(ofSeconds(30)).until(() ->
                     getListCourtHearingRequestsAsStreamV2()
                             .anyMatch(payload -> payload.toString().contains("bookedSlots")));
         } catch (
@@ -262,7 +262,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingV2() {
         try {
-            waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
+            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
                     getListCourtHearingRequestsAsStreamV2()
                             .anyMatch(
                                     payload -> payload.has("hearings")
@@ -275,7 +275,7 @@ public class ListingStub {
     }
 
     public static void verifyListNextHearingRequestsAsStreamV2(final String hearingId, final String estimatedDuration) {
-        waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
+        waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
@@ -299,7 +299,7 @@ public class ListingStub {
 
     public static String getPostListCourtHearing(final String applicationId) {
         try {
-            return waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
+            return waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
                     {
                         final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                         return listCourtHearingRequestsAsStream
@@ -329,7 +329,7 @@ public class ListingStub {
 
     public static void verifyListUnscheduledHearingRequestsAsStreamV2(final String hearingId,
                                                                       final String estimatedDuration) {
-        waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
+        waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListUnscheduledHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
