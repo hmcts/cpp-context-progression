@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-        <version>17.104.231-PEG-3047-SNAPSHOT</version>
+        <version>17.104.235-PEG-3047-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-message</artifactId>
     <properties>
