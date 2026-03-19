@@ -396,6 +396,21 @@ public class DocumentQueryApiTest {
     }
 
     @Test
+    void shouldReturnDocumentListWhenApplicationBaseQuery() {
+        ArgumentCaptor<JsonEnvelope> argumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("applicationId", randomUUID().toString()).add("defendantId", randomUUID().toString()).build());
+        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(caagResponse);
+
+        final JsonEnvelope jsonEnvelope = target.searchCourtDocumentsForDefence(query);
+
+        verify(courtDocumentQueryView).searchCourtDocuments(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().payloadAsJsonObject().getBoolean("isDefenceQuery"), is(true));
+
+        assertThat(jsonEnvelope, is(caagResponse));
+    }
+
+    @Test
     public void shouldFilterTheDuplicationsFoCaseLevelDocuments() {
         final UUID courtDocumentId1 = randomUUID();
         final UUID courtDocumentId2 = randomUUID();
@@ -453,6 +468,7 @@ public class DocumentQueryApiTest {
         verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+        assertThat(jsonEnvelope.payloadAsJsonObject().getBoolean("isDefenceQuery"), equalTo(true));
 
         assertThat(responseEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(2));
     }
@@ -492,6 +508,7 @@ public class DocumentQueryApiTest {
         verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+        assertThat(jsonEnvelope.payloadAsJsonObject().getBoolean("isDefenceQuery"), equalTo(true));
 
         assertThat(responseEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(2));
     }
@@ -531,6 +548,7 @@ public class DocumentQueryApiTest {
         verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+        assertThat(jsonEnvelope.payloadAsJsonObject().getBoolean("isDefenceQuery"), equalTo(true));
 
         assertThat(responseEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
     }

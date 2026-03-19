@@ -118,4 +118,5 @@
     <include file="liquibase/create-shared-all-court-documents.xml"/>
     <include file="liquibase/update-civil-fee-and-related-reference.xml"/>
     <include file="liquibase/remove-column-offence-id-from-civil-fee.xml"/>
+    <include file="liquibase/add-document-metadata-to-court-document.xml"/>
 </databaseChangeLog>

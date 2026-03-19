@@ -75,6 +75,7 @@ public class CourtDocumentQueryApi {
     public static final String APPLICATION_ID = "applicationId";
     public static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
     public static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
+    private static final String IS_DEFENCE_QUERY = "isDefenceQuery";
 
     @Inject
     private Requester requester;
@@ -158,12 +159,13 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
+        final JsonEnvelope enrichedQueryWithDefenceFlag = envelopeFrom(metadata, createObjectBuilder(query.payloadAsJsonObject()).add(IS_DEFENCE_QUERY, true).build());
         if (query.payloadAsJsonObject().containsKey(CASE_ID)) {
             final List<UUID> defendantList = defenceQueryService.getDefendantList(query, query.payloadAsJsonObject().getString(CASE_ID));
             final List<CourtDocumentIndex> finalDocumentList = new ArrayList<>();
             defendantList.forEach(defendantId -> {
                 LOGGER.info("DefendantId from defence: "+defendantId);
-                final Courtdocuments courtdocuments = getCourtDocument(query, metadata, defendantId);
+                final Courtdocuments courtdocuments = getCourtDocument(enrichedQueryWithDefenceFlag, metadata, defendantId);
                 if (nonNull(courtdocuments) && isNotEmpty(courtdocuments.getDocumentIndices())) {
                     final List<CourtDocumentIndex> listWithDefId = replaceMasterDefendantIdByDefendantId(courtdocuments.getDocumentIndices(), defendantId);
                     final List<CourtDocumentIndex> filteredList = getFilteredList(listWithDefId, finalDocumentList);
@@ -180,7 +182,8 @@ public class CourtDocumentQueryApi {
             LOGGER.info("defendantIds in Doc Search json result: ", resultJson.getJsonString("defendantIds"));
             return envelopeFrom(query.metadata(), resultJson);
         } else { // for applicationId
-            return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, query.payloadAsJsonObject()));
+            return courtDocumentQueryView.searchCourtDocuments(enrichedQueryWithDefenceFlag);
+
         }
 
     }
