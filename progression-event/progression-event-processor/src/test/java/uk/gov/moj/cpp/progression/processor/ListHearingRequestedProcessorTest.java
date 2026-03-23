@@ -24,7 +24,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -71,6 +71,7 @@ import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -621,32 +622,15 @@ public class ListHearingRequestedProcessorTest {
         final UUID secondCaseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
-
-        final ProsecutionCase firstCase = ProsecutionCase.prosecutionCase()
-                .withId(firstCaseId)
-                .withDefendants(singletonList(Defendant.defendant()
-                        .withId(defendantId)
-                        .withIsYouth(true)
-                        .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
-                        .build()))
-                .build();
-
-        final ProsecutionCase secondCase = ProsecutionCase.prosecutionCase()
-                .withId(secondCaseId)
-                .withDefendants(singletonList(Defendant.defendant()
-                        .withId(randomUUID())
-                        .withIsYouth(true)
-                        .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
-                        .build()))
-                .build();
-
-        final Hearing hearing = Hearing.hearing()
-                .withId(hearingId)
-                .withProsecutionCases(asList(firstCase, secondCase))
-                .build();
+        final String firstCaseUrn = "firstCaseUrn";
+        final String secondCaseUrn = "secondCaseUrn";
 
         final JsonObject payload = createObjectBuilder()
-                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingId", hearingId.toString())
+                .add("hearingType", "PTP")
+                .add("caseUrns", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("caseURN", firstCaseUrn))
+                        .add(createObjectBuilder().add("caseURN", secondCaseUrn)))
                 .build();
 
         final JsonEnvelope requestMessage = envelopeFrom(
@@ -657,6 +641,11 @@ public class ListHearingRequestedProcessorTest {
                 .withId(firstCaseId)
                 .withDefendants(singletonList(Defendant.defendant()
                         .withId(defendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withDateOfBirth(LocalDate.now().minusYears(10))
+                                        .build())
+                                .build())
                         .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
                         .build()))
                 .build();
@@ -671,66 +660,84 @@ public class ListHearingRequestedProcessorTest {
                         .build()))
                 .build();
 
+        final JsonObject hearingsAtAGlance = createObjectBuilder()
+                .add("hearings", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("id", hearingId.toString())
+                                .add("hearingDays", Json.createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("sittingDay", ZonedDateTime.now().toString())))))
+                .build();
         final JsonObject storedFirstCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedFirstCase))
+                .add("hearingsAtAGlance", hearingsAtAGlance)
                 .build();
         final JsonObject storedSecondCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedSecondCase))
+                .add("hearingsAtAGlance", hearingsAtAGlance)
                 .build();
 
+        org.mockito.Mockito.doReturn(Optional.of(createObjectBuilder()
+                        .add(ProgressionService.CASE_ID, firstCaseId.toString()).build()))
+                .when(progressionService)
+                .caseExistsByCaseUrn(any(), org.mockito.ArgumentMatchers.eq(firstCaseUrn));
+        org.mockito.Mockito.doReturn(Optional.of(createObjectBuilder()
+                        .add(ProgressionService.CASE_ID, secondCaseId.toString()).build()))
+                .when(progressionService)
+                .caseExistsByCaseUrn(any(), org.mockito.ArgumentMatchers.eq(secondCaseUrn));
         org.mockito.Mockito.doReturn(Optional.of(storedFirstCaseJson))
                 .when(progressionService)
                 .getProsecutionCaseDetailById(any(), org.mockito.ArgumentMatchers.eq(firstCaseId.toString()));
         org.mockito.Mockito.doReturn(Optional.of(storedSecondCaseJson))
                 .when(progressionService)
                 .getProsecutionCaseDetailById(any(), org.mockito.ArgumentMatchers.eq(secondCaseId.toString()));
-
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        verify(progressionService).updateDefendantYouthForProsecutionCase(org.mockito.ArgumentMatchers.eq(requestMessage), prosecutionCasesCaptor.capture());
-        assertThat(prosecutionCasesCaptor.getValue().size(), is(1));
-        assertThat(prosecutionCasesCaptor.getValue().get(0).getId(), is(firstCaseId));
+        verify(sender).send(senderCaptor.capture());
+        assertThat(senderCaptor.getValue().metadata().name(), is("progression.command.update-defendant-for-prosecution-case"));
+        final JsonObject updatePayload = senderCaptor.getValue().payload();
+        final DefendantUpdate defendantUpdate = jsonObjectToObjectConverter.convert(updatePayload.getJsonObject("defendant"), DefendantUpdate.class);
+        assertThat(defendantUpdate.getIsYouth(), is(true));
+        assertThat(updatePayload.getString("prosecutionCaseId"), is(firstCaseId.toString()));
     }
 
     @Test
-    public void shouldIgnorePublicListedEventWhenPayloadMissingHearing() {
+    public void shouldIgnorePublicListedEventWhenPayloadMissingCaseUrns() {
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-listed"),
                 createObjectBuilder().build());
 
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        org.mockito.Mockito.verify(progressionService, org.mockito.Mockito.never())
-                .updateDefendantYouthForProsecutionCase(any(), any());
+        org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
     }
 
     @Test
-    public void shouldIgnorePublicListedEventWhenNoProsecutionCases() {
-        final Hearing hearing = Hearing.hearing()
-                .withId(randomUUID())
-                .withProsecutionCases(new ArrayList<>())
-                .build();
-
+    public void shouldIgnorePublicListedEventWhenNoCaseUrns() {
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-listed"),
-                createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build());
+                createObjectBuilder()
+                        .add("hearingId", randomUUID().toString())
+                        .add("hearingType", "PTP")
+                        .add("caseUrns", Json.createArrayBuilder())
+                        .build());
 
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        org.mockito.Mockito.verify(progressionService, org.mockito.Mockito.never())
-                .updateDefendantYouthForProsecutionCase(any(), any());
+        org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
     }
 
     @Test
     public void shouldNotUpdateYouthWhenNotFirstListingForAnyCase() {
         final UUID caseId = randomUUID();
-        final Hearing hearing = Hearing.hearing()
-                .withId(randomUUID())
-                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId).build()))
-                .build();
+        final String caseUrn = "caseUrn";
+        final String hearingId = randomUUID().toString();
 
         final JsonObject payload = createObjectBuilder()
-                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingId", hearingId)
+                .add("hearingType", "PTP")
+                .add("caseUrns", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("caseURN", caseUrn)))
                 .build();
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-listed"),
@@ -745,67 +752,91 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
+                .add("hearingsAtAGlance", createObjectBuilder()
+                        .add("hearings", Json.createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", hearingId)
+                                        .add("hearingDays", Json.createArrayBuilder()
+                                                .add(createObjectBuilder()
+                                                        .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
 
+        org.mockito.Mockito.doReturn(Optional.of(createObjectBuilder()
+                        .add(ProgressionService.CASE_ID, caseId.toString()).build()))
+                .when(progressionService)
+                .caseExistsByCaseUrn(any(), org.mockito.ArgumentMatchers.eq(caseUrn));
         org.mockito.Mockito.doReturn(Optional.of(storedCaseJson))
                 .when(progressionService)
                 .getProsecutionCaseDetailById(any(), org.mockito.ArgumentMatchers.eq(caseId.toString()));
-
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        org.mockito.Mockito.verify(progressionService, org.mockito.Mockito.never())
-                .updateDefendantYouthForProsecutionCase(any(), any());
+        org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
     }
 
     @Test
     public void shouldNotUpdateYouthWhenProsecutionCasePayloadMissing() {
         final UUID caseId = randomUUID();
-        final Hearing hearing = Hearing.hearing()
-                .withId(randomUUID())
-                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId).build()))
-                .build();
+        final String caseUrn = "caseUrn";
 
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-listed"),
-                createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build());
+                createObjectBuilder()
+                        .add("hearingId", randomUUID().toString())
+                        .add("hearingType", "PTP")
+                        .add("caseUrns", Json.createArrayBuilder()
+                                .add(createObjectBuilder().add("caseURN", caseUrn)))
+                        .build());
 
         final JsonObject emptyPayload = createObjectBuilder().build();
+        org.mockito.Mockito.doReturn(Optional.of(createObjectBuilder()
+                        .add(ProgressionService.CASE_ID, caseId.toString()).build()))
+                .when(progressionService)
+                .caseExistsByCaseUrn(any(), org.mockito.ArgumentMatchers.eq(caseUrn));
         org.mockito.Mockito.doReturn(Optional.of(emptyPayload))
                 .when(progressionService)
                 .getProsecutionCaseDetailById(any(), org.mockito.ArgumentMatchers.eq(caseId.toString()));
-
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        org.mockito.Mockito.verify(progressionService, org.mockito.Mockito.never())
-                .updateDefendantYouthForProsecutionCase(any(), any());
+        org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
     }
 
     @Test
-    public void shouldUpdateYouthWhenFirstListingAndNoDefendants() {
+    public void shouldNotUpdateYouthWhenFirstListingAndNoDefendants() {
         final UUID caseId = randomUUID();
-        final Hearing hearing = Hearing.hearing()
-                .withId(randomUUID())
-                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId).build()))
-                .build();
+        final String caseUrn = "caseUrn";
+        final String hearingId = randomUUID().toString();
 
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.listing.hearing-listed"),
-                createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build());
+                createObjectBuilder()
+                        .add("hearingId", hearingId)
+                        .add("hearingType", "PTP")
+                        .add("caseUrns", Json.createArrayBuilder()
+                                .add(createObjectBuilder().add("caseURN", caseUrn)))
+                        .build());
 
         final ProsecutionCase storedCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
+                .add("hearingsAtAGlance", createObjectBuilder()
+                        .add("hearings", Json.createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", hearingId)
+                                        .add("hearingDays", Json.createArrayBuilder()
+                                                .add(createObjectBuilder()
+                                                        .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
 
+        org.mockito.Mockito.doReturn(Optional.of(createObjectBuilder()
+                        .add(ProgressionService.CASE_ID, caseId.toString()).build()))
+                .when(progressionService)
+                .caseExistsByCaseUrn(any(), org.mockito.ArgumentMatchers.eq(caseUrn));
         org.mockito.Mockito.doReturn(Optional.of(storedCaseJson))
                 .when(progressionService)
                 .getProsecutionCaseDetailById(any(), org.mockito.ArgumentMatchers.eq(caseId.toString()));
-
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
-        verify(progressionService).updateDefendantYouthForProsecutionCase(org.mockito.ArgumentMatchers.eq(requestMessage), prosecutionCasesCaptor.capture());
-        assertThat(prosecutionCasesCaptor.getValue().size(), is(1));
-        assertThat(prosecutionCasesCaptor.getValue().get(0).getId(), is(caseId));
+        org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
     }
 
     private CourtHearingRequest receivePayloadOfListHearingRequestWithOneCaseMultipleDefendantsWithReferralReason() {

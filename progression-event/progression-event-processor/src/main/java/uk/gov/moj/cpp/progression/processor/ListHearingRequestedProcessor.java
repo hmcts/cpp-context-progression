@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
@@ -32,7 +35,9 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
+import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,9 +50,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,38 +138,162 @@ public class ListHearingRequestedProcessor {
     @Handles("public.listing.hearing-listed")
     public void handlePublicHearingListed(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
-        if (payload == null || !payload.containsKey("hearing")) {
+        if (payload == null || !payload.containsKey("caseUrns")) {
+            return;
+        }
+        final String hearingId = payload.getString("hearingId", null);
+        if (hearingId == null) {
             return;
         }
 
-        final Hearing hearing = jsonObjectToObjectConverter.convert(payload.getJsonObject("hearing"), Hearing.class);
-        if (hearing.getProsecutionCases() == null || hearing.getProsecutionCases().isEmpty()) {
+        final JsonArray caseUrns = payload.getJsonArray("caseUrns");
+        if (caseUrns == null || caseUrns.isEmpty()) {
             return;
         }
 
-        final List<ProsecutionCase> firstListingCases = hearing.getProsecutionCases().stream()
-                .filter(prosecutionCase -> isFirstHearingListing(jsonEnvelope, prosecutionCase.getId()))
+        final List<CaseWithHearingDate> firstListingCases = caseUrns.stream()
+                .filter(jsonValue -> jsonValue.getValueType() == JsonValue.ValueType.OBJECT)
+                .map(jsonValue -> jsonValue.asJsonObject().getString("caseURN", null))
+                .filter(Objects::nonNull)
+                .map(caseUrn -> getProsecutionCaseByCaseUrn(jsonEnvelope, caseUrn, hearingId))
+                .flatMap(Optional::stream)
+                .filter(caseWithHearingDate -> isFirstHearingListing(caseWithHearingDate.prosecutionCase))
                 .collect(Collectors.toList());
 
         if (!firstListingCases.isEmpty()) {
-            progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, firstListingCases);
+            updateDefendantYouthForFirstListing(jsonEnvelope, firstListingCases);
         }
     }
 
-    private boolean isFirstHearingListing(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId) {
-        final Optional<JsonObject> prosecutionCaseJson = progressionService.getProsecutionCaseDetailById(jsonEnvelope, prosecutionCaseId.toString());
-        if (prosecutionCaseJson.isEmpty() || !prosecutionCaseJson.get().containsKey("prosecutionCase")) {
-            return false;
+    private Optional<CaseWithHearingDate> getProsecutionCaseByCaseUrn(final JsonEnvelope jsonEnvelope,
+                                                                      final String caseUrn,
+                                                                      final String hearingId) {
+        final Optional<JsonObject> caseIdJsonObject = progressionService.caseExistsByCaseUrn(jsonEnvelope, caseUrn);
+        final String caseId = caseIdJsonObject.map(jsonObject -> jsonObject.getString(ProgressionService.CASE_ID, null))
+                .orElse(null);
+        if (caseId == null) {
+            return Optional.empty();
         }
 
-        final ProsecutionCase prosecutionCaseEntity = jsonObjectToObjectConverter.convert(
-                prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+        final Optional<JsonObject> prosecutionCaseJson = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId);
+        if (prosecutionCaseJson.isEmpty() || !prosecutionCaseJson.get().containsKey("prosecutionCase")) {
+            return Optional.empty();
+        }
 
+        final JsonObject caseDetail = prosecutionCaseJson.get();
+        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(
+                caseDetail.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+        final Optional<ZonedDateTime> earliestSittingDay = getEarliestHearingSittingDay(caseDetail, hearingId);
+        if (earliestSittingDay.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new CaseWithHearingDate(prosecutionCase, earliestSittingDay.get()));
+    }
+
+    private Optional<ZonedDateTime> getEarliestHearingSittingDay(final JsonObject caseDetail, final String hearingId) {
+        if (!caseDetail.containsKey("hearingsAtAGlance")) {
+            return Optional.empty();
+        }
+
+        final JsonObject hearingsAtAGlance = caseDetail.getJsonObject("hearingsAtAGlance");
+        if (hearingsAtAGlance == null || !hearingsAtAGlance.containsKey("hearings")) {
+            return Optional.empty();
+        }
+
+        return hearingsAtAGlance.getJsonArray("hearings").stream()
+                .filter(jsonValue -> jsonValue.getValueType() == JsonValue.ValueType.OBJECT)
+                .map(jsonValue -> jsonValue.asJsonObject())
+                .filter(hearingJson -> hearingId.equals(hearingJson.getString("id", null)))
+                .findFirst()
+                .map(hearingJson -> jsonObjectToObjectConverter.convert(hearingJson, Hearing.class))
+                .map(Hearing::getHearingDays)
+                .map(hearingDays -> hearingDays.stream()
+                        .map(HearingDay::getSittingDay)
+                        .min(ZonedDateTime::compareTo)
+                        .orElse(null));
+    }
+
+    private void updateDefendantYouthForFirstListing(final JsonEnvelope jsonEnvelope,
+                                                     final List<CaseWithHearingDate> prosecutionCases) {
+        prosecutionCases.forEach(caseWithHearingDate -> ofNullable(caseWithHearingDate.prosecutionCase.getDefendants())
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .forEach(defendant -> updateDefendantYouthIfEligible(
+                        jsonEnvelope,
+                        defendant,
+                        caseWithHearingDate.prosecutionCase.getId(),
+                        caseWithHearingDate.hearingDate.toLocalDate())));
+    }
+
+    private void updateDefendantYouthIfEligible(final JsonEnvelope jsonEnvelope,
+                                                final Defendant defendant,
+                                                final UUID prosecutionCaseId,
+                                                final LocalDate firstSittingDay) {
+        if (defendant.getPersonDefendant() == null
+                || defendant.getPersonDefendant().getPersonDetails() == null
+                || defendant.getPersonDefendant().getPersonDetails().getDateOfBirth() == null) {
+            return;
+        }
+
+        final LocalDate dateOfBirth = defendant.getPersonDefendant().getPersonDetails().getDateOfBirth();
+        if (!LocalDateUtils.isYouth(dateOfBirth, firstSittingDay)) {
+            return;
+        }
+
+        final DefendantUpdate defendantUpdate = transformDefendantFromEntity(defendant, true, prosecutionCaseId);
+        final JsonObject updateYouthPayload = createObjectBuilder()
+                .add("defendant", objectToJsonObjectConverter.convert(defendantUpdate))
+                .add("id", defendant.getId().toString())
+                .add("prosecutionCaseId", prosecutionCaseId.toString())
+                .build();
+
+        sender.send(Enveloper.envelop(updateYouthPayload)
+                .withName("progression.command.update-defendant-for-prosecution-case")
+                .withMetadataFrom(jsonEnvelope));
+    }
+
+    private DefendantUpdate transformDefendantFromEntity(final Defendant defendantEntity, final boolean isYouth, final UUID prosecutionCaseId) {
+        return DefendantUpdate.defendantUpdate()
+                .withIsYouth(isYouth)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withId(defendantEntity.getId())
+                .withMasterDefendantId(defendantEntity.getMasterDefendantId())
+                .withAssociatedPersons(defendantEntity.getAssociatedPersons())
+                .withDefenceOrganisation(defendantEntity.getDefenceOrganisation())
+                .withLegalEntityDefendant(defendantEntity.getLegalEntityDefendant())
+                .withMitigation(defendantEntity.getMitigation())
+                .withMitigationWelsh(defendantEntity.getMitigationWelsh())
+                .withNumberOfPreviousConvictionsCited(defendantEntity.getNumberOfPreviousConvictionsCited())
+                .withPersonDefendant(defendantEntity.getPersonDefendant())
+                .withProsecutionAuthorityReference(defendantEntity.getProsecutionAuthorityReference())
+                .withWitnessStatement(defendantEntity.getWitnessStatement())
+                .withWitnessStatementWelsh(defendantEntity.getWitnessStatementWelsh())
+                .withCroNumber(defendantEntity.getCroNumber())
+                .withPncId(defendantEntity.getPncId())
+                .withAliases(defendantEntity.getAliases())
+                .withJudicialResults(defendantEntity.getDefendantCaseJudicialResults())
+                .withOffences(defendantEntity.getOffences())
+                .withProceedingsConcluded(defendantEntity.getProceedingsConcluded())
+                .build();
+    }
+
+    private boolean isFirstHearingListing(final ProsecutionCase prosecutionCaseEntity) {
         return ofNullable(prosecutionCaseEntity.getDefendants()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(Defendant::getOffences)
                 .flatMap(offences -> ofNullable(offences).map(Collection::stream).orElseGet(Stream::empty))
                 .map(Offence::getListingNumber)
                 .noneMatch(Objects::nonNull);
+    }
+
+    private static final class CaseWithHearingDate {
+        private final ProsecutionCase prosecutionCase;
+        private final ZonedDateTime hearingDate;
+
+        private CaseWithHearingDate(final ProsecutionCase prosecutionCase, final ZonedDateTime hearingDate) {
+            this.prosecutionCase = prosecutionCase;
+            this.hearingDate = hearingDate;
+        }
     }
 
     @Handles("public.listing.hearing-partially-updated")
