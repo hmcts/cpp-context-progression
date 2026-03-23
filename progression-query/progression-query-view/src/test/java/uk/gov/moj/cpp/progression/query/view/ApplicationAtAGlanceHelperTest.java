@@ -8,6 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -23,7 +25,6 @@ import static uk.gov.justice.core.courts.FeeStatus.SATISFIED;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.Address;
@@ -33,6 +34,7 @@ import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
@@ -52,10 +54,17 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.BooleanGenerator;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
+import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.progression.query.view.service.OrganisationService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +73,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -83,10 +93,22 @@ public class ApplicationAtAGlanceHelperTest {
     private ProsecutionCaseRepository prosecutionCaseRepository;
 
     @Mock
+    private HearingApplicationRepository hearingApplicationRepository;
+
+    @Mock
+    private CourtApplicationRepository courtApplicationRepository;
+
+    @Mock
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
+    private HearingRepository hearingRepository;
+
+    @Mock
+    private HearingService hearingService;
 
     @InjectMocks
     private ApplicationAtAGlanceHelper applicationAtAGlanceHelper;
@@ -160,11 +182,115 @@ public class ApplicationAtAGlanceHelperTest {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
         assertThat(applicantDetails.getAddress(), is(address));
         assertThat(applicantDetails.getInterpreterLanguageNeeds(), is(person.getInterpreterLanguageNeeds()));
         assertThat(applicantDetails.getRepresentation(), is(representationOrganisation.getName()));
+    }
+
+    @Test
+    void shouldNotGetApplicantAddressDetailsWhenApplicantIsAnIndividualWhenAddressConfidential() {
+
+        final Address address = mock(Address.class);
+
+        final Person person = person()
+                .withFirstName(STRING_GENERATOR.next())
+                .withLastName(STRING_GENERATOR.next())
+                .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
+                .withNationalityDescription(STRING_GENERATOR.next())
+                .withIsAddressConfidential(true)
+                .build();
+
+        final CourtApplicationParty applicant = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicant(applicant)
+                .withType(courtApplicationType().build())
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.application.aaag"), payload);
+
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, true);
+        assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
+        assertNull(applicantDetails.getAddress());
+    }
+
+    @Test
+    void shouldGetApplicantAddressDetailsWhenApplicantIsAnIndividualWhenAddressConfidentialFlagMissing() {
+
+        final Address address = mock(Address.class);
+
+        final Person person = person()
+                .withFirstName(STRING_GENERATOR.next())
+                .withLastName(STRING_GENERATOR.next())
+                .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
+                .withNationalityDescription(STRING_GENERATOR.next())
+                .build();
+
+        final CourtApplicationParty applicant = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicant(applicant)
+                .withType(courtApplicationType().build())
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.application.aaag"), payload);
+
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, true);
+        assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
+        assertThat(applicantDetails.getAddress(), is(address));
+    }
+
+    @Test
+    void shouldGetApplicantAddressDetailsWhenApplicantIsAnIndividualWhenAddressNotConfidential() {
+        final Address address = mock(Address.class);
+
+        final Person person = person()
+                .withFirstName(STRING_GENERATOR.next())
+                .withLastName(STRING_GENERATOR.next())
+                .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
+                .withNationalityDescription(STRING_GENERATOR.next())
+                .withIsAddressConfidential(false)
+                .build();
+
+
+        final CourtApplicationParty applicant = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicant(applicant)
+                .withType(courtApplicationType().build())
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.application.aaag"), payload);
+
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, true);
+        assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
+        assertThat(applicantDetails.getAddress(), is(address));
     }
 
     @Test
@@ -242,7 +368,7 @@ public class ApplicationAtAGlanceHelperTest {
         when(stringToJsonObjectConverter.convert(prosecutionCaseEntityPayload)).thenReturn(prosecutionCaseEntityJsonObject);
         when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
         assertThat(applicantDetails.getAddress(), is(address));
         assertThat(applicantDetails.getInterpreterLanguageNeeds(), is(person.getInterpreterLanguageNeeds()));
@@ -274,48 +400,48 @@ public class ApplicationAtAGlanceHelperTest {
                 .withOrganisation(applicantOrgan)
                 .withPersonDetails(null)
                 .withOrganisationPersons(Arrays.asList(AssociatedPerson.associatedPerson()
-                        .withPerson(Person.person()
-                                .withFirstName("Rob")
-                                .withMiddleName("Martin")
-                                .withLastName("Paine")
-                                .withAddress(Address.address()
-                                        .withAddress1("36 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS1 4TE")
+                                .withPerson(Person.person()
+                                        .withFirstName("Rob")
+                                        .withMiddleName("Martin")
+                                        .withLastName("Paine")
+                                        .withAddress(Address.address()
+                                                .withAddress1("36 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS1 4TE")
+                                                .build())
                                         .build())
-                                .build())
-                        .build()
-                        ,
-                        AssociatedPerson.associatedPerson().withPerson(Person.person()
-                                .withFirstName("Ali")
-                                .withMiddleName("Veli")
-                                .withLastName("Lawson")
-                                .withAddress(Address.address()
-                                        .withAddress1("40 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS1 4TE")
-                                        .build())
-                                .build())
                                 .build()
                         ,
                         AssociatedPerson.associatedPerson().withPerson(Person.person()
-                                .withFirstName(null)
-                                .withLastName("Dur")
-                                .withAddress(Address.address()
-                                        .withAddress1("40 Brown House")
-                                        .withAddress2("450 London Street")
-                                        .withAddress3("Ocean way")
-                                        .withAddress4("Bristol")
-                                        .withAddress5("Somerset")
-                                        .withPostcode("BS3 4TH")
+                                        .withFirstName("Ali")
+                                        .withMiddleName("Veli")
+                                        .withLastName("Lawson")
+                                        .withAddress(Address.address()
+                                                .withAddress1("40 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS1 4TE")
+                                                .build())
                                         .build())
-                                .build())
+                                .build()
+                        ,
+                        AssociatedPerson.associatedPerson().withPerson(Person.person()
+                                        .withFirstName(null)
+                                        .withLastName("Dur")
+                                        .withAddress(Address.address()
+                                                .withAddress1("40 Brown House")
+                                                .withAddress2("450 London Street")
+                                                .withAddress3("Ocean way")
+                                                .withAddress4("Bristol")
+                                                .withAddress5("Somerset")
+                                                .withPostcode("BS3 4TH")
+                                                .build())
+                                        .build())
                                 .build()
 
                 ))
@@ -333,12 +459,12 @@ public class ApplicationAtAGlanceHelperTest {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         assertThat(applicantDetails.getName(), is(applicantOrgan.getName()));
         assertTrue(applicantDetails.getIsProbationBreach());
         assertThat(applicantDetails.getAddress(), is(applicantOrgan.getAddress()));
         assertThat(courtApplication.getApplicant().getOrganisationPersons(), notNullValue());
-        assertThat(applicantDetails.getRepresentation(),is("Rob Paine, Ali Lawson"));
+        assertThat(applicantDetails.getRepresentation(), is("Rob Paine, Ali Lawson"));
 
     }
 
@@ -351,6 +477,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withFirstName(STRING_GENERATOR.next())
                 .withLastName(STRING_GENERATOR.next())
                 .withAddress(address)
+                .withIsAddressConfidential(false)
                 .withDateOfBirth(now().minusYears(18L))
                 .withNationalityDescription(STRING_GENERATOR.next())
                 .build();
@@ -385,7 +512,7 @@ public class ApplicationAtAGlanceHelperTest {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         //assertThat(applicantDetails.getApplicantSynonym(), is(courtApplication.getType().getApplicantSynonym()));
         assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
         assertThat(applicantDetails.getAddress(), is(address));
@@ -458,7 +585,7 @@ public class ApplicationAtAGlanceHelperTest {
         when(stringToJsonObjectConverter.convert(prosecutionCaseEntityPayload)).thenReturn(prosecutionCaseEntityJsonObject);
         when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         assertThat(applicantDetails, notNullValue());
         assertThat(applicantDetails.getRepresentation(), is("organisationName,address1,address2,address3,address4,addressPostcode"));
     }
@@ -480,12 +607,12 @@ public class ApplicationAtAGlanceHelperTest {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope, false);
         assertThat(applicantDetails, notNullValue());
     }
 
     @Test
-    public void shouldGetResondantDetails() {
+     void shouldGetRespondentDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -523,7 +650,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withRespondents(courtApplicationRespondents)
                 .build();
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(organisationName));
@@ -536,7 +663,188 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetails() {
+     void shouldNotGetAddressForPersonRespondentDetailsWhenAddressConfidential() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .withIsAddressConfidential(true)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, true);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertNull(details.getAddress());
+    }
+
+    @Test
+     void shouldGetAddressForPersonRespondentDetailsWhenAddressConfidentialFlagMissing() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, true);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getAddress(), is(address));
+    }
+
+    @Test
+    void shouldGetAddressForPersonRespondentDetailsWhenAddressNotConfidential() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .withIsAddressConfidential(false)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, true);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getAddress(), is(address));
+    }
+
+    @Test
+    void shouldGetAddressForThirdPartyPersonDetailsWhenAddressNotConfidential() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .withIsAddressConfidential(false)
+                .build();
+
+
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationParties = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withThirdParties(courtApplicationParties)
+                .build();
+
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, true);
+        assertThat(thirdPartyDetails.size(), is(1));
+        final ThirdParties details = thirdPartyDetails.get(0);
+        assertThat(details.getAddress(), is(address));
+    }
+
+    @Test
+    void shouldGetAddressForThirdPartyPersonDetailsWhenAddressConfidentialFlagMissing() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationParties = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withThirdParties(courtApplicationParties)
+                .build();
+
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, true);
+        assertThat(thirdPartyDetails.size(), is(1));
+        final ThirdParties details = thirdPartyDetails.get(0);
+        assertThat(details.getAddress(), is(address));
+    }
+
+    @Test
+    void shouldNotAddressForThirdPartyPersonDetailsWhenAddressConfidential() {
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .withIsAddressConfidential(true)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withPersonDetails(person)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationParties = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withThirdParties(courtApplicationParties)
+                .build();
+
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, true);
+        assertThat(thirdPartyDetails.size(), is(1));
+        final ThirdParties details = thirdPartyDetails.get(0);
+        assertNull(details.getAddress());
+    }
+
+
+    @Test
+    void shouldGetThirdPartyDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -573,7 +881,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withThirdParties(courtApplicationParties)
                 .build();
 
-        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication);
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, false);
         assertThat(thirdPartyDetails.size(), is(1));
         final ThirdParties details = thirdPartyDetails.get(0);
         assertThat(details.getName(), is(organisationName));
@@ -585,7 +893,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
+    void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
         final Address address = mock(Address.class);
 
         final String name = STRING_GENERATOR.next();
@@ -604,7 +912,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withThirdParties(courtApplicationParties)
                 .build();
 
-        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication);
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, false);
         assertThat(thirdPartyDetails.size(), is(1));
         final ThirdParties details = thirdPartyDetails.get(0);
         assertThat(details.getName(), is(name));
@@ -612,7 +920,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -640,18 +948,19 @@ public class ApplicationAtAGlanceHelperTest {
                 .withRespondents(courtApplicationRespondents)
                 .build();
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getName(), is(firstName + " " + lastName));
         assertThat(details.getAddress(), is(address));
         assertThat(details.getDateOfBirth(), is(person.getDateOfBirth()));
         assertThat(details.getRespondentRepresentatives().size(), is(1));
         final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
         assertThat(respondentRepresentatives.getRepresentativeName(), is(representationOrgName));
     }
+
     @Test
-    public void shouldGetRespondentForMasterDefendant() {
+    void shouldGetRespondentForMasterDefendant() {
 
         final Address address = mock(Address.class);
 
@@ -675,7 +984,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withRespondents(courtApplicationRespondents)
                 .build();
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(firstName+" "+lastName));
@@ -684,7 +993,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForSubject() {
+    void shouldGetRespondentForSubject() {
 
         final Address address = mock(Address.class);
 
@@ -716,7 +1025,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .build();
 
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(firstName+" "+lastName));
@@ -726,7 +1035,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentWhichIsNotSubject() {
+    void shouldGetRespondentWhichIsNotSubject() {
 
         final Address address = mock(Address.class);
 
@@ -759,7 +1068,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .build();
 
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(firstName+" "+lastName));
@@ -769,7 +1078,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -796,10 +1105,10 @@ public class ApplicationAtAGlanceHelperTest {
                 .withThirdParties(courtApplicationParties)
                 .build();
 
-        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication);
+        final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, false);
         assertThat(thirdPartyDetails.size(), is(1));
         final ThirdParties details = thirdPartyDetails.get(0);
-        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getName(), is(firstName + " " + lastName));
         assertThat(details.getAddress(), is(address));
 
         assertThat(details.getThirdPartyRepresentatives().size(), is(1));
@@ -808,14 +1117,14 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
+    void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
         final CourtApplication courtApplication = courtApplication().build();
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication,false);
         assertThat(respondentDetails, empty());
     }
 
     @Test
-    public void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
+    void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
         final UUID subjectId = randomUUID();
         final UUID applicantId = randomUUID();
 
@@ -841,10 +1150,47 @@ public class ApplicationAtAGlanceHelperTest {
                 .build();
 
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, false);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getIsSubject(),is(true));
 
+    }
+
+    @Test
+    void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
+        final UUID applicationId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(applicationId);
+        courtApplicationEntity.setPayload("{}");
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        final JsonObject jsonPayload = mock(JsonObject.class);
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(jsonPayload);
+        when(jsonObjectToObjectConverter.convert(jsonPayload, CourtApplication.class)).thenReturn(courtApplication()
+                .withId(applicationId)
+                .withSubject(courtApplicationParty().withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                        .build()).build())
+                .build());
+
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
+        hearingEntity.setSharedTime(ZonedDateTime.now());
+        hearingEntity.setPayload("{}");
+
+        when(hearingService.getApplicationHearings(applicationId)).thenReturn(List.of(hearingId));
+        when(hearingRepository.findByHearingIds(List.of(hearingId))).thenReturn(List.of(hearingEntity));
+
+        final Pair<CourtApplication, List<JsonObject>> linkedApplicationHearingsForCourtExtract = applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId, defendantId);
+
+        assertThat(linkedApplicationHearingsForCourtExtract.getLeft().getId(), is(applicationId));
+        final List<JsonObject> applicationHearings = linkedApplicationHearingsForCourtExtract.getRight();
+        assertThat(applicationHearings.size(), is(1));
     }
 }

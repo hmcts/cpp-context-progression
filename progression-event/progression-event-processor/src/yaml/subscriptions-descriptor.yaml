@@ -92,6 +92,10 @@ subscriptions_descriptor:
         - name: progression.event.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: progression.event.replayed-defendants-added-to-court-proceedings
+          schema_uri: http://justice.gov.uk/core/courts/replayed-defendants-added-to-court-proceedings.json
+
+
         - name: progression.event.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 
@@ -181,6 +185,9 @@ subscriptions_descriptor:
         - name: progression.event.prison-court-register-generated
           schema_uri: http://justice.gov.uk/progression/courts/prison-court-register-generated.json
 
+        - name: progression.event.prison-court-register-generated-v2
+          schema_uri: http://justice.gov.uk/core/courts/prison-court-register-generated-v2.json
+
         - name: progression.event.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/now-document-requested.json
 
@@ -234,6 +241,9 @@ subscriptions_descriptor:
 
         - name: progression.event.application-reporder-offences-updated
           schema_uri: http://justice.gov.uk/core/courts/application-reporder-offences-updated.json
+
+        - name: progression.event.application-rep-order-updated-for-application
+          schema_uri: http://moj.gov.uk/cpp/progression/event/progression.event.application-rep-order-updated-for-application.json
 
         - name: progression.event.defendant-defence-association-locked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
@@ -551,6 +561,9 @@ subscriptions_descriptor:
         - name: progression.event.remove-defendant-custodial-establishment-requested
           schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
 
+        - name: progression.event.hearing-confirmed-replayed
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-confirmed-replayed.json
+
         - name: progression.event.delete-previous-hearings-and-create-next-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
 
@@ -669,6 +682,12 @@ subscriptions_descriptor:
         - name: progression.events.offences-removed-from-hearing
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
 
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
+        - name: progression.event.hearing-application-laa-reference-update-received
+          schema_uri: http://moj.gov.uk/cpp/progression/events/hearing-application-laa-reference-update-received.json
+
 
           # Deprecated API  - End
       event_source_name: progression
@@ -693,6 +712,10 @@ subscriptions_descriptor:
 
         - name: public.listing.offences-moved-to-next-hearing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.offences-moved-to-next-hearing.json
+
+        - name: public.listing.hearing-unallocated-courtroom-removed
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-unallocated-courtroom-removed.json
+
 
         # Hearing start
         - name: public.hearing.adjourned

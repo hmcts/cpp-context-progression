@@ -1,0 +1,1035 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-09-01T12:01:15.587Z",
+        "id": "e39576da-3c37-4ab9-bda1-e56106284b76",
+        "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-09-01",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+              "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-09-01",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1015",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": true,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "e154ccca-ccdd-48b3-9a77-1bf78d0b3adc",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": true,
+                    "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                    "label": "Amount of fine",
+                    "promptReference": "AOF",
+                    "promptSequence": 100,
+                    "type": "CURR",
+                    "usergroups": [],
+                    "value": "£360.00",
+                    "welshLabel": "Swm y ddirwy",
+                    "welshValue": "£360.00"
+                  }
+                ],
+                "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "label": "Fine",
+                "lastSharedDateTime": "2025-09-01",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-09-01",
+                "orderedHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 72100,
+                "resultDefinitionGroup": "Imposition",
+                "resultText": "FO - Fine\nFined £360.00",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "e154ccca-ccdd-48b3-9a77-1bf78d0b3adc",
+                "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Dirwy"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03012",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+              "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+              "pleaDate": "2025-09-01",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Elyse Borer have set up a TV cable without a valid license."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF018578667",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "1991-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Elyse",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Borer",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF018578667",
+        "prosecutionCaseId": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d"
+      }
+    ],
+    "id": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d",
+    "initiationCode": "C",
+    "originatingOrganisation": "0530000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Police HQ",
+        "address2": "No 1 Waterwells Drive",
+        "address3": "Quedgeley",
+        "address4": "Gloucester",
+        "postcode": "GL2 2AN"
+      },
+      "contact": {
+        "primaryEmail": "resultingteam@gloucestershire.police.uk"
+      },
+      "majorCreditorCode": "PO53",
+      "prosecutionAuthorityCode": "GLOSPF",
+      "prosecutionAuthorityId": "9d38428b-7f9d-3aab-8269-f1427dd15c57",
+      "prosecutionAuthorityName": "Gloucestershire Police",
+      "prosecutionAuthorityOUCode": "0530000",
+      "caseURN": "28DI8578667"
+    }
+  },
+  "linkedApplicationsSummary": [
+    {
+      "applicationId": "6b29dd17-0616-499d-83d1-b196d1025fd0",
+      "applicationTitle": "Appearance to make statutory declaration (other than SJP)",
+      "applicationReference": "28DI8578667",
+      "applicationStatus": "FINALISED",
+      "applicantDisplayName": "Elyse Borer",
+      "applicantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+      "respondentDisplayNames": [
+        "GLOSPF"
+      ],
+      "respondentIds": [],
+      "subjectId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+      "isAppeal": false
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "d09405a2-d1e3-4369-93d4-0197ad8b44cb",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d",
+                "caseReference": "28DI8578667",
+                "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+              }
+            ],
+            "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+            "personDefendant": {
+              "arrestSummonsNumber": "DEF018578667",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "21",
+                  "address2": "Furnburry Park Road",
+                  "address3": "London",
+                  "postcode": "SW11 3TQ"
+                },
+                "contact": {
+                  "home": "015325443756"
+                },
+                "dateOfBirth": "1991-02-18",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Elyse",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Borer",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationParticulars": "test",
+        "applicationReceivedDate": "2025-09-01",
+        "applicationReference": "28DI8578667",
+        "applicationResultCodeForLaa": "G",
+        "applicationStatus": "FINALISED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-09-01",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                  "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                  "sequenceNumber": 90
+                },
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-09-01",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "80b379e3-29fc-4347-958f-8551bbc916ad",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£360.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£360.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-09-01",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-09-02",
+                    "orderedHearingId": "5d89ab5d-b205-481a-915e-13a2b6dbc315",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £360.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "80b379e3-29fc-4347-958f-8551bbc916ad",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "ddf17077-6073-4b5d-b43e-7faaad310046",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                        "label": "Date to pay in full by",
+                        "promptReference": "PBD",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "12/09/2025",
+                        "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                        "welshValue": "12/09/2025"
+                      }
+                    ],
+                    "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+                    "label": "Pay by date",
+                    "lastSharedDateTime": "2025-09-01",
+                    "level": "D",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-09-02",
+                    "orderedHearingId": "5d89ab5d-b205-481a-915e-13a2b6dbc315",
+                    "parentJudicialResultId": "9bd8ec67-a875-461d-b1d0-b20259802215",
+                    "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 120500,
+                    "resultDefinitionGroup": "Payment terms",
+                    "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/09/2025.",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "80b379e3-29fc-4347-958f-8551bbc916ad",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dyddiad terfyn ar gyfer talu"
+                  }
+                ],
+                "listingNumber": 1,
+                "maxPenalty": "S:L3",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                  "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                  "pleaDate": "2025-09-01",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "wording": "Elyse Borer have set up a TV cable without a valid license."
+              }
+            ],
+            "prosecutionCaseId": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Police HQ",
+                "address2": "No 1 Waterwells Drive",
+                "address3": "Quedgeley",
+                "address4": "Gloucester",
+                "postcode": "GL2 2AN"
+              },
+              "contact": {
+                "primaryEmail": "resultingteam@gloucestershire.police.uk"
+              },
+              "majorCreditorCode": "PO53",
+              "prosecutionAuthorityCode": "GLOSPF",
+              "prosecutionAuthorityId": "9d38428b-7f9d-3aab-8269-f1427dd15c57",
+              "prosecutionAuthorityName": "Gloucestershire Police",
+              "prosecutionAuthorityOUCode": "0530000",
+              "caseURN": "28DI8578667"
+            }
+          }
+        ],
+        "id": "6b29dd17-0616-499d-83d1-b196d1025fd0",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "FINAL",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "c3b07a22-9497-48dd-9873-ba719439f4fe",
+            "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "label": "Granted",
+            "lastSharedDateTime": "2025-09-01",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-09-02",
+            "orderedHearingId": "5d89ab5d-b205-481a-915e-13a2b6dbc315",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 98500,
+            "resultText": "G - Granted",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "c3b07a22-9497-48dd-9873-ba719439f4fe",
+            "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "proceedingsConcluded": false,
+        "respondents": [
+          {
+            "id": "9206e768-b21a-4fba-aa34-6b295374d2ef",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Police HQ",
+                "address2": "No 1 Waterwells Drive",
+                "address3": "Quedgeley",
+                "address4": "Gloucester",
+                "postcode": "GL2 2AN"
+              },
+              "contact": {
+                "primaryEmail": "resultingteam@gloucestershire.police.uk"
+              },
+              "majorCreditorCode": "PO53",
+              "name": "Gloucestershire Police",
+              "prosecutionAuthorityCode": "GLOSPF",
+              "prosecutionAuthorityId": "9d38428b-7f9d-3aab-8269-f1427dd15c57",
+              "prosecutionAuthorityOUCode": "0530000",
+              "welshName": "Heddlu Swydd Gaerloyw"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "d09405a2-d1e3-4369-93d4-0197ad8b44cb",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d",
+                "caseReference": "28DI8578667",
+                "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+              }
+            ],
+            "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+            "personDefendant": {
+              "arrestSummonsNumber": "DEF018578667",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "21",
+                  "address2": "Furnburry Park Road",
+                  "address3": "London",
+                  "postcode": "SW11 3TQ"
+                },
+                "contact": {
+                  "home": "015325443756"
+                },
+                "dateOfBirth": "1991-02-18",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Elyse",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Borer",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Appears before the court in order to make a statutory declaration following conviction {1} by {2} on {3}. Original case number: {4}",
+          "applicationWordingWelsh": "Yn ymddangos gerbron y llys er mwyn gwneud datganiad statudol yn dilyn euogfarn <[am y trosedd <Original Offence>][am y troseddau <Original Offences>]> gan <Court name> ar <Date of hearing>. Rhif yr Achos Gwreiddiol: <Original case number>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2025-03-17T10:29:09",
+          "code": "MC80527",
+          "commrOfOathFlag": true,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "a6663f2a-c900-4bb4-a7d7-4be34cb2f1f7",
+          "initialFeeApplicable": false,
+          "jurisdiction": "MAGISTRATES",
+          "lastModified": "2025-03-17T14:00:40.437Z",
+          "legislation": "In accordance with section 14 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 14 Deddf Llysoedd Ynadon 1980.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": true,
+          "prosecutorThirdPartyFlag": true,
+          "pssId": 601795,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Appearance to make statutory declaration (other than SJP)",
+          "typeWelsh": "Ymddangosiad i wneud datganiad statudol",
+          "validFrom": "2000-01-05"
+        }
+      }
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+        "defendantName": "Elyse Borer",
+        "hearingIds": [
+          "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c"
+        ],
+        "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-09-01"
+              }
+            ],
+            "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "95f614d1-7d50-4f72-85b6-240dbddf76c7",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "12/09/2025",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "12/09/2025"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2025-09-01",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+              "orderedDate": "2025-09-01",
+              "orderedHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+              "parentJudicialResultId": "c69389b1-fce2-4645-bed4-3f6e953ab35a",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/09/2025.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "e154ccca-ccdd-48b3-9a77-1bf78d0b3adc",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            },
+            "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "34",
+            "courtApplications": [],
+            "dateOfBirth": "1991-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+            },
+            "id": "e39576da-3c37-4ab9-bda1-e56106284b76",
+            "judicialResults": [],
+            "masterDefendantId": "e39576da-3c37-4ab9-bda1-e56106284b76",
+            "name": "Elyse Borer",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-09-01",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                  "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                  "sequenceNumber": 90
+                },
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-09-01",
+                "count": 0,
+                "id": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e154ccca-ccdd-48b3-9a77-1bf78d0b3adc",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£360.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£360.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-09-01",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-09-01",
+                    "orderedHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £360.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "e154ccca-ccdd-48b3-9a77-1bf78d0b3adc",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "f19190c2-dfea-409d-ac33-e816f2b7408f",
+                    "originatingHearingId": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+                    "pleaDate": "2025-09-01",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Elyse Borer have set up a TV cable without a valid license."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-09-01T22:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "cc6ba570-ebc2-4a35-9d1c-6ecf34be109c",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-09-02"
+              }
+            ],
+            "defendantId": "e39576da-3c37-4ab9-bda1-e56106284b76"
+          }
+        ],
+        "defendants": [
+          {
+            "courtApplications": [
+              {
+                "applicant": "Elyse Borer",
+                "applicationId": "6b29dd17-0616-499d-83d1-b196d1025fd0",
+                "applicationReceivedDate": "2025-09-01",
+                "applicationType": "Appearance to make statutory declaration (other than SJP)",
+                "isAppeal": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c3b07a22-9497-48dd-9873-ba719439f4fe",
+                    "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "label": "Granted",
+                    "lastSharedDateTime": "2025-09-01",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-09-02",
+                    "orderedHearingId": "5d89ab5d-b205-481a-915e-13a2b6dbc315",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 98500,
+                    "resultText": "G - Granted",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c3b07a22-9497-48dd-9873-ba719439f4fe",
+                    "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "GLOSPF"
+                  }
+                ]
+              }
+            ],
+            "id": "9206e768-b21a-4fba-aa34-6b295374d2ef",
+            "judicialResults": [],
+            "masterDefendantId": "9206e768-b21a-4fba-aa34-6b295374d2ef",
+            "name": "GLOSPF"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-09-02T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "5d89ab5d-b205-481a-915e-13a2b6dbc315",
+        "isApplicationHearing": true,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Application",
+          "id": "3449743b-95d6-4836-8941-57f588b52068"
+        }
+      }
+    ],
+    "id": "a6b0a94b-bdb5-4e82-a42d-e967fd7dc25d",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Police HQ",
+        "address2": "No 1 Waterwells Drive",
+        "address3": "Quedgeley",
+        "address4": "Gloucester",
+        "postcode": "GL2 2AN"
+      },
+      "contact": {
+        "primaryEmail": "resultingteam@gloucestershire.police.uk"
+      },
+      "majorCreditorCode": "PO53",
+      "prosecutionAuthorityCode": "GLOSPF",
+      "prosecutionAuthorityId": "9d38428b-7f9d-3aab-8269-f1427dd15c57",
+      "prosecutionAuthorityName": "Gloucestershire Police",
+      "prosecutionAuthorityOUCode": "0530000",
+      "caseURN": "28DI8578667"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  }
+}

@@ -33,8 +33,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
-import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
+import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
@@ -49,9 +49,6 @@ import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
@@ -234,11 +232,17 @@ public class HearingResultEventProcessor {
     }
 
     private boolean notEligibleForLAA(final CourtApplication courtApplication) {
-        final boolean isEligible = ofNullable(courtApplication.getCourtApplicationCases()).orElse(emptyList()).stream()
-                .flatMap(courtApplicationCase ->
-                        ofNullable(courtApplicationCase.getOffences()).orElse(emptyList()).stream()
-                )
-                .anyMatch(offence -> nonNull(offence.getLaaApplnReference()));
+        boolean isEligible;
+        if(nonNull(courtApplication.getLaaApplnReference())){
+            isEligible = true;
+        } else {
+            isEligible = ofNullable(courtApplication.getCourtApplicationCases()).orElse(emptyList()).stream()
+                    .flatMap(courtApplicationCase ->
+                            ofNullable(courtApplicationCase.getOffences()).orElse(emptyList()).stream()
+                    )
+                    .anyMatch(offence -> nonNull(offence.getLaaApplnReference()));
+        }
+
         return !isEligible;
     }
 

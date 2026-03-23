@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Collections.singletonList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -14,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelp
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
@@ -40,6 +43,7 @@ import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -105,6 +109,9 @@ public class HearingResultsCommandHandlerTest {
     @Mock
     private CaseAggregate caseAggregate;
 
+    @Mock
+    private Requester requester;
+
     @BeforeEach
     public void setup() {
         hearingAggregate = new HearingAggregate();
@@ -147,10 +154,14 @@ public class HearingResultsCommandHandlerTest {
                         .withId(UUID.randomUUID())
                         .build())
                 .build();
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
 
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
+
         hearingAggregate.apply(hearingResult.getHearing());
 
         final Metadata metadata = Envelope
@@ -198,6 +209,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -234,6 +249,11 @@ public class HearingResultsCommandHandlerTest {
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
 
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
+
         handler.processHearingResults(envelope);
 
         final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -258,6 +278,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -284,6 +308,9 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -310,6 +337,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -343,6 +374,11 @@ public class HearingResultsCommandHandlerTest {
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
 
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
+
         handler.processHearingResults(envelope);
 
         final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -375,6 +411,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -410,6 +450,10 @@ public class HearingResultsCommandHandlerTest {
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
 
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
+
         handler.processHearingResults(envelope);
 
         final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -436,6 +480,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -471,6 +519,10 @@ public class HearingResultsCommandHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+        when(requester.request(any())).thenReturn(resultsEnvelope);
 
         handler.processHearingResults(envelope);
 
@@ -533,6 +585,9 @@ public class HearingResultsCommandHandlerTest {
 
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+
 
 
         final HearingResult hearingResult = createCommandPayloadWithOneOffenceWithManualRRFlagAndOneNextHearingIsWithInMultiDaysHearingAndAnotherOutside(hearingId, caseId, offenceId);
@@ -542,6 +597,7 @@ public class HearingResultsCommandHandlerTest {
                 .withName("progression.command.hearing-result")
                 .withId(randomUUID())
                 .build();
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
 

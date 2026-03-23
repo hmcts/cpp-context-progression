@@ -1,0 +1,517 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "20d5fb17-3d25-49db-9d9f-29a5aca49eba",
+        "masterDefendant": {
+          "associatedPersons": [
+            {
+              "person": {
+                "address": {
+                  "address1": "61FbYWjMFb",
+                  "address2": "56Police House",
+                  "address3": "StreetDescriptionG",
+                  "address4": "Locality2G",
+                  "address5": "Town2G",
+                  "postcode": "TW14 9XD"
+                },
+                "contact": {
+                  "home": "19998021888",
+                  "mobile": "19998021889",
+                  "primaryEmail": "Gvishnu@gmail.com",
+                  "secondaryEmail": "Gilja@gmail.com"
+                },
+                "dateOfBirth": "1967-05-22",
+                "ethnicity": {
+                  "observedEthnicityCode": "4",
+                  "observedEthnicityDescription": "Other",
+                  "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "GPersonGivenName11",
+                "gender": "MALE",
+                "lastName": "GPersonFamilyName2",
+                "middleName": "GPersonGivenName21 GPersonGivenName31",
+                "title": "GPersonTitle1"
+              },
+              "role": "ParentGuardian"
+            }
+          ],
+          "defendantCase": [
+            {
+              "caseId": "ae24ed90-dfb4-4989-b120-0b6ed9ad51e8",
+              "caseReference": "82GD5850525",
+              "defendantId": "cce521f9-78e1-43f3-976b-c51a29faa5e0"
+            }
+          ],
+          "masterDefendantId": "cce521f9-78e1-43f3-976b-c51a29faa5e0",
+          "personDefendant": {
+            "arrestSummonsNumber": "REF1",
+            "bailConditions": "BailConditions0",
+            "bailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            },
+            "driverNumber": "MORGA657054SM9BF",
+            "perceivedBirthYear": 2006,
+            "personDetails": {
+              "address": {
+                "address1": "61FbYWjMFb",
+                "address2": "56Police HouseD",
+                "address3": "StreetDescriptionD",
+                "address4": "LocalityD",
+                "address5": "TownD",
+                "postcode": "TW14 9XD"
+              },
+              "contact": {
+                "home": "09998021888",
+                "mobile": "09998021889",
+                "primaryEmail": "robert@gmail.com",
+                "secondaryEmail": "ormsby@gmail.com",
+                "work": "0917894278022"
+              },
+              "dateOfBirth": "1967-05-22",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "4",
+                "observedEthnicityDescription": "Other",
+                "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Vanessa",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "interpreterLanguageNeeds": "LanguageNeeds0",
+              "lastName": "Reichel",
+              "middleName": "PersonGivenName20A PersonGivenName30A",
+              "occupation": "Occupation0",
+              "occupationCode": "50",
+              "specificRequirements": "SpecialNeeds0",
+              "title": "YR"
+            },
+            "policeBailConditions": "BailConditions0",
+            "policeBailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "applicationReceivedDate": "2025-04-29",
+      "applicationReference": "82GD5850525",
+      "applicationStatus": "LISTED",
+      "courtApplicationCases": [
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "ae24ed90-dfb4-4989-b120-0b6ed9ad51e8",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Surrey Police",
+              "address2": "Mount Browne",
+              "address3": "Sandy Lane",
+              "address4": "Guildford",
+              "postcode": "GU3 1HG"
+            },
+            "contact": {
+              "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+            },
+            "majorCreditorCode": "PO45",
+            "prosecutionAuthorityCode": "SURRPF",
+            "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+            "prosecutionAuthorityName": "Surrey Police",
+            "prosecutionAuthorityOUCode": "0450000",
+            "caseURN": "82GD5850525"
+          }
+        }
+      ],
+      "id": "9653228f-2d2c-4f65-8d0f-ad5de802a28f",
+      "respondents": [
+        {
+          "id": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Surrey Police",
+              "address2": "Mount Browne",
+              "address3": "Sandy Lane",
+              "address4": "Guildford",
+              "postcode": "GU3 1HG"
+            },
+            "contact": {
+              "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+            },
+            "majorCreditorCode": "PO45",
+            "name": "Surrey Police",
+            "prosecutionAuthorityCode": "SURRPF",
+            "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+            "prosecutionAuthorityOUCode": "0450000",
+            "welshName": "Heddlu Surrey"
+          },
+          "summonsRequired": false
+        }
+      ],
+      "subject": {
+        "id": "20d5fb17-3d25-49db-9d9f-29a5aca49eba",
+        "masterDefendant": {
+          "associatedPersons": [
+            {
+              "person": {
+                "address": {
+                  "address1": "61FbYWjMFb",
+                  "address2": "56Police House",
+                  "address3": "StreetDescriptionG",
+                  "address4": "Locality2G",
+                  "address5": "Town2G",
+                  "postcode": "TW14 9XD"
+                },
+                "contact": {
+                  "home": "19998021888",
+                  "mobile": "19998021889",
+                  "primaryEmail": "Gvishnu@gmail.com",
+                  "secondaryEmail": "Gilja@gmail.com"
+                },
+                "dateOfBirth": "1967-05-22",
+                "ethnicity": {
+                  "observedEthnicityCode": "4",
+                  "observedEthnicityDescription": "Other",
+                  "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "GPersonGivenName11",
+                "gender": "MALE",
+                "lastName": "GPersonFamilyName2",
+                "middleName": "GPersonGivenName21 GPersonGivenName31",
+                "title": "GPersonTitle1"
+              },
+              "role": "ParentGuardian"
+            }
+          ],
+          "defendantCase": [
+            {
+              "caseId": "ae24ed90-dfb4-4989-b120-0b6ed9ad51e8",
+              "caseReference": "82GD5850525",
+              "defendantId": "cce521f9-78e1-43f3-976b-c51a29faa5e0"
+            }
+          ],
+          "masterDefendantId": "cce521f9-78e1-43f3-976b-c51a29faa5e0",
+          "personDefendant": {
+            "arrestSummonsNumber": "REF1",
+            "bailConditions": "BailConditions0",
+            "bailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            },
+            "driverNumber": "MORGA657054SM9BF",
+            "perceivedBirthYear": 2006,
+            "personDetails": {
+              "address": {
+                "address1": "61FbYWjMFb",
+                "address2": "56Police HouseD",
+                "address3": "StreetDescriptionD",
+                "address4": "LocalityD",
+                "address5": "TownD",
+                "postcode": "TW14 9XD"
+              },
+              "contact": {
+                "home": "09998021888",
+                "mobile": "09998021889",
+                "primaryEmail": "robert@gmail.com",
+                "secondaryEmail": "ormsby@gmail.com",
+                "work": "0917894278022"
+              },
+              "dateOfBirth": "1967-05-22",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "4",
+                "observedEthnicityDescription": "Other",
+                "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Vanessa",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "interpreterLanguageNeeds": "LanguageNeeds0",
+              "lastName": "Reichel",
+              "middleName": "PersonGivenName20A PersonGivenName30A",
+              "occupation": "Occupation0",
+              "occupationCode": "50",
+              "specificRequirements": "SpecialNeeds0",
+              "title": "YR"
+            },
+            "policeBailConditions": "BailConditions0",
+            "policeBailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CO",
+        "code": "MC80524",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "APN",
+        "id": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+        "jurisdiction": "MAGISTRATES",
+        "legislation": "CPR Reference",
+        "linkType": "SJP",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": true,
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Application to reopen case"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "Worcester Combined Court Centre",
+      "address2": "Shire Hall",
+      "address3": "Foregate Street",
+      "address4": "Worcester",
+      "address5": "",
+      "postcode": "WR1 1EQ"
+    },
+    "code": "C22WC00",
+    "courtHearingLocation": "C22WC00",
+    "id": "f4b70f24-131b-32a3-b901-342082bf9615",
+    "lja": {
+      "ljaCode": "1894",
+      "ljaName": "Worcestershire Magistrates' Court"
+    },
+    "name": "Worcester Crown Court",
+    "roomId": "ffc6244c-a7ba-38a6-a795-506f13022690",
+    "roomName": "H2"
+  },
+  "hasSharedResults": false,
+  "hearingDays": [
+    {
+      "courtCentreId": "f4b70f24-131b-32a3-b901-342082bf9615",
+      "courtRoomId": "ffc6244c-a7ba-38a6-a795-506f13022690",
+      "isCancelled": false,
+      "listedDurationMinutes": 10,
+      "listingSequence": 0,
+      "sittingDay": "2025-05-01T13:50:11.804Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "99db5ace-90c1-4169-bd4a-cda8e3e6fe84",
+  "jurisdictionType": "CROWN",
+  "prosecutionCases": [
+    {
+      "caseMarkers": [
+        {
+          "id": "6d7c21c7-155f-46e4-8460-17881080e080",
+          "markerTypeCode": "HT",
+          "markerTypeDescription": "Human Trafficking",
+          "markerTypeid": "e7eff972-189c-4957-8b1e-cb45213aa64e"
+        }
+      ],
+      "caseStatus": "ACTIVE",
+      "cpsOrganisation": "A30AB00",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "PersonGivenName11",
+              "lastName": "PersonFamilyName2",
+              "middleName": "PersonGivenName21 PersonGivenName31",
+              "title": "PersonTitle1"
+            }
+          ],
+          "associatedPersons": [
+            {
+              "person": {
+                "address": {
+                  "address1": "61FbYWjMFb",
+                  "address2": "56Police House",
+                  "address3": "StreetDescriptionG",
+                  "address4": "Locality2G",
+                  "address5": "Town2G",
+                  "postcode": "TW14 9XD"
+                },
+                "contact": {
+                  "home": "19998021888",
+                  "mobile": "19998021889",
+                  "primaryEmail": "Gvishnu@gmail.com",
+                  "secondaryEmail": "Gilja@gmail.com"
+                },
+                "dateOfBirth": "1967-05-22",
+                "ethnicity": {
+                  "observedEthnicityCode": "4",
+                  "observedEthnicityDescription": "Other",
+                  "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "GPersonGivenName11",
+                "gender": "MALE",
+                "lastName": "GPersonFamilyName2",
+                "middleName": "GPersonGivenName21 GPersonGivenName31",
+                "title": "GPersonTitle1"
+              },
+              "role": "ParentGuardian"
+            }
+          ],
+          "courtProceedingsInitiated": "2025-04-30T13:50:04.991Z",
+          "croNumber": "dtGYSvp3LXeu",
+          "id": "cce521f9-78e1-43f3-976b-c51a29faa5e0",
+          "isYouth": false,
+          "masterDefendantId": "cce521f9-78e1-43f3-976b-c51a29faa5e0",
+          "offences": [
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2025-04-30",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "05f69814-288a-496c-97f6-c0b7dd048e58",
+                "originatingHearingId": "99db5ace-90c1-4169-bd4a-cda8e3e6fe84",
+                "sequenceNumber": 90
+              },
+              "arrestDate": "2006-05-04",
+              "chargeDate": "2006-05-30",
+              "count": 0,
+              "endDate": "2005-05-05",
+              "endorsableFlag": false,
+              "id": "05f69814-288a-496c-97f6-c0b7dd048e58",
+              "listingNumber": 2,
+              "maxPenalty": "S:Ultd Fine",
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03014",
+              "offenceDateCode": 3,
+              "offenceDefinitionId": "b86778e9-bf52-3b40-9549-a8710c2e77cb",
+              "offenceFacts": {
+                "vehicleCode": "LARGE_GOODS_VEHICLE",
+                "vehicleRegistration": "TE4654"
+              },
+              "offenceLegislation": "Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+              "offenceLegislationWelsh": "Yn groes i adran 366(8)(b) a (9) Deddf Cyfathrebu 2003.",
+              "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+              "offenceTitleWelsh": "Methu / gwrthod rhoi cymorth i unigolyn sy'n gweithredu gwarant chwilio dan y Ddeddf Cyfathrebu",
+              "orderIndex": 500,
+              "plea": {
+                "offenceId": "05f69814-288a-496c-97f6-c0b7dd048e58",
+                "originatingHearingId": "99db5ace-90c1-4169-bd4a-cda8e3e6fe84",
+                "pleaDate": "2025-04-30",
+                "pleaValue": "GUILTY"
+              },
+              "startDate": "1996-05-04",
+              "wording": "-- Legislation: Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "REF1",
+            "bailConditions": "BailConditions0",
+            "bailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            },
+            "driverNumber": "MORGA657054SM9BF",
+            "perceivedBirthYear": 2006,
+            "personDetails": {
+              "address": {
+                "address1": "61FbYWjMFb",
+                "address2": "56Police HouseD",
+                "address3": "StreetDescriptionD",
+                "address4": "LocalityD",
+                "address5": "TownD",
+                "postcode": "TW14 9XD"
+              },
+              "contact": {
+                "home": "09998021888",
+                "mobile": "09998021889",
+                "primaryEmail": "robert@gmail.com",
+                "secondaryEmail": "ormsby@gmail.com",
+                "work": "0917894278022"
+              },
+              "dateOfBirth": "1967-05-22",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "4",
+                "observedEthnicityDescription": "Other",
+                "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Vanessa",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "interpreterLanguageNeeds": "LanguageNeeds0",
+              "lastName": "Reichel",
+              "middleName": "PersonGivenName20A PersonGivenName30A",
+              "occupation": "Occupation0",
+              "occupationCode": "50",
+              "specificRequirements": "SpecialNeeds0",
+              "title": "YR"
+            },
+            "policeBailConditions": "BailConditions0",
+            "policeBailStatus": {
+              "code": "B",
+              "description": "Conditional bail",
+              "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+            }
+          },
+          "pncId": "5013.4644744",
+          "prosecutionAuthorityReference": "REF1",
+          "prosecutionCaseId": "ae24ed90-dfb4-4989-b120-0b6ed9ad51e8"
+        }
+      ],
+      "id": "ae24ed90-dfb4-4989-b120-0b6ed9ad51e8",
+      "initiationCode": "C",
+      "originatingOrganisation": "0450000",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Surrey Police",
+          "address2": "Mount Browne",
+          "address3": "Sandy Lane",
+          "address4": "Guildford",
+          "postcode": "GU3 1HG"
+        },
+        "contact": {
+          "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+        },
+        "majorCreditorCode": "PO45",
+        "prosecutionAuthorityCode": "SURRPF",
+        "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+        "prosecutionAuthorityName": "Surrey Police",
+        "prosecutionAuthorityOUCode": "0450000",
+        "caseURN": "82GD5850525"
+      },
+      "statementOfFacts": "Prosecution fact text"
+    }
+  ],
+  "shadowListedOffences": [],
+  "type": {
+    "description": "Plea & Trial Preparation",
+    "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+  }
+}

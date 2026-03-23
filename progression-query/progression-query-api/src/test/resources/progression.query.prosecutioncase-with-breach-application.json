@@ -973,6 +973,7 @@
               "defendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309"
             },
             "id": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
+            "masterDefendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
             "judicialResults": [],
             "name": "Ivory Volkman",
             "offences": [
@@ -1403,6 +1404,7 @@
             ],
             "dateOfBirth": "2001-02-18",
             "id": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
+            "masterDefendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
             "judicialResults": [],
             "name": "Ivory Volkman"
           }

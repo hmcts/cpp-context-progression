@@ -27,6 +27,7 @@ public class PleaValueDescriptionBuilder {
     private static final String COURT_APPLICATIONS = "courtApplications";
     private static final String COURT_ORDERS = "courtOrders";
     private static final String COURT_ORDER_OFFENCES = "courtOrderOffences";
+    private static final String COURT_APPLICATION_CASES = "courtApplicationCases";
     private static final String PLEA = "plea";
 
     @Inject
@@ -57,6 +58,21 @@ public class PleaValueDescriptionBuilder {
                             }
                         })
                 ));
+
+        jsonNode.path(DEFENDANT).path(HEARINGS).forEach(hearing ->
+                hearing.path(COURT_APPLICATIONS).forEach(courtApplication ->
+                        courtApplication.path(COURT_APPLICATION_CASES).forEach(courtApplicationCase ->
+                                courtApplicationCase.path(OFFENCES).forEach(offence ->
+                                        offence.path(PLEAS).forEach(pleaNode -> {
+                                            if (pleaNode.has(PLEA_VALUE)) {
+                                                final ObjectNode plea = (ObjectNode) pleaNode;
+                                                plea.put(DESCRIPTION, pleaTypeDescriptions.get(plea.get(PLEA_VALUE).asText()));
+                                            }
+                                        })
+                                )
+                        )
+                )
+        );
 
         return objectMapper.treeToValue(jsonNode, JsonObject.class);
     }

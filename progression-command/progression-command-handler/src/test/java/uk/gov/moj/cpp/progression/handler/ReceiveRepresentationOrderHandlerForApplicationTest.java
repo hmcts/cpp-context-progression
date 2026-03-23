@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +32,7 @@ import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForApplication;
+import uk.gov.justice.core.courts.ReceiveRepresentationOrderForApplicationOnApplication;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -41,13 +44,16 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
+import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.progression.events.ApplicationLaaAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 import uk.gov.moj.cpp.progression.service.OrganisationService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +68,9 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -75,6 +84,14 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
     private static final String ORG_OFFENCE_WORDING = "On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong";
     private static final String ORG_OFFENCE_WORDING_WELSH = "On 12/10/2020 at 10:100am on the corner of the hugh street outside the";
     private static final String ORG_OFFENCE_CODE = "OFC0001";
+
+    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
+
+    private static Stream<Arguments> applicationTypes() {
+        return Stream.of(
+                Arguments.of("json/breach-application-payload.json"),
+                Arguments.of("json/poca-application-payload.json"));
+    }
 
     @Mock
     private EventSource eventSource;
@@ -100,7 +117,8 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
             ApplicationDefenceOrganisationChanged.class,
             DefendantDefenceOrganisationAssociated.class,
             DefendantDefenceOrganisationDisassociated.class,
-            ApplicationLaaAssociated.class);
+            ApplicationLaaAssociated.class,
+            ApplicationRepOrderUpdatedForApplication.class);
 
     @InjectMocks
     private ReceiveRepresentationOrderForApplicationHandler receiveRepresentationOrderHandler;
@@ -174,6 +192,14 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
     }
 
     @Test
+    void shouldHandleOnApplication() {
+        assertThat(new ReceiveRepresentationOrderForApplicationHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("handleOnApplication")
+                        .thatHandles("progression.command.handler.receive-representationOrder-for-application-on-application")
+                ));
+    }
+
+    @Test
     void shouldProcessCommandWhenOrganisationIsNotSetupAndNoAssociatedOrgExpectNoAssociationOrDisassociationEvent() throws EventStreamException {
 
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
@@ -187,7 +213,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(OrganisationDetails.newBuilder().build());
         receiveRepresentationOrderHandler.handle(envelope);
@@ -199,6 +225,36 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
                 .findAny();
 
         assertFalse(associatedOrDisAssociatedEnvelope.isPresent());
+    }
+
+    @ParameterizedTest
+    @MethodSource("applicationTypes")
+    void shouldProcessCommandForApplicationWhenOrganisationIsNotSetupAndNoAssociatedOrgExpectNoAssociationOrDisassociationEvent(final String applicationPayloadPath) throws EventStreamException, IOException {
+
+        final CourtApplication application = handlerTestHelper.convertFromFile(applicationPayloadPath, CourtApplication.class);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        applicationAggregate.createCourtApplication(application, null);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
+
+        final ReceiveRepresentationOrderForApplicationOnApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrderOnApplication(STATUS_CODE, application.getId());
+
+        final Envelope<ReceiveRepresentationOrderForApplicationOnApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application-on-application"), receiveRepresentationOrderForApplication);
+        when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
+        when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(OrganisationDetails.newBuilder().build());
+
+        receiveRepresentationOrderHandler.handleOnApplication(envelope);
+
+        final List<JsonEnvelope> eventList = verifyAppendAndGetArgumentFrom(eventStream).toList();
+
+        assertThat(eventList.size(), is(2));
+        assertThat(eventList.get(0).metadata().name(), is("progression.event.application-defence-organisation-changed"));
+        assertThat(eventList.get(1).metadata().name(), is("progression.event.application-rep-order-updated-for-application"));
+
     }
 
     @Test
@@ -214,7 +270,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(OrganisationDetails.newBuilder().build());
         receiveRepresentationOrderHandler.handle(envelope);
@@ -228,7 +284,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         //Verifying updated values
         ReceiveRepresentationOrderForApplication updateReceiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(UPDATED_STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        Envelope<ReceiveRepresentationOrderForApplication> updateEnvelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), updateReceiveRepresentationOrderForApplication);
+        Envelope<ReceiveRepresentationOrderForApplication> updateEnvelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), updateReceiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(UPDATED_STATUS_ID,UPDATED_STATUS_DESCRIPTION, UPDATED_STATUS)));
 
         receiveRepresentationOrderHandler.handle(updateEnvelope);
@@ -239,6 +295,53 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         verifyApplicationCaseOffenceLAAReference(updateEvent.getJsonObject("laaReference"),UPDATED_STATUS_ID, UPDATED_STATUS_DESCRIPTION, UPDATED_STATUS, UPDATED_STATUS_CODE);
         verifyApplicationCaseDefendantOrganisations(updateEvent.getJsonArray("applicationCaseDefendantOrganisations"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("applicationTypes")
+    void shouldProcessCommandForApplicationWhenApplicationAttachedAndUpdatedWithLAAReferenceEvent(final String applicationPayloadPath) throws EventStreamException, IOException {
+
+        final CourtApplication application = handlerTestHelper.convertFromFile(applicationPayloadPath, CourtApplication.class);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        applicationAggregate.createCourtApplication(application, null);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
+
+        final ReceiveRepresentationOrderForApplicationOnApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrderOnApplication(STATUS_CODE, application.getId());
+
+        final Envelope<ReceiveRepresentationOrderForApplicationOnApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application-on-application"), receiveRepresentationOrderForApplication);
+        when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
+        when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(OrganisationDetails.newBuilder().build());
+        receiveRepresentationOrderHandler.handleOnApplication(envelope);
+
+        JsonObject event = getEventAsJsonObjectFromStreamInGivenTimes(1, "progression.event.application-rep-order-updated-for-application", true);
+        assertThat(event.getString("applicationId"), is(application.getId().toString()));
+        assertThat(event.getString("subjectId"), is(application.getSubject().getId().toString()));
+
+        verifyApplicationCaseOffenceLAAReference(event.getJsonObject("laaReference"),STATUS_ID, STATUS_DESCRIPTION, STATUS, STATUS_CODE);
+        JsonObject applicationCaseDefendantOrganisation = event.getJsonArray("applicationCaseDefendantOrganisations").getJsonObject(0);
+        assertThat(applicationCaseDefendantOrganisation.getString("caseId"), is(application.getSubject().getMasterDefendant().getDefendantCase().get(0).getCaseId().toString()));
+        assertThat(applicationCaseDefendantOrganisation.getString("defendantId"), is(application.getSubject().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString()));
+
+        //Verifying updated values
+        ReceiveRepresentationOrderForApplicationOnApplication updateReceiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrderOnApplication(UPDATED_STATUS_CODE, application.getId());
+        Envelope<ReceiveRepresentationOrderForApplicationOnApplication> updateEnvelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application-on-application"), updateReceiveRepresentationOrderForApplication);
+        when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(UPDATED_STATUS_ID,UPDATED_STATUS_DESCRIPTION, UPDATED_STATUS)));
+
+        receiveRepresentationOrderHandler.handleOnApplication(updateEnvelope);
+
+        JsonObject updateEvent = getEventAsJsonObjectFromStreamInGivenTimes(2, "progression.event.application-rep-order-updated-for-application", true);
+        assertThat(updateEvent.getString("applicationId"), is(application.getId().toString()));
+        assertThat(updateEvent.getString("subjectId"), is(application.getSubject().getId().toString()));
+
+        verifyApplicationCaseOffenceLAAReference(updateEvent.getJsonObject("laaReference"),UPDATED_STATUS_ID, UPDATED_STATUS_DESCRIPTION, UPDATED_STATUS, UPDATED_STATUS_CODE);
+        applicationCaseDefendantOrganisation = updateEvent.getJsonArray("applicationCaseDefendantOrganisations").getJsonObject(0);
+        assertThat(applicationCaseDefendantOrganisation.getString("caseId"), is(application.getSubject().getMasterDefendant().getDefendantCase().get(0).getCaseId().toString()));
+        assertThat(applicationCaseDefendantOrganisation.getString("defendantId"), is(application.getSubject().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString()));
     }
 
     @Test
@@ -254,7 +357,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(OrganisationDetails.newBuilder().build());
         receiveRepresentationOrderHandler.handle(envelope);
@@ -284,7 +387,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -312,7 +415,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(null));
 
@@ -336,7 +439,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -361,7 +464,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -386,7 +489,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -423,7 +526,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -465,7 +568,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         final UUID organisationId = randomUUID();
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
@@ -476,7 +579,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> newEnvelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> newEnvelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
 
         receiveRepresentationOrderHandler.handle(newEnvelope);
 
@@ -494,7 +597,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         final UUID organisationId = randomUUID();
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
@@ -505,7 +608,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
         receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
 
-        final Envelope<ReceiveRepresentationOrderForApplication> newEnvelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> newEnvelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
 
         receiveRepresentationOrderHandler.handle(newEnvelope);
 
@@ -524,7 +627,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, UUID.randomUUID(), OFFENCE_ID);
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -550,7 +653,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, UUID.randomUUID());
-        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForApplication(), receiveRepresentationOrderForApplication);
+        final Envelope<ReceiveRepresentationOrderForApplication> envelope = Envelope.envelopeFrom(getCommandMetadata("progression.command.handler.receive-representationOrder-for-application"), receiveRepresentationOrderForApplication);
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(), any())).thenReturn(Optional.of(getLegalStatus(STATUS_ID,STATUS_DESCRIPTION, STATUS)));
         when(usersGroupService.getOrganisationDetailsForLAAContractNumber(any(), any())).thenReturn(getOrganisationDetails(organisationId));
 
@@ -628,6 +731,26 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
 
     }
 
+    private static ReceiveRepresentationOrderForApplicationOnApplication payloadForReceiveRepresentationOrderOnApplication(final String statusCode, final UUID applicationId) {
+        return ReceiveRepresentationOrderForApplicationOnApplication.receiveRepresentationOrderForApplicationOnApplication()
+                .withApplicationReference(APPLICATION_REFERENCE)
+                .withApplicationId(applicationId)
+                .withStatusCode(statusCode)
+                .withStatusDate(LocalDate.parse("2019-07-01"))
+                .withEffectiveStartDate(LocalDate.parse("2019-09-01"))
+                .withEffectiveEndDate(LocalDate.parse("2019-12-01"))
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withLaaContractNumber(LAA_CONTRACT_NUMBER)
+                        .withOrganisation(Organisation.organisation()
+                                .withName(ORG_NAME)
+                                .withIncorporationNumber(INCORPORATION_NUMBER)
+                                .build())
+                        .build())
+                .build();
+
+
+    }
+
     private void verifyApplicationCaseDefendantOrganisations(final JsonArray applicationCaseDefendants) {
         JsonObject applicationCaseDefendantOrganisation = applicationCaseDefendants.getJsonObject(0);
         assertThat(applicationCaseDefendantOrganisation.getString("caseId"), is(CASE_ID_1.toString()));
@@ -654,10 +777,10 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
                 .build();
     }
 
-    private static Metadata getProgressionCommandHandlerReceiveRepresentationOrderForApplication() {
+    private static Metadata getCommandMetadata(final String commandName) {
         return Envelope
                 .metadataBuilder()
-                .withName("progression.command.handler.receive-representationOrder-for-application")
+                .withName(commandName)
                 .withId(randomUUID())
                 .build();
     }

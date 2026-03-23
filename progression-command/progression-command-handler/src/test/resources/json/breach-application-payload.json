@@ -1,0 +1,355 @@
+{
+  "allegationOrComplaintEndDate": "2025-09-05",
+  "allegationOrComplaintStartDate": "2025-09-05",
+  "applicant": {
+    "id": "dc993095-e3d1-4c19-94dc-0bfc3363a1fc",
+    "masterDefendant": {
+      "defendantCase": [
+        {
+          "caseId": "9bd328dc-8cd0-47c7-be92-719c18e919e2",
+          "caseReference": "RQ231272686",
+          "defendantId": "2ecbd5f8-668c-43ce-99b3-b50053fb52cd"
+        }
+      ],
+      "masterDefendantId": "2ecbd5f8-668c-43ce-99b3-b50053fb52cd",
+      "personDefendant": {
+        "arrestSummonsNumber": "2391NX0000531141751D",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "driverNumber": "VANFL002222OW9PH",
+        "personDetails": {
+          "address": {
+            "address1": "25 Park Avenue",
+            "address2": "Park Avenue",
+            "address3": "Birmingham",
+            "address4": "West Midlands",
+            "postcode": "NW1 5BR"
+          },
+          "contact": {
+            "home": "0226238682",
+            "mobile": "07138376989",
+            "primaryEmail": "carlena.turcotte@example.com"
+          },
+          "dateOfBirth": "1999-09-05",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Carlena",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Turcotte",
+          "title": "Mr"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      }
+    },
+    "notificationRequired": true,
+    "summonsRequired": true
+  },
+  "applicationReceivedDate": "2025-09-05",
+  "applicationReference": "RQ231232111,RQ231272686",
+  "applicationStatus": "IN_PROGRESS",
+  "commissionerOfOath": false,
+  "courtOrder": {
+    "canBeSubjectOfBreachProceedings": true,
+    "canBeSubjectOfVariationProceedings": true,
+    "courtOrderOffences": [
+      {
+        "offence": {
+          "aquittalDate": "2025-09-06",
+          "arrestDate": "2025-08-21",
+          "chargeDate": "2025-08-26",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "8024f3d3-ff35-407d-82ec-0eed34bccb21",
+          "isDisposed": true,
+          "listingNumber": 1,
+          "maxPenalty": "EW:6M &/or Ultd Fine",
+          "modeOfTrial": "Either Way",
+          "offenceCode": "CJ03522",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "33f51061-dc2b-3af7-9802-240639a8d807",
+          "offenceFacts": {
+            "alcoholReadingAmount": 500,
+            "alcoholReadingMethodCode": "A",
+            "alcoholReadingMethodDescription": "Blood"
+          },
+          "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft Act 1968.",
+          "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+          "offenceTitle": "Theft from the person of another",
+          "offenceTitleWelsh": "Dwyn oddi ar berson",
+          "orderIndex": 1,
+          "plea": {
+            "offenceId": "8024f3d3-ff35-407d-82ec-0eed34bccb21",
+            "originatingHearingId": "d8a5e808-a5ff-4fef-b9ae-d1ebb77d441c",
+            "pleaDate": "2025-09-06",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "startDate": "2025-07-07",
+          "wording": "Original CaseURN: RQ231232111, Re-sentenced Original code : TH68001, Original details: Theft from the person of another"
+        },
+        "prosecutionCaseId": "b7692534-5e60-4f30-ba58-3817bae84c68",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "RQ231232111"
+        }
+      },
+      {
+        "offence": {
+          "allocationDecision": {
+            "allocationDecisionDate": "2025-09-06",
+            "motReasonCode": "02",
+            "motReasonDescription": "Indictable-only offence",
+            "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+            "offenceId": "61e08b5c-a482-4252-8c30-dc841d506d6c",
+            "originatingHearingId": "d8a5e808-a5ff-4fef-b9ae-d1ebb77d441c",
+            "sequenceNumber": 100
+          },
+          "aquittalDate": "2025-09-06",
+          "arrestDate": "2025-08-21",
+          "chargeDate": "2025-08-26",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "61e08b5c-a482-4252-8c30-dc841d506d6c",
+          "isDisposed": true,
+          "listingNumber": 1,
+          "maxPenalty": "Indictable only",
+          "modeOfTrial": "Indictable",
+          "offenceCode": "CJ03522",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+          "offenceFacts": {
+            "alcoholReadingAmount": 500,
+            "alcoholReadingMethodCode": "A",
+            "alcoholReadingMethodDescription": "Blood"
+          },
+          "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+          "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+          "offenceTitle": "Robbery",
+          "offenceTitleWelsh": "Ysbeilio/Lladrad",
+          "orderIndex": 1,
+          "plea": {
+            "offenceId": "61e08b5c-a482-4252-8c30-dc841d506d6c",
+            "originatingHearingId": "d8a5e808-a5ff-4fef-b9ae-d1ebb77d441c",
+            "pleaDate": "2025-09-06",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "startDate": "2025-07-07",
+          "wording": "Original CaseURN: RQ231272686, Re-sentenced Original code : TH68023, Original details: Robbery"
+        },
+        "prosecutionCaseId": "9bd328dc-8cd0-47c7-be92-719c18e919e2",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "RQ231272686"
+        }
+      }
+    ],
+    "defendantIds": [
+      "1ca55bae-77fd-492e-88a8-2fe65c254a98",
+      "2ecbd5f8-668c-43ce-99b3-b50053fb52cd"
+    ],
+    "endDate": "2025-12-24",
+    "expiryDate": "2025-12-24",
+    "id": "8bf1a756-fa65-48ff-b763-cdf61f2a1126",
+    "isSJPOrder": false,
+    "isUnpaidWork": false,
+    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+    "label": "Community order England / Wales",
+    "masterDefendantId": "2ecbd5f8-668c-43ce-99b3-b50053fb52cd",
+    "orderDate": "2025-09-06",
+    "orderingCourt": {
+      "address": {
+        "address1": "1 Queen Victoria Street",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "EC4N 4XY"
+      },
+      "code": "B01DU00",
+      "courtHearingLocation": "B01DU02",
+      "id": "c133d0de-c989-48b9-bd20-0431943e347e",
+      "lja": {
+        "ljaCode": "2570",
+        "ljaName": "Central London Magistrates' Court"
+      },
+      "name": "City of London Magistrates' Court",
+      "roomId": "6d335b1f-769f-3120-bcda-c5d7c0725d3a",
+      "roomName": "Courtroom 02"
+    },
+    "orderingHearingId": "d8a5e808-a5ff-4fef-b9ae-d1ebb77d441c",
+    "startDate": "2025-09-06"
+  },
+  "defendantASN": "0800PP0100000000001H",
+  "futureSummonsHearing": {
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2025-09-05T09:00:00.000Z",
+    "estimatedMinutes": 20,
+    "jurisdictionType": "MAGISTRATES"
+  },
+  "hasSummonsSupplied": false,
+  "id": "3ac5cf0a-d7c2-4c95-b603-b7ff4429fc63",
+  "respondents": [
+    {
+      "id": "a8cb9b66-f008-4b60-a3f9-3d8c82699e6f",
+      "notificationRequired": true,
+      "prosecutingAuthority": {
+        "address": {
+          "address1": "Bishopsgate police station",
+          "address2": "182, Bishopsgate",
+          "address5": "London",
+          "postcode": "EC2M 4NP"
+        },
+        "contact": {
+          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+        },
+        "majorCreditorCode": "COLP",
+        "name": "City of London Police",
+        "prosecutionAuthorityCode": "CITYPF",
+        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+        "prosecutionAuthorityOUCode": "0480000",
+        "welshName": "Heddlu Dinas Llundain"
+      },
+      "summonsRequired": true
+    }
+  ],
+  "subject": {
+    "id": "dc993095-e3d1-4c19-94dc-0bfc3363a1fc",
+    "masterDefendant": {
+      "defendantCase": [
+        {
+          "caseId": "9bd328dc-8cd0-47c7-be92-719c18e919e2",
+          "caseReference": "RQ231272686",
+          "defendantId": "2ecbd5f8-668c-43ce-99b3-b50053fb52cd"
+        }
+      ],
+      "masterDefendantId": "2ecbd5f8-668c-43ce-99b3-b50053fb52cd",
+      "personDefendant": {
+        "arrestSummonsNumber": "2391NX0000531141751D",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "driverNumber": "VANFL002222OW9PH",
+        "personDetails": {
+          "address": {
+            "address1": "25 Park Avenue",
+            "address2": "Park Avenue",
+            "address3": "Birmingham",
+            "address4": "West Midlands",
+            "postcode": "NW1 5BR"
+          },
+          "contact": {
+            "home": "0226238682",
+            "mobile": "07138376989",
+            "primaryEmail": "carlena.turcotte@example.com"
+          },
+          "dateOfBirth": "1999-09-05",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Carlena",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Turcotte",
+          "title": "Mr"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      }
+    },
+    "notificationRequired": true,
+    "summonsRequired": true
+  },
+  "type": {
+    "appealFlag": false,
+    "applicantAppellantFlag": false,
+    "applicationWording": "Failed to comply with a reparation order made on {1} at {2} {3} by {4}",
+    "applicationWordingWelsh": "Bu i chi fethu cydymffurfio â gorchymyn gwneud iawn a wnaethpwyd ar <Date of order> yn <Name of court> <[am y trosedd <Original Offence][am y troseddau <Original Offences>]> drwy <Failure to comply>",
+    "boxworkNotifTemplate": "NOT_APPLICABLE",
+    "breachType": "GENERIC_BREACH",
+    "categoryCode": "CB",
+    "changeDate": "2025-03-17T10:51:56",
+    "code": "PC00595",
+    "commrOfOathFlag": false,
+    "contestedFeeApplicable": false,
+    "courtExtractAvlFlag": true,
+    "courtOfAppealFlag": false,
+    "exParte": false,
+    "hearingCode": "BOO",
+    "id": "63f87f8b-2eae-4257-809c-78477b21afae",
+    "initialFeeApplicable": false,
+    "jurisdiction": "EITHER",
+    "lastModified": "2025-03-17T14:00:37.463Z",
+    "legislation": "In accordance with paragraph 2 of Schedule 8 to the Powers of Criminal Courts (Sentencing) Act 2000.",
+    "legislationWelsh": "Yn unol â pharagraff 2 Atodlen 8 Deddf Pwerau’r Llysoedd Troseddol (Dedfrydu) 2000.",
+    "linkType": "LINKED",
+    "listingNotifTemplate": "NOT_APPLICABLE",
+    "offenceActiveOrder": "COURT_ORDER",
+    "pleaApplicableFlag": true,
+    "prefix": "Resentenced",
+    "prosecutorThirdPartyFlag": false,
+    "pssId": 627517,
+    "resentencingActivationCode": "CJ03522",
+    "sowRef": "APPS",
+    "spiOutApplicableFlag": true,
+    "summonsTemplateType": "BREACH",
+    "type": "Fail to comply with reparation order",
+    "typeWelsh": "Methu â chydymffurfio â gorchymyn gwneud iawn",
+    "validFrom": "2007-02-01"
+  }
+}

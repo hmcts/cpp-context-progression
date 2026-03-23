@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,7 +67,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsWithDefendantAsYouth() {
+    public void shouldInitiateCourtProceedingsWithDefendantAsYouth() throws IOException {
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPublicEventProsecutionCaseCreated();
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
@@ -117,7 +118,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws JSONException {
+    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws IOException, JSONException {
 
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();

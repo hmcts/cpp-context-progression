@@ -1,0 +1,681 @@
+{
+  "caseReference": "28DI1162999",
+  "companyRepresentatives": [],
+  "defendant": {
+    "address": {
+      "address1": "21",
+      "address2": "Furnburry Park Road",
+      "address3": "London",
+      "postcode": "SW11 3TQ"
+    },
+    "age": "24",
+    "arrestSummonsNumber": "DEF011162999",
+    "attendanceDays": [
+      {
+        "attendanceType": "Present - by video",
+        "day": "2025-06-25"
+      },
+      {
+        "attendanceType": "Present - by video",
+        "day": "2025-06-25"
+      }
+    ],
+    "dateOfBirth": "2001-02-18",
+    "defenceOrganisations": [
+      {}
+    ],
+    "ethnicity": "British",
+    "gender": "MALE",
+    "hearings": [
+      {
+        "allOffencesProceedingsConcluded": true,
+        "attendanceDays": [
+          {
+            "attendanceType": "Present - by video",
+            "day": "2025-06-25"
+          }
+        ],
+        "authorisedLegalAdvisors": [],
+        "courtApplications": [
+          {
+            "applicationDate": "2025-06-25",
+            "applicationLegislation": "In accordance with section 13 of the Powers of Criminal Courts (Sentencing) Act 2000.",
+            "applicationResults": [
+              {
+                "result": {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "063b84b4-9297-4093-92da-d1861e602a9d",
+                  "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "label": "Granted",
+                  "lastSharedDateTime": "2025-06-25",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-06-25",
+                  "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 98500,
+                  "resultText": "G - Granted",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "063b84b4-9297-4093-92da-d1861e602a9d",
+                  "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": []
+                }
+              }
+            ],
+            "applicationType": "Commission of further offence whilst subject to a Conditional Discharge",
+            "courtApplicationCases": [
+              {
+                "caseStatus": "ACTIVE",
+                "isSJP": false,
+                "offences": [],
+                "prosecutionCaseId": "872f99a3-1fa6-4312-8041-a4ab5c423a56"
+              }
+            ],
+            "courtOrders": {
+              "canBeSubjectOfBreachProceedings": true,
+              "courtOrderOffences": [
+                {
+                  "courtOrderOffencesOffenceLevelResults": [
+                    {
+                      "result": {
+                        "alwaysPublished": false,
+                        "canBeSubjectOfBreach": false,
+                        "canBeSubjectOfVariation": false,
+                        "canExtendActiveOrder": false,
+                        "category": "FINAL",
+                        "cjsCode": "1002",
+                        "courtClerk": {
+                          "firstName": "Erica",
+                          "lastName": "Wilson",
+                          "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                        },
+                        "d20": false,
+                        "durationElement": {
+                          "primaryDurationUnit": "Y",
+                          "primaryDurationValue": 2
+                        },
+                        "dvlaCode": "A",
+                        "excludedFromResults": false,
+                        "isAdjournmentResult": false,
+                        "isAvailableForCourtExtract": true,
+                        "isConvictedResult": true,
+                        "isDeleted": false,
+                        "isFinancialResult": false,
+                        "isNewAmendment": true,
+                        "isUnscheduled": false,
+                        "judicialResultId": "8826d5f7-7746-4b4f-8727-23a824791be7",
+                        "judicialResultPrompts": [
+                          {
+                            "courtExtract": "Y",
+                            "durationSequence": 1,
+                            "isFinancialImposition": false,
+                            "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                            "label": "Imprisonment Period",
+                            "promptReference": "imprisonmentPeriod",
+                            "promptSequence": 100,
+                            "type": "INTM",
+                            "usergroups": [],
+                            "value": "2 Years",
+                            "welshLabel": "Cyfnod Carcharu",
+                            "welshValue": "2 Years"
+                          },
+                          {
+                            "courtExtract": "Y",
+                            "isFinancialImposition": false,
+                            "judicialResultPromptTypeId": "ea957761-0813-4a92-9e7c-b536654325f0",
+                            "label": "Imprisonment reasons",
+                            "promptReference": "imprisonmentReasons",
+                            "promptSequence": 200,
+                            "type": "FIXL",
+                            "usergroups": [],
+                            "value": "there has been a wilful and persistent failure to comply with your community order",
+                            "welshLabel": "Rhesymau dros garcharu",
+                            "welshValue": "bu methiant bwriadol a pharhaus i gydymffurfio â'ch gorchymyn gymunedol"
+                          },
+                          {
+                            "courtExtract": "Y",
+                            "isFinancialImposition": false,
+                            "judicialResultPromptTypeId": "622aa563-a3db-4102-ba7e-21c21cee0110",
+                            "label": "Reason for custody",
+                            "promptReference": "theReasonsForThis",
+                            "promptSequence": 300,
+                            "type": "FIXLOM",
+                            "usergroups": [],
+                            "value": "because of an unprovoked attack of a serious nature",
+                            "welshValue": "because of an unprovoked attack of a serious nature"
+                          },
+                          {
+                            "courtExtract": "N",
+                            "isFinancialImposition": false,
+                            "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                            "label": "Bail remand days to count (tagged days)",
+                            "promptReference": "bailRemandDaysToCountTaggedDays",
+                            "promptSequence": 500,
+                            "type": "INT",
+                            "usergroups": [],
+                            "value": "20",
+                            "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                            "welshValue": "20"
+                          },
+                          {
+                            "courtExtract": "Y",
+                            "isFinancialImposition": false,
+                            "judicialResultPromptTypeId": "26f082eb-d599-43bb-9725-0e47ab86d535",
+                            "label": "This offence is aggravated by the foreign power condition being met in relation to it as defined by section 31 of the National Security Act 2023",
+                            "promptReference": "offenceAggByForeignPowerCondition",
+                            "promptSequence": 550,
+                            "type": "BOOLEAN",
+                            "usergroups": [],
+                            "value": "false",
+                            "welshValue": "false"
+                          }
+                        ],
+                        "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                        "label": "Imprisonment",
+                        "lastSharedDateTime": "2025-06-25",
+                        "level": "O",
+                        "lifeDuration": false,
+                        "orderedDate": "2025-06-25",
+                        "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+                        "policeSubjectLineTitle": "Final Sentence",
+                        "postHearingCustodyStatus": "A",
+                        "preserveActiveOrder": false,
+                        "publishedAsAPrompt": false,
+                        "publishedForNows": false,
+                        "rank": 75700,
+                        "resultText": "IMP - Imprisonment\nCommitted to prison for 2 Years. Reason: there has been a wilful and persistent failure to comply with your community order because of an unprovoked attack of a serious nature. Bail remand days to count (Tagged Days): 20. \n \n ",
+                        "rollUpPrompts": true,
+                        "rootJudicialResultId": "8826d5f7-7746-4b4f-8727-23a824791be7",
+                        "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                        "terminatesOffenceProceedings": false,
+                        "urgent": false,
+                        "usergroups": []
+                      }
+                    }
+                  ],
+                  "deletedCourtOrderOffenceOffenceLevelResults": [],
+                  "id": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+                  "offenceCode": "CJ03522",
+                  "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                  "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                  "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                  "resultTextList": [
+                    "IMP - Imprisonment\nCommitted to prison for 2 Years. Reason: there has been a wilful and persistent failure to comply with your community order because of an unprovoked attack of a serious nature. Bail remand days to count (Tagged Days): 20. \n \n "
+                  ],
+                  "startDate": "2022-12-12",
+                  "wording": "Original CaseURN: 28DI1041938, Re-sentenced Original code : CA03012, Original details: Adriel Kulas have set up a TV cable without a valid license."
+                }
+              ],
+              "id": "f48398e3-0b4e-4804-884a-b7a7f5241af9",
+              "label": "Conditional discharge",
+              "orderDate": "2025-06-25",
+              "startDate": "2025-06-25"
+            },
+            "deletedApplicationResults": [],
+            "id": "89c51450-7c8f-43a6-8f05-1e8358f394b6",
+            "representation": {
+              "applicantRepresentation": {},
+              "respondentRepresentation": [
+                {},
+                {}
+              ]
+            }
+          }
+        ],
+        "courtCentre": {
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "name": "Lavender Hill Magistrates' Court"
+        },
+        "defendantResults": [
+          {
+            "result": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "ANCILLARY",
+              "cjsCode": "3117",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": true,
+              "isDeleted": false,
+              "isFinancialResult": true,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "af0e4479-92b4-499e-9e71-d9b87809c1d6",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": true,
+                  "judicialResultPromptTypeId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+                  "label": "Amount of surcharge",
+                  "promptReference": "AOS",
+                  "promptSequence": 100,
+                  "type": "CURR",
+                  "usergroups": [],
+                  "value": "£120.00",
+                  "welshLabel": "Swm y gordal",
+                  "welshValue": "£120.00"
+                }
+              ],
+              "judicialResultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+              "label": "Surcharge",
+              "lastSharedDateTime": "2025-06-25",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+              "orderedDate": "2025-06-25",
+              "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+              "parentJudicialResultId": "f0a5308c-391b-4b40-abac-228790a11080",
+              "parentJudicialResultTypeId": "386a3a47-b2cb-4017-9dd8-19ffeb457b56",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 1100,
+              "resultDefinitionGroup": "Imposition",
+              "resultText": "FVS - Surcharge\nTo pay a surcharge of £120.00",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+              "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gordal"
+            }
+          },
+          {
+            "result": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "2292050a-c5e4-4d70-93b6-12d005adc4d8",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "12/12/2027",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "12/12/2027"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2025-06-25",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+              "orderedDate": "2025-06-25",
+              "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+              "parentJudicialResultId": "a6f1fd01-7d66-4bd5-9352-a197517c42b9",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/12/2027.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+              "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            }
+          }
+        ],
+        "deletedDefendantResults": [],
+        "hearingDays": [
+          {
+            "day": "2025-06-25",
+            "time": "22:30"
+          }
+        ],
+        "id": "657a947b-0c4c-4024-8202-c65e64a1b221",
+        "jurisdictionType": "MAGISTRATES",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-06-25",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+              "originatingHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+              "sequenceNumber": 90
+            },
+            "convictionDate": "2025-06-25",
+            "count": 0,
+            "deletedResults": [],
+            "id": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+            "offenceCode": "CA03012",
+            "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+            "orderIndex": 1,
+            "pleas": [
+              {
+                "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+                "originatingHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+                "pleaDate": "2025-06-25",
+                "pleaValue": "GUILTY"
+              }
+            ],
+            "proceedingsConcluded": true,
+            "results": [
+              {
+                "result": {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "cjsCode": "1002",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "durationElement": {
+                    "primaryDurationUnit": "Y",
+                    "primaryDurationValue": 3
+                  },
+                  "dvlaCode": "A",
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "9dbe839c-3804-4c47-bf9e-5be6f9b9b3bb",
+                      "label": "Total custodial period is life",
+                      "promptReference": "totalCustodialPeriodIsLife",
+                      "promptSequence": 200,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "durationSequence": 1,
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                      "label": "Imprisonment Period",
+                      "promptReference": "imprisonmentPeriod",
+                      "promptSequence": 100,
+                      "type": "INTM",
+                      "usergroups": [],
+                      "value": "3 Years",
+                      "welshLabel": "Cyfnod Carcharu",
+                      "welshValue": "3 Years"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "ea957761-0813-4a92-9e7c-b536654325f0",
+                      "label": "Imprisonment reasons",
+                      "promptReference": "imprisonmentReasons",
+                      "promptSequence": 200,
+                      "type": "FIXL",
+                      "usergroups": [],
+                      "value": "failure to comply with requirements of post custodial sentence supervision",
+                      "welshLabel": "Rhesymau dros garcharu",
+                      "welshValue": "methu â chydymffurfio â gofynion goruchwyliaeth ar ôl dedfryd o garchar"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "622aa563-a3db-4102-ba7e-21c21cee0110",
+                      "label": "Reason for custody",
+                      "promptReference": "theReasonsForThis",
+                      "promptSequence": 300,
+                      "type": "FIXLOM",
+                      "usergroups": [],
+                      "value": "because of an unprovoked attack of a serious nature",
+                      "welshValue": "because of an unprovoked attack of a serious nature"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "26f082eb-d599-43bb-9725-0e47ab86d535",
+                      "label": "This offence is aggravated by the foreign power condition being met in relation to it as defined by section 31 of the National Security Act 2023",
+                      "promptReference": "offenceAggByForeignPowerCondition",
+                      "promptSequence": 550,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "false",
+                      "welshValue": "false"
+                    }
+                  ],
+                  "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                  "label": "Imprisonment",
+                  "lastSharedDateTime": "2025-06-25",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-06-25",
+                  "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+                  "policeSubjectLineTitle": "Final Sentence",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 75700,
+                  "resultText": "IMP - Imprisonment\nCommitted to prison for 3 Years. Reason: failure to comply with requirements of post custodial sentence supervision because of an unprovoked attack of a serious nature. Bail remand days to count (Tagged Days): 12. Total custodial period is life.\n \n ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+                  "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": []
+                }
+              }
+            ],
+            "startDate": "2022-12-12",
+            "verdicts": [],
+            "wording": "Gay Zboncak have set up a TV cable without a valid license."
+          }
+        ],
+        "type": "First hearing"
+      }
+    ],
+    "id": "553cd1f2-62d7-4208-a8a8-cc50db1e0404",
+    "name": "Genia Cummings",
+    "remandStatus": "Not applicable",
+    "results": [
+      {
+        "alwaysPublished": true,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "canExtendActiveOrder": false,
+        "category": "ANCILLARY",
+        "cjsCode": "3117",
+        "courtClerk": {
+          "firstName": "Erica",
+          "lastName": "Wilson",
+          "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": true,
+        "isDeleted": false,
+        "isFinancialResult": true,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "af0e4479-92b4-499e-9e71-d9b87809c1d6",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": true,
+            "judicialResultPromptTypeId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+            "label": "Amount of surcharge",
+            "promptReference": "AOS",
+            "promptSequence": 100,
+            "type": "CURR",
+            "usergroups": [],
+            "value": "£120.00",
+            "welshLabel": "Swm y gordal",
+            "welshValue": "£120.00"
+          }
+        ],
+        "judicialResultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+        "label": "Surcharge",
+        "lastSharedDateTime": "2025-06-25",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+        "orderedDate": "2025-06-25",
+        "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+        "parentJudicialResultId": "f0a5308c-391b-4b40-abac-228790a11080",
+        "parentJudicialResultTypeId": "386a3a47-b2cb-4017-9dd8-19ffeb457b56",
+        "postHearingCustodyStatus": "A",
+        "preserveActiveOrder": false,
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 1100,
+        "resultDefinitionGroup": "Imposition",
+        "resultText": "FVS - Surcharge\nTo pay a surcharge of £120.00",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+        "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Gordal"
+      },
+      {
+        "alwaysPublished": true,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "canExtendActiveOrder": false,
+        "category": "FINAL",
+        "courtClerk": {
+          "firstName": "Erica",
+          "lastName": "Wilson",
+          "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "2292050a-c5e4-4d70-93b6-12d005adc4d8",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+            "label": "Date to pay in full by",
+            "promptReference": "PBD",
+            "promptSequence": 100,
+            "type": "DATE",
+            "usergroups": [],
+            "value": "12/12/2027",
+            "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+            "welshValue": "12/12/2027"
+          }
+        ],
+        "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+        "label": "Pay by date",
+        "lastSharedDateTime": "2025-06-25",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "f8b6c3b6-2020-4705-8d61-b265e9b3fa48",
+        "orderedDate": "2025-06-25",
+        "orderedHearingId": "657a947b-0c4c-4024-8202-c65e64a1b221",
+        "parentJudicialResultId": "a6f1fd01-7d66-4bd5-9352-a197517c42b9",
+        "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+        "postHearingCustodyStatus": "A",
+        "preserveActiveOrder": false,
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 120500,
+        "resultDefinitionGroup": "Payment terms",
+        "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/12/2027.",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "7a39b9b2-8187-4fdd-a859-8d846c67b19d",
+        "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Dyddiad terfyn ar gyfer talu"
+      }
+    ]
+  },
+  "extractType": "CrownCourtExtract",
+  "isAppealPending": false,
+  "publishingCourt": {
+    "name": "Lavender Hill Magistrates' Court"
+  }
+}

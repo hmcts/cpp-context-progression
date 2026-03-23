@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.progression.query.api.service.RecordSheetService.RE
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.api.resource.utils.ReportsTransformer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -35,7 +36,7 @@ class RecordSheetServiceTest {
 
 
     @Mock
-    private CourtExtractTransformer courtExtractTransformer;
+    private ReportsTransformer reportsTransformer;
 
     @InjectMocks
     private RecordSheetService recordSheetService;
@@ -58,11 +59,11 @@ class RecordSheetServiceTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(QueryClientTestBase.metadataFor("progression.query.record-sheet-for-application", randomUUID()), payload);
 
         final JsonObject transformerResult = createObjectBuilder().add("defendant",createObjectBuilder().add("name", defendantName).build()).build();
-        when(courtExtractTransformer.getTransformedPayload(document,defendantId,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult);
+        when(reportsTransformer.getTransformedPayload(document,defendantId,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult);
 
         final JsonEnvelope result = recordSheetService.getTrialRecordSheetPayloadForApplication(envelope, document,userId);
 
-        verify(courtExtractTransformer).getTransformedPayload(document,defendantId,RECORD_SHEET, Collections.emptyList(), userId);
+        verify(reportsTransformer).getTransformedPayload(document,defendantId,RECORD_SHEET, Collections.emptyList(), userId);
 
         final JsonArray payloadAsJsonArray = result.payloadAsJsonObject().getJsonArray("payloads");
         assertThat(payloadAsJsonArray.size(), is(1));
@@ -96,12 +97,12 @@ class RecordSheetServiceTest {
         final JsonObject transformerResult1 = createObjectBuilder().add("defendant",createObjectBuilder().add("name", defendantName1).build()).build();
         final JsonObject transformerResult2 = createObjectBuilder().add("defendant",createObjectBuilder().add("name", defendantName2).build()).build();
 
-        when(courtExtractTransformer.getTransformedPayload(document,defendantId1,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult1);
-        when(courtExtractTransformer.getTransformedPayload(document,defendantId2,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult2);
+        when(reportsTransformer.getTransformedPayload(document,defendantId1,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult1);
+        when(reportsTransformer.getTransformedPayload(document,defendantId2,RECORD_SHEET, Collections.emptyList(), userId)).thenReturn(transformerResult2);
         final JsonEnvelope result = recordSheetService.getTrialRecordSheetPayloadForApplication(envelope, document,userId);
 
-        verify(courtExtractTransformer).getTransformedPayload(document,defendantId1,RECORD_SHEET, Collections.emptyList(), userId);
-        verify(courtExtractTransformer).getTransformedPayload(document,defendantId2,RECORD_SHEET, Collections.emptyList(), userId);
+        verify(reportsTransformer).getTransformedPayload(document,defendantId1,RECORD_SHEET, Collections.emptyList(), userId);
+        verify(reportsTransformer).getTransformedPayload(document,defendantId2,RECORD_SHEET, Collections.emptyList(), userId);
 
         final JsonArray payloadAsJsonArray = result.payloadAsJsonObject().getJsonArray("payloads");
         assertThat(payloadAsJsonArray.size(), is(2));

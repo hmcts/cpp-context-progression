@@ -840,6 +840,7 @@
               "defendantId": "DEFENDANT_ID"
             },
             "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
             "judicialResults": [],
             "name": "BobOdell Bot-Beier",
             "offences": [

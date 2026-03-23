@@ -852,6 +852,7 @@
               "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
             },
             "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
             "judicialResults": [],
             "name": "Kayla Walter",
             "offences": [

@@ -1,0 +1,42 @@
+{
+  "caseHearings": [
+    {
+      "hearingId": "12b33467-f3a4-4456-9c48-5e958ff52d76",
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "sittingDay": "2023-07-11T12:30:00.000Z"
+        }
+      ]
+    }
+  ],
+  "linkedApplicationHearings": [
+    {
+      "applicationId": "12b33467-f3a4-4456-9c48-5e958ff52d76",
+      "applicationTitle": "Commission of further offence...",
+      "hearingId": "12b33467-f3a4-4456-9c48-5e958ff52d76",
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "sittingDay": "2023-07-11T12:30:00.000Z"
+        }
+      ]
+    }
+  ]
+}

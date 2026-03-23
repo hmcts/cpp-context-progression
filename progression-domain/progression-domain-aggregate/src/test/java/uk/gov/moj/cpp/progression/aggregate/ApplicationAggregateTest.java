@@ -59,9 +59,9 @@ import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCase;
-import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
@@ -74,9 +74,9 @@ import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -97,6 +97,7 @@ import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedForApplicationByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
+import uk.gov.moj.cpp.progression.events.HearingApplicationLaaReferenceUpdateReceived;
 import uk.gov.moj.cpp.progression.laa.LaaRepresentationOrder;
 
 import java.time.LocalDate;
@@ -399,6 +400,112 @@ public class ApplicationAggregateTest {
                 .build();
 
         eventStream2 = aggregate.receiveRepresentationOrderForApplication(applicationId, subjectId, offenceId, laaRepresentationOrder, organisationDetails, applicationCaseDefendantOrganisationList).toList();
+        assertThat(eventStream2.size(), is(3));
+    }
+
+    @Test
+    void testCourtApplicationForRepOrderOnApplication() {
+        final UUID applicationId = UUID.randomUUID();
+        final UUID subjectId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID organisationId = UUID.randomUUID();
+
+        final UUID caseId1 = UUID.randomUUID();
+        final UUID defendantId1 = UUID.randomUUID();
+
+        final String APPLICATION_REFERENCE = "APP00001";
+        final String LAA_CONTRACT_NUMBER = "LAA1234";
+        final String INCORPORATION_NUMBER = "LAAINC1";
+        final String ORG_NAME = "Test1";
+        final String ORG_ADDRESS1 = "Address1";
+        final String STATUS_CODE = "GR";
+        final String STATUS = "Refused";
+        final String STATUS_DESCRIPTION = "Granted Description";
+        final UUID STATUS_ID = randomUUID();
+        final LocalDate statusDate = LocalDate.now();
+
+        final List<DefendantCase> defendantCases = new ArrayList<>();
+        defendantCases.add(defendantCase()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .build());
+        defendantCases.add(defendantCase()
+                .withCaseId(caseId1)
+                .withDefendantId(defendantId1)
+                .build());
+
+        final List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisationList = new ArrayList<>();
+        applicationCaseDefendantOrganisationList.add(ApplicationCaseDefendantOrganisation.applicationCaseDefendantOrganisation()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withOrganisationId(organisationId)
+                .build());
+
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = CourtApplicationProceedingsInitiated
+                .courtApplicationProceedingsInitiated()
+                .withCourtApplication(courtApplication().withId(applicationId)
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withId(subjectId)
+                                .withMasterDefendant(MasterDefendant.masterDefendant()
+                                        .withDefendantCase(defendantCases)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        aggregate.apply(courtApplicationProceedingsInitiated);
+        final UUID orgId = UUID.randomUUID();
+        final OrganisationDetails organisationDetails = OrganisationDetails.newBuilder()
+                .withId(orgId)
+                .withAddressLine1(ORG_ADDRESS1)
+                .withName(ORG_NAME)
+                .build();
+
+        LaaReference laaReference = LaaReference.laaReference()
+                .withStatusCode(STATUS_CODE)
+                .withStatusId(STATUS_ID)
+                .withStatusDate(statusDate)
+                .withStatusDescription(STATUS_DESCRIPTION)
+                .withApplicationReference(APPLICATION_REFERENCE)
+                .withOffenceLevelStatus(STATUS)
+                .withLaaContractNumber(LAA_CONTRACT_NUMBER)
+                .withEffectiveStartDate(statusDate)
+                .build();
+
+        LaaRepresentationOrder laaRepresentationOrder = LaaRepresentationOrder.laaRepresentationOrder()
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withLaaContractNumber(LAA_CONTRACT_NUMBER)
+                        .withOrganisation(Organisation.organisation()
+                                .withName(ORG_NAME)
+                                .withIncorporationNumber(INCORPORATION_NUMBER)
+                                .build())
+                        .build())
+                .withLaaReference(laaReference)
+                .build();
+
+        List<Object> eventStream2 = aggregate.receiveRepresentationOrderForApplicationOnApplication(applicationId, laaRepresentationOrder, organisationDetails, applicationCaseDefendantOrganisationList).toList();
+        assertThat(eventStream2.size(), is(3));
+
+        eventStream2 = aggregate.receiveRepresentationOrderForApplicationOnApplication(applicationId, laaRepresentationOrder, organisationDetails, applicationCaseDefendantOrganisationList).toList();
+        assertThat(eventStream2.size(), is(1));
+
+        laaReference = LaaReference.laaReference()
+                .withStatusCode(STATUS_CODE)
+                .withStatusId(STATUS_ID)
+                .withStatusDate(statusDate)
+                .withStatusDescription("STATUS_DESCRIPTION")
+                .withApplicationReference(APPLICATION_REFERENCE)
+                .withOffenceLevelStatus(STATUS)
+                .withEffectiveStartDate(statusDate)
+                .withLaaContractNumber(LAA_CONTRACT_NUMBER)
+                .build();
+
+        laaRepresentationOrder = LaaRepresentationOrder.laaRepresentationOrder()
+                .withValuesFrom(laaRepresentationOrder)
+                .withLaaReference(laaReference)
+                .build();
+
+        eventStream2 = aggregate.receiveRepresentationOrderForApplicationOnApplication(applicationId, laaRepresentationOrder, organisationDetails, applicationCaseDefendantOrganisationList).toList();
         assertThat(eventStream2.size(), is(3));
     }
 
@@ -1672,4 +1779,125 @@ public class ApplicationAggregateTest {
 
     }
 
+    @Test
+    void shouldUpdateApplicationLaaReferenceWhenCourtApplicationExists() {
+        UUID applicationId = randomUUID();
+        LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
+                .withStatusCode("statusCode").withStatusDescription("description").withStatusDate(LocalDate.now()).build();
+
+        CourtApplication courtApplication = courtApplication().withId(applicationId)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                        .withIsSJP(true)
+                        .build()))
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .build())
+                .build();
+
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .withIsAmended(true)
+                .withIssueDate(LocalDate.now())
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        final List<Object> events = aggregate.updateApplicationLaaReference(laaReference).toList();
+        assertThat(events.size(), is(2));
+        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated)events.get(0);
+        assertThat(courtApplicationUpdated.getCourtApplication().getLaaApplnReference(), is(laaReference));
+        assertThat(courtApplicationUpdated.getCourtApplication().getId(), is(applicationId));
+
+        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived)events.get(1);
+        assertThat(hearingApplicationLaaReferenceUpdateReceived.getLaaReference(), is(laaReference));
+        assertThat(hearingApplicationLaaReferenceUpdateReceived.getApplicationId(), is(applicationId));
+
+    }
+
+    @Test
+    void shouldReturnEmptyStreamWhenCourtApplicationIsNull() {
+        Stream<Object> stream = aggregate.updateApplicationLaaReference(Mockito.mock(LaaReference.class));
+        assertThat(stream.count(), is(0L));
+    }
+
+    @Test
+    void shouldReturnEmptyStreamWhenTheRequestIsDuplicate() {
+        UUID applicationId = randomUUID();
+        final LocalDate statusDate = LocalDate.now();
+        LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
+                .withStatusCode("statusCode").withStatusDescription("description").withStatusDate(statusDate).build();
+
+        CourtApplication courtApplication = courtApplication().withId(applicationId)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                        .withIsSJP(true)
+                        .build()))
+                .withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").withStatusCode("statusCode").withStatusDate(statusDate).build())
+                .build();
+
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .withIsAmended(true)
+                .withIssueDate(LocalDate.now())
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        Stream<Object> stream = aggregate.updateApplicationLaaReference(laaReference);
+        assertThat(stream.count(), is(0L));
+    }
+
+    @Test
+    void shouldUpdateApplicationLaaReferenceWhenCourtApplicationExistsAndAnyInputChangesInNextRequest() {
+        final UUID applicationId = randomUUID();
+        final LocalDate statusDate = LocalDate.now();
+        LaaReference laaReference = LaaReference.laaReference()
+                .withApplicationReference("applicationReference")
+                .withStatusCode("newStatusCode")
+                .withStatusDescription("description")
+                .withStatusDate(statusDate)
+                .build();
+
+        final CourtApplication courtApplication = courtApplication().withId(applicationId)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                        .withIsSJP(true)
+                        .build()))
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .build())
+                .withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").withStatusCode("statusCode").withStatusDate(statusDate).build())
+                .build();
+
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .withIsAmended(true)
+                .withIssueDate(LocalDate.now())
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+        final List<Object> events = aggregate.updateApplicationLaaReference(laaReference).toList();
+        assertThat(events.size(), is(2));
+        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated)events.get(0);
+        assertThat(courtApplicationUpdated.getCourtApplication().getLaaApplnReference(), is(laaReference));
+        assertThat(courtApplicationUpdated.getCourtApplication().getId(), is(applicationId));
+
+        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived)events.get(1);
+        assertThat(hearingApplicationLaaReferenceUpdateReceived.getLaaReference(), is(laaReference));
+        assertThat(hearingApplicationLaaReferenceUpdateReceived.getApplicationId(), is(applicationId));
+
+    }
 }

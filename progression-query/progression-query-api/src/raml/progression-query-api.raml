@@ -54,6 +54,28 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.material-content-for-defence+json:
           application/vnd.progression.query.material-content-for-prosecution+json:
 
+/materials/cases:
+  description: Bulk resolve material_ids to cases
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-bulk+json
+          name: progression.query.material-content-bulk
+      ...
+    queryParameters:
+        materialIds:
+          description: List of materialIds separated by comma(,)
+          type: string
+          example: 55a0ed4b-6719-490b-b5b9-f480a6e0ecde, abc8357f-2325-46f2-b8f7-ded2ede2c103
+          required : false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-bulk+json:
+            schema: !include json/schema/progression.query.material-bulk.json
+            example: !include json/progression.query.material-bulk.json
+
 /prosecutioncases/{caseId}/defendants/{defendantId}/extract/{template}:
   description: get court extract content as pdf
   uriParameters:
@@ -228,6 +250,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.case-defendant-hearings+json
             name: progression.query.case-defendant-hearings
+        (mapping):
+            responseType: application/vnd.progression.query.case-hearings-for-court-extract+json
+            name: progression.query.case-hearings-for-court-extract
         ...
       responses:
             200:
@@ -236,6 +261,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case-defendant-hearings+json:
                     example:  !include json/progression.query.case-defendant-hearings.json
                     schema:  !include json/schema/progression.query.case-defendant-hearings.json
+                  application/vnd.progression.query.case-hearings-for-court-extract+json:
+                    example:  !include json/progression.query.case-hearings-for-court-extract.json
+                    schema:  !include json/schema/progression.query.case-hearings-for-court-extract.json
 
 /prosecutioncases/group/{groupId}:
   uriParameters:
@@ -627,6 +655,58 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.court-extract-application+json:
+
+/applications/{applicationId}/defendants/{defendantId}:
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      Return the application details for the  Id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-hearings-for-court-extract+json
+          name: progression.query.linked-application-hearings-for-court-extract
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.linked-application-hearings-for-court-extract+json:
+            example:  !include json/progression.query.linked-application-hearings-for-court-extract.json
+            schema:  !include json/schema/progression.query.linked-application-hearings-for-court-extract.json
+
+
+/applications/{applicationId}/defendants/{defendantId}/extract:
+  description: get court linked application extract content as pdf
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-extract+json
+          name: progression.query.linked-application-extract
+      ...
+    queryParameters:
+      hearingIds:
+        description: comma separated list of hearingIds, only expected when template value is CrownCourtExtract
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.linked-application-extract+json:
 
 /applications/application-status:
   description: get application status for a given list of comma separated applicationIds
@@ -1408,6 +1488,62 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.search.court.list+json:
+
+
+/courtlistdata:
+  description: get court list data as JSON (same parameters as /courtlist, no document generation or pubhub)
+  get:
+    description: |
+      Returns the court list payload as JSON. Same query parameters and access control as /courtlist.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.search.court.list.data+json
+          name: progression.search.court.list.data
+      (mapping):
+          responseType: application/vnd.progression.search.prison.court.list.data+json
+          name: progression.search.prison.court.list.data
+      ...
+    queryParameters:
+      courtCentreId:
+        description: reference data id for the court centre
+        type: string
+        required: true
+      courtRoomId:
+        description: reference data id for the court room
+        type: string
+        required: false
+      listId:
+        description: court list name ( e.g. PUBLIC, STANDARD, ALPHABETICAL, USHERS_CROWN, USHERS_MAGISTRATE, ONLINE_PUBLIC)
+        type: string
+        required: true
+      startDate:
+        description: hearing start date in format 'YYYY-MM-DD'.
+        type: date
+        required: true
+      endDate:
+        description: hearing end date in format 'YYYY-MM-DD'
+        type: date
+        required: true
+      restricted:
+        description: only applicable for standard courtlist. Set true to get restricted standard court list
+        type: boolean
+        required: false
+        default: false
+      includeApplications:
+        description: when true, listing returns court list with court applications; when false, applications are excluded
+        type: boolean
+        required: false
+        default: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.search.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+          application/vnd.progression.search.prison.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+
 
 /prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
   uriParameters:

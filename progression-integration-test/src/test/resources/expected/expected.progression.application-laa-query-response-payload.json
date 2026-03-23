@@ -5,6 +5,7 @@
   "applicationStatus": "UN_ALLOCATED",
   "applicationTitle": "Application for an order of reimbursement in relation to a closure order",
   "applicationType": "AS14518",
+  "applicationTypeId": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
   "caseSummary": [
     {
       "caseStatus": "INACTIVE",
