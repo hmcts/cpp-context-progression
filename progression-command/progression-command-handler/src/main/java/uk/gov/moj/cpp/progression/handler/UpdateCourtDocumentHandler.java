@@ -28,6 +28,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.command.UpdateSendToCpsFlag;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -77,6 +78,7 @@ public class UpdateCourtDocumentHandler {
     public void handleUpdateCourtDocument(final Envelope<UpdateCourtDocument> updateCourtDocumentEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.update-court-document {}", updateCourtDocumentEnvelope);
         final UpdateCourtDocument updateCourtDocument = updateCourtDocumentEnvelope.payload();
+        final CourtDocumentMetadata courtDocumentMetadata = updateCourtDocumentEnvelope.payload().getCourtDocumentMetadata();
         final EventStream eventStream = eventSource.getStreamById(updateCourtDocument.getCourtDocumentId());
 
         final JsonEnvelope jsonEnvelope = envelopeHelper.withMetadataInPayload(
@@ -121,8 +123,8 @@ public class UpdateCourtDocumentHandler {
                             buildDocumentTypeRBAC(documentTypeData),
                             petFormFinalisedDocuments,
                             bcmFormFinalisedDocuments,
-                            ptphFormFinalisedDocuments);
-
+                            ptphFormFinalisedDocuments ,
+                            courtDocumentMetadata);
         } else {
             events = courtDocumentAggregate.updateCourtDocumentFailed(updateCourtDocument.getCourtDocumentId(), format("Update document is not supported for this Document Category %s", documentTypeData.getString(DOCUMENT_CATEGORY)));
         }

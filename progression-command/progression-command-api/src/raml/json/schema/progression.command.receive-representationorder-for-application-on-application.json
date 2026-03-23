@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/courts/receive-representationorder-for-application-on-application.json",
+  "type": "object",
+  "description": "Receiving Representation Order on application level",
+  "properties": {
+    "statusCode": {
+      "description": "The status of the application that aligns to the reference data",
+      "type": "string"
+    },
+    "applicationReference": {
+      "description": "The LAA issued reference to the application.  Currently known as the MAAT Id",
+      "type": "string"
+    },
+    "statusDate": {
+      "description": "The date that the status was recorded",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "effectiveStartDate": {
+      "description": "The start date for legal aid",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "effectiveEndDate": {
+      "description": "The end date for legal aid",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "defenceOrganisation": {
+      "description": "The defence organisation details",
+      "$ref": "http://justice.gov.uk/core/courts/defenceOrganisation.json#"
+    }
+  },
+  "required": [
+     "statusCode", "applicationReference", "statusDate", "effectiveStartDate", "defenceOrganisation"
+  ],
+  "additionalProperties": false
+}

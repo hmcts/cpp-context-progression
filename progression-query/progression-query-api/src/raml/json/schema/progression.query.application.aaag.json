@@ -90,6 +90,9 @@
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
+        "isAddressConfidential": {
+          "type": "boolean"
+        },
         "interpreterLanguageNeeds": {
           "type": "string"
         },
@@ -107,6 +110,9 @@
         }
       },
       "additionalProperties": false
+    },
+    "laaApplnReference": {
+      "$ref": "http://justice.gov.uk/progression/query/laa/laa-appln-reference.json"
     },
     "respondentDetails": {
       "type": "array",
@@ -301,11 +307,18 @@
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
+        "isAddressConfidential": {
+          "type": "boolean"
+        },
         "respondentRepresentatives": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/respondentRepresentative"
           }
+        },
+        "representation": {
+          "description": "when the respondent is subject, this is filled with subject.associatedDefenceOrganisation",
+          "type": "string"
         },
         "isSubject": {
           "type": "boolean"
@@ -342,6 +355,9 @@
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "isAddressConfidential": {
+          "type": "boolean"
         },
         "thirdPartyRepresentatives": {
           "type": "array",

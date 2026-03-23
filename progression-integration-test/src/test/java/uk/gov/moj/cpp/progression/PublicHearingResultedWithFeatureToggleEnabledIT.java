@@ -20,6 +20,7 @@ import javax.json.JsonObject;
 import static com.google.common.collect.Lists.newArrayList;
 import com.jayway.jsonpath.ReadContext;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import io.restassured.response.Response;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;

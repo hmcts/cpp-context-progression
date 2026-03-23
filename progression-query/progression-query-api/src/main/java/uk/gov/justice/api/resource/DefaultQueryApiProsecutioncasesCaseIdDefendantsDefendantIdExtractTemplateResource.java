@@ -11,6 +11,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.api.resource.utils.ReportsTransformer;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
 import uk.gov.justice.services.adapter.rest.parameter.ParameterCollectionBuilderFactory;
@@ -98,6 +99,9 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     private UUID userId;
 
+    @Inject
+    ReportsTransformer reportsTransformer;
+
     @Override
     public Response getCourtExtractByCaseIdContent(final String caseId, final String defendantId, final String template, final String hearingIds, final UUID userId) {
 
@@ -145,7 +149,8 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final byte[] resultOrderAsByteArray;
         final InputStream documentInputStream;
         try {
-            JsonObject newPayload = courtExtractTransformer.getTransformedPayload(document, defendantId, extractType, hearingIdList, userId);
+            JsonObject newPayload = COURT_EXTRACT.equals(extractType) ? courtExtractTransformer.getTransformedPayload(document, defendantId, extractType, hearingIdList, userId)
+                    : reportsTransformer.getTransformedPayload(document, defendantId, extractType, hearingIdList, userId);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, getTemplateName(extractType), systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);
         } catch (IOException e) {

@@ -12,3 +12,12 @@ rule "Command - Rule for Record LAA Reference for Application"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for Record LAA Reference for Application on Application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.record-laareference-for-application-on-application");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end

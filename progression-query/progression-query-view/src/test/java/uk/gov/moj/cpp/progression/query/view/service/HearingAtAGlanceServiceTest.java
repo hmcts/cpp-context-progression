@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,6 +51,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
+import uk.gov.moj.cpp.progression.query.view.utils.FileUtil;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
@@ -62,6 +64,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.time.LocalDate;
@@ -70,6 +73,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,7 +83,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -139,6 +144,12 @@ public class HearingAtAGlanceServiceTest {
     private CaseDefendantHearingEntity caseDefendantHearingEntity;
     @Mock
     private HearingEntity hearingEntity;
+
+    @Mock
+    private HearingRepository hearingRepository;
+
+    @Mock
+    private HearingService hearingService;
 
     @BeforeEach
     public void setup() {
@@ -1241,6 +1252,67 @@ public class HearingAtAGlanceServiceTest {
 
     }
 
+    @Test
+    void prosecutionCaseLinkedApplicationWithTwoHearingsShouldReturnHearingsMatchingDefendant() {
+
+        final JsonObject courtApplicationJsonObject = stringToJsonObjectConverter.convert(FileUtil.getPayload("court-application-defendant-subject.json")
+                .replaceAll("APPLICATION_ID", APPLICATION_ID.toString())
+                .replaceAll("DEFENDANT_ID", DEFENDANT_ID_1.toString()));
+
+        final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationJsonObject, CourtApplication.class);
+
+        CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(APPLICATION_ID);
+        courtApplicationEntity.setPayload(courtApplicationJsonObject.toString());
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        when(courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(List.of(courtApplicationCaseEntity));
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
+
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_RESULTED);
+
+        when(hearingService.getApplicationHearings(APPLICATION_ID)).thenReturn(List.of(CASE_HEARING_ID_1));
+        when(hearingRepository.findByHearingIds(List.of(CASE_HEARING_ID_1))).thenReturn(List.of(caseHearingEntity));
+
+        final Map<CourtApplication, List<Hearings>> applicationHearings = this.hearingAtAGlanceService.getApplicationHearingsForCourtExtract(CASE_ID, DEFENDANT_ID_1);
+
+        assertThat(applicationHearings.size(), is(1));
+        assertThat(applicationHearings.get(courtApplication).size(), is(1));
+        assertThat(applicationHearings.get(courtApplication).get(0).getDefendants().size(), is(2));
+        assertThat(applicationHearings.get(courtApplication).get(0).getDefendants().stream().anyMatch(defendant -> DEFENDANT_ID_1.equals(defendant.getId())), is(true));
+
+    }
+
+
+    @Test
+    void shouldLinkedApplicationWithNoHearingsReturnEmptyHearingsMatchingDefendant() {
+
+        final JsonObject courtApplicationJsonObject = stringToJsonObjectConverter.convert(FileUtil.getPayload("court-application-defendant-subject.json")
+                .replaceAll("APPLICATION_ID", APPLICATION_ID.toString())
+                .replaceAll("DEFENDANT_ID", DEFENDANT_ID_1.toString()));
+
+        CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(APPLICATION_ID);
+        courtApplicationEntity.setPayload(courtApplicationJsonObject.toString());
+
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        when(courtApplicationCaseRepository.findByCaseId(CASE_ID)).thenReturn(List.of(courtApplicationCaseEntity));
+
+        when(hearingService.getApplicationHearings(APPLICATION_ID)).thenReturn(emptyList());
+
+        final Map<CourtApplication, List<Hearings>> applicationHearings = this.hearingAtAGlanceService.getApplicationHearingsForCourtExtract(CASE_ID, DEFENDANT_ID_1);
+
+        assertThat(applicationHearings.isEmpty(), is(true));
+
+    }
 
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
         return CourtApplication.courtApplication()

@@ -173,6 +173,15 @@ rule "Query - Access control for  progression.query.casehearings"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for progression.query.case-hearings-for-court-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-hearings-for-court-extract");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group", "Recorders", "Advocates","Non Police Prosecutors"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.case-defendant-hearings"
   when
     $outcome: Outcome();
@@ -336,6 +345,15 @@ rule "progression - Query - API - application-extract"
     $outcome.setSuccess(true);
 end
 
+rule "progression - Query - API - linked-application-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.linked-application-extract");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "progression - Query - API - application-status"
   when
     $outcome: Outcome();
@@ -405,6 +423,16 @@ rule "Query - Access control for  progression.query.applicationhearings"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.applicationhearings");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
+     "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies", "Magistrates","Non Police Prosecutors"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.linked-application-hearings-for-court-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.linked-application-hearings-for-court-extract");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
      "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies", "Magistrates","Non Police Prosecutors"))
   then
@@ -582,6 +610,24 @@ rule "Query - API - progression.search.prison.court.list"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.search.prison.court.list");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Prison Admin", "Listing Officers", "Legal Advisers", "Court Clerks", "CTSC Admin", "Operational Delivery Admin"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - API - progression.search.court.list.data"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.search.court.list.data");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Listing Officers", "Court Clerks", "Legal Advisers", "Crown Court Admin", "Court Administrators", "Youth Offending Service Admin", "CPS", "Probation Admin", "Victims & Witness Care Admin", "Police Admin", "Court Associate", "Non CPS Prosecutors"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - API - progression.search.prison.court.list.data"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.search.prison.court.list.data");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Prison Admin", "Listing Officers", "Legal Advisers", "Court Clerks", "CTSC Admin", "Operational Delivery Admin"));
   then
     $outcome.setSuccess(true);
@@ -837,12 +883,13 @@ rule "Query - Civil fee details for progression.query.civil-fee-details"
     $outcome.setSuccess(true);
 end
 
-rule "Query - Access control for  progression.query.search-inactive-migrated-cases"
+rule "Query - Material content for progression.query.material-content-bulk"
   when
     $outcome: Outcome();
-    $action: Action(name == "progression.query.search-inactive-migrated-cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+    $action: Action(name == "progression.query.material-content-bulk");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users","Advocates","Defence Lawyers"))
   then
     $outcome.setSuccess(true);
 end
+
 

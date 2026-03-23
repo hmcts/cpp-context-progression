@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import lombok.Getter;
 import uk.gov.justice.services.common.configuration.Value;
 
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+@Getter
 public class ApplicationParameters {
 
     @Inject
@@ -163,6 +165,24 @@ public class ApplicationParameters {
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
 
+    /**
+     * URL for Crime Hearing Case Event service PCR notification endpoint.
+     * Local Development: Default value: http://localhost:8080/AMP/notifications
+     * For Higher environments
+     *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
+     *  Ingress URL or Kubernetes Discovery URL
+     */
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/AMP/notifications")
+    private String ampPcrNotificationUrl;
+    @Inject
+    @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")
+    public String addDefendantRetryIntervals;
+
+    public String getAddDefendantRetryIntervals() {
+        return addDefendantRetryIntervals;
+    }
+
     public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
         return onlineGuiltyPleaCourtHearingEnglishTemplateId;
     }
@@ -279,17 +299,13 @@ public class ApplicationParameters {
         return onlinePleaProsecutorTemplateId;
     }
 
-    public String getNotifyHearingTemplateId() {
-        return notifyHearingTemplateId;
-    }
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryTimes", defaultValue = "3")
+    private String ampPcrNotificationRetryTimes;
 
-    public String getRetryTimes() {
-        return retryTimes;
-    }
-
-    public String getRetryInterval() {
-        return retryInterval;
-    }
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryInterval", defaultValue = "1000")
+    public String ampPcrNotificationRetryInterval;
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

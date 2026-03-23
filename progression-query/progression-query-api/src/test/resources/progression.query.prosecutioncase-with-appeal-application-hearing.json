@@ -1,0 +1,1843 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-10-02T07:10:54.646Z",
+        "id": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+        "isYouth": false,
+        "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-10-02",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+              "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2025-09-17",
+            "chargeDate": "2025-09-22",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-10-02",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1015",
+                "committedToCC": false,
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": true,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": true,
+                    "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                    "label": "Amount of fine",
+                    "promptReference": "AOF",
+                    "promptSequence": 100,
+                    "type": "CURR",
+                    "usergroups": [],
+                    "value": "£500.00",
+                    "welshLabel": "Swm y ddirwy",
+                    "welshValue": "£500.00"
+                  }
+                ],
+                "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "label": "Fine",
+                "lastSharedDateTime": "2025-10-02",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-10-02",
+                "orderedHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 72100,
+                "resultDefinitionGroup": "Imposition",
+                "resultText": "FO - Fine\nFined £500.00",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+                "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "sentToCC": false,
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Dirwy"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "TH68023A",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+            "offenceFacts": {
+              "alcoholReadingAmount": 500,
+              "alcoholReadingMethodCode": "A",
+              "alcoholReadingMethodDescription": "Blood"
+            },
+            "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+            "offenceTitle": "Attempt robbery",
+            "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+              "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+              "pleaDate": "2025-10-02",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2025-08-03",
+            "wording": "Attempt robbery"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "2391NX0000279892974D",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "contact": {
+              "home": "0124458591",
+              "mobile": "09575667789",
+              "primaryEmail": "chi.koelpin@example.com"
+            },
+            "dateOfBirth": "1963-10-02",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Chi",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Koelpin",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "2391NX0000279892974D",
+        "prosecutionCaseId": "c074f914-33b2-4283-97b1-75f59209d00f"
+      }
+    ],
+    "id": "c074f914-33b2-4283-97b1-75f59209d00f",
+    "initiationCode": "C",
+    "originatingOrganisation": "0480000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "ZK717218938"
+    }
+  },
+  "linkedApplicationsSummary": [
+    {
+      "applicationId": "aca950bf-3430-432d-aa09-a710a483f6e5",
+      "applicationTitle": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+      "applicationReference": "ZK717218938",
+      "applicationStatus": "FINALISED",
+      "applicantDisplayName": "Chi Koelpin",
+      "applicantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+      "respondentDisplayNames": [
+        "CITYPF"
+      ],
+      "respondentIds": [],
+      "subjectId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+      "isAppeal": false
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "6f36b307-2548-425b-b56d-0f8f38500bb6",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+                "caseReference": "ZK717218938",
+                "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+              }
+            ],
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX0000279892974D",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "15 Station Road",
+                  "address2": "Station Road",
+                  "address3": "Manchester",
+                  "address4": "Greater Manchester",
+                  "postcode": "NW1 5BR"
+                },
+                "contact": {
+                  "home": "0124458591",
+                  "mobile": "09575667789",
+                  "primaryEmail": "chi.koelpin@example.com"
+                },
+                "dateOfBirth": "1963-10-02",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Chi",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Koelpin",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationParticulars": "test",
+        "applicationReceivedDate": "2025-10-01",
+        "applicationReference": "ZK717218938",
+        "applicationResultCodeForLaa": "G",
+        "applicationStatus": "FINALISED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-10-02",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                  "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                  "sequenceNumber": 100
+                },
+                "arrestDate": "2025-09-17",
+                "chargeDate": "2025-09-22",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-10-02",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2025-10-06",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 3
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "4a9288cb-da6b-4012-bc73-da1b94a0c367",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "3 Months",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "3 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-10-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-10-04",
+                    "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 3 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "4a9288cb-da6b-4012-bc73-da1b94a0c367",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "lastAdjournDate": "2025-10-03",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 500,
+                  "alcoholReadingMethodCode": "A",
+                  "alcoholReadingMethodDescription": "Blood"
+                },
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                  "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                  "pleaDate": "2025-10-02",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-03",
+                "wording": "Attempt robbery"
+              }
+            ],
+            "prosecutionCaseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Bishopsgate police station",
+                "address2": "182, Bishopsgate",
+                "address5": "London",
+                "postcode": "EC2M 4NP"
+              },
+              "contact": {
+                "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+              },
+              "majorCreditorCode": "COLP",
+              "prosecutionAuthorityCode": "CITYPF",
+              "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+              "prosecutionAuthorityName": "City of London Police",
+              "prosecutionAuthorityOUCode": "0480000",
+              "caseURN": "ZK717218938"
+            }
+          }
+        ],
+        "id": "aca950bf-3430-432d-aa09-a710a483f6e5",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "FINAL",
+            "committedToCC": false,
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": false,
+            "isUnscheduled": false,
+            "judicialResultId": "780b4738-bf88-45a4-9a1e-76d8c0d4ddc7",
+            "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "label": "Granted",
+            "lastSharedDateTime": "2025-10-06",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-10-04",
+            "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 98500,
+            "resultText": "G - Granted",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "780b4738-bf88-45a4-9a1e-76d8c0d4ddc7",
+            "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "sentToCC": false,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          },
+          {
+            "alwaysPublished": false,
+            "amendmentDate": "2025-10-06",
+            "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+            "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "ANCILLARY",
+            "committedToCC": false,
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "b2e67c3b-3aa3-436b-9ad2-26426783f63e",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "b4ac2e46-5dd3-11e8-9c2d-fa7ae01bbebc",
+                "label": "Text",
+                "promptReference": "text",
+                "promptSequence": 100,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "sliprule amendments",
+                "welshValue": "sliprule amendments"
+              }
+            ],
+            "judicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+            "label": "Text",
+            "lastSharedDateTime": "2025-10-06",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-10-04",
+            "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 200400,
+            "resultText": "TEXT - Text\nsliprule amendments",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "b2e67c3b-3aa3-436b-9ad2-26426783f63e",
+            "rootJudicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+            "sentToCC": false,
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "proceedingsConcluded": false,
+        "respondents": [
+          {
+            "id": "274c4b9c-4ad5-43c2-a7f1-4839b3820b12",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Bishopsgate police station",
+                "address2": "182, Bishopsgate",
+                "address5": "London",
+                "postcode": "EC2M 4NP"
+              },
+              "contact": {
+                "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+              },
+              "majorCreditorCode": "COLP",
+              "name": "City of London Police",
+              "prosecutionAuthorityCode": "CITYPF",
+              "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+              "prosecutionAuthorityOUCode": "0480000",
+              "welshName": "Heddlu Dinas Llundain"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "6f36b307-2548-425b-b56d-0f8f38500bb6",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+                "caseReference": "ZK717218938",
+                "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+              }
+            ],
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX0000279892974D",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "15 Station Road",
+                  "address2": "Station Road",
+                  "address3": "Manchester",
+                  "address4": "Greater Manchester",
+                  "postcode": "NW1 5BR"
+                },
+                "contact": {
+                  "home": "0124458591",
+                  "mobile": "09575667789",
+                  "primaryEmail": "chi.koelpin@example.com"
+                },
+                "dateOfBirth": "1963-10-02",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Chi",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Koelpin",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": true,
+          "applicantAppellantFlag": true,
+          "applicationWording": "Appeal against conviction by a Magistrates' Court on {1} at {2} to the Crown Court",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2022-10-09T14:12:09",
+          "code": "MC80802",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APL",
+          "id": "3fca31f0-7b30-47e8-8f3f-90601ad26b50",
+          "initialFeeApplicable": false,
+          "jurisdiction": "CROWN",
+          "lastModified": "2025-02-24T18:19:04.990Z",
+          "legislation": "In accordance with section 108 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "adran 108 Deddf Llysoedd Ynadon 1980",
+          "linkType": "SJP",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "pssId": 587579,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+          "typeWelsh": "Apelio i Lys y Goron yn erbyn euogfarn gan Lys Ynadon",
+          "validFrom": "1980-01-01"
+        }
+      }
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+        "defendantName": "Chi Koelpin",
+        "hearingIds": [
+          "86ade6db-5d57-4827-861a-af046c1732ff"
+        ],
+        "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-10-02"
+              }
+            ],
+            "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "ANCILLARY",
+              "committedToCC": false,
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "c91f589a-566b-43c0-a7d9-e7a6566de544",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+                  "label": "Collection order type",
+                  "promptReference": "collectionOrderType",
+                  "promptSequence": 100,
+                  "type": "FIXL",
+                  "usergroups": [],
+                  "value": "Make payments as ordered",
+                  "welshLabel": "Math o orchymyn casglu",
+                  "welshValue": "Gwneud taliadau yn unol â’r gorchymyn"
+                }
+              ],
+              "judicialResultTypeId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+              "label": "Collection order",
+              "lastSharedDateTime": "2025-10-02",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+              "orderedDate": "2025-10-02",
+              "orderedHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+              "parentJudicialResultId": "e945f4c1-2e29-4c15-a1be-b25fa4a0ed32",
+              "parentJudicialResultTypeId": "cfa66730-f81c-4768-a36e-581791cb0270",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 19100,
+              "resultText": "COLLO - Collection order\nCollection order made. Make payments as ordered.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "sentToCC": false,
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gorchymyn Casglu"
+            },
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          },
+          {
+            "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "committedToCC": false,
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "4db46288-3d51-45d0-838b-4130650cedeb",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "12/10/2025",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "12/10/2025"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2025-10-02",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+              "orderedDate": "2025-10-02",
+              "orderedHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+              "parentJudicialResultId": "f21478c4-f0de-4959-97cc-ff0bed478760",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/10/2025.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "sentToCC": false,
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            },
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "age": "62",
+            "courtApplications": [],
+            "dateOfBirth": "1963-10-02",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+            },
+            "id": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "judicialResults": [],
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "name": "Chi Koelpin",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-10-02",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                  "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-10-02",
+                "count": 0,
+                "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£500.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£500.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-10-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-10-02",
+                    "orderedHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £500.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "47420b61-38e5-49c5-a991-9aa7214f3f2c",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "offenceCode": "TH68023A",
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                    "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                    "pleaDate": "2025-10-02",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-03",
+                "verdicts": [],
+                "wording": "Attempt robbery"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-10-02T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "86ade6db-5d57-4827-861a-af046c1732ff",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-10-03"
+              }
+            ],
+            "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "age": "62",
+            "courtApplications": [
+              {
+                "applicant": "Chi Koelpin",
+                "applicationId": "aca950bf-3430-432d-aa09-a710a483f6e5",
+                "applicationReceivedDate": "2025-10-01",
+                "applicationType": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+                "courtApplicationCases": [
+                  {
+                    "caseStatus": "INACTIVE",
+                    "isSJP": false,
+                    "offences": [
+                      {
+                        "allocationDecision": {
+                          "allocationDecisionDate": "2025-10-02",
+                          "motReasonCode": "02",
+                          "motReasonDescription": "Indictable-only offence",
+                          "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                          "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                          "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                          "sequenceNumber": 100
+                        },
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-10-02",
+                        "count": 0,
+                        "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                        "judicialResults": [
+                          {
+                            "alwaysPublished": false,
+                            "canBeSubjectOfBreach": false,
+                            "canBeSubjectOfVariation": false,
+                            "canExtendActiveOrder": false,
+                            "category": "FINAL",
+                            "cjsCode": "1015",
+                            "committedToCC": false,
+                            "courtClerk": {
+                              "firstName": "Erica",
+                              "lastName": "Wilson",
+                              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                            },
+                            "d20": false,
+                            "excludedFromResults": false,
+                            "isAdjournmentResult": false,
+                            "isAvailableForCourtExtract": true,
+                            "isConvictedResult": true,
+                            "isDeleted": false,
+                            "isFinancialResult": true,
+                            "isNewAmendment": true,
+                            "isUnscheduled": false,
+                            "judicialResultId": "ebb8ccd8-65d6-4c12-8e10-e70b0b57e3a6",
+                            "judicialResultPrompts": [
+                              {
+                                "courtExtract": "Y",
+                                "isFinancialImposition": true,
+                                "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                                "label": "Amount of fine",
+                                "promptReference": "AOF",
+                                "promptSequence": 100,
+                                "type": "CURR",
+                                "usergroups": [],
+                                "value": "£200.00",
+                                "welshLabel": "Swm y ddirwy",
+                                "welshValue": "£200.00"
+                              }
+                            ],
+                            "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                            "label": "Fine",
+                            "lastSharedDateTime": "2025-10-02",
+                            "level": "O",
+                            "lifeDuration": false,
+                            "orderedDate": "2025-10-03",
+                            "orderedHearingId": "f18de4fe-7a55-4eef-a8f8-2629bacd5954",
+                            "policeSubjectLineTitle": "Final Sentence",
+                            "postHearingCustodyStatus": "A",
+                            "preserveActiveOrder": false,
+                            "publishedAsAPrompt": false,
+                            "publishedForNows": false,
+                            "rank": 72100,
+                            "resultDefinitionGroup": "Imposition",
+                            "resultText": "FO - Fine\nFined £200.00",
+                            "rollUpPrompts": true,
+                            "rootJudicialResultId": "ebb8ccd8-65d6-4c12-8e10-e70b0b57e3a6",
+                            "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                            "sentToCC": false,
+                            "terminatesOffenceProceedings": false,
+                            "urgent": false,
+                            "usergroups": [],
+                            "welshLabel": "Dirwy"
+                          },
+                          {
+                            "alwaysPublished": true,
+                            "canBeSubjectOfBreach": false,
+                            "canBeSubjectOfVariation": false,
+                            "canExtendActiveOrder": false,
+                            "category": "FINAL",
+                            "committedToCC": false,
+                            "courtClerk": {
+                              "firstName": "Erica",
+                              "lastName": "Wilson",
+                              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                            },
+                            "d20": false,
+                            "excludedFromResults": false,
+                            "isAdjournmentResult": false,
+                            "isAvailableForCourtExtract": true,
+                            "isConvictedResult": false,
+                            "isDeleted": false,
+                            "isFinancialResult": false,
+                            "isNewAmendment": true,
+                            "isUnscheduled": false,
+                            "judicialResultId": "521a6933-d534-4558-b8c3-4986a96f2184",
+                            "judicialResultPrompts": [
+                              {
+                                "courtExtract": "Y",
+                                "isFinancialImposition": false,
+                                "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                                "label": "Date to pay in full by",
+                                "promptReference": "PBD",
+                                "promptSequence": 100,
+                                "type": "DATE",
+                                "usergroups": [],
+                                "value": "13/11/2025",
+                                "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                                "welshValue": "13/11/2025"
+                              }
+                            ],
+                            "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+                            "label": "Pay by date",
+                            "lastSharedDateTime": "2025-10-02",
+                            "level": "D",
+                            "lifeDuration": false,
+                            "orderedDate": "2025-10-03",
+                            "orderedHearingId": "f18de4fe-7a55-4eef-a8f8-2629bacd5954",
+                            "parentJudicialResultId": "fa9045d7-8f52-42c3-bff2-d176b22474d5",
+                            "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+                            "postHearingCustodyStatus": "A",
+                            "preserveActiveOrder": false,
+                            "publishedAsAPrompt": false,
+                            "publishedForNows": false,
+                            "rank": 120500,
+                            "resultDefinitionGroup": "Payment terms",
+                            "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 13/11/2025.",
+                            "rollUpPrompts": false,
+                            "rootJudicialResultId": "ebb8ccd8-65d6-4c12-8e10-e70b0b57e3a6",
+                            "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                            "sentToCC": false,
+                            "terminatesOffenceProceedings": false,
+                            "urgent": false,
+                            "usergroups": [],
+                            "welshLabel": "Dyddiad terfyn ar gyfer talu"
+                          }
+                        ],
+                        "offenceCode": "TH68023A",
+                        "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                        "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                        "offenceTitle": "Attempt robbery",
+                        "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                        "orderIndex": 1,
+                        "pleas": [
+                          {
+                            "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                            "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                            "pleaDate": "2025-10-02",
+                            "pleaValue": "GUILTY"
+                          }
+                        ],
+                        "proceedingsConcluded": true,
+                        "startDate": "2025-08-03",
+                        "verdicts": [],
+                        "wording": "Attempt robbery"
+                      }
+                    ],
+                    "prosecutionCaseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+                    "prosecutionCaseIdentifier": {
+                      "address": {
+                        "address1": "Bishopsgate police station",
+                        "address2": "182, Bishopsgate",
+                        "address5": "London",
+                        "postcode": "EC2M 4NP"
+                      },
+                      "contact": {
+                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                      },
+                      "majorCreditorCode": "COLP",
+                      "prosecutionAuthorityCode": "CITYPF",
+                      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                      "prosecutionAuthorityName": "City of London Police",
+                      "prosecutionAuthorityOUCode": "0480000",
+                      "caseURN": "ZK717218938"
+                    }
+                  }
+                ],
+                "isAppeal": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "ANCILLARY",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": false,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "d5d09dee-8a47-4151-bd81-5395ae78ba57",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "48446a5e-7e4c-4fe2-a5d7-cfd1dc007ea0",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Date of hearing:04/10/2025\nTime of hearing:10:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 01\nHearing type:Application\nEstimated duration:20 MINUTES\nBooking reference:2d6aa5fa-5112-4782-9d15-ea2e48c31a4a",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      }
+                    ],
+                    "judicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "label": "Next hearing",
+                    "lastSharedDateTime": "2025-10-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "",
+                      "bookingReference": "2d6aa5fa-5112-4782-9d15-ea2e48c31a4a",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "176A Lavender Hill",
+                          "address2": "London",
+                          "postcode": "SW11 1JU"
+                        },
+                        "code": "B01LY00",
+                        "courtHearingLocation": "B01LY01",
+                        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                        "name": "Lavender Hill Magistrates' Court",
+                        "psaCode": 2577,
+                        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Ynadon Lavender Hill"
+                      },
+                      "estimatedDuration": "20 MINUTES",
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2025-10-04T09:00:00.000Z",
+                      "type": {
+                        "description": "Application",
+                        "id": "3449743b-95d6-4836-8941-57f588b52068"
+                      }
+                    },
+                    "orderedDate": "2025-10-03",
+                    "orderedHearingId": "f18de4fe-7a55-4eef-a8f8-2629bacd5954",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": true,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 1800,
+                    "resultDefinitionGroup": "Next Hearing",
+                    "resultText": "NEXH - Next hearing\nhearing on 04/10/2025 at 10:00 in Courtroom 01, Lavender Hill Magistrates' Court",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "d5d09dee-8a47-4151-bd81-5395ae78ba57",
+                    "rootJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gwrandawiad nesaf"
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "CITYPF"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "1963-10-02",
+            "id": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "judicialResults": [],
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "name": "Chi Koelpin"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 30,
+            "listingSequence": 0,
+            "sittingDay": "2025-10-03T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "f18de4fe-7a55-4eef-a8f8-2629bacd5954",
+        "isApplicationHearing": true,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Appeal",
+          "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-10-04"
+              }
+            ],
+            "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "15 Station Road",
+              "address2": "Station Road",
+              "address3": "Manchester",
+              "address4": "Greater Manchester",
+              "postcode": "NW1 5BR"
+            },
+            "age": "62",
+            "courtApplications": [
+              {
+                "applicant": "Chi Koelpin",
+                "applicationId": "aca950bf-3430-432d-aa09-a710a483f6e5",
+                "applicationReceivedDate": "2025-10-01",
+                "applicationType": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+                "courtApplicationCases": [
+                  {
+                    "caseStatus": "INACTIVE",
+                    "isSJP": false,
+                    "offences": [
+                      {
+                        "allocationDecision": {
+                          "allocationDecisionDate": "2025-10-02",
+                          "motReasonCode": "02",
+                          "motReasonDescription": "Indictable-only offence",
+                          "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                          "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                          "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                          "sequenceNumber": 100
+                        },
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-10-02",
+                        "count": 0,
+                        "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                        "judicialResults": [
+                          {
+                            "alwaysPublished": false,
+                            "amendmentDate": "2025-10-06",
+                            "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                            "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "canBeSubjectOfBreach": true,
+                            "canBeSubjectOfVariation": false,
+                            "canExtendActiveOrder": false,
+                            "category": "FINAL",
+                            "cjsCode": "1018",
+                            "committedToCC": false,
+                            "courtClerk": {
+                              "firstName": "Erica",
+                              "lastName": "Wilson",
+                              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                            },
+                            "d20": false,
+                            "durationElement": {
+                              "primaryDurationUnit": "M",
+                              "primaryDurationValue": 3
+                            },
+                            "dvlaCode": "E",
+                            "excludedFromResults": false,
+                            "isAdjournmentResult": false,
+                            "isAvailableForCourtExtract": true,
+                            "isConvictedResult": true,
+                            "isDeleted": false,
+                            "isFinancialResult": false,
+                            "isNewAmendment": true,
+                            "isUnscheduled": false,
+                            "judicialResultId": "4a9288cb-da6b-4012-bc73-da1b94a0c367",
+                            "judicialResultPrompts": [
+                              {
+                                "courtExtract": "Y",
+                                "durationSequence": 1,
+                                "isFinancialImposition": false,
+                                "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                                "label": "Period of conditional discharge",
+                                "promptReference": "periodofConditionalDischarge",
+                                "promptSequence": 100,
+                                "type": "INT",
+                                "usergroups": [],
+                                "value": "3 Months",
+                                "welshLabel": "Cyfnod o ryddhad amodol",
+                                "welshValue": "3 Months"
+                              }
+                            ],
+                            "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                            "label": "Conditional discharge",
+                            "lastSharedDateTime": "2025-10-06",
+                            "level": "O",
+                            "lifeDuration": false,
+                            "orderedDate": "2025-10-04",
+                            "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+                            "policeSubjectLineTitle": "Final Sentence",
+                            "postHearingCustodyStatus": "A",
+                            "preserveActiveOrder": false,
+                            "publishedAsAPrompt": false,
+                            "publishedForNows": false,
+                            "rank": 73800,
+                            "resultText": "CD - Conditional discharge\nDischarged conditionally for 3 Months.",
+                            "rollUpPrompts": true,
+                            "rootJudicialResultId": "4a9288cb-da6b-4012-bc73-da1b94a0c367",
+                            "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                            "sentToCC": false,
+                            "terminatesOffenceProceedings": false,
+                            "urgent": false,
+                            "usergroups": [],
+                            "welshLabel": "Rhyddhad Amodol"
+                          }
+                        ],
+                        "offenceCode": "TH68023A",
+                        "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                        "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                        "offenceTitle": "Attempt robbery",
+                        "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                        "orderIndex": 1,
+                        "pleas": [
+                          {
+                            "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                            "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                            "pleaDate": "2025-10-02",
+                            "pleaValue": "GUILTY"
+                          }
+                        ],
+                        "proceedingsConcluded": true,
+                        "startDate": "2025-08-03",
+                        "verdicts": [],
+                        "wording": "Attempt robbery"
+                      }
+                    ],
+                    "prosecutionCaseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+                    "prosecutionCaseIdentifier": {
+                      "address": {
+                        "address1": "Bishopsgate police station",
+                        "address2": "182, Bishopsgate",
+                        "address5": "London",
+                        "postcode": "EC2M 4NP"
+                      },
+                      "contact": {
+                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                      },
+                      "majorCreditorCode": "COLP",
+                      "prosecutionAuthorityCode": "CITYPF",
+                      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                      "prosecutionAuthorityName": "City of London Police",
+                      "prosecutionAuthorityOUCode": "0480000",
+                      "caseURN": "ZK717218938"
+                    }
+                  }
+                ],
+                "isAppeal": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "780b4738-bf88-45a4-9a1e-76d8c0d4ddc7",
+                    "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "label": "Granted",
+                    "lastSharedDateTime": "2025-10-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-10-04",
+                    "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 98500,
+                    "resultText": "G - Granted",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "780b4738-bf88-45a4-9a1e-76d8c0d4ddc7",
+                    "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2025-10-06",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "ANCILLARY",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b2e67c3b-3aa3-436b-9ad2-26426783f63e",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b4ac2e46-5dd3-11e8-9c2d-fa7ae01bbebc",
+                        "label": "Text",
+                        "promptReference": "text",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "sliprule amendments",
+                        "welshValue": "sliprule amendments"
+                      }
+                    ],
+                    "judicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+                    "label": "Text",
+                    "lastSharedDateTime": "2025-10-06",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-10-04",
+                    "orderedHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 200400,
+                    "resultText": "TEXT - Text\nsliprule amendments",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b2e67c3b-3aa3-436b-9ad2-26426783f63e",
+                    "rootJudicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "CITYPF"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "1963-10-02",
+            "id": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "judicialResults": [],
+            "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+            "name": "Chi Koelpin"
+          }
+        ],
+        "hasResultAmended": true,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-10-04T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "069238a1-4923-4134-9566-b114a0a5bab3",
+        "isApplicationHearing": true,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Application",
+          "id": "3449743b-95d6-4836-8941-57f588b52068"
+        }
+      }
+    ],
+    "id": "c074f914-33b2-4283-97b1-75f59209d00f",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "ZK717218938"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": true,
+    "appealsLodgedFor": [
+      {
+        "defendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+        "offenceIds": [
+          "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa"
+        ]
+      }
+    ]
+  },
+  "activeCourtOrders": [
+    {
+      "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+      "courtOrders": [
+        {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": false,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-10-02",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                  "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                  "sequenceNumber": 100
+                },
+                "arrestDate": "2025-09-17",
+                "chargeDate": "2025-09-22",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-10-02",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                "isDisposed": true,
+                "lastAdjournDate": "2025-10-03",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 500,
+                  "alcoholReadingMethodCode": "A",
+                  "alcoholReadingMethodDescription": "Blood"
+                },
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "6d289128-9d16-4cd2-ac8a-f61a1c5eb3aa",
+                  "originatingHearingId": "86ade6db-5d57-4827-861a-af046c1732ff",
+                  "pleaDate": "2025-10-02",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2025-08-03",
+                "wording": "Attempt robbery"
+              },
+              "prosecutionCaseId": "c074f914-33b2-4283-97b1-75f59209d00f",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Bishopsgate police station",
+                  "address2": "182, Bishopsgate",
+                  "address5": "London",
+                  "postcode": "EC2M 4NP"
+                },
+                "contact": {
+                  "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                },
+                "majorCreditorCode": "COLP",
+                "prosecutionAuthorityCode": "CITYPF",
+                "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                "prosecutionAuthorityName": "City of London Police",
+                "prosecutionAuthorityOUCode": "0480000",
+                "caseURN": "ZK717218938"
+              }
+            }
+          ],
+          "defendantIds": [
+            "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5"
+          ],
+          "endDate": "2026-01-03",
+          "expiryDate": "2026-01-03",
+          "id": "b217e96e-0ea5-48ce-8446-049f5942a255",
+          "isSJPOrder": false,
+          "isUnpaidWork": false,
+          "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "label": "Conditional discharge",
+          "masterDefendantId": "5d9bc122-1f87-4fcf-bb97-ba86dc4639d5",
+          "orderDate": "2025-10-04",
+          "orderingCourt": {
+            "address": {
+              "address1": "176A Lavender Hill",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW11 1JU"
+            },
+            "code": "B01LY00",
+            "courtHearingLocation": "B01LY01",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "roomName": "Courtroom 01"
+          },
+          "orderingHearingId": "069238a1-4923-4134-9566-b114a0a5bab3",
+          "showUnpaidWorkWarning": false,
+          "startDate": "2025-10-04"
+        }
+      ]
+    }
+  ]
+}

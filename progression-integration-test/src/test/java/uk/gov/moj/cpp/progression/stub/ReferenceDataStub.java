@@ -1,12 +1,7 @@
 package uk.gov.moj.cpp.progression.stub;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -38,6 +33,9 @@ public class ReferenceDataStub {
     private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE = "application/vnd.referencedata.get-all-document-type-access+json";
     private static final String COUNTRY_BY_POSTCODE_CONTENT_TYPE = "application/vnd.referencedata.query.country-by-postcode+json";
     private static final String COUNTRY_BY_POSTCODE_ENDPOINT = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
+    private static final String REFERENCE_DATA_RESULT_DEFINITION_WITH_CATEGORY_URL = "/referencedata-service/query/api/rest/referencedata/result-definitions";
+    private static final String REFERENCE_DATA_RESULT_DEFINITION_WITH_CATEGORY_MEDIA_TYPE = "application/vnd.referencedata.query-result-definitions-with-category+json";
+
 
     private static final List<Pair<String, String>> COURT_ID_LIST = Lists.newArrayList(Pair.p(".*", "/restResource/referencedata.ou-courtroom.json"), Pair.p(ENGLISH_COURT_ID, "/restResource/referencedata.ou-courtroom-english.json"));
 
@@ -63,6 +61,18 @@ public class ReferenceDataStub {
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(jsonObject.toString())));
+    }
+
+    public static void stubReferenceDataResultDefinitionWithCategory() {
+        String today = LocalDate.now().toString();
+        stubFor(get(urlPathMatching(REFERENCE_DATA_RESULT_DEFINITION_WITH_CATEGORY_URL))
+                .withHeader("Accept", equalTo(REFERENCE_DATA_RESULT_DEFINITION_WITH_CATEGORY_MEDIA_TYPE))
+                .withQueryParam("category", containing("F"))
+                .withQueryParam("on", containing(today))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", REFERENCE_DATA_RESULT_DEFINITION_WITH_CATEGORY_MEDIA_TYPE)
+                        .withBody(getPayload("stub-data/referencedata.result_definitions_with_category.json"))));
     }
 
     public static void stubQueryOrganisation(final String resourceName) {

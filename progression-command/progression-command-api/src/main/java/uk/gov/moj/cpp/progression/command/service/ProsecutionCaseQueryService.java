@@ -6,7 +6,9 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -51,5 +53,17 @@ public class ProsecutionCaseQueryService {
             result = Optional.of(prosecutionCase.payloadAsJsonObject());
         }
         return result;
+    }
+
+    public Optional<JsonObject> getCourtApplicationById(final UUID applicationId, final Envelope<?> envelope) {
+        final JsonObject payload = createObjectBuilder().add("applicationId", applicationId.toString()).build();
+        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(payload)
+                .withName("progression.query.application").withMetadataFrom(envelope);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+        if (!response.payload().isEmpty()) {
+            return Optional.of(response.payload());
+        }
+        return Optional.empty();
+
     }
 }

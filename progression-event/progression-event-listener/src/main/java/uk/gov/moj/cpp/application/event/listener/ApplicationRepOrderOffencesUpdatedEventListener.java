@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.application.event.listener;
 
-import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -13,28 +12,29 @@ import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.update
 import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
-import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -76,8 +76,32 @@ public class ApplicationRepOrderOffencesUpdatedEventListener {
         updateCourtApplication(applicationEntity, applicationOffencesUpdated);
         updateInitiateCourtApplication(initiateCourtApplicationEntity, applicationOffencesUpdated);
         if (isNotEmpty(caseIds)) {
-//            updateCase(caseIds, courtApplication, applicationOffencesUpdated);
             updateCase(caseIds, courtApplication, applicationOffencesUpdated, prosecutionCaseRepository, jsonObjectConverter, stringToJsonObjectConverter, objectToJsonObjectConverter);
+        }
+    }
+
+
+
+    @Handles("progression.event.application-rep-order-updated-for-application")
+    public void processApplicationRepOrderUpdatedForApplication(final JsonEnvelope event) {
+        final ApplicationRepOrderUpdatedForApplication applicationRepOrderUpdatedForApplication = jsonObjectConverter.convert(event.payloadAsJsonObject(), ApplicationRepOrderUpdatedForApplication.class);
+
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(applicationRepOrderUpdatedForApplication.getApplicationId());
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(applicationRepOrderUpdatedForApplication.getApplicationId());
+
+        final CourtApplication courtApplication = getPersistedCourtApplication(applicationEntity);
+        final List<UUID> caseIds = Optional.of(courtApplication.getSubject())
+                .map(CourtApplicationParty::getMasterDefendant)
+                .map(MasterDefendant::getDefendantCase)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(DefendantCase::getCaseId)
+                .toList();
+
+        updateCourtApplication(applicationEntity, applicationRepOrderUpdatedForApplication);
+        updateInitiateCourtApplication(initiateCourtApplicationEntity, applicationRepOrderUpdatedForApplication);
+        if (isNotEmpty(caseIds)) {
+            updateCase(caseIds, courtApplication, applicationRepOrderUpdatedForApplication.getLaaReference(), prosecutionCaseRepository, jsonObjectConverter, stringToJsonObjectConverter, objectToJsonObjectConverter);
         }
     }
 
@@ -103,6 +127,37 @@ public class ApplicationRepOrderOffencesUpdatedEventListener {
         saveUpdatedInitiateCourtApplication(initiateCourtApplicationEntity, persistedApplication, initiateCourtApplicationProceedings, updatedCases);
     }
 
+    private void updateInitiateCourtApplication(InitiateCourtApplicationEntity initiateCourtApplicationEntity, ApplicationRepOrderUpdatedForApplication applicationRepOrderUpdatedForApplication) {
+        if (isNull(initiateCourtApplicationEntity)) {
+            return;
+        }
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = getPersistedInitiateCourtApplication(initiateCourtApplicationEntity);
+
+        if (isNull(initiateCourtApplicationProceedings)) {
+            return;
+        }
+
+        final CourtApplication persistedApplication = initiateCourtApplicationProceedings.getCourtApplication();
+        if (!isSubjectExistsOnApplication(persistedApplication, applicationRepOrderUpdatedForApplication.getSubjectId())) {
+            return;
+        }
+
+        final CourtApplication updatedCourtApplication = CourtApplication.courtApplication()
+                .withValuesFrom(persistedApplication)
+                .withLaaApplnReference(applicationRepOrderUpdatedForApplication.getLaaReference())
+                .build();
+
+
+        final InitiateCourtApplicationProceedings updatedPersistedInitiateCourtApplication = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withValuesFrom(initiateCourtApplicationProceedings)
+                .withCourtApplication(updatedCourtApplication)
+                .build();
+        initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedPersistedInitiateCourtApplication).toString());
+        initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+
+    }
+
     private void updateCourtApplication(final CourtApplicationEntity applicationEntity, final ApplicationReporderOffencesUpdated applicationOffencesUpdated) {
         if (isNull(applicationEntity)) {
             return;
@@ -117,6 +172,27 @@ public class ApplicationRepOrderOffencesUpdatedEventListener {
         saveUpdatedCourtApplication(applicationEntity, persistedApplication, updatedCases);
     }
 
+    private void updateCourtApplication(final CourtApplicationEntity applicationEntity, final ApplicationRepOrderUpdatedForApplication applicationRepOrderUpdatedForApplication) {
+        if (isNull(applicationEntity)) {
+            return;
+        }
+
+        final CourtApplication persistedApplication = getPersistedCourtApplication(applicationEntity);
+        if (!isSubjectExistsOnApplication(persistedApplication, applicationRepOrderUpdatedForApplication.getSubjectId())) {
+            return;
+        }
+
+        final CourtApplication updatedCourtApplication = CourtApplication.courtApplication()
+                .withValuesFrom(persistedApplication)
+                .withLaaApplnReference(applicationRepOrderUpdatedForApplication.getLaaReference())
+                .build();
+
+        applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
+        courtApplicationRepository.save(applicationEntity);
+    }
+
+
+
     private CourtApplication getPersistedCourtApplication(final CourtApplicationEntity applicationEntity) {
         final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
         return jsonObjectConverter.convert(applicationJson, CourtApplication.class);
@@ -128,9 +204,13 @@ public class ApplicationRepOrderOffencesUpdatedEventListener {
     }
 
     private boolean isValidSubject(final CourtApplication application, final UUID subjectId) {
-        return nonNull(application.getSubject()) &&
-                application.getSubject().getId().equals(subjectId) &&
+        return isSubjectExistsOnApplication(application, subjectId) &&
                 isNotEmpty(application.getCourtApplicationCases());
+    }
+
+    private boolean isSubjectExistsOnApplication(final CourtApplication application, final UUID subjectId) {
+        return nonNull(application.getSubject()) &&
+                application.getSubject().getId().equals(subjectId);
     }
 
     private List<CourtApplicationCase> updateOffences(final CourtApplication application, final ApplicationReporderOffencesUpdated updateData) {

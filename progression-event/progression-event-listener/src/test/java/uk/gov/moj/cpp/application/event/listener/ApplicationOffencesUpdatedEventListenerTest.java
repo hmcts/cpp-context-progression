@@ -257,7 +257,47 @@ public class ApplicationOffencesUpdatedEventListenerTest {
     }
 
     @Test
-    void testNoInteractionUpdateApplicationLaaReferenceForHearing() {
+    void testUpdateApplicationLaaReferenceForHearingWhenOffenceIdIsNull() {
+        // Mock data
+        final UUID hearingId = UUID.randomUUID();
+        final UUID applicationId = UUID.randomUUID();
+        final UUID subjectId = UUID.randomUUID();
+        final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
+                .withStatusCode("statusCode").withStatusDescription("description").build();
+        final JsonObject updatedJsonObject = mock(JsonObject.class);
+        final JsonObject hearingJsonObject = Json.createObjectBuilder().build();
+
+        final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing = ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
+                .withHearingId(hearingId)
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withLaaReference(laaReference)
+                .build();
+
+        Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtApplications(List.of(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withSubject(CourtApplicationParty.courtApplicationParty().withId(subjectId).build()).build()))
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(hearingJsonObject, Hearing.class)).thenReturn(hearing);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(hearingEntity.getPayload()).thenReturn(hearingJsonObject.toString());
+
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ApplicationLaaReferenceUpdatedForHearing.class)).thenReturn(applicationLaaReferenceUpdatedForHearing);
+        when(objectToJsonObjectConverter.convert(any(Hearing.class))).thenReturn(updatedJsonObject);
+
+        listener.updateApplicationLaaReferenceForHearing(envelope);
+
+        verify(hearingRepository).save(hearingEntity);
+        verify(hearingEntity).setPayload(updatedJsonObject.toString());
+    }
+
+    @Test
+    void testNoInteractionUpdateApplicationLaaReferenceForHearingWhenHearingNotFound() {
         // Mock data
         final UUID hearingId = UUID.randomUUID();
         final UUID applicationId = UUID.randomUUID();

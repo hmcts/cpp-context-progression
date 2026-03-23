@@ -7,6 +7,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
@@ -20,6 +21,7 @@ import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -33,6 +35,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
@@ -64,12 +67,14 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.service.ProgressionService;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -117,6 +122,8 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
     @Inject
     private RefDataService referenceDataService;
+    @Inject
+    private ProgressionService progressionService;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -387,8 +394,14 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
     private CourtApplication rebuildCourtApplication(final CourtApplication courtApplication, final Envelope<?> envelope) {
 
+        final LaaReference laaReference = getLaaApplnReference(courtApplication, envelope);
+
         final CourtApplication.Builder courtApplicationBuilder = CourtApplication.courtApplication()
                 .withValuesFrom(courtApplication);
+        if (nonNull(laaReference)) {
+            courtApplicationBuilder.withLaaApplnReference(laaReference);
+        }
+
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
 
@@ -396,7 +409,19 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         updateClonedOffenceApplicationCases(courtApplicationBuilder, courtApplication);
         updateClonedOffenceCourtOrder(courtApplicationBuilder, courtApplication);
 
+
         return courtApplicationBuilder.build();
+    }
+
+    private LaaReference getLaaApplnReference(final CourtApplication courtApplication, final Envelope<?> envelope) {
+        if (isNotChildApplication(courtApplication)) {
+            return courtApplication.getLaaApplnReference();
+        }
+
+        final EventStream eventStream = eventSource.getStreamById(courtApplication.getParentApplicationId());
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+
+        return applicationAggregate.getLaaReference();
     }
 
     private String getOffenceWordingPattern(CourtApplication courtApplication) {
@@ -494,9 +519,8 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         if (nonNull(courtApplication.getApplicant().getProsecutingAuthority())) {
             courtApplicationBuilder.withApplicant(enrichCourtApplicationParty(courtApplication.getApplicant(), jsonEnvelope));
         }
-        if (nonNull(courtApplication.getSubject().getProsecutingAuthority())) {
-            courtApplicationBuilder.withSubject(enrichCourtApplicationParty(courtApplication.getSubject(), jsonEnvelope));
-        }
+
+        courtApplicationBuilder.withSubject(enrichSubject(courtApplication, jsonEnvelope));
 
         ofNullable(courtApplication.getRespondents())
                 .ifPresent(courtApplicationParties -> courtApplicationBuilder.withRespondents(courtApplicationParties.stream()
@@ -519,38 +543,61 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         }
     }
 
+    private CourtApplicationParty enrichSubject(final CourtApplication courtApplication, final JsonEnvelope jsonEnvelope) {
+        final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty().withValuesFrom(courtApplication.getSubject());
+        builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplication.getSubject().getProsecutingAuthority(), jsonEnvelope));
+        builder.withAssociatedDefenceOrganisation(fetchParentApplicationDefenceOrganisation(courtApplication, jsonEnvelope));
+        return builder.build();
+    }
+
+    private AssociatedDefenceOrganisation fetchParentApplicationDefenceOrganisation(final CourtApplication courtApplication, final JsonEnvelope jsonEnvelope) {
+        if (isNotChildApplication(courtApplication)) {
+            return courtApplication.getSubject().getAssociatedDefenceOrganisation();
+        }
+
+        //if this is a child-application clone AssociatedDefenceOrganisation from parent
+        return parentApplicationsAssociatedDefenceOrganisation(courtApplication.getParentApplicationId(), jsonEnvelope);
+    }
+
+    private AssociatedDefenceOrganisation parentApplicationsAssociatedDefenceOrganisation(final UUID parentApplicationId, final JsonEnvelope jsonEnvelope) {
+        final Optional<CourtApplication> courtApplicationOptional = progressionService.getApplication(parentApplicationId, jsonEnvelope)
+                .map(caJson -> jsonObjectToObjectConverter.convert(caJson.getJsonObject("courtApplication"), CourtApplication.class));
+
+        return courtApplicationOptional.map(courtApplication -> courtApplication.getSubject().getAssociatedDefenceOrganisation()).orElse(null);
+    }
+
+    private static boolean isNotChildApplication(final CourtApplication courtApplication) {
+        return isNull(courtApplication.getParentApplicationId());
+    }
+
     private CourtApplicationParty enrichCourtApplicationParty(final CourtApplicationParty courtApplicationParty, final JsonEnvelope jsonEnvelope) {
         final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty().withValuesFrom(courtApplicationParty);
-        if (isNameInformationEmpty(courtApplicationParty.getProsecutingAuthority())) {
-            builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope));
-        }
+        builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope));
         return builder.build();
     }
 
     @SuppressWarnings("pmd:NullAssignment")
     private ProsecutingAuthority fetchProsecutingAuthorityInformation(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope jsonEnvelope) {
 
+        if (isNull(prosecutingAuthority)) {
+            return null;
+        }
+
         final Builder prosecutingAuthorityBuilder = prosecutingAuthority().withValuesFrom(prosecutingAuthority);
+        if (isNameInformationEmpty(prosecutingAuthority)) {
+            final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutingAuthority.getProsecutionAuthorityId(), requester);
+            if (optionalProsecutorJson.isPresent()) {
+                final JsonObject jsonObject = optionalProsecutorJson.get();
+                prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
+                        .withWelshName(jsonObject.getString("nameWelsh", null))
+                        .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
 
-        final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutingAuthority.getProsecutionAuthorityId(), requester);
-        if (optionalProsecutorJson.isPresent()) {
-            final JsonObject jsonObject = optionalProsecutorJson.get();
-            prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
-                    .withWelshName(jsonObject.getString("nameWelsh", null))
-                    .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
+                ofNullable(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
+                        .map(email -> contactNumber().withPrimaryEmail(email).build())
+                        .ifPresent(prosecutingAuthorityBuilder::withContact);
 
-            if (jsonObject.containsKey(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY)) {
-                prosecutingAuthorityBuilder.withContact(contactNumber()
-                        .withPrimaryEmail(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY))
-                        .build());
-            }
-
-            if (jsonObject.containsKey(PROSECUTOR_OUCODE_KEY)) {
-                prosecutingAuthorityBuilder.withProsecutionAuthorityOUCode(jsonObject.getString(PROSECUTOR_OUCODE_KEY));
-            }
-
-            if (jsonObject.containsKey(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY)) {
-                prosecutingAuthorityBuilder.withMajorCreditorCode(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY));
+                ofNullable(jsonObject.getString(PROSECUTOR_OUCODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withProsecutionAuthorityOUCode);
+                ofNullable(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withMajorCreditorCode);
             }
         }
         return prosecutingAuthorityBuilder.build();
