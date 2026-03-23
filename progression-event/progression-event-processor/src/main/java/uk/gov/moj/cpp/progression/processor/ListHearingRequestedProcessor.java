@@ -66,6 +66,7 @@ public class ListHearingRequestedProcessor {
             LoggerFactory.getLogger(ListHearingRequestedProcessor.class);
 
     private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
+    public static final String PROSECUTION_CASE = "prosecutionCase";
 
     @Inject
     private ProgressionService progressionService;
@@ -176,13 +177,13 @@ public class ListHearingRequestedProcessor {
         }
 
         final Optional<JsonObject> prosecutionCaseJson = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId);
-        if (prosecutionCaseJson.isEmpty() || !prosecutionCaseJson.get().containsKey("prosecutionCase")) {
+        if (prosecutionCaseJson.isEmpty() || !prosecutionCaseJson.get().containsKey(PROSECUTION_CASE)) {
             return Optional.empty();
         }
 
         final JsonObject caseDetail = prosecutionCaseJson.get();
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(
-                caseDetail.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                caseDetail.getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
         final Optional<ZonedDateTime> earliestSittingDay = getEarliestHearingSittingDay(caseDetail, hearingId);
         if (earliestSittingDay.isEmpty()) {
             return Optional.empty();
@@ -313,7 +314,7 @@ public class ListHearingRequestedProcessor {
                                                         .map(offence -> OffencesToRemove.offencesToRemove()
                                                                 .withOffenceId(offence.getOffenceId())
                                                                 .build())
-                                                        .collect(Collectors.toList()))
+                                                        .toList()))
                                                 .build())
                                         .collect(Collectors.toList()))
                                 .build())
@@ -334,7 +335,7 @@ public class ListHearingRequestedProcessor {
         final List<ProsecutionCase> cases = caseIds.stream().map(caseId -> progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId.toString()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class))
+                .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(PROSECUTION_CASE), ProsecutionCase.class))
                 .collect(Collectors.toList());
 
         return listCourtHearingTransformer.transform(jsonEnvelope, cases, listHearingRequested.getListNewHearing(), listHearingRequested.getHearingId());

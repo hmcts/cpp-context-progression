@@ -193,26 +193,6 @@ public class ListHearingRequestedProcessorTest {
 
     @BeforeEach
     public void initMocks() {
-        final Address address = Address.address()
-                .withAddress1("testAddress1")
-                .withAddress2("testAddress2")
-                .withAddress3("address3")
-                .withAddress4("address4")
-                .withAddress5("address5")
-                .withPostcode("sl6 1nb")
-                .build();
-        final LjaDetails ljaDetails = LjaDetails.ljaDetails()
-                .withLjaCode("testLja")
-                .withWelshLjaName("testWalesLja")
-                .withLjaName("ljaName")
-                .build();
-        final CourtCentre enrichedCourtCenter = CourtCentre.courtCentre()
-                .withCourtHearingLocation("Burmimgham")
-                .withId(randomUUID())
-                .withLja((ljaDetails)).withName("Lavender Court")
-                .withAddress(address)
-                .withWelshCourtCentre(false)
-                .build();
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.listHearingRequestedProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
 
