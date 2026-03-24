@@ -1,80 +1,9 @@
 {
-  "hearing": {
-    "courtCentre": {
-      "id": "COURT_CENTRE_ID",
-      "name": "COURT_CENTRE_NAME"
-    },
-    "hearingDays": [
-      {
-        "courtCentreId": "COURT_CENTRE_ID",
-        "listedDurationMinutes": 60,
-        "listingSequence": 0,
-        "sittingDay": "2026-03-04T13:22:26.764Z"
-      }
-    ],
-    "hearingLanguage": "ENGLISH",
-    "id": "HEARING_ID",
-    "jurisdictionType": "CROWN",
-    "prosecutionCases": [
-      {
-        "prosecutionCaseIdentifier": {
-          "prosecutionAuthorityCode": "SURRPF",
-          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
-          "caseURN": "62GD9461322"
-        },
-        "defendants": [
-          {
-            "courtProceedingsInitiated": "2026-03-04T13:22:26.984Z",
-            "id": "DEFENDANT_ID",
-            "isYouth": true,
-            "masterDefendantId": "DEFENDANT_ID",
-            "offences": [
-              {
-                "count": 1,
-                "id": "OFFENCE_ID",
-                "offenceCode": "DZiQixpf2D",
-                "offenceDefinitionId": "aa0abf84-df49-4bc6-ba39-1291a64cd8b4",
-                "offenceLegislation": "legislation",
-                "offenceTitle": "ZeaRrlyx37",
-                "orderIndex": 0,
-                "reportingRestrictions": [
-                  {
-                    "id": "61cf8b21-6d00-4048-819c-2bf41ac47212",
-                    "judicialResultId": "065b6fcb-0787-4f0d-a9cd-af4b5c36e047",
-                    "label": "RestrictionApplied",
-                    "orderedDate": "2026-03-04"
-                  }
-                ],
-                "startDate": "2026-03-04",
-                "wording": "8n1vlyXijl"
-              }
-            ],
-            "personDefendant": {
-              "personDetails": {
-                "address": {
-                  "address1": "iYEbvVOdmk",
-                  "address2": "o7NT69TccA",
-                  "address3": "riBWeDPPEg",
-                  "address4": "X6MFrIxLAA",
-                  "address5": "C1yyCg1zzO",
-                  "postcode": "CR1 4BX"
-                },
-                "dateOfBirth": "2005-03-04",
-                "firstName": "lopkgo8ifi",
-                "gender": "NOT_KNOWN",
-                "lastName": "222GXztOq1"
-              }
-            },
-            "prosecutionCaseId": "CASE_ID"
-          }
-        ],
-        "id": "CASE_ID",
-        "initiationCode": "C"
-      }
-    ],
-    "type": {
-      "description": "PTP",
-      "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+  "hearingId": "HEARING_ID",
+  "hearingType": "PTP",
+  "caseUrns": [
+    {
+      "caseURN": "CASE_URN"
     }
-  }
+  ]
 }
