@@ -97,7 +97,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 
 
-@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod", "pmd:BeanMembersShouldSerialize"})
+@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod", "pmd:BeanMembersShouldSerialize", "squid:S3776"})
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class HearingConfirmedEventProcessor {
 
@@ -193,7 +193,6 @@ public class HearingConfirmedEventProcessor {
         confirmHearing(jsonEnvelope, sendNotificationToParties,confirmedHearing,hearingInProgression );
     }
 
-    @SuppressWarnings("squid:S3776")
     @Handles("public.listing.hearing-confirmed")
     public void processEvent(final JsonEnvelope jsonEnvelope) {
 
