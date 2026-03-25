@@ -8,9 +8,10 @@
         <version>17.103.3</version>
     </parent>
 
+
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.213-DLRM7-SNAPSHOT</version>
+    <version>17.0.214-DLRM7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -84,9 +85,9 @@
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
         <correspondence.version>17.0.11</correspondence.version>
-
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
+
         <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency>
         <dbunit-maven-plugin.version>1.0-beta-3</dbunit-maven-plugin.version>
         <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
