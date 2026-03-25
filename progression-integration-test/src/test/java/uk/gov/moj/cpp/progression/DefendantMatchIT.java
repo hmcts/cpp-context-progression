@@ -219,11 +219,12 @@ public class DefendantMatchIT extends AbstractIT {
 
         //Update defendant2 masterdefendantId to newMasterDefendantId
         updateMasterDefendant(prosecutionCaseId_2, defendantId_2, newMasterDefendantId);
-        verifyInMessagingQueueForCaseDefendantChanged();
 
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(newMasterDefendantId))));
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+
+        verifyInMessagingQueueForCaseDefendantChanged();
     }
 
     @Test

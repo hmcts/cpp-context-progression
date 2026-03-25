@@ -73,13 +73,13 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.updateOffences();
 
         // then
-        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
         final String casePayload = pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(OFFENCE_CODE)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.alcoholReadingMethodCode", is("B")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-01-01")));
+        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
 
         final JSONObject caseJsonObject = new JSONObject(casePayload);
         final int orderIndex = Integer.parseInt(caseJsonObject.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
@@ -226,8 +226,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.updateOffences(newOffenceId, offenceCode);
 
         // then
-        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
-
         final Matcher[] matchers = {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].offenceCode", is(offenceCode)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].id", is(newOffenceId)),
@@ -235,6 +233,7 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].orderIndex", is(orderIndex))
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
+        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
     }
 }
 

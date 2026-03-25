@@ -117,6 +117,9 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         nowsRequestHelper.makeNowsRequestAndVerify(null, payload);
 
+        getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
         sendPublicEventForDocumentAvailable();
 
         verifyMaterialCreated(materialId);

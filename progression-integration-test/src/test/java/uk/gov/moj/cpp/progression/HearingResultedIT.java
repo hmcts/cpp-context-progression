@@ -130,6 +130,7 @@ public class HearingResultedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelopeForConfirm = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelopeForConfirm);
 
+        pollHearingWithStatusInitialised(hearingId3);
         verifyInMessagingQueueForCasesReferredToCourts();
 
         final JsonObject hearingAddDefenceCounselJson = getDefenceCounselPublicEventPayload(hearingId3, "a");

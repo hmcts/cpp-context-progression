@@ -116,8 +116,8 @@ public class RecordLAAReferenceIT extends AbstractIT {
         //Create prosecution case
         //Given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
@@ -130,8 +130,6 @@ public class RecordLAAReferenceIT extends AbstractIT {
         verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
         verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
 
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
         getHearingForDefendant(hearingId, getHearingMatchers());
     }
 
