@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FeatureStubUtil.setFeatureToggle;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 
@@ -38,6 +39,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
+        setFeatureToggle("AmpSendPcr", false);
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());
@@ -84,7 +86,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JSONException {
-
+        setFeatureToggle("AmpSendPcr", false);
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());

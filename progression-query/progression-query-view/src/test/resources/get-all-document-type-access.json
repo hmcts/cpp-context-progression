@@ -61,6 +61,30 @@
               "id": "85a02c4c-7eda-4e45-ac8a-023888041b16",
               "groupName": "Second Line Support"
             }
+          },
+          {
+            "cppGroup": {
+              "id": "2783bf27-ff4e-4a68-91b4-7022335ea229",
+              "groupName": "Defence Lawyers"
+            }
+          },
+          {
+            "cppGroup": {
+              "id": "ee92096e-54d3-49d0-be05-ed5a376d3634",
+              "groupName": "Advocates"
+            }
+          },
+          {
+            "cppGroup": {
+              "id": "b7374d85-cf7e-472a-bbbf-2e60269e47b8",
+              "groupName": "Chambers Admin"
+            }
+          },
+          {
+            "cppGroup": {
+              "id": "350eff42-cf76-4fe7-a8f6-ab26959ec59e",
+              "groupName": "Chambers Clerk"
+            }
           }
         ],
         "uploadUserGroups": [

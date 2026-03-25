@@ -65,6 +65,7 @@
           "address5": "RANDOM_ADDRESS5",
           "postcode": "RANDOM_POSTCODE"
         },
+        "isAddressConfidential": false,
         "contact": {
           "home": " ",
           "work": "a",
@@ -301,6 +302,50 @@
             }
           }
         }
+      },
+      {
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "personDetails": {
+          "firstName": "Dixon",
+          "lastName": "Covil",
+          "gender": "MALE",
+          "address": {
+            "address1": "3, LakeSide Street"
+          },
+          "isAddressConfidential": false
+        },
+        "summonsRequired": false,
+        "notificationRequired": false
+      }
+    ],
+    "thirdParties": [
+      {
+        "id": "99cdf36e-93e4-41b0-8277-18d9dba7f06f",
+        "personDetails": {
+          "firstName": "S",
+          "lastName": "Water",
+          "gender": "MALE",
+          "address": {
+            "address1": "3001, random Street"
+          },
+          "isAddressConfidential": false
+        },
+        "summonsRequired": false,
+        "notificationRequired": true
+      },
+      {
+        "id": "94cdf36e-93e4-41b0-8277-18d9dba7f06f",
+        "personDetails": {
+          "firstName": "T",
+          "lastName": "Samsung",
+          "gender": "MALE",
+          "address": {
+            "address1": "9901, Silverdale Street"
+          },
+          "isAddressConfidential": false
+        },
+        "summonsRequired": false,
+        "notificationRequired": true
       }
     ],
     "courtApplicationPayment": {

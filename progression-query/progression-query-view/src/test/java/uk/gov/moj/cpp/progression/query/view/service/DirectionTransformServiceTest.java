@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query.view.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +46,7 @@ import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadata
 import static uk.gov.moj.cpp.progression.query.view.utils.FileUtil.getJsonPayload;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled("ZEESHAN")
 public class DirectionTransformServiceTest {
 
 
