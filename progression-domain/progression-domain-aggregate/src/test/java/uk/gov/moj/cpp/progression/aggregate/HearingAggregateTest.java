@@ -90,6 +90,8 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
@@ -535,6 +537,95 @@ public class HearingAggregateTest {
 
         assertTrue("Offence with CTL and guilty verdict should be present in updated hearing", updatedOffence.isPresent());
         assertNull("CustodyTimeLimit should be null for offence with guilty verdict",
+                updatedOffence.get().getCustodyTimeLimit());
+    }
+
+    /**
+     * Test to verify CTL removal for offences with guilty plea values.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "GUILTY",
+            "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
+            "GUILTY_REQUEST_HEARING",
+            "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+            "MCA_GUILTY",
+            "GUILTY_LESSER_OFFENCE_NAMELY",
+            "GUILTY_TO_ALTERNATIVE_OFFENCE",
+            "CHANGE_TO_GUILTY_AFTER_SWORN",
+            "CHANGE_TO_GUILTY_NO JURY",
+            "AUTREFOIS_CONVICT"
+    })
+    public void shouldSetCustodyTimeLimitToNullForOffencesWithGuiltyPleaValues(final String pleaValue) {
+        // Given
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID parentJudicialResultTypeId = randomUUID();
+
+        final JudicialResult judicialResult = JudicialResult.judicialResult()
+                .withOffenceId(offenceId)
+                .withParentJudicialResultTypeId(parentJudicialResultTypeId)
+                .withCategory(JudicialResultCategory.INTERMEDIARY)
+                .withIsDeleted(false)
+                .build();
+
+        final CustodyTimeLimit custodyTimeLimit = CustodyTimeLimit.custodyTimeLimit()
+                .withTimeLimit(LocalDate.now().plusDays(30))
+                .withIsCtlExtended(false)
+                .build();
+
+        final Offence offenceWithCTLAndChangeOfPlea = Offence.offence()
+                .withId(offenceId)
+                .withCustodyTimeLimit(custodyTimeLimit)
+                .withPlea(Plea.plea().withPleaValue(pleaValue).build())
+                .withJudicialResults(singletonList(judicialResult))
+                .build();
+
+        final Defendant defendant = Defendant.defendant()
+                .withId(defendantId)
+                .withOffences(singletonList(offenceWithCTLAndChangeOfPlea))
+                .build();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(singletonList(defendant))
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase))
+                .build();
+
+        final ZonedDateTime sharedTime = ZonedDateTime.now();
+        final LocalDate hearingDay = LocalDate.now();
+        final List<UUID> resultIdList = emptyList();
+        final List<UUID> shadowListedOffences = emptyList();
+
+        // When
+        final Stream<Object> result = hearingAggregate.processHearingResults(
+                hearing, sharedTime, shadowListedOffences, hearingDay, resultIdList);
+
+        // Then
+        final List<Object> events = result.collect(toList());
+        final Optional<ProsecutionCasesResultedV2> prosecutionCasesResultedEvent = events.stream()
+                .filter(event -> event instanceof ProsecutionCasesResultedV2)
+                .map(event -> (ProsecutionCasesResultedV2) event)
+                .findFirst();
+
+        assertTrue("ProsecutionCasesResultedV2 event should be present", prosecutionCasesResultedEvent.isPresent());
+        final Hearing updatedHearing = prosecutionCasesResultedEvent.get().getHearing();
+        assertThat("Updated hearing should not be null", updatedHearing, notNullValue());
+
+        final Optional<Offence> updatedOffence = updatedHearing.getProsecutionCases().stream()
+                .flatMap(pc -> pc.getDefendants().stream())
+                .flatMap(def -> def.getOffences().stream())
+                .filter(offence -> offence.getId().equals(offenceId))
+                .findFirst();
+
+        assertTrue("Offence with change of plea should be present in updated hearing", updatedOffence.isPresent());
+        assertNull("CustodyTimeLimit should be null for offence with change of plea",
                 updatedOffence.get().getCustodyTimeLimit());
     }
 
