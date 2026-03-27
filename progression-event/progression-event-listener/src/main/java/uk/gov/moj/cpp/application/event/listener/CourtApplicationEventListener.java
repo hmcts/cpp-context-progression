@@ -413,12 +413,15 @@ public class CourtApplicationEventListener {
     private void addCourtApplicationToCase(final CourtApplication courtApplication, final UUID prosecutionCaseId, final String caseReference) {
         final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findBy(courtApplication.getId());
         if (nonNull(courtApplicationEntity)) {
-            final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
-            final CourtApplicationCaseKey courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), courtApplication.getId(), prosecutionCaseId);
-            courtApplicationCaseEntity.setId(courtApplicationCaseKey);
-            courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
-            courtApplicationCaseEntity.setCaseReference(caseReference);
-            courtApplicationCaseRepository.save(courtApplicationCaseEntity);
+            CourtApplicationCaseEntity courtApplicationCase = courtApplicationCaseRepository.findByApplicationIdAndCaseId(courtApplication.getId(), prosecutionCaseId);
+            if(courtApplicationCase == null) {
+                final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+                final CourtApplicationCaseKey courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), courtApplication.getId(), prosecutionCaseId);
+                courtApplicationCaseEntity.setId(courtApplicationCaseKey);
+                courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+                courtApplicationCaseEntity.setCaseReference(caseReference);
+                courtApplicationCaseRepository.save(courtApplicationCaseEntity);
+            }
         }
     }
 
