@@ -614,10 +614,10 @@ public class HearingAggregateTest {
                 hearing, sharedTime, shadowListedOffences, hearingDay, resultIdList);
 
         // Then
-        final List<Object> events = result.collect(toList());
+        final List<Object> events = result.toList();
         final Optional<ProsecutionCasesResultedV2> prosecutionCasesResultedEvent = events.stream()
-                .filter(event -> event instanceof ProsecutionCasesResultedV2)
-                .map(event -> (ProsecutionCasesResultedV2) event)
+                .filter(ProsecutionCasesResultedV2.class::isInstance)
+                .map(ProsecutionCasesResultedV2.class::cast)
                 .findFirst();
 
         assertTrue("ProsecutionCasesResultedV2 event should be present", prosecutionCasesResultedEvent.isPresent());
