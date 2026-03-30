@@ -321,6 +321,8 @@ public class SystemDocGeneratorEventProcessor {
     }
 
     private void processPrisonCourtRegisterDocumentAvailable(final JsonEnvelope documentAvailableEvent, String fileId) {
+        final UUID materialId = randomUUID();
+
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
 
         final String documentFileServiceId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID);
@@ -330,6 +332,7 @@ public class SystemDocGeneratorEventProcessor {
         final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
 
         final NotifyPrisonCourtRegister.Builder notifyPrisonCourtRegisterBuilder = new NotifyPrisonCourtRegister.Builder()
+                .withMaterialId(materialId)
                 .withPrisonCourtRegisterStreamId(fromString(prisonCourtRegisterStreamId))
                 .withPayloadFileId(payloadFileId)
                 .withSystemDocGeneratorId(fromString(documentFileServiceId));
@@ -360,9 +363,7 @@ public class SystemDocGeneratorEventProcessor {
             }
         }
 
-        final UUID materialId = randomUUID();
         final Optional<UUID> contextSystemUserId = userProvider.getContextSystemUserId();
-
         materialService.uploadMaterial(UUID.fromString(fileId), materialId, contextSystemUserId.orElse(null));
         final String fileName = prisonCourtDefendantName.isPresent() ?
                 String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName.get(), utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))

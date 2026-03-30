@@ -86,6 +86,7 @@ public class ListingService {
     }
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
+
         final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
