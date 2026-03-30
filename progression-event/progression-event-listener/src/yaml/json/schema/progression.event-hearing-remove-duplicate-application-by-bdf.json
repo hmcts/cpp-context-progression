@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event-hearing.remove-duplicate-application-by-bdf.json",
+  "type": "object",
+  "description": "hearing object with unique applications",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "required": [
+    "hearing"
+  ],
+  "additionalProperties": false
+}
