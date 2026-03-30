@@ -35,6 +35,9 @@
     },
     "sendToCps": {
       "type": "boolean"
+    },
+    "courtDocumentMetadata": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/court-document-metadata.json#"
     }
   },
   "oneOf": [
