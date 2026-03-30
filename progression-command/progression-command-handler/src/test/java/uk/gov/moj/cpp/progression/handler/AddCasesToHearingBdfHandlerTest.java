@@ -2,18 +2,23 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
 import uk.gov.justice.progression.courts.application.CasesBdf;
 import uk.gov.justice.progression.courts.application.DefendantsBdf;
@@ -29,8 +34,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -283,6 +288,50 @@ class AddCasesToHearingBdfHandlerTest {
         assertThat(argumentCaptor.getValue().get(0).getDefendants().get(0).getId(), is(defendantId));
         assertThat(argumentCaptor.getValue().get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(argumentCaptor.getValue().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+    }
+
+    @Test
+    public void shouldRemoveDuplicateApplicationsByBdf2() throws EventStreamException {
+        final UUID hearingId = UUID.randomUUID();
+        hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        final Hearing hearing = getHearing(hearingId);
+
+        // Set the hearing
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        //Meta data
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.handler.remove-duplicate-application-bdf")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<RemoveDuplicateApplicationBdf> envelope = envelopeFrom(metadata, RemoveDuplicateApplicationBdf.removeDuplicateApplicationBdf()
+                .withHearingId(hearingId)
+                .build());
+
+        addCasesToHearingBdfHandler.removeDuplicateApplication(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+    }
+
+
+    private Hearing getHearing(final UUID hearingId) {
+        final List<ProsecutionCase> prosecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
+                .withId(UUID.randomUUID()).build());
+        final List<CourtApplication> courtApplications = Arrays.asList(CourtApplication.courtApplication()
+                .withId(UUID.randomUUID()).build());
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(prosecutionCases)
+                .withCourtApplications(courtApplications)
+                .build();
+        return hearing;
     }
 
     private Optional<JsonObject> createProsecutionCase(final UUID caseId, final List<Map<UUID, List<UUID>>> defendants) {
