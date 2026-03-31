@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>17.0.238-CCT-2353-SNAPSHOT</version>
+        <version>17.0.239-CCT-2353-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
