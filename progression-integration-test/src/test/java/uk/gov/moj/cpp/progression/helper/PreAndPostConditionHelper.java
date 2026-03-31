@@ -1401,7 +1401,7 @@ public class PreAndPostConditionHelper {
                 getShareAllCourtDocumentsJsonBody(caseId, defendantId, userGroup, fileName));
     }
 
-    public static Response addCourtApplicationForApplicationAtAGlance(final String caseId,
+    public static String addCourtApplicationForApplicationAtAGlance(final String caseId,
                                                                       final String applicationId,
                                                                       final String particulars,
                                                                       final String applicantReceivedDate,
@@ -1486,8 +1486,10 @@ public class PreAndPostConditionHelper {
             body = body.replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId);
         }
 
-        return postCommand(getWriteUrl("/initiate-application"),
+         postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json", body);
+
+        return body;
 
     }
 
