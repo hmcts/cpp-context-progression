@@ -962,6 +962,56 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldUseSameUpdatedCaseStatusForHearingResultedAndApplicationsResulted() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("ACTIVE")
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.FINAL)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build()))
+                .build();
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now(), referenceResultIds).collect(toList());
+
+        final HearingResulted hearingResulted = (HearingResulted) events.stream()
+                .filter(HearingResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        final ApplicationsResulted applicationsResulted = (ApplicationsResulted) events.stream()
+                .filter(ApplicationsResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        assertEquals("INACTIVE", hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getCaseStatus());
+    }
+
+    @Test
     public void shouldNotGenerateNextHearingWhenCaseInactiveWithAutoApplication() throws IOException{
         final UUID hearingId = randomUUID();
 
