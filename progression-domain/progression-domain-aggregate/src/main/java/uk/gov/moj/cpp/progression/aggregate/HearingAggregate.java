@@ -1922,7 +1922,7 @@ public class HearingAggregate implements Aggregate {
 
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
-                    .withHearing(updatedHearing)
+                    .withHearing(getHearingWithUpdatedProsecutionCases(updatedHearing))
                     .withShadowListedOffences(shadowListedOffences)
                     .withCommittingCourt(this.committingCourt)
                     .build());
@@ -2832,6 +2832,34 @@ public class HearingAggregate implements Aggregate {
                 .withHearingDay(hearingDay)
                 .withSharedTime(sharedTime).build();
 
+    }
+
+    private Hearing getHearingWithUpdatedProsecutionCases(final Hearing hearing) {
+        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> getUpdatedProsecutionCase(prosecutionCase, hearing.getDefendantJudicialResults()))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        final Map<UUID, String> caseStatusByProsecutionCaseId = ofNullable(updatedProsecutionCases).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getId()))
+                .collect(Collectors.toMap(ProsecutionCase::getId, ProsecutionCase::getCaseStatus, (existing, replacement) -> replacement));
+
+        final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplication -> CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                        .withCourtApplicationCases(ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
+                                        .withValuesFrom(courtApplicationCase)
+                                        .withCaseStatus(ofNullable(caseStatusByProsecutionCaseId.get(courtApplicationCase.getProsecutionCaseId()))
+                                                .orElse(courtApplicationCase.getCaseStatus()))
+                                        .build())
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        return Hearing.hearing()
+                .withValuesFrom(hearing)
+                .withProsecutionCases(updatedProsecutionCases)
+                .withCourtApplications(updatedCourtApplications)
+                .build();
     }
 
     private List<Object> createNextHearingEvents(final Hearing hearing, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
