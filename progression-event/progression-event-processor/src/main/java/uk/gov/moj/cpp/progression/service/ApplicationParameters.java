@@ -173,16 +173,16 @@ public class ApplicationParameters {
      *  Ingress URL or Kubernetes Discovery URL
      */
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.url", defaultValue ="http://localhost:8080/AMP/notifications/pcr")
-    private String ampPcrNotificationUrl;
+    @Value(key = "amp.crimeHearingCaseEvent.notification.url", defaultValue ="http://localhost:8080/hces/notifications")
+    private String ampNotificationUrl;
 
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryTimes", defaultValue = "3")
-    private String ampPcrNotificationRetryTimes;
+    @Value(key = "amp.crimeHearingCaseEvent.notification.retryTimes", defaultValue = "3")
+    private String ampNotificationRetryTimes;
 
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.pcrNotification.retryInterval", defaultValue = "1000")
-    public String ampPcrNotificationRetryInterval;
+    @Value(key = "amp.crimeHearingCaseEvent.notification.retryInterval", defaultValue = "1000")
+    public String ampNotificationRetryInterval;
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();
