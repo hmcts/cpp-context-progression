@@ -44,6 +44,7 @@ Thumbs.db
 
 # Maven
 target/
+.mvn/
 
 # Subversion
 .svn/

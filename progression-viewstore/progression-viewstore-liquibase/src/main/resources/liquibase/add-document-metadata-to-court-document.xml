@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="alter-table-court-document-entity-add-column-document-metadata " author="progression">
+        <addColumn tableName="court_document">
+            <column name="document_metadata" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

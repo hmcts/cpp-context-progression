@@ -123,6 +123,12 @@ public class ApplicationHelper {
                 matchers);
     }
 
+    public static String pollForApplicationAtAGlanceForDefenceUser(final String applicationId, final Matcher... matchers) {
+        return pollForResponse("/applications/" + applicationId, "application/vnd.progression.query.application.aaag-for-defence+json",
+                randomUUID().toString(),
+                matchers);
+    }
+
     public static String pollForApplicationStatus(final String applicationIds, final Matcher... matchers) {
         return pollForResponse("/applications/application-status?applicationIds=" + applicationIds, "application/vnd.progression.query.application-status+json",
                 randomUUID().toString(),

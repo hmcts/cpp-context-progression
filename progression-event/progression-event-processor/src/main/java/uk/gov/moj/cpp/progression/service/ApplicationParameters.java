@@ -167,7 +167,7 @@ public class ApplicationParameters {
 
     /**
      * URL for Crime Hearing Case Event service PCR notification endpoint.
-     * Local Development: Default value: http://localhost:8080/AMP/notifications/pcr
+     * Local Development: Default value: http://localhost:8080/AMP/notifications
      * For Higher environments
      *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
      *  Ingress URL or Kubernetes Discovery URL
@@ -175,6 +175,129 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "amp.crimeHearingCaseEvent.notification.url", defaultValue ="http://localhost:8080/hces/notifications")
     private String ampNotificationUrl;
+    @Inject
+    @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")
+    public String addDefendantRetryIntervals;
+
+    public String getAddDefendantRetryIntervals() {
+        return addDefendantRetryIntervals;
+    }
+
+    public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
+        return onlineGuiltyPleaCourtHearingEnglishTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaCourtHearingWelshTemplateId() {
+        return onlineGuiltyPleaCourtHearingWelshTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaNoCourtHearingEnglishTemplateId() {
+        return onlineGuiltyPleaNoCourtHearingEnglishTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaNoCourtHearingWelshTemplateId() {
+        return onlineGuiltyPleaNoCourtHearingWelshTemplateId;
+    }
+
+    public String getOnlineNotGuiltyPleaEnglishTemplateId() {
+        return onlineNotGuiltyPleaEnglishTemplateId;
+    }
+
+    public String getOnlineNotGuiltyPleaWelshTemplateId() {
+        return onlineNotGuiltyPleaWelshTemplateId;
+    }
+
+    public String getDefenceAssociationTemplateId() {
+        return defenceAssociationTemplateId;
+    }
+
+    public String getNcesEmailTemplateId() {
+
+        return ncesEmailTemplateId;
+    }
+
+    public String getApplicationTemplateId() {
+
+        return applicationTemplateId;
+    }
+
+    public String getDefenceInstructionTemplateId() {
+
+        return defenceInstructionTemplateId;
+    }
+
+    public String getDefenceDisassociationTemplateId() {
+
+        return defenceDisassociationTemplateId;
+    }
+
+    public String getAzureFunctionHostName() {
+        return azureFunctionHostName;
+    }
+
+    public String getAzureScanManagerContainerName() {
+        return azureScanManagerContainerName;
+    }
+
+    public String getSetCaseEjectedFunctionPath() {
+        return setCaseEjectedFunctionPath;
+    }
+
+    public String getRelayCaseOnCppFunctionPath() {
+        return relayCaseOnCppFunctionPath;
+    }
+
+    public String getDefendantProceedingsConcludedApimUrl() {
+        return defendantProceedingsConcludedApimUrl;
+    }
+
+    public String getSubscriptionKey() {
+        return subscriptionKey;
+    }
+
+    public String getCpsCourtDocumentTemplateId() {
+        return cpsCourtDocumentTemplateId;
+    }
+
+    public String getCpsDefendantCourtDocumentTemplateId() {
+        return cpsDefendantCourtDocumentTemplateId;
+    }
+
+    public String getNotifyDefenceOfNewMaterialTemplateId() {
+        return notifyDefenceOfNewMaterialTemplateId;
+    }
+
+    public String getSummonsApprovedAndSuppressedTemplateId() {
+        return summonsApprovedAndSuppressedTemplateId;
+    }
+
+    public String getSummonsApprovedAndNotSuppressedTemplateId() {
+        return summonsApprovedAndNotSuppressedTemplateId;
+    }
+
+    public String getSummonsRejectedTemplateId() {
+        return summonsRejectedTemplateId;
+    }
+
+    public String getEndClientHost() {
+        return endClientHost;
+    }
+
+    public String getUnscheduledHearingAllocationEmailTemplateId() {
+        return unscheduledHearingAllocationEmailTemplateId;
+    }
+
+    public String getCaseAtaGlanceURI() {
+        return caseAtaGlanceURI;
+    }
+
+    public String getStatDecSendAppointmentLetterTemplateId() {
+        return statDecSendAppointmentLetterTemplateId;
+    }
+
+    public String getOnlinePleaProsecutorTemplateId() {
+        return onlinePleaProsecutorTemplateId;
+    }
 
     @Inject
     @Value(key = "amp.crimeHearingCaseEvent.notification.retryTimes", defaultValue = "3")

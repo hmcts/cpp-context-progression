@@ -48,6 +48,7 @@ public class ApplicationQueryApi {
     public static final String GROUP_NAME = "groupName";
     private static final String APPLICATION_ID = "applicationId";
     public static final String PROGRESSION_QUERY_APPLICATION_LAA = "progression.query.application-laa";
+    private static final String IS_DEFENCE_QUERY = "isDefenceQuery";
 
     @Inject
     private Requester requester;
@@ -160,8 +161,9 @@ public class ApplicationQueryApi {
         final boolean isNonCPSUserWithValidProsecutingAuthority =  usersGroupQueryService.getUserGroups(metadata, userId).getJsonArray(GROUPS).getValuesAs(JsonObject.class).stream()
                 .anyMatch(userGroup -> NON_CPS_PROSECUTORS.equals(userGroup.getString(GROUP_NAME)));
 
+        final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata,
+                createObjectBuilder(query.payloadAsJsonObject()).add(IS_DEFENCE_QUERY, true).build());
 
-        final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata, query.payload());
         final JsonEnvelope jsonEnvelope = applicationQueryView.getCourtApplicationForApplicationAtAGlance(applicationAaagEnvelope);
         if (!jsonEnvelope.payloadAsJsonObject().containsKey(LINKED_CASES)) {
             throw new ForbiddenRequestException("Cannot view application details, no linked cases found for the application");
