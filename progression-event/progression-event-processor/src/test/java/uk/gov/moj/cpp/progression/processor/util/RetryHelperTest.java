@@ -75,6 +75,50 @@ public class RetryHelperTest {
 
         when(supplier.getAsInt()).thenReturn(420);
 
+        String ampUrl = "http://localhost:8080/AMP/notifications";
+        String payload = "test-payload";
+
+        RetryHelper.Builder builder = retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withAmpPcrNotificationUrl(ampUrl)
+                .withPayload(payload)
+                .withPredicate(statusCode -> statusCode > 429);
+
+        RetryHelper retryHelper = builder.build();
+        retryHelper.postWithRetry();
+
+        verify(supplier).getAsInt();
+    }
+
+    @Test
+    public void shouldThrowExceptionAfterExceedingRetryCountForAMPPcrNotificationURL() {
+
+        when(supplier.getAsInt()).thenReturn(500);
+
+        UUID fileId = UUID.randomUUID();
+        UUID materialId = UUID.randomUUID();
+        String prisonCourtRegisterId = "test-prison-court-register-id";
+        String ampUrl = "http://localhost:8080/AMP/notifications";
+
+        assertThrows(CrimeHearingCaseEventPcrNotificationException.class, () -> retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withAmpPcrNotificationUrl(ampUrl)
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, materialId, prisonCourtRegisterId, ampUrl))
+                .withPredicate(statusCode -> statusCode > 429)
+                .build()
+                .postWithRetry());
+        verify(supplier, times(3)).getAsInt();
+    }
+
+    @Test
+    public void shouldInvokeAMPPcrNotificationURL() throws Exception{
+
+        when(supplier.getAsInt()).thenReturn(420);
+
         String ampUrl = "http://localhost:8080/AMP/notifications/pcr";
         String payload = "test-payload";
 
