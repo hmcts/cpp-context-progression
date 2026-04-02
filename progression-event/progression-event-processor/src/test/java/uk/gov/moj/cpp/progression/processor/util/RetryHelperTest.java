@@ -82,7 +82,7 @@ public class RetryHelperTest {
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withAmpPcrNotificationUrl(ampUrl)
+                .withAmpNotificationUrl(ampUrl)
                 .withPayload(payload)
                 .withPredicate(statusCode -> statusCode > 429);
 
@@ -104,7 +104,7 @@ public class RetryHelperTest {
 
         assertThrows(CrimeHearingCaseEventPcrNotificationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
-                .withAmpPcrNotificationUrl(ampUrl)
+                .withAmpNotificationUrl(ampUrl)
                 .withRetryTimes(3)
                 .withRetryInterval(200)
                 .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, materialId, prisonCourtRegisterId, ampUrl))

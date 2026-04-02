@@ -175,6 +175,15 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "amp.crimeHearingCaseEvent.notification.url", defaultValue ="http://localhost:8080/hces/notifications")
     private String ampNotificationUrl;
+
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.notification.retryTimes", defaultValue = "3")
+    private String ampNotificationRetryTimes;
+
+    @Inject
+    @Value(key = "amp.crimeHearingCaseEvent.notification.retryInterval", defaultValue = "1000")
+    public String ampNotificationRetryInterval;
+
     @Inject
     @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")
     public String addDefendantRetryIntervals;
@@ -298,14 +307,6 @@ public class ApplicationParameters {
     public String getOnlinePleaProsecutorTemplateId() {
         return onlinePleaProsecutorTemplateId;
     }
-
-    @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.notification.retryTimes", defaultValue = "3")
-    private String ampNotificationRetryTimes;
-
-    @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.notification.retryInterval", defaultValue = "1000")
-    public String ampNotificationRetryInterval;
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

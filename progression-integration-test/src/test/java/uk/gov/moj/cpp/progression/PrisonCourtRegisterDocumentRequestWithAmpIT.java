@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Integration tests for Prison Court Register Document Request when AmpSendPcr feature toggle is ENABLED (true).
+ * Integration tests for Prison Court Register Document Request when AmpSendNotifications feature toggle is ENABLED (true).
  * 
  * These tests mirror the tests in PrisonCourtRegisterDocumentRequestIT but with feature guard enabled.
  * They verify that when the feature is enabled:
@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
  * - The new V2 events (PrisonCourtRegisterGeneratedV2) are generated,
  *   and based on these events, the AMP service is invoked for each generated document.
  * 
- * When the AmpSendPcr feature toggle is removed and becomes the default behavior,
+ * When the AmpSendNotifications feature toggle is removed and becomes the default behavior,
  * these tests will become the standard tests.
  */
 public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
@@ -186,7 +186,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
 
     private void setUpAmpStubs() {
         AmpPcrEndpointStub.resetRequests();
-        setFeatureToggle("AmpSendPcr", true);
+        setFeatureToggle("AmpSendNotifications", true);
         AmpPcrEndpointStub.stubPostPcrToAmp();
     }
 }
