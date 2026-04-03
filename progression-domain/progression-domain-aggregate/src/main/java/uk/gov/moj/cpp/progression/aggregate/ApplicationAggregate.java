@@ -31,6 +31,7 @@ import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtAp
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved.initiateCourtHearingAfterSummonsApproved;
+import static uk.gov.justice.core.courts.LinkType.STANDALONE;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested.removeDefendantCustodialEstablishmentRequested;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
@@ -131,6 +132,7 @@ import uk.gov.moj.cpp.progression.events.HearingApplicationLaaReferenceUpdateRec
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 import uk.gov.moj.cpp.progression.laa.LaaRepresentationOrder;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -155,6 +157,7 @@ public class ApplicationAggregate implements Aggregate {
     private static final long serialVersionUID = 1331113876243908502L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
@@ -1006,6 +1009,10 @@ public class ApplicationAggregate implements Aggregate {
 
     private String generateApplicationReference(final CourtApplication courtApplication) {
 
+        if (isStandaloneApplication(courtApplication) && nonNull(courtApplication.getApplicationReference())) {
+            return courtApplication.getApplicationReference();
+        }
+
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
                             nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
@@ -1018,8 +1025,18 @@ public class ApplicationAggregate implements Aggregate {
                     .distinct().collect(Collectors.joining(","));
         }
 
-        final int ARN_LENGTH = 10;
-        return RandomStringUtils.randomAlphanumeric(ARN_LENGTH).toUpperCase();
+        return generateUrn();
+    }
+
+    @SuppressWarnings({"java:S2245"})
+    private String generateUrn() {
+        return RandomStringUtils.random(4, 0, 0, true, true, null, SECURE_RANDOM).toUpperCase() + 
+               RandomStringUtils.random(7, 0, 0, false, true, null, SECURE_RANDOM);
+    }
+
+
+    private boolean isStandaloneApplication(final CourtApplication courtApplication) {
+        return STANDALONE == courtApplication.getType().getLinkType();
     }
 
     private boolean isApplicationReferredToExistingHearing(final CourtHearingRequest courtHearing) {
