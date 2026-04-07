@@ -3,11 +3,19 @@
   "id": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json",
   "type": "object",
   "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 0
+    },
     "refData": {
       "type": "object",
       "properties": {
         "directionRefDataId": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/uuid"
         },
         "directionRefDataType": {
           "type": "string"

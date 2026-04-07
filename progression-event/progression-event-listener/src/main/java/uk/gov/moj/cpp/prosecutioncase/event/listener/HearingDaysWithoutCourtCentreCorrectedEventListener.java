@@ -48,10 +48,10 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListener {
         }
         final HearingDaysWithoutCourtCentreCorrected hearingDaysWithoutCourtCentreCorrected = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingDaysWithoutCourtCentreCorrected.class);
 
-        final List<HearingDay> hearingDays = hearingDaysWithoutCourtCentreCorrected.getHearingDays();
+        final List<uk.gov.moj.progression.HearingDay> correctedHearingDays = hearingDaysWithoutCourtCentreCorrected.getHearingDays();
         final UUID hearingId = hearingDaysWithoutCourtCentreCorrected.getId();
-        final UUID courtCentreId = hearingDays.get(0).getCourtCentreId();
-        final UUID courtRoomId = hearingDays.get(0).getCourtRoomId();
+        final UUID courtCentreId = correctedHearingDays.get(0).getCourtCentreId();
+        final UUID courtRoomId = correctedHearingDays.get(0).getCourtRoomId();
 
         final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
         final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());

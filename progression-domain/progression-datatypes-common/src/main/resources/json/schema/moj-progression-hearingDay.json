@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/progression/hearingDay.json",
+  "type": "object",
+  "properties": {
+    "sittingDay": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "listingSequence": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/positiveInteger"
+    },
+    "listedDurationMinutes": {
+      "description": "The listed duration in minutes",
+      "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/positiveInteger"
+    },
+    "courtCentreId": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/uuid"
+    },
+    "courtRoomId": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/uuid"
+    },
+    "hasSharedResults": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "sittingDay",
+    "listedDurationMinutes"
+  ],
+  "additionalProperties": false
+}

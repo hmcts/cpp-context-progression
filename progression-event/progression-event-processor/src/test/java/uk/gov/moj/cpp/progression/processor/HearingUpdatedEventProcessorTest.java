@@ -443,6 +443,33 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     @Test
+    public void shouldHandlerHearingChangedToProbationCaseWorkerSendCorrectHearingDaysCommand() {
+        final UUID hearingId = randomUUID();
+        final JsonObject payload = createObjectBuilder()
+                .add("id", hearingId.toString())
+                .add("hearingDays", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("sittingDay", "2020-10-13T10:00:00.000Z")
+                                .add("listedDurationMinutes", 60)
+                                .build())
+                        .build())
+                .build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID("public.events.listing.hearing-days-without-court-centre-corrected"),
+                payload);
+
+        eventProcessor.handlerHearingChangedToProbationCaseWorker(jsonEnvelope);
+
+        verify(sender, times(1)).send(senderJsonEnvelopeCaptor.capture());
+        final DefaultEnvelope sent = senderJsonEnvelopeCaptor.getValue();
+        assertThat(sent.metadata().name(), is("progression.command.correct-hearing-days-without-court-centre"));
+        assertThat(sent.payload().toString(), isJson(allOf(
+                withJsonPath("$.id", is(hearingId.toString())),
+                withJsonPath("$.hearingDays.length()", is(1)),
+                withJsonPath("$.hearingDays[0].listedDurationMinutes", is(60)))));
+    }
+
+    @Test
     public void shouldUpdateDefendantOnApplicationHearing() {
         final UUID applicationId1 = randomUUID();
         final UUID applicationId2 = randomUUID();

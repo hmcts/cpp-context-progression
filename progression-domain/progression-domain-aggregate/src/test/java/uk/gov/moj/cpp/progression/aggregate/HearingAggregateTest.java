@@ -4473,7 +4473,7 @@ public class HearingAggregateTest {
 
     private HearingDaysWithoutCourtCentreCorrected createHearingDaysWithoutCourtCentreCorrected() {
         return HearingDaysWithoutCourtCentreCorrected.hearingDaysWithoutCourtCentreCorrected()
-                .withHearingDays(asList(HearingDay.hearingDay()
+                .withHearingDays(asList(uk.gov.moj.progression.HearingDay.hearingDay()
                         .withCourtCentreId(UUID.randomUUID())
                         .withCourtRoomId(UUID.randomUUID())
                         .withListedDurationMinutes(30)
