@@ -7,7 +7,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_NOTIFICATIONS;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -188,7 +188,7 @@ public class CourtCentreAggregateTest {
         final UUID courtCentreId = randomUUID();
         final UUID payloadFileId = randomUUID();
         final UUID systemDocumentId = randomUUID();
-        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)).thenReturn(true);
+        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_NOTIFICATIONS)).thenReturn(true);
         aggregate.recordPrisonCourtRegisterDocumentSent(courtCentreId,
                         RecordPrisonCourtRegisterDocumentSent.recordPrisonCourtRegisterDocumentSent()
                                 .withCourtCentreId(courtCentreId)

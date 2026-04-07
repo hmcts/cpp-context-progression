@@ -40,7 +40,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
-import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_NOTIFICATIONS;
 
 public class CourtCentreAggregate implements Aggregate {
     private static final long serialVersionUID = 1054L;
@@ -142,7 +142,7 @@ public class CourtCentreAggregate implements Aggregate {
                 .withCourtCentreId(nonNull(courtCentreId) ? courtCentreId : this.prisonCourtCentreId)
                 .build();
 
-        if (nonNull(featureControlGuard) && featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)) {
+        if (nonNull(featureControlGuard) && featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_NOTIFICATIONS)) {
             PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                     .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
                     .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
