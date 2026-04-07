@@ -1899,7 +1899,7 @@ class CaseAggregateTest {
                 .withOffences(singletonList(offence().withId(offenceId).build()))
                 .build();
 
-        final ProsecutionCase prosecutionCase = prosecutionCase()
+        final ProsecutionCase pCase = prosecutionCase()
                 .withId(caseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("AUTH-REF-1")
@@ -1907,7 +1907,7 @@ class CaseAggregateTest {
                 .withDefendants(singletonList(fallbackDefendant))
                 .build();
 
-        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
 
         final Defendant latestDefendant = defendant()
                 .withId(defendantId)
@@ -1985,7 +1985,7 @@ class CaseAggregateTest {
                 .withOffences(singletonList(offence().withId(offenceId).build()))
                 .build();
 
-        final ProsecutionCase prosecutionCase = prosecutionCase()
+        final ProsecutionCase pCase = prosecutionCase()
                 .withId(caseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("FALLBACK-REF")
@@ -1993,7 +1993,7 @@ class CaseAggregateTest {
                 .withDefendants(singletonList(fallbackDefendant))
                 .build();
 
-        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
 
         final PersonDefendant latestPersonDefendant = personDefendant()
                 .withBailStatus(uk.gov.justice.core.courts.BailStatus.bailStatus().withCode("L").build())
@@ -2060,7 +2060,7 @@ class CaseAggregateTest {
 
 
 
-        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+        final LegalEntityDefendant lEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
                 .withOrganisation(Organisation.organisation().withName("Org").build())
                 .build();
 
@@ -2081,7 +2081,7 @@ class CaseAggregateTest {
                 .withMitigationWelsh("mitigation-welsh")
                 .withAssociatedPersons(associatedPersons)
                 .withPersonDefendant(fallbackPersonDefendant)
-                .withLegalEntityDefendant(legalEntityDefendant)
+                .withLegalEntityDefendant(lEntityDefendant)
                 .withPncId("PNC-1")
                 .withAliases(singletonList(uk.gov.justice.core.courts.DefendantAlias.defendantAlias().withFirstName("alias-1").build()))
                 .withIsYouth(true)
@@ -2090,7 +2090,7 @@ class CaseAggregateTest {
                 .withOffences(singletonList(offence().withId(offenceId).build()))
                 .build();
 
-        final ProsecutionCase prosecutionCase = prosecutionCase()
+        final ProsecutionCase pCase = prosecutionCase()
                 .withId(caseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("AUTH-REF-1")
@@ -2098,7 +2098,7 @@ class CaseAggregateTest {
                 .withDefendants(singletonList(fallbackDefendant))
                 .build();
 
-        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
 
         final Defendant latestDefendant = defendant()
                 .withId(defendantId)
@@ -2140,7 +2140,7 @@ class CaseAggregateTest {
         assertThat(updatedDefendant.getWitnessStatement(), is("witness"));
         assertThat(updatedDefendant.getMitigationWelsh(), is("mitigation-welsh"));
         assertThat(updatedDefendant.getAssociatedPersons(), is(associatedPersons));
-        assertThat(updatedDefendant.getLegalEntityDefendant(), is(legalEntityDefendant));
+        assertThat(updatedDefendant.getLegalEntityDefendant(), is(lEntityDefendant));
         assertThat(updatedDefendant.getPncId(), is("PNC-1"));
         assertThat(updatedDefendant.getAliases().get(0).getFirstName(), is("alias-1"));
         assertThat(updatedDefendant.getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
@@ -2162,7 +2162,7 @@ class CaseAggregateTest {
                 .withOffences(singletonList(offence().withId(offenceId).build()))
                 .build();
 
-        final ProsecutionCase prosecutionCase = prosecutionCase()
+        final ProsecutionCase pCase = prosecutionCase()
                 .withId(caseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("AUTH-REF-1")
@@ -2170,7 +2170,7 @@ class CaseAggregateTest {
                 .withDefendants(singletonList(fallbackDefendant))
                 .build();
 
-        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
 
         final Defendant latestDefendant = defendant()
                 .withId(defendantId)

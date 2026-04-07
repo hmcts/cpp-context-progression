@@ -59,10 +59,6 @@ public class DefenceQueryService {
                 .withName(DEFENCE_ADVOCATE_QUERY_ROLE_IN_CASE)
                 .build();
 
-        final JsonEnvelope jsonEnvelope = requester.request(envelopeFrom(metadata, payload));
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("{} received with payload {}", DEFENCE_ADVOCATE_QUERY_ROLE_IN_CASE, jsonEnvelope.toObfuscatedDebugString());
-        }
-        return jsonEnvelope;
+        return requester.request(envelopeFrom(metadata, payload));
     }
 }

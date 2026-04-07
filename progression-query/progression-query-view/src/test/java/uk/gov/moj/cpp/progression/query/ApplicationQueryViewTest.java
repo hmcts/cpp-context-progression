@@ -608,6 +608,8 @@ public class ApplicationQueryViewTest {
         verify(applicationDetailsMock, atMostOnce()).getLinkType();
     }
 
+
+
     @Test
     public void shouldGetApplicationAtAGlanceWithChildApplication() {
         final UUID applicationId = randomUUID();
