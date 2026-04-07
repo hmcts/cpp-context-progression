@@ -228,10 +228,10 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .eventId(randomUUID())
                 .build();
         when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-url");
+        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-url");
         when(ampClientService.post("http://amp-url", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
@@ -266,10 +266,10 @@ public class PrisonCourtRegisterEventProcessorTest {
         // Recipients exist but don't have emailAddress1, so filterEmailRecipients returns empty list
         // resulting in empty string for emailRecipient
         when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
@@ -302,10 +302,10 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .eventId(randomUUID())
                 .build();
         when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
@@ -338,10 +338,10 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .eventId(randomUUID())
                 .build();
         when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpPcrNotificationUrl()).thenReturn("http://amp-address");
+        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
         when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpPcrNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpPcrNotificationRetryInterval()).thenReturn("1000");
+        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
+        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 

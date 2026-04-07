@@ -68,7 +68,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_PCR;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_AMP_SEND_NOTIFICATIONS;
 import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getPrisonCourtRegisterStreamId;
 
 @ExtendWith(MockitoExtension.class)
@@ -199,7 +199,7 @@ public class PrisonCourtRegisterHandlerTest {
     public void shouldCreateRegisterGeneratedEvents() throws Exception {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
-        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_PCR)).thenReturn(true);
+        when(featureControlGuard.isFeatureEnabled(FEATURE_AMP_SEND_NOTIFICATIONS)).thenReturn(true);
 
         prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
 

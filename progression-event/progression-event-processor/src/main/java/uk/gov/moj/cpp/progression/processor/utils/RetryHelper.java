@@ -19,7 +19,7 @@ public class RetryHelper {
     private IntPredicate predicate;
     private String apimUrl;
     private String payload;
-    private String ampPcrNotificationUrl;
+    private String ampNotificationUrl;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RetryHelper.class.getName());
 
@@ -31,7 +31,7 @@ public class RetryHelper {
         this.predicate = builder.predicate;
         this.apimUrl = builder.apimUrl;
         this.payload = builder.payload;
-        this.ampPcrNotificationUrl = builder.ampPcrNotificationUrl;
+        this.ampNotificationUrl = builder.ampNotificationUrl;
     }
 
     public static RetryHelper.Builder retryHelper() {
@@ -45,8 +45,8 @@ public class RetryHelper {
         do {
             final int statusCode = supplier.getAsInt();
 
-            if(nonNull(ampPcrNotificationUrl)) {
-                LOGGER.info("Try - {} : Crime Hearing Case Event Pcr Notification URL invoked with Request: {} Received response status: {}", tryCount, ampPcrNotificationUrl, payload, statusCode);
+            if(nonNull(ampNotificationUrl)) {
+                LOGGER.info("Try - {} : Crime Hearing Case Event Pcr Notification URL invoked with Request: {} Received response status: {}", tryCount, ampNotificationUrl, payload, statusCode);
             } else {
                 LOGGER.info("Try - {} : Azure Function {} invoked with Request: {} Received response status: {}", tryCount, apimUrl, payload, statusCode);
             }
@@ -77,7 +77,7 @@ public class RetryHelper {
         private IntPredicate predicate;
         private String apimUrl;
         private String payload;
-        private String ampPcrNotificationUrl;
+        private String ampNotificationUrl;
 
         public Builder withSupplier(IntSupplier supplier) {
             this.supplier = supplier;
@@ -114,8 +114,8 @@ public class RetryHelper {
             return this;
         }
 
-        public Builder withAmpPcrNotificationUrl(String ampPcrNotificationUrl) {
-            this.ampPcrNotificationUrl = ampPcrNotificationUrl;
+        public Builder withAmpNotificationUrl(String ampNotificationUrl) {
+            this.ampNotificationUrl = ampNotificationUrl;
             return this;
         }
 

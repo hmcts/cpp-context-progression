@@ -237,7 +237,7 @@ public class PrisonCourtRegisterEventProcessor {
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
                 ? envelope.payloadAsJsonObject().getString("id") 
                 : fileId.toString();
-        final String url = applicationParameters.getAmpPcrNotificationUrl();
+        final String url = applicationParameters.getAmpNotificationUrl();
             final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
                     fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
             retryHelper()
@@ -247,10 +247,10 @@ public class PrisonCourtRegisterEventProcessor {
                         LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", statusCode);
                         return statusCode;
                     })
-                    .withAmpPcrNotificationUrl(url)
+                    .withAmpNotificationUrl(url)
                     .withPayload(payloadDescription)
-                    .withRetryTimes(parseInt(applicationParameters.getAmpPcrNotificationRetryTimes()))
-                    .withRetryInterval(parseInt(applicationParameters.getAmpPcrNotificationRetryInterval()))
+                    .withRetryTimes(parseInt(applicationParameters.getAmpNotificationRetryTimes()))
+                    .withRetryInterval(parseInt(applicationParameters.getAmpNotificationRetryInterval()))
                     .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, pcrEventPayload.getMaterialId(), prisonCourtRegisterId, url))
                     .withPredicate(statusCode -> statusCode > 429)
                     .build()
