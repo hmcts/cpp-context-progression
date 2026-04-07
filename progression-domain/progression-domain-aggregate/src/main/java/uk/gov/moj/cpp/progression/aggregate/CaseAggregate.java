@@ -3797,7 +3797,7 @@ public class CaseAggregate implements Aggregate {
                                             .filter(off -> offenceIds.contains(off.getId())).toList())
                                     .build();
                         })
-                        .collect(Collectors.toList()))
+                        .toList())
                 .build();
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();

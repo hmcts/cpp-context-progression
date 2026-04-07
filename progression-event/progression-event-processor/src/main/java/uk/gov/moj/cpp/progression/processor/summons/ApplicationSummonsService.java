@@ -10,6 +10,7 @@ import static uk.gov.justice.core.courts.summons.SummonsDefendant.summonsDefenda
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.emptyIfBlank;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getFullName;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getProsecutorCosts;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getSummonsHearingDetails;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.populateSummonsAddress;
 
@@ -77,7 +78,8 @@ public class ApplicationSummonsService {
 
         final SummonsApprovedOutcome summonsApprovedOutcome = courtApplicationPartyListingNeeds.getSummonsApprovedOutcome();
         if (nonNull(summonsApprovedOutcome)) {
-            summonsDocumentContent.withProsecutorCosts(emptyIfBlank(summonsApprovedOutcome.getProsecutorCost()));
+            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
+            summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
         }
 
