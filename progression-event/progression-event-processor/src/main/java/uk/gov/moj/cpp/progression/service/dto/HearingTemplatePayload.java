@@ -31,9 +31,13 @@ public class HearingTemplatePayload {
   private PostalHearingCourtDetails hearingCourtDetails;
 
   private List<CaseOffence> offenceList;
+  private List<CaseOffence> welshOffenceList;
+  private boolean isCivil;
+  private String applicantName;
 
 
-  public HearingTemplatePayload(final String issueDate, final String ljaCode, final String ljaName,final String courtCentreName, final String hearingType,  final String reference, final PostalAddressee addressee, final PostalDefendant defendant, final PostalHearingCourtDetails hearingCourtDetails, final List<CaseOffence> offenceList) {
+  public HearingTemplatePayload(final String issueDate, final String ljaCode, final String ljaName, final String courtCentreName, final String hearingType, final String reference, final PostalAddressee addressee, final PostalDefendant defendant, final PostalHearingCourtDetails hearingCourtDetails,
+                                final List<CaseOffence> offenceList, final List<CaseOffence> welshOffenceList, final boolean isCivil, final String applicantName) {
     this.issueDate = issueDate;
     this.ljaCode = ljaCode;
     this.ljaName = ljaName;
@@ -44,6 +48,33 @@ public class HearingTemplatePayload {
     this.defendant = defendant;
     this.hearingCourtDetails = hearingCourtDetails;
     this.offenceList = ImmutableList.copyOf(offenceList);
+    this.welshOffenceList = ImmutableList.copyOf(welshOffenceList);
+    this.isCivil = isCivil;
+    this.applicantName = applicantName;
+  }
+
+  public String getApplicantName() {
+    return applicantName;
+  }
+
+  public void setApplicantName(final String applicantName) {
+    this.applicantName = applicantName;
+  }
+
+  public boolean getIsCivil() {
+    return isCivil;
+  }
+
+  public void setIsCivil(final boolean isCivil) {
+    this.isCivil = isCivil;
+  }
+
+  public List<CaseOffence> getWelshOffenceList() {
+    return new ArrayList<>(welshOffenceList);
+  }
+
+  public void setWelshOffenceList(final List<CaseOffence> welshOffenceList) {
+    this.welshOffenceList = new ArrayList<>(welshOffenceList);
   }
 
   public String getIssueDate() {
@@ -127,18 +158,18 @@ public class HearingTemplatePayload {
       return true;
     } else if (obj != null && this.getClass() == obj.getClass()) {
       final HearingTemplatePayload that = (HearingTemplatePayload) obj;
-      final boolean courtInfoPresence = Objects.equals(this.issueDate, that.issueDate) && Objects.equals(this.ljaCode, that.ljaCode) && Objects.equals(this.ljaName, that.ljaName) && Objects.equals(this.courtCentreName, that.courtCentreName);
+      final boolean courtInfoPresence = Objects.equals(this.issueDate, that.issueDate) && Objects.equals(this.applicantName, that.applicantName) && Objects.equals(this.ljaCode, that.ljaCode) && Objects.equals(this.ljaName, that.ljaName) && Objects.equals(this.courtCentreName, that.courtCentreName);
       final boolean entityInfoPresence = Objects.equals(this.hearingType, that.hearingType) && Objects.equals(this.reference, that.reference) && Objects.equals(this.addressee, that.addressee) && Objects.equals(this.defendant, that.defendant)
               && Objects.equals(this.hearingCourtDetails, that.hearingCourtDetails);
-      final boolean offenceListPresence = Objects.equals(this.offenceList, that.offenceList);
-      return courtInfoPresence && offenceListPresence && entityInfoPresence;
+      final boolean offenceListPresence = Objects.equals(this.offenceList, that.offenceList) && Objects.equals(this.welshOffenceList, that.welshOffenceList);
+      return courtInfoPresence && offenceListPresence && entityInfoPresence && isCivil;
     } else {
       return false;
     }
   }
 
   public int hashCode() {
-    return Objects.hash(this.issueDate, this.ljaCode, this.ljaName,this.courtCentreName, this.hearingType, this.reference, this.addressee, this.defendant, this.hearingCourtDetails, this.offenceList);
+    return Objects.hash(this.issueDate, this.applicantName, this.ljaCode, this.ljaName, this.courtCentreName, this.hearingType, this.reference, this.addressee, this.defendant, this.hearingCourtDetails, this.offenceList, this.welshOffenceList, this.isCivil);
   }
 
   public static class Builder {
@@ -159,9 +190,12 @@ public class HearingTemplatePayload {
     private PostalHearingCourtDetails hearingCourtDetails;
 
     private List<CaseOffence> offenceList;
+    private List<CaseOffence> welshOffenceList;
+    private boolean isCivil;
+    private String applicantName;
 
     public HearingTemplatePayload build() {
-      return new HearingTemplatePayload(this.issueDate, this.ljaCode, this.ljaName,this.courtCentreName, this.hearingType, this.reference, this.addressee, this.defendant, this.hearingCourtDetails, this.offenceList);
+      return new HearingTemplatePayload(this.issueDate, this.ljaCode, this.ljaName, this.courtCentreName, this.hearingType, this.reference, this.addressee, this.defendant, this.hearingCourtDetails, this.offenceList, this.welshOffenceList, this.isCivil, this.applicantName);
     }
 
     public HearingTemplatePayload.Builder withReference(final String reference) {
@@ -171,6 +205,11 @@ public class HearingTemplatePayload {
 
     public HearingTemplatePayload.Builder withIssueDate(final String issueDate) {
       this.issueDate = issueDate;
+      return this;
+    }
+
+    public HearingTemplatePayload.Builder withApplicantName(final String applicantName) {
+      this.applicantName = applicantName;
       return this;
     }
 
@@ -204,15 +243,26 @@ public class HearingTemplatePayload {
       return this;
     }
 
+    public HearingTemplatePayload.Builder withWelshOffence(final List<CaseOffence> welshOffenceList) {
+      this.welshOffenceList = ImmutableList.copyOf(welshOffenceList);
+      return this;
+    }
+
+    public HearingTemplatePayload.Builder withIsCivil(final boolean isCivil) {
+      this.isCivil = isCivil;
+      return this;
+    }
+
     public HearingTemplatePayload.Builder withCourtCentreName(final String courtCentreName) {
       this.courtCentreName = courtCentreName;
       return this;
     }
 
-      public HearingTemplatePayload.Builder withHearingType(final String hearingType){
-        this.hearingType = hearingType;
-        return this;
+    public HearingTemplatePayload.Builder withHearingType(final String hearingType) {
+      this.hearingType = hearingType;
+      return this;
     }
+
     public HearingTemplatePayload.Builder withValuesFrom(final HearingTemplatePayload hearingTemplatePayload) {
       this.addressee = hearingTemplatePayload.getAddressee();
       this.defendant = hearingTemplatePayload.getDefendant();
@@ -224,6 +274,9 @@ public class HearingTemplatePayload {
       this.reference = hearingTemplatePayload.getReference();
       this.issueDate = hearingTemplatePayload.getIssueDate();
       this.offenceList = hearingTemplatePayload.getOffenceList();
+      this.welshOffenceList = hearingTemplatePayload.getWelshOffenceList();
+      this.isCivil = hearingTemplatePayload.getIsCivil();
+      this.applicantName = hearingTemplatePayload.getApplicantName();
       return this;
     }
 
