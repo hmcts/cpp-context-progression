@@ -11,6 +11,7 @@ import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
+import org.apache.deltaspike.data.api.SingleResultType;
 
 @Repository
 public interface CourtApplicationCaseRepository extends EntityRepository<CourtApplicationCaseEntity, CourtApplicationCaseKey> {
@@ -27,4 +28,7 @@ public interface CourtApplicationCaseRepository extends EntityRepository<CourtAp
     @Modifying
     @Query("delete from CourtApplicationCaseEntity entity where entity.id.applicationId = :applicationId")
     void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
+
+    @Query(value = "from CourtApplicationCaseEntity entity WHERE entity.id.applicationId = :applicationId AND entity.id.caseId = :caseId", singleResult = SingleResultType.OPTIONAL)
+    CourtApplicationCaseEntity findByApplicationIdAndCaseId(@QueryParam("applicationId") final UUID applicationId, @QueryParam("caseId") final UUID caseId);
 }
