@@ -44,10 +44,12 @@ import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -73,6 +75,7 @@ public class CourtDocumentQueryApi {
     public static final String APPLICATION_ID = "applicationId";
     public static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
     public static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
+    private static final String IS_DEFENCE_QUERY = "isDefenceQuery";
 
     @Inject
     private Requester requester;
@@ -156,13 +159,16 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
+        final JsonEnvelope enrichedQueryWithDefenceFlag = envelopeFrom(metadata, createObjectBuilder(query.payloadAsJsonObject()).add(IS_DEFENCE_QUERY, true).build());
         if (query.payloadAsJsonObject().containsKey(CASE_ID)) {
             final List<UUID> defendantList = defenceQueryService.getDefendantList(query, query.payloadAsJsonObject().getString(CASE_ID));
             final List<CourtDocumentIndex> finalDocumentList = new ArrayList<>();
             defendantList.forEach(defendantId -> {
-                final Courtdocuments courtdocuments = getCourtDocument(query, metadata, defendantId);
+                LOGGER.info("DefendantId from defence: "+defendantId);
+                final Courtdocuments courtdocuments = getCourtDocument(enrichedQueryWithDefenceFlag, metadata, defendantId);
                 if (nonNull(courtdocuments) && isNotEmpty(courtdocuments.getDocumentIndices())) {
-                    final List<CourtDocumentIndex> filteredList = getFilteredList(courtdocuments.getDocumentIndices(), finalDocumentList);
+                    final List<CourtDocumentIndex> listWithDefId = replaceMasterDefendantIdByDefendantId(courtdocuments.getDocumentIndices(), defendantId);
+                    final List<CourtDocumentIndex> filteredList = getFilteredList(listWithDefId, finalDocumentList);
                     if (isNotEmpty(filteredList)) {
                         finalDocumentList.addAll(filteredList);
                     }
@@ -173,11 +179,18 @@ public class CourtDocumentQueryApi {
             removeDefenceOnlyDocumentsIfAppealLodged(query, finalDocumentList);
 
             final JsonObject resultJson = objectToJsonObjectConverter.convert(Courtdocuments.courtdocuments().withDocumentIndices(finalDocumentList).build());
+            LOGGER.info("defendantIds in Doc Search json result: ", resultJson.getJsonString("defendantIds"));
             return envelopeFrom(query.metadata(), resultJson);
         } else { // for applicationId
-            return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, query.payloadAsJsonObject()));
+            return courtDocumentQueryView.searchCourtDocuments(enrichedQueryWithDefenceFlag);
+
         }
 
+    }
+
+    private List<CourtDocumentIndex>  replaceMasterDefendantIdByDefendantId(final List<CourtDocumentIndex> courtDocumentIndices, final UUID defendantId) {
+        return courtDocumentIndices.stream().map(cdi-> CourtDocumentIndex.courtDocumentIndex().withValuesFrom(cdi)
+                .withDefendantIds(new ArrayList<>(Collections.singleton(defendantId))).build()).collect(Collectors.toList());
     }
 
     private void removeDefenceOnlyDocumentsIfAppealLodged(final JsonEnvelope query, final List<CourtDocumentIndex> finalDocumentList) {
@@ -200,7 +213,7 @@ public class CourtDocumentQueryApi {
                 .filter(newCourtDocumentIndex ->
                         !("case level".equalsIgnoreCase(newCourtDocumentIndex.getCategory()) &&
                                 existingDocumentList.stream().anyMatch(existingDocumentIndex -> existingDocumentIndex.getDocument().getCourtDocumentId().equals(newCourtDocumentIndex.getDocument().getCourtDocumentId())))
-                ).collect(toList());
+                ).toList();
     }
 
     private Courtdocuments getCourtDocument(final JsonEnvelope query, final Metadata metadata, final UUID defendantId) {
@@ -299,7 +312,7 @@ public class CourtDocumentQueryApi {
 
         final List<ReferenceDataService.ReferenceHearingDetails> hearingsOfTypeTrial = hearingTypes.values().stream()
                 .filter(ReferenceDataService.ReferenceHearingDetails::getTrialTypeFlag)
-                .collect(toList());
+                .toList();
 
         return hearingsOfTypeTrial.stream().anyMatch(type -> type.getHearingTypeCode().equals(referenceHearingDetails.getHearingTypeCode()));
     }

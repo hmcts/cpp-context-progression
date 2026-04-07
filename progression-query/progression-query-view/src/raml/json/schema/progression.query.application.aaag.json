@@ -90,6 +90,9 @@
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
+        "isAddressConfidential": {
+          "type": "boolean"
+        },
         "interpreterLanguageNeeds": {
           "type": "string"
         },
@@ -304,6 +307,9 @@
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
+        "isAddressConfidential": {
+          "type": "boolean"
+        },
         "respondentRepresentatives": {
           "type": "array",
           "items": {
@@ -349,6 +355,9 @@
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "isAddressConfidential": {
+          "type": "boolean"
         },
         "thirdPartyRepresentatives": {
           "type": "array",
