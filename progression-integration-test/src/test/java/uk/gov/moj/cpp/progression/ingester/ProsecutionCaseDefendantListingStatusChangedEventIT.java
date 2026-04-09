@@ -1,10 +1,24 @@
 package uk.gov.moj.cpp.progression.ingester;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.exception.InvalidStreamIdException;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.jdbc.persistence.DataAccessException;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.justice.services.test.utils.persistence.TestJdbcConnectionProvider;
 import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.EventInserter;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingVerificationHelper;
 
 import java.io.IOException;
@@ -32,6 +46,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
@@ -81,6 +97,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_LOCATION);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
+        EventInserter.insertEvent(publicEventEnvelope);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
@@ -169,6 +186,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_WITH_LINKED_APPLICATION_LOCATION);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
+        EventInserter.insertEvent(publicEventEnvelope);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
 
         final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(firstCaseId))};
@@ -235,6 +253,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(EVENT_LOCATION_WITHOUT_COURT_CENTRE_IN_HEARING_DAYS);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
+        EventInserter.insertEvent(publicEventEnvelope);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
