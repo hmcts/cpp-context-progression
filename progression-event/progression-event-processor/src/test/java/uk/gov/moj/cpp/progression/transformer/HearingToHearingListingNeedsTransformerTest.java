@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
@@ -686,6 +687,28 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(nextHearingOfc1.get().getNextHearing(), is(nextHearingOnApplication.get().getNextHearing()));
         assertThat(nextHearingOfc2.get().getNextHearing(), is(nextHearingOnApplication.get().getNextHearing()));
     }
+
+    @Test
+    public void shouldCopyCaseOffencesWithSeedingHearingWhenOnlyApplicationResulted() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+
+        final Hearing hearing = fromEventPayloadJson("next-hearings/progression.event.next-hearings-requested-1next-hearing-2offences_application_resulted.json");
+        final Map<UUID, List<UUID>> alreadyExistingBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        final Map<UUID, Set<UUID>> combinedBookingReferencesAndCourtScheduleIds = transformer.getCombinedBookingReferencesAndCourtScheduleIds(hearing, alreadyExistingBookingReferenceAndCourtScheduleIds);
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), combinedBookingReferencesAndCourtScheduleIds);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+
+        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        assertThat(defendant1.getOffences().size(), is(3));
+        assertThat(defendant1.getOffences().stream().allMatch(o -> o.getSeedingHearing().getSeedingHearingId().equals(seedingHearingId)), is(true));
+        assertThat(defendant1.getOffences().stream().allMatch(o -> isNull(o.getJudicialResults()) ), is(true));
+    }
+
 
     @Test
     public void givenMultiDefendantsMultiOffencesAndApplicationHaveSameNextHearing_shouldHaveHearingNeedsWithNextHearingsThatIncludeOffencesAndApplicationForThatNextHearing() {
