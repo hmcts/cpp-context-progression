@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
-import uk.gov.moj.cpp.progression.exception.CrimeHearingCaseEventPcrNotificationException;
+import uk.gov.moj.cpp.progression.exception.HearingResultsDocumentSubscriptionPCRException;
 import uk.gov.moj.cpp.progression.processor.utils.RetryHelper;
 
 import java.util.ArrayList;
@@ -75,14 +75,14 @@ public class RetryHelperTest {
 
         when(supplier.getAsInt()).thenReturn(420);
 
-        String ampUrl = "http://localhost:8080/AMP/notifications";
+        String hearingResultsDocumentNotificationsUrl = "http://localhost:8080/hrds/notifications";
         String payload = "test-payload";
 
         RetryHelper.Builder builder = retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withAmpNotificationUrl(ampUrl)
+                .withHearingResultsDocumentSubscriptionUrl(hearingResultsDocumentNotificationsUrl)
                 .withPayload(payload)
                 .withPredicate(statusCode -> statusCode > 429);
 
@@ -100,14 +100,14 @@ public class RetryHelperTest {
         UUID fileId = UUID.randomUUID();
         UUID materialId = UUID.randomUUID();
         String prisonCourtRegisterId = "test-prison-court-register-id";
-        String ampUrl = "http://localhost:8080/AMP/notifications";
+        String hearingResultsDocumentNotificationsUrl = "http://localhost:8080/hrds/notifications";
 
-        assertThrows(CrimeHearingCaseEventPcrNotificationException.class, () -> retryHelper()
+        assertThrows(HearingResultsDocumentSubscriptionPCRException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
-                .withAmpNotificationUrl(ampUrl)
+                .withHearingResultsDocumentSubscriptionUrl(hearingResultsDocumentNotificationsUrl)
                 .withRetryTimes(3)
                 .withRetryInterval(200)
-                .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, materialId, prisonCourtRegisterId, ampUrl))
+                .withExceptionSupplier(() -> new HearingResultsDocumentSubscriptionPCRException(fileId, materialId, prisonCourtRegisterId, hearingResultsDocumentNotificationsUrl))
                 .withPredicate(statusCode -> statusCode > 429)
                 .build()
                 .postWithRetry());

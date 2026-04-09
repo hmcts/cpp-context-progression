@@ -17,7 +17,7 @@ import java.util.Map;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 @SuppressWarnings({"squid:S2139", "squid:S00112", "squid:S2142"})
-public class AmpClientService {
+public class HearingResultsDocumentSubscriptionClient {
 
     @Inject
     @Value(key = "restEasyClientConnectionPoolSize", defaultValue = "10")

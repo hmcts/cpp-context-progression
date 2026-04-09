@@ -166,23 +166,23 @@ public class ApplicationParameters {
     public String retryInterval;
 
     /**
-     * URL for Crime Hearing Case Event service PCR notification endpoint.
-     * Local Development: Default value: http://localhost:8080/AMP/notifications
+     * URL for Hearing Results Document Subscription service PCR notification endpoint.
+     * Local Development: Default value: http://localhost:8080/hrds/notifications
      * For Higher environments
      *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
      *  Ingress URL or Kubernetes Discovery URL
      */
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.notification.url", defaultValue ="http://localhost:8080/hces/notifications")
-    private String ampNotificationUrl;
+    @Value(key = "hearingResultsDocument.subscription.url", defaultValue ="http://localhost:8080/hces/notifications")
+    private String hearingResultsDocumentSubscriptionUrl;
 
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.notification.retryTimes", defaultValue = "3")
-    private String ampNotificationRetryTimes;
+    @Value(key = "hearingResultsDocument.subscription.retryTimes", defaultValue = "3")
+    private String hearingResultsDocumentSubscriptionRetryTimes;
 
     @Inject
-    @Value(key = "amp.crimeHearingCaseEvent.notification.retryInterval", defaultValue = "1000")
-    public String ampNotificationRetryInterval;
+    @Value(key = "hearingResultsDocument.subscription.retryInterval", defaultValue = "1000")
+    public String hearingResultsDocumentSubscriptionRetryInterval;
 
     @Inject
     @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")

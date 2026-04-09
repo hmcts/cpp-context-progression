@@ -35,8 +35,8 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
-import uk.gov.moj.cpp.progression.service.amp.mappers.AmpPcrMapper;
-import uk.gov.moj.cpp.progression.service.amp.service.AmpClientService;
+import uk.gov.moj.cpp.progression.service.amp.mappers.HearingResultsDocumentSubscriptionPCRMapper;
+import uk.gov.moj.cpp.progression.service.amp.service.HearingResultsDocumentSubscriptionClient;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -90,9 +90,9 @@ public class PrisonCourtRegisterEventProcessorTest {
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
 
     @Mock
-    AmpPcrMapper ampPcrMapper;
+    HearingResultsDocumentSubscriptionPCRMapper hearingResultsDocumentSubscriptionPCRMapper;
     @Mock
-    AmpClientService ampClientService;
+    HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
 
     @Spy
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
@@ -227,16 +227,16 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-url");
-        when(ampClientService.post("http://amp-url", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://amp-url");
+        when(hearingResultsDocumentSubscriptionClient.post("http://amp-url", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        verify(ampClientService).post("http://amp-url", pcrEventPayload);
-        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionClient).post("http://amp-url", pcrEventPayload);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
     }
 
     @Test
@@ -265,16 +265,16 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .build();
         // Recipients exist but don't have emailAddress1, so filterEmailRecipients returns empty list
         // resulting in empty string for emailRecipient
-        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
-        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
+        when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        verify(ampClientService).post("http://amp-address", pcrEventPayload);
-        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class));
     }
 
     @Test
@@ -301,16 +301,16 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
-        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
+        when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        verify(ampClientService).post("http://amp-address", pcrEventPayload);
-        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
     }
 
     @Test
@@ -337,16 +337,16 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(ampPcrMapper.mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
-        when(applicationParameters.getAmpNotificationUrl()).thenReturn("http://amp-address");
-        when(ampClientService.post("http://amp-address", pcrEventPayload)).thenReturn(Response.ok().build());
-        when(applicationParameters.getAmpNotificationRetryTimes()).thenReturn("3");
-        when(applicationParameters.getAmpNotificationRetryInterval()).thenReturn("1000");
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
+        when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        verify(ampClientService).post("http://amp-address", pcrEventPayload);
-        verify(ampPcrMapper).mapPcrForAmp(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
     }
 
     @Test
