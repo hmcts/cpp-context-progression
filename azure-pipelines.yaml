@@ -1,12 +1,11 @@
 name: CPP Context Verify & Validation
 
-# Need to update this for actual migration.
+# Need to update this for actual migration
 trigger:
   branches:
     include:
       - main
       - 'team/*'
-      - 'dev/PEG-3047'
     exclude:
       - 'dev/release-*'
   paths:
