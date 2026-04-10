@@ -39,7 +39,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
-        setFeatureToggle("AmpSendNotifications", false);
+        setFeatureToggle("hearingResultsDocumentSubscriptionEnabled", false);
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());
@@ -86,7 +86,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JSONException {
-        setFeatureToggle("AmpSendNotifications", false);
+        setFeatureToggle("hearingResultsDocumentSubscriptionEnabled", false);
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());

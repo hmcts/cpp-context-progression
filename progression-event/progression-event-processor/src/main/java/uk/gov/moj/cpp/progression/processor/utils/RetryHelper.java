@@ -19,7 +19,7 @@ public class RetryHelper {
     private IntPredicate predicate;
     private String apimUrl;
     private String payload;
-    private String ampNotificationUrl;
+    private String hearingResultsDocumentSubscriptionUrl;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RetryHelper.class.getName());
 
@@ -31,7 +31,7 @@ public class RetryHelper {
         this.predicate = builder.predicate;
         this.apimUrl = builder.apimUrl;
         this.payload = builder.payload;
-        this.ampNotificationUrl = builder.ampNotificationUrl;
+        this.hearingResultsDocumentSubscriptionUrl = builder.hearingResultsDocumentSubscriptionUrl;
     }
 
     public static RetryHelper.Builder retryHelper() {
@@ -45,8 +45,8 @@ public class RetryHelper {
         do {
             final int statusCode = supplier.getAsInt();
 
-            if(nonNull(ampNotificationUrl)) {
-                LOGGER.info("Try - {} : Crime Hearing Case Event Pcr Notification URL invoked with Request: {} Received response status: {}", tryCount, ampNotificationUrl, payload, statusCode);
+            if(nonNull(hearingResultsDocumentSubscriptionUrl)) {
+                LOGGER.info("Try - {} : Hearing Results Document Subscription PCR Notification URL invoked with Request: {} Received response status: {}", tryCount, hearingResultsDocumentSubscriptionUrl, payload, statusCode);
             } else {
                 LOGGER.info("Try - {} : Azure Function {} invoked with Request: {} Received response status: {}", tryCount, apimUrl, payload, statusCode);
             }
@@ -77,7 +77,7 @@ public class RetryHelper {
         private IntPredicate predicate;
         private String apimUrl;
         private String payload;
-        private String ampNotificationUrl;
+        private String hearingResultsDocumentSubscriptionUrl;
 
         public Builder withSupplier(IntSupplier supplier) {
             this.supplier = supplier;
@@ -114,8 +114,8 @@ public class RetryHelper {
             return this;
         }
 
-        public Builder withAmpNotificationUrl(String ampNotificationUrl) {
-            this.ampNotificationUrl = ampNotificationUrl;
+        public Builder withHearingResultsDocumentSubscriptionUrl(String hearingResultsDocumentSubscriptionUrl) {
+            this.hearingResultsDocumentSubscriptionUrl = hearingResultsDocumentSubscriptionUrl;
             return this;
         }
 

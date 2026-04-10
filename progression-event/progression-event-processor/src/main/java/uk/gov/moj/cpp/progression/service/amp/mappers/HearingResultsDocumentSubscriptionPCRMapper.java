@@ -15,9 +15,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Slf4j
-public class AmpPcrMapper {
+public class HearingResultsDocumentSubscriptionPCRMapper {
 
-    public PcrEventPayload mapPcrForAmp(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail, Instant createdAt) {
+    public PcrEventPayload mapPcrForhearingResultsDocument(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail, Instant createdAt) {
         return PcrEventPayload.builder()
                 .eventId(pcrIn.getId())
                 .materialId(pcrIn.getMaterialId())

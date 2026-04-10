@@ -53,7 +53,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     private ProsecutionCaseUpdateDefendantHelper helper;
 
     @Test
-    @Disabled("this test is broken as invalid property amp.crimeHearingCaseEvent.pcrNotification.url added to standalone.xml")
+    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
         setUpAmpStubs();
         final UUID courtCentreId = randomUUID();
@@ -102,7 +102,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("this test is broken as invalid property amp.crimeHearingCaseEvent.pcrNotification.url added to standalone.xml")
+    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JSONException {
         setUpAmpStubs();
         final UUID courtCentreId = randomUUID();
@@ -148,7 +148,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("this test is broken as invalid property amp.crimeHearingCaseEvent.pcrNotification.url added to standalone.xml")
+    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldFailedPrisonCourtDocumentAsynchronously() throws JSONException {
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
@@ -186,7 +186,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
 
     private void setUpAmpStubs() {
         AmpPcrEndpointStub.resetRequests();
-        setFeatureToggle("AmpSendNotifications", true);
+        setFeatureToggle("hearingResultsDocumentSubscriptionEnabled", true);
         AmpPcrEndpointStub.stubPostPcrToAmp();
     }
 }
