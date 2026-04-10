@@ -50,4 +50,4 @@ stages:
           sonarQubeType: 'sonarQubeAKS'
           serviceName: ${{ variables['service_Name'] }}
           itTestFolder: ${{ variables['itTest_Folder'] }}
-          aksDeployBranch: 'dev/framework-f-compatibility'
+          aksDeployBranch: 'dev/framework-f-fullfeature'

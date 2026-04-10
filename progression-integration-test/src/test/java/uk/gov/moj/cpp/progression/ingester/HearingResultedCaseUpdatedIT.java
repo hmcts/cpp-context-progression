@@ -27,6 +27,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.EventInserter;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
@@ -100,6 +101,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         final JsonObject hearingResultedCaseUpdatedResult = hearingResultedCaseUpdatedResultEvent(EVENT_LOCATION);
 
         final JsonEnvelope eventEnvelope = envelopeFrom(metadata, hearingResultedCaseUpdatedResult);
+        EventInserter.insertEvent(eventEnvelope);
         messageProducer.sendMessage(HEARING_RESULTED_EVENT, eventEnvelope);
 
         verifyMessageReceivedInViewStore(INACTIVE.getDescription());
