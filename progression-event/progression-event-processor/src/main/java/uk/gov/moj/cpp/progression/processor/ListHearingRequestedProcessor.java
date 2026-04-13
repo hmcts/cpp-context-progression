@@ -303,31 +303,23 @@ public class ListHearingRequestedProcessor {
         LOGGER.info("Handling public.listing.hearing-partially-updated {}", jsonEnvelope.payload());
 
         HearingPartiallyUpdated hearingPartiallyUpdated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingPartiallyUpdated.class);
-        final List<ProsecutionCasesToRemove> prosecutionCasesToRemove = hearingPartiallyUpdated.getProsecutionCases().stream()
-                .map(prosecutionCase -> {
-                    final List<DefendantsToRemove> defendantsToRemove = prosecutionCase.getDefendants().stream()
-                            .map(defendant -> {
-                                final List<OffencesToRemove> offencesToRemove = defendant.getOffences().stream()
-                                        .map(offence -> OffencesToRemove.offencesToRemove()
-                                                .withOffenceId(offence.getOffenceId())
-                                                .build())
-                                        .toList();
-                                return DefendantsToRemove.defendantsToRemove()
-                                        .withDefendantId(defendant.getDefendantId())
-                                        .withOffencesToRemove(offencesToRemove)
-                                        .build();
-                            })
-                            .toList();
-                    return ProsecutionCasesToRemove.prosecutionCasesToRemove()
-                            .withCaseId(prosecutionCase.getCaseId())
-                            .withDefendantsToRemove(defendantsToRemove)
-                            .build();
-                })
-                .toList();
-
         UpdateHearingForPartialAllocation updateHearingForPartialAllocation = UpdateHearingForPartialAllocation.updateHearingForPartialAllocation()
                 .withHearingId(hearingPartiallyUpdated.getHearingIdToBeUpdated())
-                .withProsecutionCasesToRemove(prosecutionCasesToRemove)
+                .withProsecutionCasesToRemove(hearingPartiallyUpdated.getProsecutionCases().stream()
+                        .map(prosecutionCase -> ProsecutionCasesToRemove.prosecutionCasesToRemove()
+                                .withCaseId(prosecutionCase.getCaseId())
+                                .withDefendantsToRemove(prosecutionCase.getDefendants().stream()
+                                        .map(defendant -> DefendantsToRemove.defendantsToRemove()
+                                                .withDefendantId(defendant.getDefendantId())
+                                                .withOffencesToRemove(defendant.getOffences().stream()
+                                                        .map(offence -> OffencesToRemove.offencesToRemove()
+                                                                .withOffenceId(offence.getOffenceId())
+                                                                .build())
+                                                        .collect(Collectors.toList()))
+                                                .build())
+                                        .collect(Collectors.toList()))
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
 
         sender.send(
