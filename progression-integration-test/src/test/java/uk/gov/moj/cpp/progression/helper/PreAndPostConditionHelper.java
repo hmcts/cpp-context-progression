@@ -38,6 +38,8 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -1401,7 +1403,7 @@ public class PreAndPostConditionHelper {
                 getShareAllCourtDocumentsJsonBody(caseId, defendantId, userGroup, fileName));
     }
 
-    public static Response addCourtApplicationForApplicationAtAGlance(final String caseId,
+    public static String addCourtApplicationForApplicationAtAGlance(final String caseId,
                                                                       final String applicationId,
                                                                       final String particulars,
                                                                       final String applicantReceivedDate,
@@ -1486,8 +1488,10 @@ public class PreAndPostConditionHelper {
             body = body.replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId);
         }
 
-        return postCommand(getWriteUrl("/initiate-application"),
+         postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json", body);
+
+        return body;
 
     }
 
@@ -1614,8 +1618,9 @@ public class PreAndPostConditionHelper {
                                                            final String respondentDefendantId,
                                                            final String applicationStatus,
                                                            final String fileName) throws IOException {
+        final String applicationReference = RandomStringUtils.randomAlphanumeric(4).toUpperCase() + RandomStringUtils.randomNumeric(7);
         return addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId,
-                respondentId, respondentDefendantId, randomUUID().toString(), applicationStatus, fileName);
+                respondentId, respondentDefendantId, applicationReference, applicationStatus, fileName);
     }
 
     public static Response updateCourtApplicationForIngestion(final String caseId,

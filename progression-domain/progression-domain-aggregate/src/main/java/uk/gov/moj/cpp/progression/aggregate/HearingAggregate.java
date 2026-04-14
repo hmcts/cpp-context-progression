@@ -8,6 +8,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
@@ -44,8 +45,6 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
-import uk.gov.justice.core.courts.HearingExtended;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -90,6 +89,7 @@ import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.ApplicationLaaReferenceUpdatedForHearing;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedingsHelper;
+import uk.gov.moj.cpp.progression.court.EventHearingRemoveDuplicateApplicationBdf;
 import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
@@ -100,7 +100,19 @@ import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -147,7 +159,18 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
-    private static final String GUILTY = "GUILTY";
+    private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
+            "GUILTY",
+            "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
+            "GUILTY_REQUEST_HEARING",
+            "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+            "MCA_GUILTY",
+            "GUILTY_LESSER_OFFENCE_NAMELY",
+            "GUILTY_TO_ALTERNATIVE_OFFENCE",
+            "CHANGE_TO_GUILTY_AFTER_SWORN",
+            "CHANGE_TO_GUILTY_NO JURY",
+            "AUTREFOIS_CONVICT"
+    );
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
@@ -1453,6 +1476,35 @@ public class HearingAggregate implements Aggregate {
         return Stream.empty();
     }
 
+    /**
+     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW. The aggregate function is
+     * being added to be invoked only by the BDF, purpose of this function to raise
+     * 'progression.event.hearing.remove.duplicate.application.bdf' event to remove the duplicate application from hearing.
+     *
+     * @return The Stream object
+     */
+    public Stream<Object> removeDuplicateApplicationByBdf() {
+        if (isNull(hearing)) {
+            return Stream.empty();
+        }
+
+        if (isNull(hearing.getCourtApplications()) || hearing.getCourtApplications().isEmpty()) {
+            return apply(Stream.of(EventHearingRemoveDuplicateApplicationBdf.eventHearingRemoveDuplicateApplicationBdf()
+                    .withHearing(hearing)
+                    .build()));
+        }
+
+        List<CourtApplication> uniqueApplications = hearing.getCourtApplications().stream()
+                .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(CourtApplication::getId))),
+                        ArrayList::new));
+
+        hearing = Hearing.hearing().withValuesFrom(hearing).withCourtApplications(uniqueApplications).build();
+
+        return apply(Stream.of(EventHearingRemoveDuplicateApplicationBdf.eventHearingRemoveDuplicateApplicationBdf()
+                .withHearing(hearing)
+                .build()));
+    }
+
     private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {
         final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
         final UUID updatedDefendantId = ofNullable(defendant.getMasterDefendantId()).orElse(defendant.getId());
@@ -2088,7 +2140,13 @@ public class HearingAggregate implements Aggregate {
                 offenceResult.add(Offence.offence().withValuesFrom(offenceInPayloadDefOptional.get()).build());
             }
         });
-        return Defendant.defendant().withValuesFrom(defendantInPayloadCase).withOffences(new ArrayList<>(offenceResult)).build();
+        final Defendant.Builder builder = Defendant.defendant()
+                .withValuesFrom(defendantInPayloadCase)
+                .withOffences(new ArrayList<>(offenceResult));
+        if (isNull(defendantInPayloadCase.getIsYouth()) && nonNull(defendantInHearingCase.getIsYouth())) {
+            builder.withIsYouth(defendantInHearingCase.getIsYouth());
+        }
+        return builder.build();
     }
 
     public Stream<Object> addCasesForUpdatedRelatedHearing(final UUID seedingHearingId) {
@@ -3506,8 +3564,10 @@ public class HearingAggregate implements Aggregate {
                 isCTLExpiryExists(offence);
     }
 
-    private static boolean isGuilty(final Offence offence) {
-        return (nonNull(offence.getPlea()) && GUILTY.equalsIgnoreCase(offence.getPlea().getPleaValue())) ||
+    private static boolean  isGuilty(final Offence offence) {
+        return (nonNull(offence.getPlea())
+                && GUILTY_PLEA_VALUES.stream()
+                .anyMatch(value -> value.equalsIgnoreCase(offence.getPlea().getPleaValue()))) ||
                 (nonNull(offence.getVerdict()) && isGuiltyVerdict(offence.getVerdict().getVerdictType())) ;
     }
 
