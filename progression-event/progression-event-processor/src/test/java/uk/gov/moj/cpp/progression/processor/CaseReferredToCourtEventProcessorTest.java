@@ -310,6 +310,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .withId(prosecutionCaseId)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .withProsecutionAuthorityCode("CPS")
+                        .withProsecutionAuthorityReference("proAuthRef")
                         .withCaseURN("caseURN").build())
                 .withDefendants(Arrays.asList(ReferredDefendant.referredDefendant()
                         .withId(defendantId)
@@ -331,6 +332,44 @@ public class CaseReferredToCourtEventProcessorTest {
             builder.withNextHearing(NextHearing.nextHearing().build());
         }
         return builder.build();
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenDuplicateCaseExistsByProsecutionAuthorityReference() throws Exception {
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, true, ENGLISH);
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
+                .thenReturn(sjpCourtReferral);
+
+        // Mock duplicate found for ProsecutionAuthorityReference
+        when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "proAuthRef")).thenReturn(Optional.of
+                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+
+        this.eventProcessor.referSJPCasesToCourt(jsonEnvelope);
+
+        verify(messageService).sendMessage(any(), any(), eq("public.progression.refer-prosecution-cases-to-court-rejected"));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenDuplicateCaseExistsByCaseUrn() throws Exception {
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, true, ENGLISH);
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
+                .thenReturn(sjpCourtReferral);
+
+        // Mock no duplicate for ProAuthRef, but duplicate found for CaseURN
+        when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "proAuthRef")).thenReturn(Optional.of
+                (Json.createObjectBuilder().build()));
+        when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "caseURN")).thenReturn(Optional.of
+                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+
+        this.eventProcessor.referSJPCasesToCourt(jsonEnvelope);
+
+        verify(messageService).sendMessage(any(), any(), eq("public.progression.refer-prosecution-cases-to-court-rejected"));
     }
 
     @Test
@@ -367,6 +406,8 @@ public class CaseReferredToCourtEventProcessorTest {
         verify(progressionService).createCourtDocument(any(), any());
         verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), any(), any(UUID.class));
         verify(referredProsecutionCaseTransformer).transform(any(ReferredProsecutionCase.class), eq(ENGLISH), eq(jsonEnvelope));
+        verify(progressionService).caseExistsByCaseUrn(jsonEnvelope, "proAuthRef");
+        verify(progressionService).caseExistsByCaseUrn(jsonEnvelope, "caseURN");
 
 
     }
