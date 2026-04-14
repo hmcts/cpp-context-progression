@@ -47,6 +47,7 @@ import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConve
 import uk.gov.moj.cpp.progression.query.utils.converters.laa.LaaApplnReferenceConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.service.DefenceQueryService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
@@ -161,6 +162,9 @@ public class ApplicationQueryView {
     @Inject
     private UserDetailsLoader userDetailsLoader;
 
+    @Inject
+    private DefenceQueryService defenceQueryService;
+
     @Handles("progression.query.application.aaag")
     @SuppressWarnings("squid:S3776")
     public JsonEnvelope getCourtApplicationForApplicationAtAGlance(final JsonEnvelope envelope) {
@@ -176,13 +180,22 @@ public class ApplicationQueryView {
                 final JsonObject applicationDetailsJson = objectToJsonObjectConverter.convert(applicationDetails);
                 jsonObjectBuilder.add("applicationDetails", applicationDetailsJson);
 
+                final JsonArray linkedCases = getLinkedCases(courtApplication);
+                if (!linkedCases.isEmpty()) {
+                    jsonObjectBuilder.add("linkedCases", linkedCases);
+                }
+                final boolean applyAddressConfidentialityCheck = !linkedCases.isEmpty() &&
+                                envelope.payloadAsJsonObject().getBoolean("isDefenceQuery", false) &&
+                                linkedCases.stream().anyMatch(lc -> defenceQueryService.isUserOnlyDefendingCase(
+                                                envelope, ((JsonObject) lc).getString("prosecutionCaseId")));
+
+                final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, envelope, applyAddressConfidentialityCheck);
                 final LaaApplnReference laaApplnReference = laaApplnReferenceConverter.convert(courtApplication.getLaaApplnReference());
                 if(nonNull(laaApplnReference)) {
                     final JsonObject laaApplnReferenceJson = objectToJsonObjectConverter.convert(laaApplnReference);
                     jsonObjectBuilder.add("laaApplnReference", laaApplnReferenceJson);
                 }
 
-                final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, envelope);
                 final JsonObject applicantDetailsJson = objectToJsonObjectConverter.convert(applicantDetails);
                 jsonObjectBuilder.add("applicantDetails", applicantDetailsJson);
 
@@ -203,18 +216,13 @@ public class ApplicationQueryView {
                     }
                 }
 
-                final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+                final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication, applyAddressConfidentialityCheck);
                 if (!respondentDetails.isEmpty()) {
                     final JsonValue respondentDetailsJson = objectToJsonValueConverter.convert(respondentDetails);
                     jsonObjectBuilder.add("respondentDetails", respondentDetailsJson);
                 }
 
-                final JsonArray linkedCases = getLinkedCases(courtApplication);
-                if (!linkedCases.isEmpty()) {
-                    jsonObjectBuilder.add("linkedCases", linkedCases);
-                }
-
-                final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication);
+                final List<ThirdParties> thirdPartyDetails = applicationAtAGlanceHelper.getThirdPartyDetails(courtApplication, applyAddressConfidentialityCheck);
                 if (!thirdPartyDetails.isEmpty()) {
                     final JsonValue thirdPartyJson = objectToJsonValueConverter.convert(thirdPartyDetails);
                     jsonObjectBuilder.add("thirdParties", thirdPartyJson);

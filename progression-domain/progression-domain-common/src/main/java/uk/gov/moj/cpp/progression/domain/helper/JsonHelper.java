@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain.helper;
 import java.util.Map;
 
 import uk.gov.justice.services.messaging.JsonObjects;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
