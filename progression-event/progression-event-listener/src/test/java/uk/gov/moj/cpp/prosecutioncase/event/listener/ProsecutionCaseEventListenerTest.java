@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
+import uk.gov.justice.progression.courts.CaseInsertedBdfV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -114,6 +115,8 @@ public class ProsecutionCaseEventListenerTest {
     private ProsecutionCaseCreated prosecutionCaseCreated;
     @Mock
     private CaseInsertedBdf caseInsertedBdf;
+    @Mock
+    private CaseInsertedBdfV2 caseInsertedBdfV2;
     @Mock
     private CaseEjected caseEjected;
     @Mock
@@ -460,6 +463,18 @@ public class ProsecutionCaseEventListenerTest {
         verifyCaseNoteEditedEventResultsV2(caseNoteEdited);
     }
 
+    @Test
+    public void shouldHandleProsecutionCaseInsertedBdfV2Event() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseInsertedBdfV2.class))
+                .thenReturn(caseInsertedBdfV2);
+        when(caseInsertedBdfV2.getProsecutionCase()).thenReturn(prosecutionCase);
+        when(prosecutionCase.getId()).thenReturn(randomUUID());
+        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
+        eventListener.prosecutionCaseInsertedBdfV2(envelope);
+        verify(repository).save(argumentCaptor.capture());
+    }
+    
     private void verifyCaseNoteAddedEventResults(final CaseNoteAdded caseNoteAdded) {
         verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
 
