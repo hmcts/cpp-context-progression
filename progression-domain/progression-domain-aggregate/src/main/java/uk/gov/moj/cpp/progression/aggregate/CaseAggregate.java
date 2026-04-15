@@ -184,6 +184,7 @@ import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
+import uk.gov.justice.progression.courts.CaseInsertedBdfV2;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CaseStatusUpdatedBdf;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
@@ -3954,20 +3955,31 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> insertCase(final ProsecutionCase prosecutionCase) {
-        if (isNull(this.prosecutionCase)) {
+        if (checkProsecutionCase(prosecutionCase)) {
             return apply(Stream.empty());
+        }
+        return apply(Stream.of(CaseInsertedBdf.caseInsertedBdf().withProsecutionCase(prosecutionCase).build()));
+    }
+
+    private boolean checkProsecutionCase(final ProsecutionCase prosecutionCase) {
+        if (isNull(this.prosecutionCase)) {
+            return true;
         }
         if (!this.prosecutionCase.getId().equals(prosecutionCase.getId())) {
-            return apply(Stream.empty());
+            return true;
         }
-
         String newReference = getReference(prosecutionCase);
         if (!this.reference.equals(newReference)) {
+            return true;
+        }
+        return false;
+    }
+
+    public Stream<Object> insertCaseV2(final ProsecutionCase prosecutionCase) {
+        if (checkProsecutionCase(prosecutionCase)) {
             return apply(Stream.empty());
         }
-
-        return apply(Stream.of(CaseInsertedBdf.caseInsertedBdf().withProsecutionCase(prosecutionCase).build()));
-
+        return apply(Stream.of(CaseInsertedBdfV2.caseInsertedBdfV2().withProsecutionCase(prosecutionCase).build()));
     }
 
     private static String getReference(final ProsecutionCase prosecutionCase) {
