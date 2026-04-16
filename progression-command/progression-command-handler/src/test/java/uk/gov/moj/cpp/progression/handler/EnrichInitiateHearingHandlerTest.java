@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
@@ -19,9 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 
 import uk.gov.justice.core.courts.CommandEnrichHearingInitiate;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.EnrichHearingInitiated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
@@ -39,7 +36,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.util.Arrays;
@@ -61,16 +57,11 @@ public class EnrichInitiateHearingHandlerTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             HearingDefendantRequestCreated.class,
-            EnrichHearingInitiated.class,
             HearingInitiateEnriched.class);
     @Mock
     private EventSource eventSource;
     @Mock
     private EventStream eventStream;
-
-    @Mock
-    private EventStream caseEventStream;
-
     @Mock
     private AggregateService aggregateService;
     @InjectMocks
@@ -90,29 +81,22 @@ public class EnrichInitiateHearingHandlerTest {
     }
 
     @Test
-    void shouldProcessCommand() throws Exception {
-        final UUID caseId = randomUUID();
-        final UUID hearingId = randomUUID();
-
+    public void shouldProcessCommand() throws Exception {
         //Given
-        final CommandEnrichHearingInitiate arbitraryInitiateObj = generateInitiateTestObj(caseId, hearingId);
+        final CommandEnrichHearingInitiate arbitraryInitiateObj = generateInitiateTestObj();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command-enrich-hearing-initiate")
-                .withId(randomUUID())
+                .withId(UUID.randomUUID())
                 .build();
 
         final Envelope<CommandEnrichHearingInitiate> envelope = envelopeFrom(metadata, arbitraryInitiateObj);
 
         //When
         final HearingAggregate hearingAggregate = new HearingAggregate();
-        final CaseAggregate caseAggregate = new CaseAggregate();
-        when(eventSource.getStreamById(hearingId)).thenReturn(eventStream);
-        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         testObj.enrichHearingInitiate(envelope);
 
@@ -126,49 +110,27 @@ public class EnrichInitiateHearingHandlerTest {
                                 JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                         withJsonPath("$.hearing", notNullValue()))
                                 ))
-                )
-        );
 
-        final Stream<JsonEnvelope> caseEnvelopeStream = verifyAppendAndGetArgumentFrom(caseEventStream);
-
-        assertThat(caseEnvelopeStream, streamContaining(
-                        jsonEnvelope(
-                                metadata()
-                                        .withName("progression.event.enrich-hearing-initiated"),
-                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                        withJsonPath("$.courtCentreId", notNullValue()),
-                                        withJsonPath("$.courtCentreId", notNullValue()),
-                                        withJsonPath("$.courtRoomId", notNullValue()),
-                                        withJsonPath("$.hearingId",  is(hearingId.toString())),
-                                        withJsonPath("$.hearingListingStatus", notNullValue()))
-                                ))
                 )
         );
     }
 
     @Test
-    void shouldProcessCommandAndReferralReason() throws Exception {
-        final UUID caseId = randomUUID();
-        final UUID hearingId = randomUUID();
-
+    public void shouldProcessCommandAndReferralReason() throws Exception {
         //Given
-        final CommandEnrichHearingInitiate arbitraryInitiate = generateInitiateTestObj(caseId, hearingId);
+        final CommandEnrichHearingInitiate arbitraryInitiate = generateInitiateTestObj();
         ListDefendantRequest arbitraryListDefendantRequest = generateInitiateListDefendantRequest(arbitraryInitiate);
 
         final HearingAggregate hearingAggregate = new HearingAggregate();
-        final CaseAggregate caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
-
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         hearingAggregate.createHearingDefendantRequest(Arrays.asList(arbitraryListDefendantRequest));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command-enrich-hearing-initiate")
-                .withId(randomUUID())
+                .withId(UUID.randomUUID())
                 .build();
 
         final Envelope<CommandEnrichHearingInitiate> envelope = envelopeFrom(metadata, arbitraryInitiate);
@@ -191,22 +153,6 @@ public class EnrichInitiateHearingHandlerTest {
 
                 )
         );
-
-        final Stream<JsonEnvelope> caseEnvelopeStream = verifyAppendAndGetArgumentFrom(caseEventStream);
-
-        assertThat(caseEnvelopeStream, streamContaining(
-                        jsonEnvelope(
-                                metadata()
-                                        .withName("progression.event.enrich-hearing-initiated"),
-                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                        withJsonPath("$.courtCentreId", notNullValue()),
-                                        withJsonPath("$.courtCentreId", notNullValue()),
-                                        withJsonPath("$.courtRoomId", notNullValue()),
-                                        withJsonPath("$.hearingId",  is(hearingId.toString())),
-                                        withJsonPath("$.hearingListingStatus", notNullValue()))
-                                ))
-                )
-        );
     }
 
     private ListDefendantRequest generateInitiateListDefendantRequest(final CommandEnrichHearingInitiate arbitraryInitiate) {
@@ -219,20 +165,15 @@ public class EnrichInitiateHearingHandlerTest {
     }
 
     private CommandEnrichHearingInitiate generateInitiateTestObj() {
-        return generateInitiateTestObj(randomUUID(), randomUUID());
-    }
-    private CommandEnrichHearingInitiate generateInitiateTestObj(final UUID caseId, final UUID hearingId) {
         return CommandEnrichHearingInitiate.commandEnrichHearingInitiate().withHearing(
                 Hearing.hearing()
-                        .withId(hearingId)
+                        .withId(UUID.randomUUID())
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
-                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build())
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withId(caseId)
                                 .withDefendants(Arrays.asList(Defendant.defendant()
-                                        .withId(randomUUID())
+                                        .withId(UUID.randomUUID())
                                         .withOffences(Arrays.asList(Offence.offence()
-                                                .withId(randomUUID())
+                                                .withId(UUID.randomUUID())
                                                 .build()))
                                         .build()))
                                 .build()))
