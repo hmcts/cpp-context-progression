@@ -206,6 +206,9 @@ subscriptions_descriptor:
         - name: public.progression.events.court-application-deleted
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.events.court-application-deleted.json
 
+        - name: public.progression.event.application-proceedings-edited
+          schema_uri: http://moj.gov.uk/cpp/progression/events/application-proceedings-edited.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 
