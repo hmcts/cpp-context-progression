@@ -57,6 +57,9 @@ target/
 deployWars.sh
 buildContexts.sh
 
+#Claude
+CLAUDE.md
+
 
 lightning-jenkins.properties
 **/.DS_Store

@@ -1406,6 +1406,139 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
+    public void shouldReturnAllRelatedCasesWhenIsAllRelatedCasesIsTrue() {
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "INACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).add("isAllRelatedCases", true).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+        assertThat(relatedCases.getJsonObject(0).getJsonArray("cases").size(), is(1));
+
+        with(relatedCases.toString())
+                .assertThat("$.[0].masterDefendantId", is(MASTER_DEFENDANT_ID1.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseId", is(CASE_ID2.toString()));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].caseStatus", is("INACTIVE"));
+        with(relatedCases.toString())
+                .assertThat("$.[0].cases[0].offences[0].id", is(OFFENCE_ID2.toString()));
+
+    }
+
+    @Test
+    public void shouldNotReturnInActiveRelatedCaseWhenIsAllRelatedCasesIsFalse() {
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "INACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).add("isAllRelatedCases", false).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
+    public void shouldNotReturnInActiveRelatedCaseWhenIsAllRelatedCasesIsNotPassed() {
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "INACTIVE");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
+    public void shouldNotReturnClosedRelatedCaseWhenIsAllRelatedCasesIsTrue() {
+
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities("ACTIVE", "CLOSED");
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(Hearings.hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                createObjectBuilder().add("caseId", CASE_ID1.toString()).add("isAllRelatedCases", true).build());
+
+        when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
+        when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+        assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").getString("caseStatus"), is("ACTIVE"));
+
+        final JsonArray relatedCases = response.payloadAsJsonObject().getJsonArray("relatedCases");
+        assertThat(relatedCases.size(), is(1));
+        assertThat(relatedCases.getJsonObject(0).size(), is(0));
+
+    }
+
+    @Test
     public void shouldReturnCaseHearingTypes() throws IOException {
         final LocalDate today = LocalDate.now();
         final UUID caseId = randomUUID();
