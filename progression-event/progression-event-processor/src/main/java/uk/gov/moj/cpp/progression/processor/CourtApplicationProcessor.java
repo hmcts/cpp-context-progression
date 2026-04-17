@@ -149,6 +149,7 @@ public class CourtApplicationProcessor {
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED = "public.progression.court-application-summons-rejected";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED = "public.progression.hearing-resulted-application-updated";
+    private static final String PROGRESSION_EVENT_COURT_APPLICATION_SUMMONS_AMENDMENT_REQUESTED = "progression.event.court-application-summons-amendment-requested";
 
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
 
@@ -616,7 +617,10 @@ public class CourtApplicationProcessor {
         final CourtApplicationSummonsApproved courtApplicationSummonsApproved = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationSummonsApproved.class);
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Processing event for court-application-summons-approved with application id: {} - Link Type: {}", courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getLinkType());
+            LOGGER.info("Processing event for court-application-summons-approved with application id: {} - Link Type: {} - isAmended: {}",
+                    courtApplicationSummonsApproved.getApplicationId(),
+                    courtApplicationSummonsApproved.getLinkType(),
+                    courtApplicationSummonsApproved.getIsAmended());
         }
 
         if (courtApplicationSummonsApproved.getLinkType() == LinkType.FIRST_HEARING) {
@@ -624,9 +628,20 @@ public class CourtApplicationProcessor {
                     .withSummonsApprovedOutcome(courtApplicationSummonsApproved.getSummonsApprovedOutcome())
                     .withId(courtApplicationSummonsApproved.getApplicationId())
                     .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
+                    .withIsAmended(courtApplicationSummonsApproved.getIsAmended())
                     .build();
 
             sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
+
+            if (Boolean.TRUE.equals(courtApplicationSummonsApproved.getIsAmended())) {
+                final JsonObject amendmentRequestPayload = createObjectBuilder()
+                        .add("applicationId", courtApplicationSummonsApproved.getApplicationId().toString())
+                        .add("caseId", courtApplicationSummonsApproved.getCaseIds().get(0).toString())
+                        .add("summonsApprovedOutcome", objectToJsonObjectConverter.convert(courtApplicationSummonsApproved.getSummonsApprovedOutcome()))
+                        .build();
+                LOGGER.info("Firing summons amendment requested for application: {}", courtApplicationSummonsApproved.getApplicationId());
+                sender.send(envelop(amendmentRequestPayload).withName(PROGRESSION_EVENT_COURT_APPLICATION_SUMMONS_AMENDMENT_REQUESTED).withMetadataFrom(event));
+            }
         }
 
     }

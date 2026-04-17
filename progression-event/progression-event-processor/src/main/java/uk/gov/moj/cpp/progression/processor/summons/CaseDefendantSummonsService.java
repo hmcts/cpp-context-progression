@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.END
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -141,6 +142,62 @@ public class CaseDefendantSummonsService {
         return summonsDocumentContent.build();
     }
 
+
+    /**
+     * Overloaded variant for amendment generation — accepts court centre and hearing date/time
+     * directly instead of through SummonsDataPrepared, and uses the supplied SummonsApprovedOutcome
+     * (with updated prosecution costs) rather than reading it from a ListDefendantRequest.
+     */
+    public SummonsDocumentContent generateSummonsPayloadForDefendant(final JsonEnvelope jsonEnvelope,
+                                                                     final CourtCentre courtCentre,
+                                                                     final ZonedDateTime hearingDateTime,
+                                                                     final ProsecutionCase prosecutionCaseQueried,
+                                                                     final Defendant defendantQueried,
+                                                                     final SummonsApprovedOutcome summonsApprovedOutcome,
+                                                                     final JsonObject courtCentreJson,
+                                                                     final Optional<LjaDetails> optionalLjaDetails,
+                                                                     final SummonsProsecutor summonsProsecutor) {
+
+        final SummonsDocumentContent.Builder summonsDocumentContent = summonsDocumentContent();
+
+        summonsDocumentContent.withSubTemplateName(FIRST_HEARING.name());
+        summonsDocumentContent.withType(getSummonsCode(prosecutionCaseQueried.getSummonsCode()).getSubType());
+
+        optionalLjaDetails.ifPresent(ljaDetails -> {
+            final String ljaName = emptyIfBlank(ljaDetails.getLjaName());
+            final String ljaNameWelsh = defaultIfBlank(ljaDetails.getWelshLjaName(), ljaName);
+            summonsDocumentContent.withLjaCode(emptyIfBlank(ljaDetails.getLjaCode()));
+            summonsDocumentContent.withLjaName(ljaName);
+            summonsDocumentContent.withLjaNameWelsh(ljaNameWelsh);
+        });
+
+        summonsDocumentContent.withCaseReference(extractCaseReference(prosecutionCaseQueried.getProsecutionCaseIdentifier()));
+        summonsDocumentContent.withIssueDate(LocalDate.now());
+
+        final SummonsDefendant summonsDefendant = extractSummonsDefendant(defendantQueried);
+        summonsDocumentContent.withDefendant(summonsDefendant);
+        summonsDocumentContent.withOffences(extractOffences(jsonEnvelope, defendantQueried, prosecutionCaseQueried));
+
+        final SummonsAddressee summonsAddressee = summonsAddressee().withName(summonsDefendant.getName()).withAddress(summonsDefendant.getAddress()).build();
+        summonsDocumentContent.withAddressee(summonsAddressee);
+
+        final UUID roomId = courtCentre.getRoomId();
+        final SummonsHearingCourtDetails summonsHearingCourtDetails = getSummonsHearingDetails(courtCentreJson, roomId, hearingDateTime);
+        summonsDocumentContent.withHearingCourtDetails(summonsHearingCourtDetails);
+
+        summonsDocumentContent.withProsecutor(summonsProsecutor);
+
+        if (nonNull(summonsApprovedOutcome)) {
+            summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
+            summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
+            summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
+        }
+
+        summonsDocumentContent.withStatementOfFacts(emptyIfBlank(prosecutionCaseQueried.getStatementOfFacts()));
+        summonsDocumentContent.withStatementOfFactsWelsh(emptyIfBlank(prosecutionCaseQueried.getStatementOfFactsWelsh()));
+
+        return summonsDocumentContent.build();
+    }
 
     private List<SummonsOffence> extractOffences(final JsonEnvelope jsonEnvelope, final Defendant defendant, final ProsecutionCase prosecutionCase) {
         final List<SummonsOffence> summonsOffences = newArrayList();

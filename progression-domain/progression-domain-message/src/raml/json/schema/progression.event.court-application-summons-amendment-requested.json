@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-application-summons-amendment-requested.json",
+  "type": "object",
+  "description": "Internal progression event raised when a previously-approved First Hearing summons is re-shared with updated prosecution costs",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "summonsApprovedOutcome": {
+      "$ref": "http://justice.gov.uk/core/courts/summonsApprovedOutcome.json"
+    }
+  },
+  "required": [
+    "applicationId",
+    "caseId",
+    "summonsApprovedOutcome"
+  ],
+  "additionalProperties": false
+}

@@ -11,6 +11,10 @@
     },
     "summonsApprovedOutcome": {
       "$ref": "http://justice.gov.uk/core/courts/summonsApprovedOutcome.json"
+    },
+    "isAmended": {
+      "type": "boolean",
+      "description": "True when the summons has been previously approved and is being re-shared with updated details"
     }
   },
   "required": [

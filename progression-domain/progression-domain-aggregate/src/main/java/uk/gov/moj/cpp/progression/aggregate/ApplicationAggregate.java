@@ -159,6 +159,7 @@ public class ApplicationAggregate implements Aggregate {
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
+    private boolean summonsPreviouslyApproved = false;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisations = new ArrayList<>();
@@ -199,6 +200,7 @@ public class ApplicationAggregate implements Aggregate {
                 }),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
+                when(CourtApplicationSummonsApproved.class).apply(e -> this.summonsPreviouslyApproved = true),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
                     setCourtApplication(e.getCourtApplication());
@@ -804,6 +806,7 @@ public class ApplicationAggregate implements Aggregate {
                 .withLinkType(courtApplication.getType().getLinkType())
                 .withCaseIds(getCaseIds())
                 .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                .withIsAmended(this.summonsPreviouslyApproved)
                 .build());
 
         return streams.build();
