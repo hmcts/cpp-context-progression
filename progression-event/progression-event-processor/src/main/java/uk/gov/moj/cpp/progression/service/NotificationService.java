@@ -47,6 +47,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
@@ -712,13 +713,15 @@ public class NotificationService {
 
         // Build PostalAddressee if address is present
         final Optional<PostalAddressee> postalAddressee = addressOptional.map(address ->
-                new PostalAddressee(
-                        prosecutingAuthority.getProsecutionAuthorityCode(),
-                        new PostalAddress(
+                PostalAddressee.builder()
+                        .withName(prosecutingAuthority.getProsecutionAuthorityCode())
+                        .withAddress(new PostalAddress(
                                 address.getAddress1(), address.getAddress2(), address.getAddress3(),
                                 address.getAddress4(), address.getWelshAddress5(), address.getPostcode()
-                        )
-                )
+                        ))
+                        .withCourtApplicationPartyType(CourtApplicationPartyType.PROSECUTING_AUTHORITY)
+                        .withProsecutionAuthorityId(prosecutingAuthority.getProsecutionAuthorityId())
+                        .build()
         );
 
         // Create PostalNotification
