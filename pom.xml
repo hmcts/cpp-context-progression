@@ -5,13 +5,13 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.103.9-M1</version>
+        <version>17.103.9</version>
     </parent>
 
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.249-RE-SNAPSHOT</version>
+    <version>17.104.48-RBSD-2609-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
