@@ -104,7 +104,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         defendantId = randomUUID().toString();
         subjectId = randomUUID().toString();
         offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-        userId = "test";
+        userId =  randomUUID().toString();
         statusCode = "G2";
         statusDescription = "Desc";
         applicationReference = "AS145197659";
