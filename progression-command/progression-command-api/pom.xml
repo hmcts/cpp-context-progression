@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-        <version>17.104.48-RBSD-2609-SNAPSHOT</version>
+        <version>17.104.48-PEG-2848-R-SNAPSHOT</version>
     </parent>
     <artifactId>progression-command-api</artifactId>
     <packaging>war</packaging>
