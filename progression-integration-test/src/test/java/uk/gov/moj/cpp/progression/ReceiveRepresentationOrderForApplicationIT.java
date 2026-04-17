@@ -15,7 +15,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplicationUpdateForRepOrder;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplicationOnly;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
@@ -42,9 +41,9 @@ import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.Poller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +58,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
+
+    private final Poller poller = new Poller();
 
     private static final String PUBLIC_APPLICATION_ORGANISATION_CHANGED = "public.progression.application-organisation-changed";
     private static final String PUBLIC_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
@@ -106,7 +107,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         userId = "test";
         statusCode = "G2";
         statusDescription = "Desc";
-        applicationReference = "AB746921";
+        applicationReference = "AS145197659";
         stubGetOrganisationDetails(organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
@@ -159,7 +160,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
     private List<Matcher<? super ReadContext>> buildProsecutionCaseLaaMatchers() {
         return newArrayList(
                     withJsonPath("$.prosecutionCase.defendants[*].legalAidStatus", hasItem(equalTo("Pending"))),
-                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo("AB746921"))),
+                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo("AS145197659"))),
                     withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.offenceLevelStatus", hasItem(equalTo("Pending")))
             );
     }
@@ -177,8 +178,8 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
                 matchers);
     }
 
-    private static void verifyInMessagingQueueForApplication(final JmsMessageConsumerClient jmsMessageConsumerClient) {
-        final Optional<JsonObject> message = retrieveMessageBody(jmsMessageConsumerClient);
+    private void verifyInMessagingQueueForApplication(final JmsMessageConsumerClient jmsMessageConsumerClient) {
+        final Optional<JsonObject> message = poller.pollUntilFound(() -> retrieveMessageBody(jmsMessageConsumerClient));
         assertThat(message.isPresent(), is(true));
     }
 

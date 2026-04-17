@@ -65,7 +65,7 @@
           "convictionDate": "2022-02-01",
           "count": 0,
           "endorsableFlag": false,
-          "id": "fe42ea25-af49-48c6-a08e-b1af9d39fbb4",
+          "id": "OFFENCE_ID_1",
           "isDisposed": false,
           "judicialResults": [
             {
@@ -250,7 +250,7 @@
           },
           "convictionDate": "2022-02-01",
           "count": 0,
-          "id": "b2473042-77be-49ae-9c56-2117a12332c1",
+          "id": "OFFENCE_ID_2",
           "isDisposed": false,
           "judicialResults": [
             {
