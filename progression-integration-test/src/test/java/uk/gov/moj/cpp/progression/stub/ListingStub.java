@@ -39,6 +39,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class ListingStub {
 
+    private static final String LISTING_ANY_ALLOCATION_PATH = "/listing-service/query/api/rest/listing/hearings/any-allocation";
     private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
     private static final String LISTING_HEARING_COMMAND_V2 = "/listing-service/command/api/rest/listing/hearings/.*";
     private static final String LISTING_DELETE_HEARING_COMMAND = "/listing-command-api/command/api/rest/listing/delete-hearing/";
@@ -413,18 +414,16 @@ public class ListingStub {
                 });
     }
 
-    public static void setupListingAnyAllocationQuery(final String caseUrn, String resource) {
-        final String urlPath = format("/listing-service/query/api/rest/listing/{0}", caseUrn);
-        stubFor(get(urlPathEqualTo(urlPath))
+    public static void setupListingAnyAllocationQuery(final String caseUrn, final String startDate, final String resource) {
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource))));
     }
 
-    public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime) {
-        final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
-        stubFor(get(urlPathEqualTo(urlPath))
+    public static void setupListingAnyFutureAllocationQuery(final String caseUrn, final String startDate, final String resource, final String startDateTime) {
+        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
