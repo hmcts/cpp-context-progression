@@ -11,7 +11,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.104.48-RBSD-2609-SNAPSHOT</version>
+    <version>17.104.49-RBSD-2609-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
