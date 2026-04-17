@@ -159,7 +159,18 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
-    private static final String GUILTY = "GUILTY";
+    private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
+            "GUILTY",
+            "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
+            "GUILTY_REQUEST_HEARING",
+            "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+            "MCA_GUILTY",
+            "GUILTY_LESSER_OFFENCE_NAMELY",
+            "GUILTY_TO_ALTERNATIVE_OFFENCE",
+            "CHANGE_TO_GUILTY_AFTER_SWORN",
+            "CHANGE_TO_GUILTY_NO JURY",
+            "AUTREFOIS_CONVICT"
+    );
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
@@ -3553,8 +3564,10 @@ public class HearingAggregate implements Aggregate {
                 isCTLExpiryExists(offence);
     }
 
-    private static boolean isGuilty(final Offence offence) {
-        return (nonNull(offence.getPlea()) && GUILTY.equalsIgnoreCase(offence.getPlea().getPleaValue())) ||
+    private static boolean  isGuilty(final Offence offence) {
+        return (nonNull(offence.getPlea())
+                && GUILTY_PLEA_VALUES.stream()
+                .anyMatch(value -> value.equalsIgnoreCase(offence.getPlea().getPleaValue()))) ||
                 (nonNull(offence.getVerdict()) && isGuiltyVerdict(offence.getVerdict().getVerdictType())) ;
     }
 
