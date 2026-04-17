@@ -870,12 +870,12 @@ public class ProsecutionCaseQuery {
         final String prosecutionCaseStatus = Optional.ofNullable(prosecutionCase.getCaseStatus()).orElse(CASE_STATUS_ACTIVE);
 
         if (isAllRelatedCases) {
-            if (!prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE) && !prosecutionCaseStatus.equals(CASE_STATUS_INACTIVE)) {
+            if (!CASE_STATUS_ACTIVE.equals(prosecutionCaseStatus) && !CASE_STATUS_INACTIVE.equals(prosecutionCaseStatus)) {
                 return;
             }
         } else {
-            if ((statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && !statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
-                    (!statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE))) {
+            if ((CASE_STATUS_ACTIVE.equals(statusOfPrimaryCase) && !statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
+                    (!CASE_STATUS_ACTIVE.equals(statusOfPrimaryCase) && CASE_STATUS_ACTIVE.equals(prosecutionCaseStatus))) {
                 return;
             }
         }
