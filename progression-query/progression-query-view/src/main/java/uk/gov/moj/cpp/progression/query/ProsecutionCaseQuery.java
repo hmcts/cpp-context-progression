@@ -117,6 +117,7 @@ public class ProsecutionCaseQuery {
     public static final String MASTER_CASE = "masterCase";
     public static final String CASE_STATUS = "caseStatus";
     public static final String CASE_STATUS_ACTIVE = "ACTIVE";
+    public static final String CASE_STATUS_INACTIVE = "INACTIVE";
     private static final String ORDER_DATE = "orderDate";
     public static final String CASE_IDS_SEARCH_PARAM = "caseIds";
     public static final String NO_CASE_FOUND_YET_FOR_CASE_ID = "# No case found yet for caseId '{}'";
@@ -319,8 +320,9 @@ public class ProsecutionCaseQuery {
                     .collect(Collectors.groupingBy(MatchDefendantCaseHearingEntity::getMasterDefendantId));
 
             final String statusOfPrimaryCase = prosecutionCaseWithFees.getString(CASE_STATUS);
+            final boolean isAllRelatedCases = envelope.payloadAsJsonObject().getBoolean("isAllRelatedCases", false);
             final JsonArrayBuilder relatedCasesArrayBuilder = Json.createArrayBuilder();
-            matchedCasesGroupedByMasterDefendantId.forEach((masterDefendantId, cases) -> buildRelatedCasesForDefendant(masterDefendantId, cases, relatedCasesArrayBuilder, statusOfPrimaryCase));
+            matchedCasesGroupedByMasterDefendantId.forEach((masterDefendantId, cases) -> buildRelatedCasesForDefendant(masterDefendantId, cases, relatedCasesArrayBuilder, statusOfPrimaryCase, isAllRelatedCases));
             final JsonArray relatedCases = relatedCasesArrayBuilder.build();
             if (isNotEmpty(relatedCases)) {
                 jsonObjectBuilder.add("relatedCases", relatedCases);
@@ -845,13 +847,13 @@ public class ProsecutionCaseQuery {
         return isNull(courtApplication.getApplicant()) || isNull(courtApplication.getApplicant().getMasterDefendant()) ? null : courtApplication.getApplicant().getMasterDefendant().getMasterDefendantId();
     }
 
-    private void buildRelatedCasesForDefendant(final UUID masterDefendantId, final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList, final JsonArrayBuilder relatedCasesArrayBuilder, final String statusOfPrimaryCase) {
+    private void buildRelatedCasesForDefendant(final UUID masterDefendantId, final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList, final JsonArrayBuilder relatedCasesArrayBuilder, final String statusOfPrimaryCase, final boolean isAllRelatedCases) {
         final JsonObjectBuilder relatedCaseObjectBuilder = Json.createObjectBuilder();
         final JsonArrayBuilder casesArrayBuilder = Json.createArrayBuilder();
         final List<MatchDefendantCaseHearingEntity> uniqueMatchDefendantCaseHearingEntityList = matchDefendantCaseHearingEntityList.stream()
                 .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(MatchDefendantCaseHearingEntity::getProsecutionCaseId))), ArrayList::new));
 
-        uniqueMatchDefendantCaseHearingEntityList.forEach(matchDefendantCaseHearingEntity -> buildCases(matchDefendantCaseHearingEntity, casesArrayBuilder, statusOfPrimaryCase));
+        uniqueMatchDefendantCaseHearingEntityList.forEach(matchDefendantCaseHearingEntity -> buildCases(matchDefendantCaseHearingEntity, casesArrayBuilder, statusOfPrimaryCase, isAllRelatedCases));
 
         final JsonArray cases = casesArrayBuilder.build();
         if (isNotEmpty(cases)) {
@@ -862,14 +864,20 @@ public class ProsecutionCaseQuery {
         relatedCasesArrayBuilder.add(relatedCaseObjectBuilder.build());
     }
 
-    private void buildCases(final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity, final JsonArrayBuilder casesArrayBuilder, final String statusOfPrimaryCase) {
+    private void buildCases(final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity, final JsonArrayBuilder casesArrayBuilder, final String statusOfPrimaryCase, final boolean isAllRelatedCases) {
         final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(matchDefendantCaseHearingEntity.getProsecutionCase().getPayload());
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final String prosecutionCaseStatus = Optional.ofNullable(prosecutionCase.getCaseStatus()).orElse(CASE_STATUS_ACTIVE);
 
-        if ((statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && !statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
-                (!statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE))) {
-            return;
+        if (isAllRelatedCases) {
+            if (!prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE) && !prosecutionCaseStatus.equals(CASE_STATUS_INACTIVE)) {
+                return;
+            }
+        } else {
+            if ((statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && !statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
+                    (!statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE))) {
+                return;
+            }
         }
 
         final JsonArrayBuilder offencesArrayBuilder = Json.createArrayBuilder();
