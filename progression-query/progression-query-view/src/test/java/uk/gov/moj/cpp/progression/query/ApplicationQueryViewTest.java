@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atMostOnce;
@@ -442,7 +443,7 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
-        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), anyBoolean())).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         final JsonObject linkedCaseJson = Json.createObjectBuilder()
@@ -522,7 +523,7 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
-        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), anyBoolean())).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
