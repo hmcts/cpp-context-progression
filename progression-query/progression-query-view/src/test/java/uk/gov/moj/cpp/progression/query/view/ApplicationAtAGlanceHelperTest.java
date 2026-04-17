@@ -212,7 +212,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -246,7 +246,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -281,7 +281,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 

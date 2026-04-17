@@ -94,6 +94,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import uk.gov.justice.services.messaging.JsonObjects;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -1384,7 +1385,7 @@ public class CourtDocumentQueryViewTest {
 
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add("isDefenceQuery", true)
                 .build();
@@ -1425,7 +1426,7 @@ public class CourtDocumentQueryViewTest {
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
         final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
 
@@ -1443,7 +1444,7 @@ public class CourtDocumentQueryViewTest {
         final String userGroup = "Defence Lawyers";
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add("isDefenceQuery", true)
                 .build();
@@ -1484,7 +1485,7 @@ public class CourtDocumentQueryViewTest {
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
         final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
@@ -1509,7 +1510,7 @@ public class CourtDocumentQueryViewTest {
         final String userGroup = "Defence Lawyers";
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add("isDefenceQuery", true)
                 .build();
@@ -1549,7 +1550,7 @@ public class CourtDocumentQueryViewTest {
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
         final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
@@ -1574,7 +1575,7 @@ public class CourtDocumentQueryViewTest {
         final String userGroup = "Court Clerks";
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -1613,7 +1614,7 @@ public class CourtDocumentQueryViewTest {
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
         final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
