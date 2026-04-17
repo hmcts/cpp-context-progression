@@ -108,7 +108,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonObject payload = createObjectBuilder()
                 .add("courtApplication", createObjectBuilder()
                         .add("id", randomUUID().toString())
-                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .add("type", createObjectBuilder().add("code", "anyCode").add("linkType", "STANDALONE"))
                         .build())
                 .build();
 
