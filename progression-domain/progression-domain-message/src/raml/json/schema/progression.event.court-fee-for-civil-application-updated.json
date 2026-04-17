@@ -8,30 +8,11 @@
     },
     "courtApplicationPayment": {
       "description": "The details of payment or fee exemption for the application",
-      "$ref": "#/definitions/courtApplicationPayment"
+      "$ref": "http://justice.gov.uk/core/courts/courtApplicationPayment.json"
     }
   },
   "required": [
     "applicationId",
     "courtApplicationPayment"
-  ],
-  "definitions": {
-    "courtApplicationPayment": {
-      "properties": {
-        "feeStatus": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/civilFeeStatus"
-        },
-        "paymentReference": {
-          "description": "The reference for the payment or exemption",
-          "type": "string"
-        },
-        "contestedFeeStatus": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/civilFeeStatus"
-        },
-        "contestedPaymentReference": {
-          "type": "string"
-        }
-      }
-    }
-  }
+  ]
 }

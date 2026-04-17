@@ -31,6 +31,7 @@ import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtAp
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved.initiateCourtHearingAfterSummonsApproved;
+import static uk.gov.justice.core.courts.LinkType.STANDALONE;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested.removeDefendantCustodialEstablishmentRequested;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
@@ -1008,6 +1009,10 @@ public class ApplicationAggregate implements Aggregate {
 
     private String generateApplicationReference(final CourtApplication courtApplication) {
 
+        if (isStandaloneApplication(courtApplication) && nonNull(courtApplication.getApplicationReference())) {
+            return courtApplication.getApplicationReference();
+        }
+
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
                             nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
@@ -1020,9 +1025,18 @@ public class ApplicationAggregate implements Aggregate {
                     .distinct().collect(Collectors.joining(","));
         }
 
-        final int ARN_LENGTH = 10;
+        return generateUrn();
+    }
 
-        return RandomStringUtils.random(ARN_LENGTH, 0, 0, true, true, null, SECURE_RANDOM).toUpperCase();
+    @SuppressWarnings({"java:S2245"})
+    private String generateUrn() {
+        return RandomStringUtils.random(4, 0, 0, true, true, null, SECURE_RANDOM).toUpperCase() +
+               RandomStringUtils.random(7, 0, 0, false, true, null, SECURE_RANDOM);
+    }
+
+
+    private boolean isStandaloneApplication(final CourtApplication courtApplication) {
+        return STANDALONE == courtApplication.getType().getLinkType();
     }
 
     private boolean isApplicationReferredToExistingHearing(final CourtHearingRequest courtHearing) {
