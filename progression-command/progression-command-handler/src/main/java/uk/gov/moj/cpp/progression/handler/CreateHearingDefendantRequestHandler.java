@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -18,6 +19,8 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import javax.inject.Inject;
 import javax.json.JsonValue;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
@@ -37,12 +40,16 @@ public class CreateHearingDefendantRequestHandler {
 
     @Handles("progression.command.create-hearing-defendant-request")
     public void handle(final Envelope<CreateHearingDefendantRequest> createHearingDefendantRequestEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.create-hearing-defendant-request {}", createHearingDefendantRequestEnvelope );
+        LOGGER.debug("progression.command.create-hearing-defendant-request {}", createHearingDefendantRequestEnvelope);
+
         final List<ListDefendantRequest> listDefendantRequests = createHearingDefendantRequestEnvelope.payload().getDefendantRequests();
+
         final EventStream eventStream = eventSource.getStreamById(createHearingDefendantRequestEnvelope.payload().getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.createHearingDefendantRequest(listDefendantRequests);
         appendEventsToStream(createHearingDefendantRequestEnvelope, eventStream, events);
+
+        linkBoxworkHearingToFirstHearing(createHearingDefendantRequestEnvelope);
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
@@ -50,5 +57,33 @@ public class CreateHearingDefendantRequestHandler {
         eventStream.append(
                 events
                         .map(enveloper.withMetadataFrom(jsonEnvelope)));
+    }
+
+    private void linkBoxworkHearingToFirstHearing (final Envelope<CreateHearingDefendantRequest> requestEnvelope) throws EventStreamException {
+        final UUID boxworkHearingId = getBoxworkHearingId(requestEnvelope);
+
+        if (boxworkHearingId != null ) {
+            final UUID firstHearingId = requestEnvelope.payload().getHearingId();
+            final EventStream boxworkHearingEventStream = eventSource.getStreamById(boxworkHearingId);
+            final HearingAggregate boxworkHearingAggregate = aggregateService.get(boxworkHearingEventStream, HearingAggregate.class);
+
+            if (boxworkHearingAggregate.isLinkedToFirstHearing()) {
+                LOGGER.info("Boxwork hearing {} already linked to the first case hearing {}", boxworkHearingId, boxworkHearingId);
+                return;
+            }
+
+            final Stream<Object> linkEvents = boxworkHearingAggregate.linkBoxworkHearing(boxworkHearingId, firstHearingId);
+
+            appendEventsToStream(requestEnvelope, boxworkHearingEventStream, linkEvents);
+        }
+    }
+
+    private static UUID getBoxworkHearingId(final Envelope<CreateHearingDefendantRequest> createHearingDefendantRequestEnvelope) {
+        return createHearingDefendantRequestEnvelope.payload().getDefendantRequests().stream()
+                .map(ListDefendantRequest::getSummonsApprovedOutcome)
+                .filter(Objects::nonNull)
+                .map(SummonsApprovedOutcome::getHearingId)
+                .findFirst()
+                .orElse(null);
     }
 }

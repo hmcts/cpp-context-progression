@@ -41,6 +41,7 @@ public class SummonsHelper {
     private static final String PROSECUTOR_EMAIL_ADDRESS = "prosecutorEmailAddress";
     private static final String REASONS = "reasons";
     private static final String APPLICATION_ID = "applicationId";
+    private static final String HEARING_ID = "hearingId";
     private static final String REASONS_FOR_REJECTION = "reasonsForRejection";
     private static final String PROSECUTION_COSTS = "prosecutionCosts";
     private static final String THIS_SUMMONS_WILL_BE_SERVED_BY_A_PROSECUTOR = "thisSummonsWillBeServedByAProsecutor";
@@ -64,7 +65,7 @@ public class SummonsHelper {
             if (isNotEmpty(courtApplications)) {
                 courtApplications.forEach(courtApplication -> {
                     if (isNotEmpty(summonsApprovedJudicialResults)) {
-                        final JsonObject summonsApprovedPayload = createSummonsApprovedJsonObject(courtApplication, summonsApprovedJudicialResults);
+                        final JsonObject summonsApprovedPayload = createSummonsApprovedJsonObject(courtApplication, summonsApprovedJudicialResults, hearing.getId());
                         sendSummonsCommand(event, summonsApprovedPayload, PROGRESSION_COMMAND_APPROVE_APPLICATION_SUMMONS);
                     }
                     if (isEmpty(summonsApprovedJudicialResults) && isNotEmpty(summonsRejectedJudicialResults)) {
@@ -90,11 +91,13 @@ public class SummonsHelper {
                 ).build();
     }
 
-    private JsonObject createSummonsApprovedJsonObject(final CourtApplication courtApplication, final List<JudicialResult> summonsApprovedJudicialResults) {
+    private JsonObject createSummonsApprovedJsonObject(final CourtApplication courtApplication, final List<JudicialResult> summonsApprovedJudicialResults, final UUID hearingId) {
         final List<JudicialResultPrompt> judicialResultPrompts = summonsApprovedJudicialResults.get(0).getJudicialResultPrompts();
         return createObjectBuilder()
                 .add(APPLICATION_ID, courtApplication.getId().toString())
                 .add("summonsApprovedOutcome", createObjectBuilder()
+                        .add(APPLICATION_ID, courtApplication.getId().toString())
+                        .add(HEARING_ID, hearingId.toString())
                         .add(PROSECUTOR_COST, getPromptValue(judicialResultPrompts, PROSECUTION_COSTS))
                         .add(SUMMONS_SUPPRESSED, getPromptValue(judicialResultPrompts, THIS_SUMMONS_WILL_BE_SERVED_BY_A_PROSECUTOR).equalsIgnoreCase(TRUE))
                         .add(PERSONAL_SERVICE, getPromptValue(judicialResultPrompts, THIS_SUMMONS_IS_FOR_PERSONAL_SERVICE).equalsIgnoreCase(TRUE))

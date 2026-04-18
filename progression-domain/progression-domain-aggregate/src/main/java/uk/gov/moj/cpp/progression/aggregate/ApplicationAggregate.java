@@ -77,6 +77,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;

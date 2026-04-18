@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/progression/courts/boxwork-hearing-linked.json",
+  "type": "object",
+  "description": "Link boxwork hearing to first case hearing",
+  "properties": {
+    "firstHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "boxworkHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "firstHearingId",
+    "boxworkHearingId"
+  ],
+  "additionalProperties": false
+}

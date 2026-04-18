@@ -14,6 +14,7 @@ import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
+import static uk.gov.justice.core.progression.courts.BoxworkHearingLinked.boxworkHearingLinked;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -45,6 +46,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.progression.courts.BoxworkHearingLinked;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -133,6 +135,7 @@ public class HearingAggregate implements Aggregate {
     private Boolean unscheduledHearingListedFromThisHearing;
     private boolean duplicate;
     private boolean deleted;
+    private UUID firstHearingId;
     private CommittingCourt committingCourt;
     private Map<String, Boolean> hasNextHearingForHearingDay = new HashMap<>();
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
@@ -324,6 +327,7 @@ public class HearingAggregate implements Aggregate {
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
                 when(ApplicationRepOrderUpdatedForHearing.class).apply(this::handleApplicationRepOrderUpdatedForHearing),
+                when(BoxworkHearingLinked.class).apply(e -> this.firstHearingId = e.getFirstHearingId()),
                 otherwiseDoNothing());
     }
 
@@ -766,6 +770,18 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(ProsecutionCaseDefendantHearingResultUpdated.prosecutionCaseDefendantHearingResultUpdated()
                 .withHearingId(hearingId)
                 .withSharedResultLines(sharedResultLines)
+                .build()));
+    }
+
+    public boolean isResulted() {
+        return HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus);
+    }
+
+    public Stream<Object> linkBoxworkHearing(final UUID boxworkHearingId, final UUID firstCaseHearingId) {
+        LOGGER.debug("Linking boxwork hearing {} to first case hearing {}.", boxworkHearingId, firstCaseHearingId);
+        return apply(Stream.of(boxworkHearingLinked()
+                .withFirstHearingId(firstCaseHearingId)
+                .withBoxworkHearingId(boxworkHearingId)
                 .build()));
     }
 
@@ -3639,5 +3655,9 @@ public class HearingAggregate implements Aggregate {
                     .withHearingInProgression(getDeDupHearing(hearing))
                     .build());
         }
+    }
+
+    public boolean isLinkedToFirstHearing () {
+        return nonNull(firstHearingId);
     }
 }
