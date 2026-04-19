@@ -116,7 +116,7 @@ public class RecordApplicationLAAReferenceIT extends AbstractIT {
         pollHearingWithStatusInitialised(hearingId);
 
 
-        intiateCourtProceedingForApplicationUpdate(applicationId, subjectId, offenceId, defendantId, caseId,"applications/progression.initiate-court-proceedings-for-application-update2.json");
+        intiateCourtProceedingForApplicationUpdate(applicationId, subjectId, offenceId, defendantId, caseId,"applications/progression.initiate-court-proceedings-for-application-update3.json");
         pollForApplication(applicationId);
 
         final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_APPLICATION_OFFENCES_UPDATED).getMessageConsumerClient();
