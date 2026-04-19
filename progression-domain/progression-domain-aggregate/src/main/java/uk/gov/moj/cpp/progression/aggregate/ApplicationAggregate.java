@@ -77,6 +77,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -159,6 +160,7 @@ public class ApplicationAggregate implements Aggregate {
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
+    private boolean summonsPreviouslyApproved;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisations = new ArrayList<>();
@@ -199,6 +201,7 @@ public class ApplicationAggregate implements Aggregate {
                 }),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
+                when(CourtApplicationSummonsApproved.class).apply(e -> this.summonsPreviouslyApproved = true),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
                     setCourtApplication(e.getCourtApplication());
@@ -802,6 +805,7 @@ public class ApplicationAggregate implements Aggregate {
         streams.add(courtApplicationSummonsApproved()
                 .withApplicationId(courtApplication.getId())
                 .withLinkType(courtApplication.getType().getLinkType())
+                .withIsSummonsAmended(summonsPreviouslyApproved)
                 .withCaseIds(getCaseIds())
                 .withSummonsApprovedOutcome(summonsApprovedOutcome)
                 .build());

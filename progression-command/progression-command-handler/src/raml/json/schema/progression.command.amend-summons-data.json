@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/amend-summons-data.json",
+  "type": "object",
+  "properties": {
+    "summonsApprovedOutcome": {
+      "$ref": "http://justice.gov.uk/core/courts/summonsApprovedOutcome.json"
+    }
+  },
+  "required": [
+    "summonsApprovedOutcome"
+  ],
+  "additionalProperties": false
+}

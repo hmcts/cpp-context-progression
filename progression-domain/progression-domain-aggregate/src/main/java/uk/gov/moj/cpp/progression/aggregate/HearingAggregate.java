@@ -20,11 +20,13 @@ import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.HearingApplicationRequestCreated.hearingApplicationRequestCreated;
 import static uk.gov.justice.core.courts.HearingDefendantRequestCreated.hearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
+import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3;
 import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
+import static uk.gov.justice.core.progression.courts.BoxworkHearingLinked.boxworkHearingLinked;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -45,6 +47,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.progression.courts.BoxworkHearingLinked;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -133,6 +136,8 @@ public class HearingAggregate implements Aggregate {
     private Boolean unscheduledHearingListedFromThisHearing;
     private boolean duplicate;
     private boolean deleted;
+    private boolean isSummonsAlreadyApproved;
+    private UUID firstHearingId;
     private CommittingCourt committingCourt;
     private Map<String, Boolean> hasNextHearingForHearingDay = new HashMap<>();
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
@@ -324,6 +329,8 @@ public class HearingAggregate implements Aggregate {
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
                 when(ApplicationRepOrderUpdatedForHearing.class).apply(this::handleApplicationRepOrderUpdatedForHearing),
+                when(BoxworkHearingLinked.class).apply(e -> this.firstHearingId = e.getFirstHearingId()),
+                when(SummonsDataPrepared.class).apply(this::handleSummonsDataPrepared),
                 otherwiseDoNothing());
     }
 
@@ -431,7 +438,54 @@ public class HearingAggregate implements Aggregate {
                     )
                     .build()));
         }
-        return null;
+        return Stream.empty();
+    }
+
+    public Stream<Object> amendSummonsData(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isNotEmpty(listDefendantRequests) || isNotEmpty(applicationListingNeeds)) {
+            final List<ListDefendantRequest> listDefendantRequestsToSend = buildListDefendantRequestsWithAmendedSummonsOutcome(summonsApprovedOutcome);
+            final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = isNotEmpty(applicationListingNeeds) ? applicationListingNeeds : null;
+            final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIdsToSend = buildConfirmedProsecutionCaseIds();
+
+            streamBuilder.add(summonsDataPrepared()
+                    .withSummonsData(
+                            summonsData()
+                                    .withHearingDateTime(this.hearing.getEarliestNextHearingDate())
+                                    .withCourtCentre(this.hearing.getCourtCentre())
+                                    .withConfirmedProsecutionCaseIds(confirmedProsecutionCaseIdsToSend)
+                                    .withListDefendantRequests(listDefendantRequestsToSend) // defensive - if collection, min size is 1
+                                    .withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsToSend) // defensive - if collection, min size is 1
+                                    .build())
+                    .withIsSummonsAmended(this.isSummonsAlreadyApproved)
+                    .build());
+        }
+        return apply(streamBuilder.build());
+    }
+
+    private List<ListDefendantRequest> buildListDefendantRequestsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        if (isEmpty(this.listDefendantRequests)) {
+            return emptyList();
+        } else {
+            return this.listDefendantRequests.stream()
+                    .map(listDefendantRequest -> listDefendantRequest()
+                            .withValuesFrom(listDefendantRequest).withSummonsApprovedOutcome(summonsApprovedOutcome).build()).
+                    collect(toList());
+        }
+    }
+
+    private List<ConfirmedProsecutionCaseId> buildConfirmedProsecutionCaseIds() {
+        final Map<UUID, List<UUID>> confirmedProsecutionCaseIdsMap = new HashMap<>();
+
+        if (isNotEmpty(this.listDefendantRequests)) {
+            for (final ListDefendantRequest request : this.listDefendantRequests) {
+                confirmedProsecutionCaseIdsMap.computeIfAbsent(request.getProsecutionCaseId(), k -> new ArrayList<>())
+                        .add(request.getDefendantId());
+            }
+        }
+
+        return confirmedProsecutionCaseIdsMap.entrySet().stream().map(entry -> ConfirmedProsecutionCaseId.confirmedProsecutionCaseId().withId(entry.getKey()).withConfirmedDefendantIds(entry.getValue()).build()).toList();
     }
 
     public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final ExtendHearing extendHearing) {
@@ -766,6 +820,19 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(ProsecutionCaseDefendantHearingResultUpdated.prosecutionCaseDefendantHearingResultUpdated()
                 .withHearingId(hearingId)
                 .withSharedResultLines(sharedResultLines)
+                .build()));
+    }
+
+    public boolean isResulted() {
+        return HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus);
+    }
+
+    public Stream<Object> linkBoxworkHearing(final UUID boxworkHearingId, final UUID firstCaseHearingId) {
+        LOGGER.debug("Linking boxwork hearing {} to first case hearing {}.", boxworkHearingId, firstCaseHearingId);
+
+        return apply(Stream.of(boxworkHearingLinked()
+                .withFirstHearingId(firstCaseHearingId)
+                .withBoxworkHearingId(boxworkHearingId)
                 .build()));
     }
 
@@ -3639,5 +3706,26 @@ public class HearingAggregate implements Aggregate {
                     .withHearingInProgression(getDeDupHearing(hearing))
                     .build());
         }
+    }
+
+    private void handleSummonsDataPrepared(final SummonsDataPrepared summonsDataPrepared) {
+        if (this.isSummonsAlreadyApproved && isNotEmpty(summonsDataPrepared.getSummonsData().getListDefendantRequests())) {
+            final List<ListDefendantRequest> listDefendantRequestList = summonsDataPrepared.getSummonsData().getListDefendantRequests();
+
+            listDefendantRequests.clear();
+            listDefendantRequests.addAll(listDefendantRequestList);
+        }
+
+        if(!Boolean.TRUE.equals(summonsDataPrepared.getIsSummonsAmended())) {
+            this.isSummonsAlreadyApproved = true;
+        }
+    }
+
+    public boolean isLinkedToFirstHearing() {
+        return nonNull(this.firstHearingId);
+    }
+
+    public UUID getBoxworkFirstHearingId() {
+        return firstHearingId;
     }
 }

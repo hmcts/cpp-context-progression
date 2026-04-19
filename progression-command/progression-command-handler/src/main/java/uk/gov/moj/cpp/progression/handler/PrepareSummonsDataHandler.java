@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.nonNull;
 
+import uk.gov.justice.core.courts.AmendSummonsData;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.PrepareSummonsData;
@@ -52,6 +53,33 @@ public class PrepareSummonsDataHandler {
         if (events != null) {
             appendEventsToStream(prepareSummonsDataEnvelope, eventStream, events);
         }
+    }
+
+    @Handles("progression.command.amend-summons-data")
+    public void amendSummonsData(final Envelope<AmendSummonsData> amendSummonsDataEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.amend-summons-data {}", amendSummonsDataEnvelope);
+
+        final AmendSummonsData requestSummons = amendSummonsDataEnvelope.payload();
+        final UUID boxworkHearingId = requestSummons.getSummonsApprovedOutcome().getHearingId();
+        final EventStream eventStream = eventSource.getStreamById(boxworkHearingId);
+        final HearingAggregate bwHearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+
+        //Get linked hearing and invoke amend on that
+        final UUID firstHearingId = bwHearingAggregate.getBoxworkFirstHearingId();
+
+        if (firstHearingId == null) {
+            LOGGER.warn("Boxwork hearing {} has no linked first hearing, skipping amend", boxworkHearingId);
+            return;
+        }
+
+        final EventStream fhEventStream = eventSource.getStreamById(firstHearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(fhEventStream, HearingAggregate.class);
+
+        final Stream<Object> events = hearingAggregate.amendSummonsData(requestSummons.getSummonsApprovedOutcome());
+        if ( events != null) {
+            appendEventsToStream(amendSummonsDataEnvelope, fhEventStream, events);
+        }
+
     }
 
     @Handles("progression.command.prepare-summons-data-for-extended-hearing")
