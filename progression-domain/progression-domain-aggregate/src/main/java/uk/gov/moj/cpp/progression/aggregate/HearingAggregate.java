@@ -449,13 +449,12 @@ public class HearingAggregate implements Aggregate {
             final List<ListDefendantRequest> listDefendantRequestsToSend = buildListDefendantRequestsWithAmendedSummonsOutcome(summonsApprovedOutcome);
             final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = isNotEmpty(applicationListingNeeds) ? applicationListingNeeds : null;
             final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIdsToSend = buildConfirmedProsecutionCaseIds();
-            final CourtCentre courtCentre = getCourtCentre(this.hearing.getCourtCentre());
 
             streamBuilder.add(summonsDataPrepared()
                     .withSummonsData(
                             summonsData()
-                                    .withHearingDateTime(getEarliestDate(this.hearing.getHearingDays(), this.hearing.getId()))
-                                    .withCourtCentre(courtCentre)
+                                    .withHearingDateTime(this.hearing.getEarliestNextHearingDate())
+                                    .withCourtCentre(this.hearing.getCourtCentre())
                                     .withConfirmedProsecutionCaseIds(confirmedProsecutionCaseIdsToSend)
                                     .withListDefendantRequests(listDefendantRequestsToSend) // defensive - if collection, min size is 1
                                     .withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsToSend) // defensive - if collection, min size is 1
@@ -464,15 +463,6 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
         return apply(streamBuilder.build());
-    }
-
-    private static CourtCentre getCourtCentre(final CourtCentre courtCentre) {
-        return CourtCentre.courtCentre()
-                .withCode(courtCentre.getCode())
-                .withId(courtCentre.getId())
-                .withRoomId(courtCentre.getRoomId())
-                .withName(courtCentre.getName())
-                .build();
     }
 
     private List<ListDefendantRequest> buildListDefendantRequestsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
