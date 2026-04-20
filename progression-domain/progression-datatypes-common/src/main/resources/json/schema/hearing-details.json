@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/hearing-detail.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtRoomId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime" : {
+      "type" : "array",
+      "minItems" : 1,
+      "items" : {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus",
+      "default": "SENT_FOR_LISTING"
+    }
+  },
+  "required": [
+    "hearingId",
+    "courtCentreId",
+    "hearingDateTime",
+    "hearingListingStatus"
+  ],
+  "additionalProperties": false
+}

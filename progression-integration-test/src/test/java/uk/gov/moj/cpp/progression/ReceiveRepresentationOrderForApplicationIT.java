@@ -31,6 +31,7 @@ import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -103,11 +104,12 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         defendantId = randomUUID().toString();
         subjectId = randomUUID().toString();
         offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-        userId = "test";
+        userId =  randomUUID().toString();
         statusCode = "G2";
         statusDescription = "Desc";
         applicationReference = "AS145197659";
         stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
         stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", statusCode, statusDescription);
@@ -145,6 +147,7 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
 
         //Then
         pollForCourtApplicationOnly(applicationId, getApplicationMatchers());
+
 
         //Verify
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, getApplicationMatchers());
