@@ -1,0 +1,10 @@
+{
+  "summonsApprovedOutcome": {
+    "applicationId": "00000000-0000-0000-0000-000000000000",
+    "hearingId": "00000000-0000-0000-0000-000000000000",
+    "prosecutorCost": "£300.00",
+    "personalService": true,
+    "summonsSuppressed": false,
+    "prosecutorEmailAddress": "PROSECUTOR_EMAIL"
+  }
+}

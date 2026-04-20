@@ -26,6 +26,7 @@ import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArgu
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
 import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.progression.courts.BoxworkHearingLinked;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
@@ -6799,5 +6800,85 @@ public class HearingAggregateTest {
         return courtApplicationList;
     }
 
+    @Test
+    public void shouldLinkBoxworkHearingAndProduceBoxworkHearingLinkedEvent() {
+        final UUID boxworkHearingId = randomUUID();
+        final UUID firstHearingId = randomUUID();
+
+        final List<Object> events = hearingAggregate.linkBoxworkHearing(boxworkHearingId, firstHearingId).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), Matchers.instanceOf(BoxworkHearingLinked.class));
+        final BoxworkHearingLinked event = (BoxworkHearingLinked) events.get(0);
+        assertThat(event.getBoxworkHearingId(), is(boxworkHearingId));
+        assertThat(event.getFirstHearingId(), is(firstHearingId));
+    }
+
+    @Test
+    public void shouldReturnFalseForIsLinkedToFirstHearingWhenNotLinked() {
+        assertThat(hearingAggregate.isLinkedToFirstHearing(), is(false));
+    }
+
+    @Test
+    public void shouldReturnTrueForIsLinkedToFirstHearingAfterLinkingBoxworkHearing() {
+        final UUID boxworkHearingId = randomUUID();
+        final UUID firstHearingId = randomUUID();
+
+        hearingAggregate.linkBoxworkHearing(boxworkHearingId, firstHearingId).collect(toList());
+
+        assertThat(hearingAggregate.isLinkedToFirstHearing(), is(true));
+        assertThat(hearingAggregate.getBoxworkFirstHearingId(), is(firstHearingId));
+    }
+
+    @Test
+    public void shouldReturnNullForGetBoxworkFirstHearingIdWhenNotLinked() {
+        assertThat(hearingAggregate.getBoxworkFirstHearingId(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldAmendSummonsDataAndProduceSummonsDataPreparedEvent() {
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID boxworkHearingId = randomUUID();
+
+        hearingAggregate.createHearingDefendantRequest(singletonList(
+                ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .build())).collect(toList());
+
+        setField(hearingAggregate, "isSummonsAlreadyApproved", true);
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withHearingId(boxworkHearingId)
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), Matchers.instanceOf(SummonsDataPrepared.class));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) events.get(0);
+        assertThat(prepared.getSummonsData().getListDefendantRequests().get(0).getSummonsApprovedOutcome(), is(summonsApprovedOutcome));
+        assertThat(prepared.getIsSummonsAmended(), is(true));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamFromAmendSummonsDataWhenNoListDefendantRequests() {
+        setField(hearingAggregate, "isSummonsAlreadyApproved", true);
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withHearingId(randomUUID())
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events, is(empty()));
+    }
 
 }

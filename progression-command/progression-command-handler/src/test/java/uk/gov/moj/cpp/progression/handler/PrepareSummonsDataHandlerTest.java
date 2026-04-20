@@ -8,10 +8,14 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.AmendSummonsData.amendSummonsData;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.PrepareSummonsData.prepareSummonsData;
+import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -22,9 +26,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.AmendSummonsData;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.PrepareSummonsData;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -65,6 +72,9 @@ public class PrepareSummonsDataHandlerTest {
 
     @Mock
     private EventStream eventStream;
+
+    @Mock
+    private EventStream firstHearingEventStream;
 
     @Mock
     private AggregateService aggregateService;
@@ -190,5 +200,92 @@ public class PrepareSummonsDataHandlerTest {
                 .with(method("prepareSummonsData")
                         .thatHandles("progression.command.prepare-summons-data")
                 ));
+    }
+
+    @Test
+    public void shouldHandleAmendSummonsDataCommand() {
+        assertThat(new PrepareSummonsDataHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("amendSummonsData")
+                        .thatHandles("progression.command.amend-summons-data")
+                ));
+    }
+
+    @Test
+    public void shouldAmendSummonsDataWhenLinkedFirstHearingExists() throws EventStreamException {
+        final UUID boxworkHearingId = randomUUID();
+        final UUID firstHearingId = randomUUID();
+
+        final HearingAggregate boxworkAggregate = new HearingAggregate();
+        ReflectionUtil.setField(boxworkAggregate, "firstHearingId", firstHearingId);
+
+        final HearingAggregate firstHearingAggregate = new HearingAggregate();
+        final java.util.ArrayList<ListDefendantRequest> mutableList = new java.util.ArrayList<>();
+        mutableList.add(ListDefendantRequest.listDefendantRequest()
+                .withDefendantId(DEFENDANT_ID)
+                .withProsecutionCaseId(CASE_ID)
+                .build());
+        ReflectionUtil.setField(firstHearingAggregate, "listDefendantRequests", mutableList);
+        ReflectionUtil.setField(firstHearingAggregate, "isSummonsAlreadyApproved", true);
+        ReflectionUtil.setField(firstHearingAggregate, "hearing",
+                Hearing.hearing().withCourtCentre(courtCentre().withId(COURT_CENTRE_ID).withCode("courtCode").build()).build());
+
+        when(eventSource.getStreamById(boxworkHearingId)).thenReturn(eventStream);
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(firstHearingEventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(boxworkAggregate);
+        when(aggregateService.get(firstHearingEventStream, HearingAggregate.class)).thenReturn(firstHearingAggregate);
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = summonsApprovedOutcome()
+                .withHearingId(boxworkHearingId)
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final AmendSummonsData amendPayload = amendSummonsData()
+                .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                .build();
+
+        final Metadata metadata = Envelope.metadataBuilder()
+                .withName("progression.command.amend-summons-data")
+                .withId(randomUUID())
+                .build();
+
+        handler.amendSummonsData(envelopeFrom(metadata, amendPayload));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(firstHearingEventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.summons-data-prepared"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.summonsData.listDefendantRequests[0].defendantId", is(DEFENDANT_ID.toString())),
+                                withJsonPath("$.isSummonsAmended", is(true))
+                        )))
+        ));
+    }
+
+    @Test
+    public void shouldSkipAmendSummonsDataWhenNoLinkedFirstHearing() throws EventStreamException {
+        final UUID boxworkHearingId = randomUUID();
+
+        final HearingAggregate boxworkAggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(boxworkHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(boxworkAggregate);
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = summonsApprovedOutcome()
+                .withHearingId(boxworkHearingId)
+                .build();
+
+        final AmendSummonsData amendPayload = amendSummonsData()
+                .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                .build();
+
+        final Metadata metadata = Envelope.metadataBuilder()
+                .withName("progression.command.amend-summons-data")
+                .withId(randomUUID())
+                .build();
+
+        handler.amendSummonsData(envelopeFrom(metadata, amendPayload));
+
+        verify(firstHearingEventStream, never()).append(any());
     }
 }
