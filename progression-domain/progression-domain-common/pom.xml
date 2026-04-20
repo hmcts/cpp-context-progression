@@ -3,11 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-<<<<<<< HEAD
-        <version>17.0.252-2386-SNAPSHOT</version>
-=======
-        <version>17.0.252</version>
->>>>>>> f6b987d094 (updating poms for branch'dev/release-17.0.252' with non-snapshot versions)
+        <version>17.0.253.2386-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-common</artifactId>
     <dependencies>
