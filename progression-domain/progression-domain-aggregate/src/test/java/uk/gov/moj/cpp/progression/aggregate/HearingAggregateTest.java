@@ -6851,6 +6851,7 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing",
                 Hearing.hearing()
                         .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                         .build());
 
         final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
