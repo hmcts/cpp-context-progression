@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static com.google.common.collect.ImmutableList.of;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.singletonList;
@@ -29,6 +30,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import uk.gov.justice.core.courts.AmendSummonsData;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.PrepareSummonsData;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
@@ -227,7 +229,9 @@ public class PrepareSummonsDataHandlerTest {
         ReflectionUtil.setField(firstHearingAggregate, "listDefendantRequests", mutableList);
         ReflectionUtil.setField(firstHearingAggregate, "isSummonsAlreadyApproved", true);
         ReflectionUtil.setField(firstHearingAggregate, "hearing",
-                Hearing.hearing().withCourtCentre(courtCentre().withId(COURT_CENTRE_ID).withCode("courtCode").build()).build());
+                Hearing.hearing().withCourtCentre(courtCentre().withId(COURT_CENTRE_ID).withCode("courtCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
 
         when(eventSource.getStreamById(boxworkHearingId)).thenReturn(eventStream);
         when(eventSource.getStreamById(firstHearingId)).thenReturn(firstHearingEventStream);
