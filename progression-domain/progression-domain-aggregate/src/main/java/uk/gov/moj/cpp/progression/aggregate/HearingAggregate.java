@@ -111,6 +111,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -448,12 +449,13 @@ public class HearingAggregate implements Aggregate {
             final List<ListDefendantRequest> listDefendantRequestsToSend = buildListDefendantRequestsWithAmendedSummonsOutcome(summonsApprovedOutcome);
             final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = isNotEmpty(applicationListingNeeds) ? applicationListingNeeds : null;
             final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIdsToSend = buildConfirmedProsecutionCaseIds();
+            final CourtCentre courtCentre = getCourtCentre(this.hearing.getCourtCentre());
 
             streamBuilder.add(summonsDataPrepared()
                     .withSummonsData(
                             summonsData()
-                                    .withHearingDateTime(this.hearing.getEarliestNextHearingDate())
-                                    .withCourtCentre(this.hearing.getCourtCentre())
+                                    .withHearingDateTime(getEarliestDate(this.hearing.getHearingDays(), this.hearing.getId()))
+                                    .withCourtCentre(courtCentre)
                                     .withConfirmedProsecutionCaseIds(confirmedProsecutionCaseIdsToSend)
                                     .withListDefendantRequests(listDefendantRequestsToSend) // defensive - if collection, min size is 1
                                     .withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsToSend) // defensive - if collection, min size is 1
@@ -462,6 +464,15 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
         return apply(streamBuilder.build());
+    }
+
+    private static CourtCentre getCourtCentre(final CourtCentre courtCentre) {
+        return CourtCentre.courtCentre()
+                .withCode(courtCentre.getCode())
+                .withId(courtCentre.getId())
+                .withRoomId(courtCentre.getRoomId())
+                .withName(courtCentre.getName())
+                .build();
     }
 
     private List<ListDefendantRequest> buildListDefendantRequestsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
@@ -3706,6 +3717,14 @@ public class HearingAggregate implements Aggregate {
                     .withHearingInProgression(getDeDupHearing(hearing))
                     .build());
         }
+    }
+
+    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays, final UUID hearingId) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .filter(Objects::nonNull)
+                .min(ZonedDateTime::compareTo)
+                .orElseThrow(() -> new NoSuchElementException("No hearing days found for hearing " + hearingId));
     }
 
     private void handleSummonsDataPrepared(final SummonsDataPrepared summonsDataPrepared) {
