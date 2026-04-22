@@ -308,6 +308,18 @@ public class ApplicationParameters {
         return onlinePleaProsecutorTemplateId;
     }
 
+    public String getNotifyHearingTemplateId() {
+        return notifyHearingTemplateId;
+    }
+
+    public String getRetryTimes() {
+        return retryTimes;
+    }
+
+    public String getRetryInterval() {
+        return retryInterval;
+    }
+
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();
         emailTemplatesMap.put("pcr_standard", this.prisonCourtRegisterEmailTemplateId);

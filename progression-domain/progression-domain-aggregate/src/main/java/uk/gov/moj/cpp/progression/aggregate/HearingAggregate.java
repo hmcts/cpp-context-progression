@@ -159,10 +159,9 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
-    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
-    //changed GUILTY to address sonar issue : java:S1192
+    private static final String GUILTY = "GUILTY";
     private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
-            GUILTY_VERDICT_STARTS_WITH,
+            GUILTY,
             "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
             "GUILTY_REQUEST_HEARING",
             "GUILTY_SINGLE_JUSTICE_PROCEDURE",
@@ -173,6 +172,7 @@ public class HearingAggregate implements Aggregate {
             "CHANGE_TO_GUILTY_NO JURY",
             "AUTREFOIS_CONVICT"
     );
+    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
