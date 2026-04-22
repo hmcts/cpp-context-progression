@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Integration tests for Prison Court Register Document Request when AmpSendNotifications feature toggle is ENABLED (true).
+ * Integration tests for Prison Court Register Document Request when hearingResultsDocumentSubscriptionEnabled feature toggle is ENABLED (true).
  * 
  * These tests mirror the tests in PrisonCourtRegisterDocumentRequestIT but with feature guard enabled.
  * They verify that when the feature is enabled:
@@ -46,14 +46,13 @@ import org.junit.jupiter.api.Test;
  * - The new V2 events (PrisonCourtRegisterGeneratedV2) are generated,
  *   and based on these events, the AMP service is invoked for each generated document.
  * 
- * When the AmpSendNotifications feature toggle is removed and becomes the default behavior,
+ * When the hearingResultsDocumentSubscriptionEnabled feature toggle is removed and becomes the default behavior,
  * these tests will become the standard tests.
  */
 public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     private ProsecutionCaseUpdateDefendantHelper helper;
 
     @Test
-    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
         setUpAmpStubs();
         final UUID courtCentreId = randomUUID();
@@ -102,7 +101,6 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JSONException {
         setUpAmpStubs();
         final UUID courtCentreId = randomUUID();
@@ -148,7 +146,6 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("this test is broken as invalid property hearingResultsDocument.subscription.url added to standalone.xml")
     public void shouldFailedPrisonCourtDocumentAsynchronously() throws JSONException {
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
