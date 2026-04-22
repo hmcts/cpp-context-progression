@@ -862,6 +862,9 @@ subscriptions_descriptor:
         - name: public.listing.hearing-requested-for-listing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-requested-for-listing.json
 
+        - name: public.listing.hearing-listed
+          schema_uri: http://justice.gov.uk/listing/courts/public.listing.hearing-listed.json
+
         - name: public.listing.hearing-partially-updated
           schema_uri: http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json
 

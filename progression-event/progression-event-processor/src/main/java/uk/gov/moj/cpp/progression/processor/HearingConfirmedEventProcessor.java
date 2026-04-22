@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
