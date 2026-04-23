@@ -173,7 +173,7 @@ public class ApplicationParameters {
      *  Ingress URL or Kubernetes Discovery URL
      */
     @Inject
-    @Value(key = "hearingResultsDocument.subscription.url", defaultValue ="http://localhost:8080/hces/notifications")
+    @Value(key = "hearingResultsDocument.subscription.url", defaultValue ="http://localhost:8080/hrds/notifications")
     private String hearingResultsDocumentSubscriptionUrl;
 
     @Inject
