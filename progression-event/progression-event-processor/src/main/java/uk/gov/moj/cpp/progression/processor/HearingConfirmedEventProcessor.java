@@ -184,7 +184,13 @@ public class HearingConfirmedEventProcessor {
     public void processHearingConfirmedReplayed(final JsonEnvelope jsonEnvelope){
         final HearingConfirmedReplayed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmedReplayed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
-        final Hearing hearingInProgression = hearingConfirmed.getHearingInProgression();
+        Hearing hearingInProgression = hearingConfirmed.getHearingInProgression();
+        // PEG-2848: if the replayed event was emitted before the view caught up, the embedded
+        // hearingInProgression will be null. Re-query the view here — by the time the replay
+        // arrives the HearingConfirmedEventListener may have populated the hearing.
+        if (isNull(hearingInProgression)) {
+            hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
+        }
         boolean sendNotificationToParties = false;
         if (nonNull(hearingConfirmed.getSendNotificationToParties())) {
             sendNotificationToParties = hearingConfirmed.getSendNotificationToParties();
@@ -202,7 +208,12 @@ public class HearingConfirmedEventProcessor {
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
         final Hearing hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
-        if(isNull(hearingInProgression) && CollectionUtils.isEmpty(hearingConfirmed.getConfirmedHearing().getCourtApplicationIds())){
+        // PEG-2848: guard against race where the hearing view has not yet been populated by
+        // HearingConfirmedEventListener when public.listing.hearing-confirmed arrives.
+        // Previous guard only replayed when courtApplicationIds was empty, which still left
+        // the court-application path to NPE at triggerRetryOnMissingCaseAndApplication (line 751).
+        // Replay whenever the hearing is not yet in the view, regardless of court applications.
+        if (isNull(hearingInProgression)) {
             sender.send(Enveloper
                     .envelop(hearingConfirmed)
                     .withName("progression.command.replay-hearing-confirmed")
@@ -748,7 +759,12 @@ public class HearingConfirmedEventProcessor {
     }
 
     private void triggerRetryOnMissingCaseAndApplication(final UUID hearingId, final Hearing hearingInProgression) {
-        if (isEmpty(hearingInProgression.getCourtApplications()) && isEmpty(hearingInProgression.getProsecutionCases())) {
+        // PEG-2848: defend against null hearingInProgression arriving via processHearingConfirmedReplayed
+        // when the replayed event's embedded hearingInProgression is still unresolved. Previously this
+        // NPE'd and relied on JMS redelivery to retry; now we throw the intended exception so the
+        // message rolls back cleanly and is redelivered for the view to catch up.
+        if (isNull(hearingInProgression)
+                || (isEmpty(hearingInProgression.getCourtApplications()) && isEmpty(hearingInProgression.getProsecutionCases()))) {
 
             throw new CourtApplicationAndCaseNotFoundException(format("Prosecution case and court application not found for hearing id : %s", hearingId));
         }
