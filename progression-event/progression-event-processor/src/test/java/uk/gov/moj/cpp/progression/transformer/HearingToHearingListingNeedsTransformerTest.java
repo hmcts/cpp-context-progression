@@ -709,6 +709,23 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(defendant1.getOffences().stream().allMatch(o -> isNull(o.getJudicialResults()) ), is(true));
     }
 
+    @Test
+    public void shouldCopyCaseOffencesWithSeedingHearingWhenOnlyApplicationResultedWithoutCase() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+
+        final Hearing hearing = fromEventPayloadJson("next-hearings/progression.event.next-hearings-requested-1next-hearing-2offences_application_resulted-without-case.json");
+        final Map<UUID, List<UUID>> alreadyExistingBookingReferenceAndCourtScheduleIds = new HashMap<>();
+        final Map<UUID, Set<UUID>> combinedBookingReferencesAndCourtScheduleIds = transformer.getCombinedBookingReferencesAndCourtScheduleIds(hearing, alreadyExistingBookingReferenceAndCourtScheduleIds);
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), combinedBookingReferencesAndCourtScheduleIds);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases(), is(nullValue()));
+    }
+
 
     @Test
     public void givenMultiDefendantsMultiOffencesAndApplicationHaveSameNextHearing_shouldHaveHearingNeedsWithNextHearingsThatIncludeOffencesAndApplicationForThatNextHearing() {
