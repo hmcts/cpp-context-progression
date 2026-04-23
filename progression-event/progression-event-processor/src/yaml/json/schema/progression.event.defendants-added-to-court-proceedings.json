@@ -3,6 +3,9 @@
   "id" : "http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json",
   "type" : "object",
   "properties" : {
+    "requestId" : {
+      "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "defendants" : {
       "type" : "array",
       "minItems" : 1,
@@ -15,6 +18,13 @@
       "minItems" : 1,
       "items" : {
         "$ref" : "http://justice.gov.uk/core/courts/listHearingRequest.json#"
+      }
+    },
+    "hearingRequestDetails" : {
+      "type" : "array",
+      "minItems" : 1,
+      "items" : {
+        "$ref" : "http://justice.gov.uk/core/courts/hearing-request-detail.json"
       }
     }
   },

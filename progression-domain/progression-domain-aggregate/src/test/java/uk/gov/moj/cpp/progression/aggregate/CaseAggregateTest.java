@@ -1356,7 +1356,7 @@ class CaseAggregateTest {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final List<Object> eventStream = caseAggregate.replayDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
-                defendantsAddedToCourtProceedings.getListHearingRequests(), 1).collect(toList());
+                defendantsAddedToCourtProceedings.getListHearingRequests(), null,1).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
