@@ -288,7 +288,7 @@ public class HearingToHearingListingNeedsTransformer {
                                         .build()).toList())
                                 .build()).toList())
                         .build())
-                .toList();
+                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
 
         final HearingListingNeeds.Builder builder = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds).withProsecutionCases(prosecutionCasesWithSeedingHearings);
         if (isEmpty(hearingListingNeeds.getCourtApplications())) {
