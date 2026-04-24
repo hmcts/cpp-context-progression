@@ -1735,7 +1735,7 @@ public class ProgressionService {
         }
         payloadBuilder.add(COURT_CENTRE, courtCentreJson);
         payloadBuilder.add(HEARING_ID, hearingId.toString());
-        payloadBuilder.add(HEARING_DATE_TIME, hearingDateTime.toString());
+        payloadBuilder.add(HEARING_DATE_TIME, hearingDateTime.toInstant().toString());
         payloadBuilder.add(HEARING_TYPE, hearingType.getDescription());
         payloadBuilder.add(REMIT_RESULT_IDS, getRemitResultIdsAsJsonArray());
         payloadBuilder.add(JURISDICTION_TYPE, jurisdictionType.name());
