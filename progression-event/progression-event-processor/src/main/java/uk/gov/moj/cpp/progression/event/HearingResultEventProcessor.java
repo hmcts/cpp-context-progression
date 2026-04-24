@@ -35,6 +35,7 @@ import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
+import uk.gov.moj.cpp.progression.helper.HearingDayUtils;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
@@ -264,7 +265,7 @@ public class HearingResultEventProcessor {
         ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(),
                         hearing.getDefendantJudicialResults(), hearing.getCourtCentre(),
-                        hearing.getId(), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
+                        hearing.getId(), HearingDayUtils.getEarliestDate(hearing.getHearingDays()), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 
     /**

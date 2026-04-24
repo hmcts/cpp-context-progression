@@ -27,6 +27,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingDayUtils;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer;
@@ -144,7 +145,9 @@ public class HearingResultedEventProcessor {
         hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase,
                 hearing.getCourtApplications(),
                 hearing.getDefendantJudicialResults(),
-                hearing.getCourtCentre(), hearing.getId(), hearing.getType(),
+                hearing.getCourtCentre(), hearing.getId(),
+                HearingDayUtils.getEarliestDate(hearing.getHearingDays()),
+                hearing.getType(),
                 hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 

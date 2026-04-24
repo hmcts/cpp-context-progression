@@ -12,7 +12,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
@@ -43,6 +45,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
@@ -88,6 +91,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -173,6 +177,9 @@ public class HearingResultedEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<Hearing> hearingCaptor;
+
+    @Captor
+    private ArgumentCaptor<ZonedDateTime> hearingDateTimeCaptor;
 
     @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingCaptor;
@@ -269,10 +276,12 @@ public class HearingResultedEventProcessorTest {
         final UUID caseId1 = UUID.randomUUID();
         final UUID caseId2 = UUID.randomUUID();
         final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final ProsecutionCasesResultedV2 hearingResulted = ProsecutionCasesResultedV2.prosecutionCasesResultedV2().withHearing(
                 Hearing.hearing()
                         .withId(hearingId)
                         .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(hearingDateTime).build()))
                         .withProsecutionCases(Arrays.asList(
                                 ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(Collections.singletonList(Defendant.defendant().build())).build(),
                                 ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(Collections.singletonList(Defendant.defendant().build())).build()))
@@ -290,7 +299,7 @@ public class HearingResultedEventProcessorTest {
         verifyNoMoreInteractions(sender);
         verify(progressionService, times(2)).updateCase(eq(event), prosecutionCaseArgumentCaptor.capture(),
                 courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(),
-                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDateTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
 
         final List<ProsecutionCase> capturedCases = prosecutionCaseArgumentCaptor.getAllValues();
         assertTrue(capturedCases.stream().anyMatch(c -> caseId1.equals(c.getId())));
@@ -299,6 +308,7 @@ public class HearingResultedEventProcessorTest {
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
+        assertThat(hearingDateTimeCaptor.getValue(), CoreMatchers.is(hearingDateTime));
     }
 
     @Test
