@@ -536,7 +536,7 @@ public class ProgressionServiceTest {
         final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
                 .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
                 .add("hearingId", hearingId.toString())
-                .add("hearingDateTime", hearingDateTime.toInstant().toString())
+                .add("hearingDays", hearingDateTime.toInstant().toString())
                 .add("hearingType", "Trial")
                 .add("jurisdictionType", "CROWN")
                 .add("isBoxHearing", Boolean.FALSE)

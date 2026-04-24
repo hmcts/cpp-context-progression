@@ -12,9 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
-import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
@@ -45,7 +43,6 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
@@ -179,7 +176,7 @@ public class HearingResultedEventProcessorTest {
     private ArgumentCaptor<Hearing> hearingCaptor;
 
     @Captor
-    private ArgumentCaptor<ZonedDateTime> hearingDateTimeCaptor;
+    private ArgumentCaptor<List<HearingDay>> hearingDaysTimeCaptor;
 
     @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingCaptor;
@@ -299,7 +296,7 @@ public class HearingResultedEventProcessorTest {
         verifyNoMoreInteractions(sender);
         verify(progressionService, times(2)).updateCase(eq(event), prosecutionCaseArgumentCaptor.capture(),
                 courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(),
-                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDateTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
 
         final List<ProsecutionCase> capturedCases = prosecutionCaseArgumentCaptor.getAllValues();
         assertTrue(capturedCases.stream().anyMatch(c -> caseId1.equals(c.getId())));
@@ -308,7 +305,7 @@ public class HearingResultedEventProcessorTest {
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDateTimeCaptor.getValue(), CoreMatchers.is(hearingDateTime));
+        assertThat(hearingDaysTimeCaptor.getValue(), CoreMatchers.is(hearingDateTime));
     }
 
     @Test

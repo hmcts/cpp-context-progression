@@ -248,7 +248,7 @@ public class HearingResultEventProcessorTest {
     private ArgumentCaptor<UUID> hearingIdCaptor;
 
     @Captor
-    private ArgumentCaptor<ZonedDateTime> hearingDateTimeCaptor;
+    private ArgumentCaptor<List<HearingDay>> hearingDaysTimeCaptor;
     @Captor
     private ArgumentCaptor<HearingType> hearingTypeCaptor;
     @Captor
@@ -756,7 +756,7 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDateTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
@@ -765,7 +765,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDateTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
+        assertThat(hearingDaysTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test
@@ -980,7 +980,7 @@ public class HearingResultEventProcessorTest {
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
         verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
-        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDateTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
@@ -988,7 +988,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDateTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
+        assertThat(hearingDaysTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
     }
 
     private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode, final String resultDefinitionGroup) {

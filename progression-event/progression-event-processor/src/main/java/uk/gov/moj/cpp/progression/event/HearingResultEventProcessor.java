@@ -265,7 +265,7 @@ public class HearingResultEventProcessor {
         ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(),
                         hearing.getDefendantJudicialResults(), hearing.getCourtCentre(),
-                        hearing.getId(), HearingDayUtils.getEarliestDate(hearing.getHearingDays()), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
+                        hearing.getId(), hearing.getHearingDays(), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 
     /**
