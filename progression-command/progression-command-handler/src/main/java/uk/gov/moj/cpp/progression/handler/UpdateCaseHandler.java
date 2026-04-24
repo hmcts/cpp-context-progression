@@ -61,7 +61,7 @@ public class UpdateCaseHandler {
 
         final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(),
                 defendantJudicialResults, hearingUpdate.getCourtCentre(),
-                hearingUpdate.getHearingId(), hearingUpdate.getHearingType(),
+                hearingUpdate.getHearingId(), hearingUpdate.getHearingDateTime(), hearingUpdate.getHearingType(),
                 hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds());
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
@@ -79,7 +79,7 @@ public class UpdateCaseHandler {
                             .build();
                     final Stream<Object> memberCaseEvent = memberCaseAggregate.updateCase(memberCase,
                             isNotEmpty(hearingUpdate.getDefendantJudicialResults()) ? hearingUpdate.getDefendantJudicialResults() : Collections.emptyList(),
-                            hearingUpdate.getCourtCentre(), hearingUpdate.getHearingId(), hearingUpdate.getHearingType(),
+                            hearingUpdate.getCourtCentre(), hearingUpdate.getHearingId(), hearingUpdate.getHearingDateTime(), hearingUpdate.getHearingType(),
                             hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds()
                     );
 

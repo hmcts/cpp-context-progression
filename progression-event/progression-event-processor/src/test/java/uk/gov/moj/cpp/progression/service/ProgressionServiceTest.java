@@ -532,9 +532,11 @@ public class ProgressionServiceTest {
 
         final UUID hearingId = randomUUID();
         final HearingType hearingType = HearingType.hearingType().withDescription("Trial").build();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
                 .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
                 .add("hearingId", hearingId.toString())
+                .add("hearingDateTime", hearingDateTime.toString())
                 .add("hearingType", "Trial")
                 .add("jurisdictionType", "CROWN")
                 .add("isBoxHearing", Boolean.FALSE)
@@ -547,7 +549,7 @@ public class ProgressionServiceTest {
 
 
         progressionService.updateCase(envelope, prosecutionCase, courtApplications,
-                defendantJudicialResults, courtCentre, hearingId, hearingType, JurisdictionType.CROWN, Boolean.FALSE);
+                defendantJudicialResults, courtCentre, hearingId, hearingDateTime, hearingType, JurisdictionType.CROWN, Boolean.FALSE);
 
         verify(sender).send(finalEnvelope);
     }

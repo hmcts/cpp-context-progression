@@ -63,7 +63,8 @@
       "enum": [
         "NEW",
         "SENT",
-        "CONFIRMED"
+        "CONFIRMED",
+        "RESULTED"
       ]
     }
   }

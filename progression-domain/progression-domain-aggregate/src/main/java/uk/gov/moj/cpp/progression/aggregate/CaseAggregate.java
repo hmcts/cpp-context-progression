@@ -77,6 +77,8 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PEND
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.RESULTED;
 import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT;
 import static uk.gov.moj.cpp.progression.events.CivilCaseExists.civilCaseExists;
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved.defendantCustodialEstablishmentRemoved;
@@ -353,10 +355,10 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(DefendantsAddedToCourtProceedings.class).apply(this::onDefendantsAddedToCourtProceedings),
                 when(DeferredDefendantsAddedToCourtProceedings.class).apply(this.deferredDefendantsAddedToCourtProceedings::add),
-                when(HearingRequestConfirmed.class).apply(e ->
+                when(HearingRequestStatusUpdated.class).apply(e ->
                         this.hearingStatusByKey.put(
                                 buildHearingKey(e.getCourtCentreId(), e.getHearingDateTime()),
-                                ImmutablePair.of(e.getHearingId(), CONFIRMED)
+                                ImmutablePair.of(e.getHearingId(), e.getHearingRequestStatus())
                         )
                 ),
                 when(CaseLinkedToHearing.class).apply(this::caseLinkedToHearing),
@@ -1072,7 +1074,7 @@ public class CaseAggregate implements Aggregate {
         final Set<String> confirmedHearings = new HashSet<>(hearingStatusByKey.entrySet().stream().filter(e -> CONFIRMED.equals(e.getValue().getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
 
         hearingRequestDetails.forEach( e -> {
-                    streamBuilder.add(HearingRequestConfirmed.hearingRequestConfirmed()
+                    streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
                             .withHearingId(e.getHearingId())
                             .withHearingDateTime(e.getHearingDateTime())
                             .withCourtCentreId(e.getCourtCentreId())
@@ -1131,19 +1133,22 @@ public class CaseAggregate implements Aggregate {
 
             final UUID courtCentreId = listHearingRequest.getCourtCentre().getId();
             final String key = buildHearingKey(courtCentreId, hearingDateTime);
-            final Pair<UUID, HearingRequestStatus> hearingRequestStatusPair = hearingStatusByKey.get(key);
+            final Pair<UUID, HearingRequestStatus> hearingRequestStatus = hearingStatusByKey.get(key);
 
-            if (nonNull(hearingRequestStatusPair)) {
-                if (HearingRequestStatus.CONFIRMED.equals(hearingRequestStatusPair.getValue())) {
+            if (nonNull(hearingRequestStatus)) {
+                if (RESULTED.equals(hearingRequestStatus.getValue())) {
+                    LOGGER.warn("Ignoring ListHearingRequest with courtScheduleId {} and hearingdate {}, since this hearing already resulted",
+                            listHearingRequest.getCourtScheduleId(), hearingDateTime);
+                } else if (CONFIRMED.equals(hearingRequestStatus.getValue())) {
                     hearingRequests.add(hearingRequestDetail()
-                            .withHearingId(hearingRequestStatusPair.getKey())
-                            .withHearingRequestStatus(HearingRequestStatus.CONFIRMED)
+                            .withHearingId(hearingRequestStatus.getKey())
+                            .withHearingRequestStatus(CONFIRMED)
                             .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
                             .withHearingDateTime(hearingDateTime)
                             .build());
                 } else {
                     hearingRequests.add(hearingRequestDetail()
-                            .withHearingId(hearingRequestStatusPair.getKey())
+                            .withHearingId(hearingRequestStatus.getKey())
                             .withHearingRequestStatus(SENT)
                             .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
                             .withHearingDateTime(hearingDateTime)
@@ -1152,7 +1157,7 @@ public class CaseAggregate implements Aggregate {
             } else {
                 hearingRequests.add(hearingRequestDetail()
                         .withHearingId(randomUUID())
-                        .withHearingRequestStatus(HearingRequestStatus.NEW)
+                        .withHearingRequestStatus(NEW)
                         .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
                         .withHearingDateTime(hearingDateTime)
                         .build());
@@ -1555,7 +1560,7 @@ public class CaseAggregate implements Aggregate {
      * @return Stream<Object>
      */
     public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults,
-                                     final CourtCentre courtCentre, final UUID hearingId, final String hearingType,
+                                     final CourtCentre courtCentre, final UUID hearingId, final ZonedDateTime hearingDateTime, final String hearingType,
                                      final JurisdictionType jurisdictionType, final Boolean isBoxHearing, final List<String> remitResultIds) {
 
         LOGGER.debug(" ProsecutionCase is being updated ");
@@ -1590,6 +1595,13 @@ public class CaseAggregate implements Aggregate {
 
             streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated()
                     .withProsecutionCase(updatedProsecutionCase)
+                    .build());
+
+            streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                    .withHearingId(hearingId)
+                    .withHearingDateTime(hearingDateTime)
+                    .withCourtCentreId(courtCentre.getId())
+                    .withHearingRequestStatus(RESULTED)
                     .build());
 
             //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
@@ -2984,7 +2996,9 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
+        removeHearingRequestStatus(hearingMarkedAsDuplicateForCase.getHearingId());
         this.deletedHearingIds.add(hearingMarkedAsDuplicateForCase.getHearingId());
+
         if (nonNull(this.latestHearingId) && this.latestHearingId.equals(hearingMarkedAsDuplicateForCase.getHearingId())) {
             this.latestHearingId = null;
         }
@@ -2992,7 +3006,9 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
         this.hearingIds.remove(hearingDeletedForProsecutionCase.getHearingId());
+        removeHearingRequestStatus(hearingDeletedForProsecutionCase.getHearingId());
         this.deletedHearingIds.add(hearingDeletedForProsecutionCase.getHearingId());
+
         if (hearingDeletedForProsecutionCase.getHearingId().equals(latestHearingId)) {
             latestHearingId = null;
         }
@@ -3000,9 +3016,17 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {
         this.hearingIds.remove(hearingRemovedForProsecutionCase.getHearingId());
+        removeHearingRequestStatus(hearingRemovedForProsecutionCase.getHearingId());
+
         if (hearingRemovedForProsecutionCase.getHearingId().equals(latestHearingId)) {
             latestHearingId = null;
         }
+    }
+
+    private void removeHearingRequestStatus(final UUID hearingId) {
+        final Optional<Map.Entry<String, Pair<UUID, HearingRequestStatus>>> hearingStatus = hearingStatusByKey.entrySet().stream().filter(entry -> hearingId.equals(entry.getValue().getKey())).findFirst();
+
+        hearingStatus.ifPresent(status -> hearingStatusByKey.remove(status.getKey()));
     }
 
     private void onCustodyTimeLimitExtended(final CustodyTimeLimitExtended custodyTimeLimitExtended) {
