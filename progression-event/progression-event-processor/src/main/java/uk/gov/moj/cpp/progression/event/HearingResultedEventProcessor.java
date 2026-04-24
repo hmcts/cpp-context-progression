@@ -146,7 +146,7 @@ public class HearingResultedEventProcessor {
                 hearing.getCourtApplications(),
                 hearing.getDefendantJudicialResults(),
                 hearing.getCourtCentre(), hearing.getId(),
-                HearingDayUtils.getEarliestDate(hearing.getHearingDays()),
+                hearing.getHearingDays(),
                 hearing.getType(),
                 hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }

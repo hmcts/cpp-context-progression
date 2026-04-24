@@ -248,6 +248,9 @@ public class ProgressionService {
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
 
     @Inject
+    private ListToJsonArrayConverter<HearingDay> hearingDayListToJsonArrayConverter;
+
+    @Inject
     private JsonSchemaValidator jsonSchemaValidator;
 
     @Inject
@@ -1721,7 +1724,7 @@ public class ProgressionService {
 
     public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications,
                            final List<DefendantJudicialResult> defendantJudicialResults, final CourtCentre courtCentre,
-                           final UUID hearingId, final ZonedDateTime hearingDateTime, final HearingType hearingType, final JurisdictionType jurisdictionType, final Boolean isBoxHearing) {
+                           final UUID hearingId, final List<HearingDay>  hearingDays, final HearingType hearingType, final JurisdictionType jurisdictionType, final Boolean isBoxHearing) {
 
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
         final JsonObject courtCentreJson = objectToJsonObjectConverter.convert(courtCentre);
@@ -1735,7 +1738,7 @@ public class ProgressionService {
         }
         payloadBuilder.add(COURT_CENTRE, courtCentreJson);
         payloadBuilder.add(HEARING_ID, hearingId.toString());
-        payloadBuilder.add(HEARING_DATE_TIME, hearingDateTime.toInstant().toString());
+        payloadBuilder.add(HEARING_DATE_TIME, hearingDayListToJsonArrayConverter.convert(hearingDays));
         payloadBuilder.add(HEARING_TYPE, hearingType.getDescription());
         payloadBuilder.add(REMIT_RESULT_IDS, getRemitResultIdsAsJsonArray());
         payloadBuilder.add(JURISDICTION_TYPE, jurisdictionType.name());

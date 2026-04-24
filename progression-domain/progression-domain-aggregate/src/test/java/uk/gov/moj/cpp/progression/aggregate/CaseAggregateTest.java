@@ -68,6 +68,7 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseEjectedViaBdf;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -560,7 +561,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -573,7 +574,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithInactive).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedReadyForReview.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactive = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactive).build();
 
-        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithInactive);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamForInactiveCase.collect(toList()).get(0);
@@ -586,7 +587,7 @@ class CaseAggregateTest {
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
         final List<DefendantJudicialResult> updatedDefendantJudicialResults = new ArrayList<>();
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -750,7 +751,7 @@ class CaseAggregateTest {
                 .build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -794,7 +795,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithProceedingsConcluded).withCaseStatus(INACTIVE.getDescription()).withId(caseId).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedInactiveStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactiveCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedInactiveStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -807,7 +808,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithOffencesNotConcludedToFinal).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         // Case status to be back Active
@@ -853,7 +854,7 @@ class CaseAggregateTest {
         final ProsecutionCase prosecutionCaseForHearing1WithDefendant1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant1withProceedingsConcludedTrue).withId(caseId1).withCaseStatus(ACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing1WithDefendant1Only = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing1WithDefendant1).build();
-        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing1WithDefendant1Only);
         final HearingResultedCaseUpdated hearing1ResultedCaseUpdateAfterUpdateCase = (HearingResultedCaseUpdated) eventStreamWithActiveCaseStatusFromHearing1.collect(toList()).get(0);
@@ -864,7 +865,7 @@ class CaseAggregateTest {
         final ProsecutionCase prosecutionCaseForHearing2WithDefendant2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant2WithProceedingsConcludedTrue).withId(caseId1).withCaseStatus(INACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing2WithDefendant2Only = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing2WithDefendant2).build();
-        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing2WithDefendant2Only);
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInactiveCaseStatusFromHearing2.collect(toList()).get(0);
@@ -908,7 +909,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -922,7 +923,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -959,7 +960,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -994,7 +995,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, emptyList(), courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithWithUpdatedCaseStatus.collect(toList()).get(0);
@@ -1022,7 +1023,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
 
-        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList(), courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);
@@ -1051,7 +1052,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
 
-        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
@@ -1082,7 +1083,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
 
-        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
@@ -1099,7 +1100,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
 
-        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, ZonedDateTime.now(), hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);

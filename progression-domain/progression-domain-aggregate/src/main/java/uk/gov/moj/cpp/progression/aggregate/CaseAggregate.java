@@ -1167,6 +1167,23 @@ public class CaseAggregate implements Aggregate {
         return hearingRequests;
     }
 
+    public Stream<Object> updateDefendantListingStatus(final UUID hearingId, final UUID courtCentreId, final List<HearingDay> hearingDays) {
+        final Stream.Builder<Object> streamBuilder = builder();
+
+        if (isNotEmpty(hearingDays)) {
+            hearingDays.stream().filter(hd -> hd.getSittingDay().isAfter(ZonedDateTime.now())).forEach(hd -> {
+                final HearingRequestStatusUpdated hearingRequestStatusUpdated = HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                        .withHearingId(hearingId)
+                        .withHearingDateTime(hd.getSittingDay())
+                        .withCourtCentreId(courtCentreId)
+                        .withHearingRequestStatus(CONFIRMED).build();
+                streamBuilder.add(hearingRequestStatusUpdated);
+            });
+        }
+
+        return streamBuilder.build();
+    }
+
     public Stream<Object> replayDefendantsAddedToCourtProceedings(final List<Defendant> defendants, final List<ListHearingRequest> listHearingRequests, final List<HearingRequestDetail> hearingRequestDetails, final Integer interval) {
 
         final ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = ReplayedDefendantsAddedToCourtProceedings.replayedDefendantsAddedToCourtProceedings()
@@ -1560,7 +1577,7 @@ public class CaseAggregate implements Aggregate {
      * @return Stream<Object>
      */
     public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults,
-                                     final CourtCentre courtCentre, final UUID hearingId, final ZonedDateTime hearingDateTime, final String hearingType,
+                                     final CourtCentre courtCentre, final UUID hearingId, final List<HearingDay> hearingDays, final String hearingType,
                                      final JurisdictionType jurisdictionType, final Boolean isBoxHearing, final List<String> remitResultIds) {
 
         LOGGER.debug(" ProsecutionCase is being updated ");
@@ -1597,12 +1614,17 @@ public class CaseAggregate implements Aggregate {
                     .withProsecutionCase(updatedProsecutionCase)
                     .build());
 
-            streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
-                    .withHearingId(hearingId)
-                    .withHearingDateTime(hearingDateTime)
-                    .withCourtCentreId(courtCentre.getId())
-                    .withHearingRequestStatus(RESULTED)
-                    .build());
+            if (isNotEmpty(hearingDays)) {
+                hearingDays.stream().filter(hd -> hd.getSittingDay().isAfter(ZonedDateTime.now()))
+                        .forEach(hd ->
+                                streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                                        .withHearingId(hearingId)
+                                        .withHearingDateTime(hd.getSittingDay())
+                                        .withCourtCentreId(courtCentre.getId())
+                                        .withHearingRequestStatus(RESULTED)
+                                        .build()));
+
+            }
 
             //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
             if (nonNull(updatedProsecutionCase) && nonNull(updatedProsecutionCase.getDefendants())) {
