@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -72,6 +73,8 @@ import org.slf4j.LoggerFactory;
 public class DefendantsAddedToCourtProceedingsProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefendantsAddedToCourtProceedingsProcessor.class);
+
+    private static final Set<String> KEYS_TO_EXCLUDE =  Set.of("interval", "hearingRequestDetails", "requestId");
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -110,11 +113,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
         final String prosecutionCaseId = replayedDefendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString();
         final Integer interval = replayedDefendantsAddedToCourtProceedings.getInterval();
 
-        final JsonObjectBuilder builder = createObjectBuilder();
-        jsonEnvelope.payloadAsJsonObject().keySet().stream().filter(key -> !"interval".equals(key)).forEach(key -> builder.add(key, jsonEnvelope.payloadAsJsonObject().get(key)));
-        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(jsonEnvelope.metadata(), builder.build());
-
-        addDefendantToCourtProceedings(envelope, prosecutionCaseId, replayedDefendantsAddedToCourtProceedings.getDefendants(), replayedDefendantsAddedToCourtProceedings.getListHearingRequests(), replayedDefendantsAddedToCourtProceedings.getHearingRequestDetails(), interval);
+        addDefendantToCourtProceedings(jsonEnvelope, prosecutionCaseId, replayedDefendantsAddedToCourtProceedings.getDefendants(), replayedDefendantsAddedToCourtProceedings.getListHearingRequests(), replayedDefendantsAddedToCourtProceedings.getHearingRequestDetails(), interval);
     }
 
     @Handles("progression.event.defendants-added-to-court-proceedings")
@@ -125,15 +124,18 @@ public class DefendantsAddedToCourtProceedingsProcessor {
         addDefendantToCourtProceedings(jsonEnvelope, prosecutionCaseId, defendantsAddedToCourtProceedings.getDefendants(), defendantsAddedToCourtProceedings.getListHearingRequests(), defendantsAddedToCourtProceedings.getHearingRequestDetails(),0);
     }
 
-    private void addDefendantToCourtProceedings(final JsonEnvelope jsonEnvelope,
+    private void addDefendantToCourtProceedings(final JsonEnvelope orgJsonEnvelope,
                                                 final String prosecutionCaseId,
                                                 final List<Defendant> defendants,
                                                 final List<ListHearingRequest> listingRequests,
                                                 final List<HearingRequestDetail> hearingRequestDetail,
                                                 int retryInterval) {
-        final Optional<JsonObject> pcFromViewStore = progressionService.getProsecutionCaseDetailById(jsonEnvelope, prosecutionCaseId);
+        final Optional<JsonObject> pcFromViewStore = progressionService.getProsecutionCaseDetailById(orgJsonEnvelope, prosecutionCaseId);
+
 
         if (pcFromViewStore.isPresent()) {
+            final JsonEnvelope jsonEnvelope = getJsonEnvelope(orgJsonEnvelope);
+
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pcFromViewStore.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
 
             publishDefendantAddedToCase(jsonEnvelope, prosecutionCase.getId().toString());
@@ -144,7 +146,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                 processDefendantsAdded(jsonEnvelope, prosecutionCase, defendants, listingRequests, hearingRequestDetail);
             }
         } else {
-            replayDefendantsAddedToCourtProceedings(jsonEnvelope, prosecutionCaseId, retryInterval);
+            replayDefendantsAddedToCourtProceedings(orgJsonEnvelope, prosecutionCaseId, retryInterval);
         }
     }
 
@@ -401,5 +403,15 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     private ZonedDateTime getHearingDate(final ListHearingRequest listHearingRequest) {
         return nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
     }
-}
 
+    private static JsonEnvelope getJsonEnvelope(final JsonEnvelope jsonEnvelope) {
+        final var payload = jsonEnvelope.payloadAsJsonObject();
+        final JsonObjectBuilder builder = createObjectBuilder();
+
+        payload.entrySet().stream()
+                .filter(entry -> !KEYS_TO_EXCLUDE.contains(entry.getKey()))
+                .forEach(entry -> builder.add(entry.getKey(), entry.getValue()));
+
+        return JsonEnvelope.envelopeFrom(jsonEnvelope.metadata(), builder.build());
+    }
+}

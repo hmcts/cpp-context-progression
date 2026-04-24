@@ -237,6 +237,8 @@ public class ProgressionServiceTest {
     private ListToJsonArrayConverter<DefendantJudicialResult> resultListToJsonArrayConverter;
     @Spy
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
+    @Spy
+    private ListToJsonArrayConverter<HearingDay> hearingDayListToJsonArrayConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Captor
@@ -268,6 +270,8 @@ public class ProgressionServiceTest {
         setField(this.resultListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
         setField(this.hearingRequestListToJsonArrayConverter, "mapper", objectMapper);
         setField(this.hearingRequestListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
+        setField(this.hearingDayListToJsonArrayConverter, "mapper", objectMapper);
+        setField(this.hearingDayListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
     }
 
     @Test
@@ -532,15 +536,15 @@ public class ProgressionServiceTest {
 
         final UUID hearingId = randomUUID();
         final HearingType hearingType = HearingType.hearingType().withDescription("Trial").build();
-        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
+        final List<HearingDay> hearingDays = List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());
         final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
                 .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
                 .add("hearingId", hearingId.toString())
-                .add("hearingDays", hearingDateTime.toInstant().toString())
+                .add("hearingDays", hearingDayListToJsonArrayConverter.convert(hearingDays))
                 .add("hearingType", "Trial")
+                .add("remitResultIds", createArrayBuilder().build())
                 .add("jurisdictionType", "CROWN")
                 .add("isBoxHearing", Boolean.FALSE)
-                .add("remitResultIds", createArrayBuilder().build())
                 .build();
 
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE)).thenReturn(enveloperFunction);
@@ -549,7 +553,7 @@ public class ProgressionServiceTest {
 
 
         progressionService.updateCase(envelope, prosecutionCase, courtApplications,
-                defendantJudicialResults, courtCentre, hearingId, hearingDateTime, hearingType, JurisdictionType.CROWN, Boolean.FALSE);
+                defendantJudicialResults, courtCentre, hearingId, hearingDays, hearingType, JurisdictionType.CROWN, Boolean.FALSE);
 
         verify(sender).send(finalEnvelope);
     }

@@ -765,7 +765,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDaysTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test
@@ -988,7 +988,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDaysTimeCaptor.getValue(), is(hearingDateTime.withZoneSameInstant( ZoneId.of("UTC")).truncatedTo(ChronoUnit.MILLIS)));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode, final String resultDefinitionGroup) {

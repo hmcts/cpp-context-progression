@@ -72,6 +72,7 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -305,7 +306,7 @@ public class HearingResultedEventProcessorTest {
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
-        assertThat(hearingDaysTimeCaptor.getValue(), CoreMatchers.is(hearingDateTime));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), CoreMatchers.is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test

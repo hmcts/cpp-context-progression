@@ -1069,57 +1069,6 @@ public class CaseAggregate implements Aggregate {
                     .build()));
     }
 
-    public Stream<Object> confirmHearingRequestSentForListing(final List<HearingRequestDetail> hearingRequestDetails) {
-        final Stream.Builder<Object> streamBuilder = builder();
-        final Set<String> confirmedHearings = new HashSet<>(hearingStatusByKey.entrySet().stream().filter(e -> CONFIRMED.equals(e.getValue().getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
-
-        hearingRequestDetails.forEach( e -> {
-                    streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
-                            .withHearingId(e.getHearingId())
-                            .withHearingDateTime(e.getHearingDateTime())
-                            .withCourtCentreId(e.getCourtCentreId())
-                            .withHearingRequestStatus(CONFIRMED).build());
-                    confirmedHearings.add(buildHearingKey(e.getCourtCentreId(), e.getHearingDateTime()));
-                }
-        );
-
-        deferredDefendantsAddedToCourtProceedings.forEach(deferredEvent -> {
-                    final List<String> unConfirmedHearings = deferredEvent.getHearingRequestDetails().stream()
-                            .filter(detail -> SENT.equals(detail.getHearingRequestStatus()))
-                            .map(detail -> buildHearingKey(detail.getCourtCentreId(), detail.getHearingDateTime())).toList();
-
-                    if(confirmedHearings.containsAll(unConfirmedHearings)) {
-                        final List<HearingRequestDetail> hearingRequestDetailList = deferredEvent.getHearingRequestDetails().stream().map(hrd -> hearingRequestDetail().withValuesFrom(hrd).withHearingRequestStatus(CONFIRMED).build()).toList();
-
-                        streamBuilder.add(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
-                                .withRequestId(deferredEvent.getRequestId())
-                                .withDefendants(deferredEvent.getDefendants())
-                                .withListHearingRequests(deferredEvent.getListHearingRequests())
-                                .withHearingRequestDetails(hearingRequestDetailList)
-                                .build());
-                    }
-                }
-        );
-
-        return streamBuilder.build();
-    }
-
-    private List<Defendant> getDefendants(final List<ListHearingRequest> listHearingRequests, final Optional<List<JsonObject>> offencesJsonObjectOptional, final List<Defendant> newDefendantsList) {
-        final List<Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
-
-        final List<Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
-
-        final List<Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
-                Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
-                ).build()).collect(toList());
-        final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
-        updatedDefendantsWithYouthFlag.removeIf(x -> updatedDefendantIds.contains(x.getId()));
-        updatedDefendantsWithYouthFlag.addAll(updatedDefendantsWitMasterDefendantIdsSet);
-        updatedDefendantsWithYouthFlag.forEach(defendantWithYouthFlag -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendantWithYouthFlag, listHearingRequests));
-
-        return updatedDefendantsWithYouthFlag;
-    }
-
     private List<HearingRequestDetail> buildHearingRequestDetails(final List<ListHearingRequest> listHearingRequests) {
         final List<HearingRequestDetail> hearingRequests = new ArrayList<>();
 
@@ -1165,6 +1114,57 @@ public class CaseAggregate implements Aggregate {
         }
 
         return hearingRequests;
+    }
+
+    public Stream<Object> confirmHearingRequestSentForListing(final List<HearingRequestDetail> hearingRequestDetails) {
+        final Stream.Builder<Object> streamBuilder = builder();
+        final Set<String> confirmedHearings = new HashSet<>(hearingStatusByKey.entrySet().stream().filter(e -> CONFIRMED.equals(e.getValue().getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
+
+        hearingRequestDetails.forEach(e -> {
+                    streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                            .withHearingId(e.getHearingId())
+                            .withHearingDateTime(e.getHearingDateTime())
+                            .withCourtCentreId(e.getCourtCentreId())
+                            .withHearingRequestStatus(CONFIRMED).build());
+                    confirmedHearings.add(buildHearingKey(e.getCourtCentreId(), e.getHearingDateTime()));
+                }
+        );
+
+        deferredDefendantsAddedToCourtProceedings.forEach(deferredEvent -> {
+                    final List<String> unConfirmedHearings = deferredEvent.getHearingRequestDetails().stream()
+                            .filter(detail -> SENT.equals(detail.getHearingRequestStatus()))
+                            .map(detail -> buildHearingKey(detail.getCourtCentreId(), detail.getHearingDateTime())).toList();
+
+                    if (confirmedHearings.containsAll(unConfirmedHearings)) {
+                        final List<HearingRequestDetail> hearingRequestDetailList = deferredEvent.getHearingRequestDetails().stream().map(hrd -> hearingRequestDetail().withValuesFrom(hrd).withHearingRequestStatus(SENT.equals(hrd.getHearingRequestStatus()) ? CONFIRMED : NEW).build()).toList();
+
+                        streamBuilder.add(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                                .withRequestId(deferredEvent.getRequestId())
+                                .withDefendants(deferredEvent.getDefendants())
+                                .withListHearingRequests(deferredEvent.getListHearingRequests())
+                                .withHearingRequestDetails(hearingRequestDetailList)
+                                .build());
+                    }
+                }
+        );
+
+        return streamBuilder.build();
+    }
+
+    private List<Defendant> getDefendants(final List<ListHearingRequest> listHearingRequests, final Optional<List<JsonObject>> offencesJsonObjectOptional, final List<Defendant> newDefendantsList) {
+        final List<Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
+
+        final List<Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+
+        final List<Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
+                Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
+                ).build()).collect(toList());
+        final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
+        updatedDefendantsWithYouthFlag.removeIf(x -> updatedDefendantIds.contains(x.getId()));
+        updatedDefendantsWithYouthFlag.addAll(updatedDefendantsWitMasterDefendantIdsSet);
+        updatedDefendantsWithYouthFlag.forEach(defendantWithYouthFlag -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendantWithYouthFlag, listHearingRequests));
+
+        return updatedDefendantsWithYouthFlag;
     }
 
     public Stream<Object> updateDefendantListingStatus(final UUID hearingId, final UUID courtCentreId, final List<HearingDay> hearingDays) {
