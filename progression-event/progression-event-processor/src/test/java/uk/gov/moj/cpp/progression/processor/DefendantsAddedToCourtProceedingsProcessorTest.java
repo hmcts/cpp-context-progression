@@ -213,7 +213,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
                 GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
 
-        when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
+        when(listingService.getFutureHearings(any(JsonEnvelope.class), eq("caseUrn"))).thenReturn(futureHearings);
 
         //When
         eventProcessor.process(jsonEnvelope);
@@ -226,8 +226,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(1).payload(), is(payload));
 
 
-        verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, times(0)).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), any(ListCourtHearing.class));
     }
 
     @Test
@@ -346,8 +346,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(1).payload().containsKey("interval"), is(false));
 
 
-        verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, times(0)).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), any(ListCourtHearing.class));
     }
 
     @Test
@@ -429,7 +429,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         final List<Hearing> futureHearings = createNoFutureHearings();
 
-        when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
+        when(listingService.getFutureHearings(any(JsonEnvelope.class), eq("caseUrn"))).thenReturn(futureHearings);
 
 
         when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(List.class), any(), any())).thenReturn(listCourtHearing);
@@ -437,8 +437,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         //When
         eventProcessor.process(jsonEnvelope);
 
-        verify(listingService, times(2)).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, times(2)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, times(2)).listCourtHearing(any(JsonEnvelope.class), eq(listCourtHearing));
+        verify(progressionService, times(2)).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), eq(listCourtHearing));
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
@@ -490,7 +490,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         final List<Hearing> futureHearings = createFutureHearings(existingHearingCourtCentre, existingHearingSittingDay);
 
-        when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
+        when(listingService.getFutureHearings(any(JsonEnvelope.class), eq("caseUrn"))).thenReturn(futureHearings);
 
         when(objectToJsonObjectConverter.convert(UpdateHearingWithNewDefendant.updateHearingWithNewDefendant()
                 .withHearingId(HEARING_ID_1)
@@ -527,14 +527,14 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(4).payload().getString("hearingId"), is(HEARING_ID_1.toString()));
         assertThat(envelopeCaptor.getAllValues().get(4).payload().getJsonArray("offenceIds").size(), is(2));
 
-        verify(listingService, never()).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, never()).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, never()).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+        verify(progressionService, never()).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), any(ListCourtHearing.class));
 
         //verify 1st defendant is added to hearing 1 - matching future known hearing
-        verify(summonsHearingRequestService).addDefendantRequestToHearing(jsonEnvelope, getDefendantRequestFor(DEFENDANT_ID_1), HEARING_ID_1);
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(JsonEnvelope.class), eq(getDefendantRequestFor(DEFENDANT_ID_1)), eq(HEARING_ID_1));
 
         //verify 2nd defendant is added to a new hearing - not matching any known hearings
-        verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), eq(getDefendantRequestFor(DEFENDANT_ID_2)), uuidCaptor.capture());
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(JsonEnvelope.class), eq(getDefendantRequestFor(DEFENDANT_ID_2)), uuidCaptor.capture());
         assertThat(Lists.newArrayList(HEARING_ID_1, HEARING_ID_2, HEARING_ID_3), not(hasItem(uuidCaptor.getValue())));
 
     }
@@ -926,8 +926,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(2).metadata().name(), is("progression.command.confirm-hearing-request"));
         assertThat(envelopeCaptor.getAllValues().get(2).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
 
-        verify(listingService, times(1)).listCourtHearing(jsonEnvelope, listCourtHearing);
-        verify(progressionService, times(1)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+        verify(listingService, times(1)).listCourtHearing(any(JsonEnvelope.class), eq(listCourtHearing));
+        verify(progressionService, times(1)).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), eq(listCourtHearing));
     }
 
     @Test

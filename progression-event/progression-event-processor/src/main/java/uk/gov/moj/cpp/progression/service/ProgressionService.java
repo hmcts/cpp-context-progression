@@ -144,7 +144,7 @@ public class ProgressionService {
     private static final String PROSECUTION_CASE = "prosecutionCase";
 
     public static final String HEARING_ID = "hearingId";
-    public static final String HEARING_DATE_TIME = "hearingDateTime";
+    public static final String HEARING_DATE_TIME = "hearingDays";
     public static final String HEARING_TYPE = "hearingType";
     public static final String DEFENDANT_ID = "defendantId";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
