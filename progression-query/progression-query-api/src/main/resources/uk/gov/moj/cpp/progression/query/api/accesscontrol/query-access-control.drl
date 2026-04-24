@@ -901,4 +901,3 @@ rule "Query - Access control for  progression.query.search-inactive-migrated-cas
     $outcome.setSuccess(true);
 end
 
-
