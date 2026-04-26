@@ -75,6 +75,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefendantsAddedToCourtProceedingsProcessor.class);
 
     private static final Set<String> KEYS_TO_EXCLUDE =  Set.of("interval", "hearingRequestDetails", "requestId");
+    public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -268,7 +269,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
     public void increaseListingNumber(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final UUID hearingId, final JsonArray offenceListingNumbersJsonArray) {
         final JsonObjectBuilder updateCommandBuilder = createObjectBuilder()
-                .add("prosecutionCaseId", prosecutionCaseId.toString())
+                .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
                 .add("hearingId", hearingId.toString())
                 .add("offenceIds", offenceListingNumbersJsonArray);
 
@@ -373,7 +374,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.confirm-hearing-request"),
                 createObjectBuilder()
-                        .add("prosecutionCaseId", prosecutionCaseId.toString())
+                        .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
                         .add("hearingRequestDetails",  arrayBuilder.build())
                         .build());
     }
@@ -381,7 +382,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     private void publishDefendantAddedToCase(final JsonEnvelope jsonEnvelope, final String prosecutionCaseId) {
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.process-matched-defendants"),
                 createObjectBuilder()
-                        .add("prosecutionCaseId", prosecutionCaseId)
+                        .add(PROSECUTION_CASE_ID, prosecutionCaseId)
                         .build());
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-case"),
