@@ -68,6 +68,7 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseEjectedViaBdf;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -95,6 +96,7 @@ import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
 import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Defendants;
+import uk.gov.justice.core.courts.DeferredDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
@@ -111,6 +113,7 @@ import uk.gov.justice.core.courts.FormOperationFailed;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
+import uk.gov.justice.core.courts.HearingRequestStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
@@ -558,7 +561,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -571,7 +574,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithInactive).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedReadyForReview.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactive = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactive).build();
 
-        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithInactive);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamForInactiveCase.collect(toList()).get(0);
@@ -584,7 +587,7 @@ class CaseAggregateTest {
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
         final List<DefendantJudicialResult> updatedDefendantJudicialResults = new ArrayList<>();
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -748,7 +751,7 @@ class CaseAggregateTest {
                 .build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -792,7 +795,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithProceedingsConcluded).withCaseStatus(INACTIVE.getDescription()).withId(caseId).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedInactiveStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactiveCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedInactiveStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -805,7 +808,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsWithOffencesNotConcludedToFinal).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         // Case status to be back Active
@@ -851,7 +854,7 @@ class CaseAggregateTest {
         final ProsecutionCase prosecutionCaseForHearing1WithDefendant1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant1withProceedingsConcludedTrue).withId(caseId1).withCaseStatus(ACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing1WithDefendant1Only = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing1WithDefendant1).build();
-        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing1WithDefendant1Only);
         final HearingResultedCaseUpdated hearing1ResultedCaseUpdateAfterUpdateCase = (HearingResultedCaseUpdated) eventStreamWithActiveCaseStatusFromHearing1.collect(toList()).get(0);
@@ -862,7 +865,7 @@ class CaseAggregateTest {
         final ProsecutionCase prosecutionCaseForHearing2WithDefendant2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant2WithProceedingsConcludedTrue).withId(caseId1).withCaseStatus(INACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing2WithDefendant2Only = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing2WithDefendant2).build();
-        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing2WithDefendant2Only);
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInactiveCaseStatusFromHearing2.collect(toList()).get(0);
@@ -906,7 +909,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -920,7 +923,7 @@ class CaseAggregateTest {
                 .withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -957,7 +960,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -992,7 +995,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithWithUpdatedCaseStatus.collect(toList()).get(0);
@@ -1020,7 +1023,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
 
-        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);
@@ -1049,7 +1052,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
 
-        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
@@ -1080,7 +1083,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
 
-        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
@@ -1097,7 +1100,7 @@ class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
 
-        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);
@@ -1356,7 +1359,7 @@ class CaseAggregateTest {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final List<Object> eventStream = caseAggregate.replayDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
-                defendantsAddedToCourtProceedings.getListHearingRequests(), 1).collect(toList());
+                defendantsAddedToCourtProceedings.getListHearingRequests(), null,1).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -2530,7 +2533,7 @@ class CaseAggregateTest {
                 .withMasterDefendantId(UUID.randomUUID())
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
@@ -2582,7 +2585,7 @@ class CaseAggregateTest {
                 .withMasterDefendantId(UUID.randomUUID())
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
@@ -2629,7 +2632,7 @@ class CaseAggregateTest {
         this.caseAggregate.apply(prosecutionCaseCreated);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object eventOne = eventStream.get(0);
@@ -2758,7 +2761,7 @@ class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final Boolean isBoxHearing = Boolean.FALSE;
         final JurisdictionType jurisdictionType = MAGISTRATES;
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, jurisdictionType,
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, jurisdictionType,
                 isBoxHearing, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(1));
@@ -2796,7 +2799,7 @@ class CaseAggregateTest {
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final Boolean isBoxHearing = TRUE;
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, isBoxHearing, emptyList()).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, isBoxHearing, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object eventOne = eventStream.get(0);
@@ -2849,7 +2852,7 @@ class CaseAggregateTest {
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
@@ -2985,7 +2988,7 @@ class CaseAggregateTest {
                         .collect(toList()))
                 .build();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -3055,7 +3058,7 @@ class CaseAggregateTest {
                 .withCode("code")
                 .build();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -3133,7 +3136,7 @@ class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        Stream<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() );
+        Stream<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() );
         this.caseAggregate.apply(eventList);
 
         updatedDefendant = defendant()
@@ -3159,7 +3162,7 @@ class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() );
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() );
 
         LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.filter(o->o.getClass().getName().endsWith("LaaDefendantProceedingConcludedChanged")).findFirst().get();
 
@@ -3225,7 +3228,7 @@ class CaseAggregateTest {
                 .build();
 
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, singletonList(defendantJudicialResult),
-                courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+                courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
@@ -8080,7 +8083,7 @@ class CaseAggregateTest {
 
         this.caseAggregate.apply(defendantCustodialInformationUpdateRequested);
 
-        final List<Object> eventStreamCustodialInformationUpdateRequested = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStreamCustodialInformationUpdateRequested = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId,List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStreamCustodialInformationUpdateRequested.size(), is(5));
         final Object objectCustodialInformationUpdateRequested = eventStreamCustodialInformationUpdateRequested.get(0);
@@ -8094,7 +8097,7 @@ class CaseAggregateTest {
 
         this.caseAggregate.apply(defendantCustodialEstablishmentRemoved);
 
-        final List<Object> eventStreamDefendantCustodialEstablishmentRemoved = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStreamDefendantCustodialEstablishmentRemoved = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
         assertThat(eventStreamDefendantCustodialEstablishmentRemoved.size(), is(5));
         final Object objectDefendantCustodialEstablishmentRemoved = eventStreamDefendantCustodialEstablishmentRemoved.get(0);
         assertThat(objectDefendantCustodialEstablishmentRemoved.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
@@ -8368,7 +8371,7 @@ class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN).build())
                 .withId(UUID.fromString(CASE_ID)).build();
 
-        final Stream<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final Stream<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         assertThat(eventStream.toList().size(), is(0));
     }
 
@@ -8376,6 +8379,486 @@ class CaseAggregateTest {
         return Defendant.defendant()
                 .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().build()))
                 .withId(defendantId1).build();
+    }
+
+    // -----------------------------------------------------------------------
+    // Tests for DD-41054: deferred hearing / confirm-hearing-request flow
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void shouldEmitDefendantsAddedWithNewHearingStatusWhenNoExistingHearingState() {
+
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final ListHearingRequest listHearingRequest = buildListHearingRequest(courtCentreId, futureDate);
+        final Defendant defendant = buildDefendant(randomUUID(), randomUUID());
+
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(defendant), singletonList(listHearingRequest), Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().size(), is(1));
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(), is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW));
+        assertThat(emitted.getHearingRequestDetails().get(0).getCourtCentreId(), is(courtCentreId));
+    }
+
+    @Test
+    public void shouldEmitDeferredEventWhenHearingIsAlreadyInSentState() {
+
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // Simulate a prior DefendantsAddedToCourtProceedings that set the hearing status to SENT
+        final uk.gov.justice.core.courts.HearingRequestDetail sentDetail = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(randomUUID())
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW)
+                .build();
+        aggregate.apply(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withRequestId(randomUUID())
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(singletonList(buildListHearingRequest(courtCentreId, futureDate)))
+                .withHearingRequestDetails(singletonList(sentDetail))
+                .build());
+
+        // Now a second defendant tries to join the same hearing — should be deferred
+        final ListHearingRequest sameHearingRequest = buildListHearingRequest(courtCentreId, futureDate);
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())), singletonList(sameHearingRequest), Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DeferredDefendantsAddedToCourtProceedings.class)));
+    }
+
+    @Test
+    public void shouldEmitDefendantsAddedWithConfirmedStatusWhenHearingAlreadyConfirmed() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // Simulate a prior HearingRequestStatusUpdated event that put CONFIRMED in hearingStatusByKey
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        final ListHearingRequest listHearingRequest = buildListHearingRequest(courtCentreId, futureDate);
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())), singletonList(listHearingRequest), Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(), is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED));
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldIgnoreListHearingRequestWithDateInThePast() {
+
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime pastDate = ZonedDateTime.now().minusWeeks(1);
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final ListHearingRequest pastHearingRequest = buildListHearingRequest(courtCentreId, pastDate);
+        final ListHearingRequest futureHearingRequest = buildListHearingRequest(randomUUID(), futureDate);
+
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                asList(pastHearingRequest, futureHearingRequest), Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        // Only the future hearing should appear in hearingRequestDetails
+        assertThat(emitted.getHearingRequestDetails().size(), is(1));
+        assertThat(emitted.getHearingRequestDetails().get(0).getCourtCentreId(), is(futureHearingRequest.getCourtCentre().getId()));
+    }
+
+    @Test
+    public void shouldReleaseDeferredDefendantsWhenAllHearingsAreConfirmed() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final uk.gov.justice.core.courts.HearingRequestDetail sentDetail = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT)
+                .build();
+
+        // Simulate a deferred event already in the aggregate state
+        aggregate.apply(DeferredDefendantsAddedToCourtProceedings.deferredDefendantsAddedToCourtProceedings()
+                .withRequestId(randomUUID())
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(singletonList(buildListHearingRequest(courtCentreId, futureDate)))
+                .withHearingRequestDetails(singletonList(sentDetail))
+                .build());
+
+        // Confirm the hearing
+        final uk.gov.justice.core.courts.HearingRequestDetail toConfirm = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build();
+
+        final List<Object> events = aggregate.confirmHearingRequestSentForListing(singletonList(toConfirm)).collect(toList());
+
+        // Should emit: HearingRequestStatusUpdated + DefendantsAddedToCourtProceedings (deferred released)
+        assertThat(events.size(), is(2));
+        assertThat(events.get(0).getClass(), is(equalTo(HearingRequestStatusUpdated.class)));
+        assertThat(((HearingRequestStatusUpdated) events.get(0)).getHearingId(), is(hearingId));
+        assertThat(((HearingRequestStatusUpdated) events.get(0)).getCourtCentreId(), is(courtCentreId));
+
+        assertThat(events.get(1).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        final DefendantsAddedToCourtProceedings released = (DefendantsAddedToCourtProceedings) events.get(1);
+        assertThat(released.getHearingRequestDetails().get(0).getHearingRequestStatus(), is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED));
+    }
+
+    @Test
+    public void shouldNotReleaseDeferredDefendantsWhenOnlyPartialHearingsAreConfirmed() {
+
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // Deferred event with two SENT hearings
+        final uk.gov.justice.core.courts.HearingRequestDetail sent1 = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId1).withCourtCentreId(courtCentreId1).withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT).build();
+        final uk.gov.justice.core.courts.HearingRequestDetail sent2 = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId2).withCourtCentreId(courtCentreId2).withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT).build();
+
+        aggregate.apply(DeferredDefendantsAddedToCourtProceedings.deferredDefendantsAddedToCourtProceedings()
+                .withRequestId(randomUUID())
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(asList(buildListHearingRequest(courtCentreId1, futureDate), buildListHearingRequest(courtCentreId2, futureDate)))
+                .withHearingRequestDetails(asList(sent1, sent2))
+                .build());
+
+        // Confirm only the first hearing
+        final uk.gov.justice.core.courts.HearingRequestDetail confirm1 = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId1).withCourtCentreId(courtCentreId1).withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED).build();
+
+        final List<Object> events = aggregate.confirmHearingRequestSentForListing(singletonList(confirm1)).collect(toList());
+
+        // Only HearingRequestStatusUpdated — deferred not released (second hearing still SENT)
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(HearingRequestStatusUpdated.class)));
+    }
+
+    @Test
+    public void shouldNotOverwriteConfirmedStatusWithSentDuringReplay() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // First: HearingRequestStatusUpdated sets CONFIRMED in the map
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        // Then: a replay of DefendantsAddedToCourtProceedings with SENT status tries to update the map
+        // putIfAbsent means CONFIRMED is preserved
+        final uk.gov.justice.core.courts.HearingRequestDetail sentDetail = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(randomUUID())
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW)
+                .build();
+        aggregate.apply(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withRequestId(randomUUID())
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(singletonList(buildListHearingRequest(courtCentreId, futureDate)))
+                .withHearingRequestDetails(singletonList(sentDetail))
+                .build());
+
+        // Subsequent addDefendants should see CONFIRMED (not SENT), so no deferral
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId, futureDate)), Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(), is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED));
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldCleanDeferredListWhenDefendantsAddedToCourtProceedingsApplied() {
+
+        final UUID requestId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final uk.gov.justice.core.courts.HearingRequestDetail sentDetail = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(randomUUID()).withCourtCentreId(courtCentreId).withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT).build();
+
+        aggregate.apply(DeferredDefendantsAddedToCourtProceedings.deferredDefendantsAddedToCourtProceedings()
+                .withRequestId(requestId)
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(singletonList(buildListHearingRequest(courtCentreId, futureDate)))
+                .withHearingRequestDetails(singletonList(sentDetail))
+                .build());
+
+        // Apply DefendantsAddedToCourtProceedings with same requestId — clears the deferred entry
+        final uk.gov.justice.core.courts.HearingRequestDetail confirmedDetail = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(randomUUID()).withCourtCentreId(courtCentreId).withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED).build();
+
+        aggregate.apply(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                .withRequestId(requestId)
+                .withDefendants(singletonList(buildDefendant(randomUUID(), randomUUID())))
+                .withListHearingRequests(singletonList(buildListHearingRequest(courtCentreId, futureDate)))
+                .withHearingRequestDetails(singletonList(confirmedDetail))
+                .build());
+
+        // Confirming the hearing now should yield only the HearingRequestStatusUpdated — no deferred to release
+        final uk.gov.justice.core.courts.HearingRequestDetail toConfirm = uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(randomUUID()).withCourtCentreId(randomUUID()).withHearingDateTime(ZonedDateTime.now().plusWeeks(3))
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED).build();
+
+        final List<Object> events = aggregate.confirmHearingRequestSentForListing(singletonList(toConfirm)).collect(toList());
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(HearingRequestStatusUpdated.class)));
+    }
+
+    private Defendant buildDefendant(final UUID defendantId, final UUID caseId) {
+        return defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(new ArrayList<>(asList(offence()
+                        .withId(randomUUID())
+                        .withOffenceDefinitionId(randomUUID())
+                        .withOffenceCode("TFL123")
+                        .withOffenceTitle("TFL Ticket Dodger")
+                        .withWording("TFL ticket dodged")
+                        .withStartDate(LocalDate.of(2019, 5, 1))
+                        .withCount(0)
+                        .build())))
+                .build();
+    }
+
+    private ListHearingRequest buildListHearingRequest(final UUID courtCentreId, final ZonedDateTime hearingDateTime) {
+        return ListHearingRequest.listHearingRequest()
+                .withCourtCentre(courtCentre().withId(courtCentreId).build())
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).withDescription("TO_TRIAL").build())
+                .withJurisdictionType(MAGISTRATES)
+                .withListDefendantRequests(emptyList())
+                .withListedStartDateTime(hearingDateTime)
+                .withEstimateMinutes(20)
+                .build();
+    }
+
+    // -----------------------------------------------------------------------
+    // Tests for removeHearingRequestStatus (hearing deleted/removed/duplicate)
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void shouldRemoveHearingStatusWhenHearingMarkedAsDuplicate() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // Establish CONFIRMED state for the hearing
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        // Mark hearing as duplicate — should remove it from hearingStatusByKey
+        aggregate.apply(HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withHearingId(hearingId)
+                .build());
+
+        // Same hearing slot should now be treated as NEW (no existing entry)
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId, futureDate)),
+                Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(),
+                is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW));
+    }
+
+    @Test
+    public void shouldRemoveHearingStatusWhenHearingDeletedForProsecutionCase() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        aggregate.apply(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
+                .withHearingId(hearingId)
+                .build());
+
+        // After deletion the hearing slot is unknown again → NEW
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId, futureDate)),
+                Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(),
+                is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW));
+    }
+
+    @Test
+    public void shouldRemoveHearingStatusWhenHearingRemovedForProsecutionCase() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        aggregate.apply(HearingRemovedForProsecutionCase.hearingRemovedForProsecutionCase()
+                .withHearingId(hearingId)
+                .build());
+
+        // After removal the hearing slot is unknown again → NEW
+        final List<Object> events = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId, futureDate)),
+                Optional.empty()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass(), is(equalTo(DefendantsAddedToCourtProceedings.class)));
+        final DefendantsAddedToCourtProceedings emitted = (DefendantsAddedToCourtProceedings) events.get(0);
+        assertThat(emitted.getHearingRequestDetails().get(0).getHearingRequestStatus(),
+                is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW));
+    }
+
+    @Test
+    public void shouldOnlyRemoveMatchingHearingStatusWhenHearingDeleted() {
+
+        final UUID hearingIdToDelete = randomUUID();
+        final UUID hearingIdToKeep = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+        final ZonedDateTime futureDate = ZonedDateTime.now().plusWeeks(2).withSecond(0).withNano(0);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        aggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        // Confirm two separate hearings
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingIdToDelete)
+                .withCourtCentreId(courtCentreId1)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+        aggregate.apply(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                .withHearingId(hearingIdToKeep)
+                .withCourtCentreId(courtCentreId2)
+                .withHearingDateTime(futureDate)
+                .withHearingRequestStatus(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED)
+                .build());
+
+        // Delete only the first hearing
+        aggregate.apply(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
+                .withHearingId(hearingIdToDelete)
+                .build());
+
+        // First slot → NEW (removed)
+        final List<Object> eventsForDeleted = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId1, futureDate)),
+                Optional.empty()).collect(toList());
+
+        final DefendantsAddedToCourtProceedings emittedForDeleted = (DefendantsAddedToCourtProceedings) eventsForDeleted.get(0);
+        assertThat(emittedForDeleted.getHearingRequestDetails().get(0).getHearingRequestStatus(),
+                is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW));
+
+        // Apply the emitted event so the aggregate state reflects the first slot's new SENT status
+        aggregate.apply((DefendantsAddedToCourtProceedings) eventsForDeleted.get(0));
+
+        // Second slot → CONFIRMED (untouched)
+        final List<Object> eventsForKept = aggregate.defendantsAddedToCourtProceedings(
+                singletonList(buildDefendant(randomUUID(), randomUUID())),
+                singletonList(buildListHearingRequest(courtCentreId2, futureDate)),
+                Optional.empty()).collect(toList());
+
+        final DefendantsAddedToCourtProceedings emittedForKept = (DefendantsAddedToCourtProceedings) eventsForKept.get(0);
+        assertThat(emittedForKept.getHearingRequestDetails().get(0).getHearingRequestStatus(),
+                is(uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED));
+        assertThat(emittedForKept.getHearingRequestDetails().get(0).getHearingId(), is(hearingIdToKeep));
     }
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,

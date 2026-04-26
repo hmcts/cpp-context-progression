@@ -144,6 +144,7 @@ public class ProgressionService {
     private static final String PROSECUTION_CASE = "prosecutionCase";
 
     public static final String HEARING_ID = "hearingId";
+    public static final String HEARING_DATE_TIME = "hearingDays";
     public static final String HEARING_TYPE = "hearingType";
     public static final String DEFENDANT_ID = "defendantId";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
@@ -245,6 +246,9 @@ public class ProgressionService {
 
     @Inject
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
+
+    @Inject
+    private ListToJsonArrayConverter<HearingDay> hearingDayListToJsonArrayConverter;
 
     @Inject
     private JsonSchemaValidator jsonSchemaValidator;
@@ -1720,7 +1724,7 @@ public class ProgressionService {
 
     public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications,
                            final List<DefendantJudicialResult> defendantJudicialResults, final CourtCentre courtCentre,
-                           final UUID hearingId, final HearingType hearingType, final JurisdictionType jurisdictionType, final Boolean isBoxHearing) {
+                           final UUID hearingId, final List<HearingDay>  hearingDays, final HearingType hearingType, final JurisdictionType jurisdictionType, final Boolean isBoxHearing) {
 
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
         final JsonObject courtCentreJson = objectToJsonObjectConverter.convert(courtCentre);
@@ -1734,6 +1738,7 @@ public class ProgressionService {
         }
         payloadBuilder.add(COURT_CENTRE, courtCentreJson);
         payloadBuilder.add(HEARING_ID, hearingId.toString());
+        payloadBuilder.add(HEARING_DATE_TIME, hearingDayListToJsonArrayConverter.convert(hearingDays));
         payloadBuilder.add(HEARING_TYPE, hearingType.getDescription());
         payloadBuilder.add(REMIT_RESULT_IDS, getRemitResultIdsAsJsonArray());
         payloadBuilder.add(JURISDICTION_TYPE, jurisdictionType.name());

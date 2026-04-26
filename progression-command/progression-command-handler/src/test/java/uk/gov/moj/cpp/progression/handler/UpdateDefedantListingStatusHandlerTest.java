@@ -34,10 +34,13 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,12 +63,20 @@ public class UpdateDefedantListingStatusHandlerTest {
     private EventStream eventStream;
 
     @Mock
+    private EventStream caseEventStream;
+
+    @Mock
+    private EventStream caseEventStream2;
+
+    @Mock
     private AggregateService aggregateService;
 
     @InjectMocks
     private UpdateDefendantListingStatusHandler handler;
 
     private HearingAggregate aggregate;
+
+    private CaseAggregate caseAggregate = new CaseAggregate();
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
@@ -92,18 +103,22 @@ public class UpdateDefedantListingStatusHandlerTest {
                 .withId(randomUUID())
                 .build());
 
+        final UUID caseId = randomUUID();
+        final UUID caseId2 = randomUUID();
+
         Hearing hearing = Hearing.hearing()
                 .withCourtCentre(CourtCentre.courtCentre().build())
                 .withDefenceCounsels(defenceCounsels)
                 .withId(randomUUID())
                 .withHearingDays(asList(
                         HearingDay.hearingDay()
+                                .withSittingDay(ZonedDateTime.now())
                                 .withCourtRoomId(randomUUID())
                                 .build(),
-                        HearingDay.hearingDay()
+                        HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
                                 .build()))
                 .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
-                                .withId(randomUUID())
+                                .withId(caseId)
                                 .withDefendants(asList(Defendant.defendant()
                                         .withId(randomUUID())
                                         .withOffences(new ArrayList<>(asList(Offence.offence()
@@ -115,7 +130,7 @@ public class UpdateDefedantListingStatusHandlerTest {
                                         .build()))
                                 .build(),
                         ProsecutionCase.prosecutionCase()
-                                .withId(randomUUID())
+                                .withId(caseId2)
                                 .withDefendants(asList(Defendant.defendant()
                                         .withId(randomUUID())
                                         .withOffences(asList(Offence.offence()
@@ -125,7 +140,11 @@ public class UpdateDefedantListingStatusHandlerTest {
                                 .build()))
                 .build();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
+        when(eventSource.getStreamById(caseId2)).thenReturn(caseEventStream2);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate);
         aggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
                 .withHearing(hearing)
                 .build());
