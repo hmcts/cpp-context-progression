@@ -17,6 +17,13 @@
         "$ref" : "http://justice.gov.uk/core/courts/listHearingRequest.json#"
       }
     },
+    "hearingRequestDetails" : {
+      "type" : "array",
+      "minItems" : 1,
+      "items" : {
+        "$ref" : "http://justice.gov.uk/core/courts/hearing-request-detail.json"
+      }
+    },
     "interval" : {
       "type" : "integer"
     }

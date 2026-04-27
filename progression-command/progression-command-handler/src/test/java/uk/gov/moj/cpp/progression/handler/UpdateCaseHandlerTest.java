@@ -16,6 +16,8 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.FundingType;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingRequestStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -45,6 +47,7 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import javax.json.JsonObject;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -95,7 +98,7 @@ public class UpdateCaseHandlerTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(HearingResultedUpdateCase.class,
             HearingResultedCaseUpdated.class, DefendantTrialRecordSheetRequested.class, LaaDefendantProceedingConcludedChanged.class,
             CaseRetentionLengthCalculated.class, ProsecutionCaseListingNumberUpdated.class,
-            ProsecutionCaseListingNumberIncreased.class);
+            ProsecutionCaseListingNumberIncreased.class, HearingRequestStatusUpdated.class);
 
     @InjectMocks
     private UpdateCaseHandler updateCaseHandler;
@@ -235,7 +238,10 @@ public class UpdateCaseHandlerTest {
 
 
         HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
                 .withProsecutionCase(prosecutionCase)
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .build();
 
         final Envelope<HearingResultedUpdateCase> envelope =
@@ -299,6 +305,17 @@ public class UpdateCaseHandlerTest {
                                 )),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.hearing-request-status-updated"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.courtCentreId", notNullValue()),
+                                                withJsonPath("$.hearingId", notNullValue()),
+                                                withJsonPath("$.hearingDateTime", notNullValue()),
+                                                withJsonPath("$.hearingRequestStatus", is("RESULTED"))
+                                        )
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
                                         .withName("progression.event.defendant-trial-record-sheet-requested"),
                                 payloadIsJson(
                                         allOf(
@@ -329,8 +346,10 @@ public class UpdateCaseHandlerTest {
 
         //hearing resulted with defendant one offence 1 FINAL
         final HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
                 .withProsecutionCase(prosecutionCase)
                 .withCourtCentre(getCourtCentre())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .build();
 
         final Envelope<HearingResultedUpdateCase> envelope =
@@ -363,6 +382,8 @@ public class UpdateCaseHandlerTest {
         defendant.getOffences().remove(2);
         defendant.getOffences().add(2, getOffence(offence3.getId(), JudicialResultCategory.FINAL));
         final HearingResultedUpdateCase hearingResultedUpdateCase2 = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCase)
                 .withCourtCentre(getCourtCentre())
                 .build();
@@ -407,8 +428,10 @@ public class UpdateCaseHandlerTest {
 
         //hearing resulted with only defendant1 offences FINAL
         final HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
                 .withProsecutionCase(prosecutionCase)
                 .withCourtCentre(getCourtCentre())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .build();
 
         final Envelope<HearingResultedUpdateCase> envelope =
@@ -450,6 +473,8 @@ public class UpdateCaseHandlerTest {
         defendant2.getOffences().add(updatedOffence3);
         defendant2.getOffences().add(offence4);
         final HearingResultedUpdateCase hearingResultedUpdateCase2 = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCase)
                 .withCourtCentre(getCourtCentre())
                 .build();
@@ -510,7 +535,10 @@ public class UpdateCaseHandlerTest {
         this.aggregate.apply(prosecutionCaseCreated);
 
         HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
                 .withProsecutionCase(prosecutionCase)
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build()))
                 .build();
 
         final Envelope<HearingResultedUpdateCase> envelope =
@@ -533,6 +561,17 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
 
 
+                                        )
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.hearing-request-status-updated"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.courtCentreId", notNullValue()),
+                                                withJsonPath("$.hearingId", notNullValue()),
+                                                withJsonPath("$.hearingDateTime", notNullValue()),
+                                                withJsonPath("$.hearingRequestStatus", is("RESULTED"))
                                         )
                                 ))
                 )));
@@ -601,8 +640,10 @@ public class UpdateCaseHandlerTest {
                 .withDefendants(asList(defendant1Hearing1, defendant2Hearing1)).build();
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing1 = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
                 .withHearingId(randomUUID())
                 .withProsecutionCase(prosecutionCaseHearing1)
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .build();
 
         final Envelope<HearingResultedUpdateCase> envelope = envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
@@ -641,6 +682,8 @@ public class UpdateCaseHandlerTest {
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing2 = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withHearingId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCaseHearing2)
                 .build();
 
@@ -682,6 +725,8 @@ public class UpdateCaseHandlerTest {
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing3 = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withHearingId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCaseHearing3)
                 .build();
 
@@ -738,6 +783,8 @@ public class UpdateCaseHandlerTest {
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing4 = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withHearingId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCaseHearing4)
                 .build();
 
@@ -806,6 +853,8 @@ public class UpdateCaseHandlerTest {
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing1 = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withHearingId(randomUUID())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
                 .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult().withMasterDefendantId(defendant1.getId())
                                 .withJudicialResult(JudicialResult.judicialResult().withOffenceId(offence1.getId()).withCategory(FINAL).withIsNewAmendment(Boolean.TRUE).build()).build(),
                         DefendantJudicialResult.defendantJudicialResult().withMasterDefendantId(defendant2.getId())
@@ -858,6 +907,8 @@ public class UpdateCaseHandlerTest {
 
         final HearingResultedUpdateCase hearingResultedUpdateCaseHearing2 = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withHearingId(randomUUID())
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                 .withProsecutionCase(prosecutionCaseHearing2)
                 .build();
 
@@ -1043,8 +1094,10 @@ public class UpdateCaseHandlerTest {
         this.aggregate.apply(prosecutionCaseCreated);
 
         return HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
                 .withProsecutionCase(prosecutionCase)
                 .withCourtCentre(getCourtCentre())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build()))
                 .build();
     }
 
