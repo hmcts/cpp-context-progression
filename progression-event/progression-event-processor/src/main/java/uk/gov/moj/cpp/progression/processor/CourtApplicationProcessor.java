@@ -493,8 +493,22 @@ public class CourtApplicationProcessor {
             publicPayload.add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
             publicPayload.add("isBoxWorkRequest", true);
         } else if (courtApplicationProceedingsEdited.getCourtHearing() != null) {
-            publicPayload.add(HEARING_ID, courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
-            publicPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+            final CourtHearingRequest courtHearing = courtApplicationProceedingsEdited.getCourtHearing();
+            publicPayload.add(HEARING_ID, courtHearing.getId().toString());
+            publicPayload.add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+            if (nonNull(courtHearing.getCourtCentre())) {
+                publicPayload.add("courtCentre", objectToJsonObjectConverter.convert(courtHearing.getCourtCentre()));
+            }
+            if (nonNull(courtHearing.getJurisdictionType())) {
+                publicPayload.add("jurisdictionType", courtHearing.getJurisdictionType().toString());
+            }
+            if (nonNull(courtHearing.getEarliestStartDateTime())) {
+                final JsonObject hearingDay = createObjectBuilder()
+                        .add("sittingDay", courtHearing.getEarliestStartDateTime().format(ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")))
+                        .add("listedDurationMinutes", 60)
+                        .build();
+                publicPayload.add("hearingDays", createArrayBuilder().add(hearingDay).build());
+            }
         }
 
         if (nonNull(courtApplicationProceedingsEdited.getCourtApplication()) && nonNull(courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases())) {
