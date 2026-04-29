@@ -18,9 +18,10 @@ import java.util.UUID;
 // Generated and copied from AMP
 public class PcrEventPayload {
 
-    private UUID eventId;
-    private UUID materialId;
     private PcrEventType eventType;
+    private UUID eventId;
+    private UUID hearingId;
+    private UUID materialId;
     private Instant timestamp;
     private PcrEventPayloadDefendant defendant;
 }

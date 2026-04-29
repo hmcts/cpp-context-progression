@@ -43,6 +43,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
     PrisonCourtRegisterGeneratedV2 pcr = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
             .withId(UUID.randomUUID())
             .withMaterialId(UUID.randomUUID())
+            .withHearingId(UUID.randomUUID())
             .withDefendant(defendant)
             .build();
 
@@ -53,6 +54,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
 
         assertThat(payload.getEventId(), equalTo(pcr.getId()));
         assertThat(payload.getMaterialId(), equalTo(pcr.getMaterialId()));
+        assertThat(payload.getHearingId(), equalTo(pcr.getHearingId()));
         assertThat(payload.getEventType(), equalTo(PRISON_COURT_REGISTER_GENERATED));
         assertThat(payload.getTimestamp(), is(notNullValue()));
         assertDefendant(payload.getDefendant());
