@@ -71,6 +71,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCa
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -837,6 +839,30 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(envelope.metadata(), createObjectBuilder().add("linkedApplications", jsonApplicationBuilder.build()).build());
     }
 
+    @Handles("progression.query.search-inactive-migrated-cases")
+    public JsonEnvelope searchInactiveMigratedCases(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+
+        final String strCaseIds = JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_IDS_SEARCH_PARAM)
+                .orElse(null);
+
+        if (StringUtils.isNotEmpty(strCaseIds)) {
+            final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
+
+            final List<String> inActiveCasesJsonList = prosecutionCaseRepository.findInactiveMigratedCaseSummaries(caseIdList);
+
+            inActiveCasesJsonList.forEach(caseJson ->
+                    jsonArrayBuilder.add(stringToJsonObjectConverter.convert(caseJson))
+            );
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.add("inactiveMigratedCaseSummaries", jsonArrayBuilder).build()
+        );
+    }
+
     private UUID getSubjectId(final CourtApplicationParty subject) {
         return isNull(subject) || isNull(subject.getMasterDefendant()) ? null : subject.getMasterDefendant().getMasterDefendantId();
     }
@@ -876,9 +902,9 @@ public class ProsecutionCaseQuery {
         prosecutionCase.getDefendants().stream()
                 .filter(defendant -> defendant.getMasterDefendantId().equals(matchDefendantCaseHearingEntity.getMasterDefendantId()))
                 .flatMap(defendant -> defendant.getOffences().stream())
-                .collect(Collectors.toList()).stream()
+                .toList().stream()
                 .map(offence -> objectToJsonObjectConverter.convert(offence))
-                .collect(Collectors.toList())
+                .toList()
                 .forEach(offencesArrayBuilder::add);
 
         final JsonArray offences = offencesArrayBuilder.build();
@@ -944,7 +970,13 @@ public class ProsecutionCaseQuery {
     }
 
     private List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {
-        return Stream.of(strUuids.split(","))
+        if (strUuids == null || strUuids.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(strUuids.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .map(UUID::fromString)
                 .collect(Collectors.toList());
     }
