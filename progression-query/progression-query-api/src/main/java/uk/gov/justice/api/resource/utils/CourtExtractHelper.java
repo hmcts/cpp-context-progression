@@ -2,7 +2,6 @@ package uk.gov.justice.api.resource.utils;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
-import static uk.gov.justice.progression.courts.exract.Results.results;
 
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.service.UsersAndGroupsService;
