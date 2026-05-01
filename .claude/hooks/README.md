@@ -41,7 +41,7 @@ Run from a shell to confirm hooks block as expected:
 
 ```bash
 # Should exit 2 ("Blocked: matched pattern Azure Key Vault URI")
-echo '{"hook_event_name":"UserPromptSubmit","prompt":"my secret lives at foo.vault.azure.net"}' \
+echo '{"hook_event_name":"UserPromptSubmit","prompt":"my secret lives at foo.vault.azure.net"}' \ # gitleaks:allow
   | ./block-secrets.sh; echo "exit=$?"
 
 # Should exit 2 (NINO match)
