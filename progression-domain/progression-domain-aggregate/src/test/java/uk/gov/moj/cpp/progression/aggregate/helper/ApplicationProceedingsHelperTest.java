@@ -583,6 +583,18 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
+    // Breach Application Tests
+    @Test
+    void shouldConcludeWhenBreachApplicationWithOrderRevoked() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of(ResultConstantsTest.OREV)
+        );
+
+        assertTrue(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.OREV_CODE, result.getApplicationResultCodeForLaa());
+    }
+
     @Test
     void shouldConcludeWhenBreachApplicationWithNoAdjudication() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
@@ -629,6 +641,17 @@ class ApplicationProceedingsHelperTest {
     }
 
     @Test
+    void shouldConcludeWhenBreachApplicationWithOrderRevokedAndNoAdjudication() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of(ResultConstantsTest.OREV, ResultConstantsTest.BRO)
+        );
+
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.OREV_CODE + " & " + ResultCodeConstantsTest.BRO_CODE, result.getApplicationResultCodeForLaa());
+    }
+
+    @Test
     void shouldNotConcludeWhenConfiscationOrderIsRefused() {
         CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
                 ApplicationTypeConstantsTest.APP_TYPE_CONFISCATION_ORDER_ID,
@@ -650,9 +673,54 @@ class ApplicationProceedingsHelperTest {
         assertEquals(ResultCodeConstantsTest.WDRN_CODE, result.getApplicationResultCodeForLaa());
     }
 
+    // Breach Application Negative Tests
+    @Test
+    void shouldNotConcludeWhenBreachApplicationWithNoResults() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of()
+        );
 
+        assertFalse(result.getProceedingsConcluded());
+        assertThat(result.getApplicationResultCodeForLaa(), nullValue());
+    }
 
+    @Test
+    void shouldNotConcludeWhenBreachApplicationWithUnknownResult() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of(randomUUID())
+        );
 
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals("UNKNOWN_RESULT", result.getApplicationResultCodeForLaa());
+    }
+
+    @Test
+    void shouldNotConcludeWhenBreachApplicationWithNonBreachResult() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of(APA)  // Using appeal result for breach application
+        );
+
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.APA_CODE, result.getApplicationResultCodeForLaa());
+    }
+
+    @Test
+    void shouldNotConcludeWhenBreachApplicationWithMultipleInvalidResults() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                List.of(
+                        randomUUID(),
+                        randomUUID(),
+                        ResultConstantsTest.OREV
+                )
+        );
+
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.OREV_CODE, result.getApplicationResultCodeForLaa());
+    }
 
     @Test
     void shouldNotConcludeWhenBreachApplicationWithWrongApplicationType() {
@@ -810,6 +878,17 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
+    @Test
+    void shouldNotConcludeWhenAppealAgainstConvictionAndSentenceWithWrongApplicationType() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,  // Wrong application type
+                List.of(ResultConstantsTest.ACSD)  // Valid combined appeal result
+        );
+
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.ACSD_CODE, result.getApplicationResultCodeForLaa());
+    }
+
     // Confiscation Order Positive Tests
     @Test
     void shouldConcludeWhenConfiscationOrderWithConfaaAndConviction() {
@@ -888,6 +967,16 @@ class ApplicationProceedingsHelperTest {
                 result.getApplicationResultCodeForLaa());
     }
 
+    @Test
+    void shouldNotConcludeWhenConfiscationOrderWithWrongApplicationType() {
+        CourtApplication result = createApplicationWithApplicationResultsAndNoOffenceResults(
+                ApplicationTypeConstantsTest.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,  // Wrong application type
+                List.of(ResultConstantsTest.CONFAA)  // Valid confiscation result
+        );
+
+        assertFalse(result.getProceedingsConcluded());
+        assertEquals(ResultCodeConstantsTest.CONFAA_CODE, result.getApplicationResultCodeForLaa());
+    }
 
     @Test
     void shouldConcludeForAppealAgainstSentenceWhenAPAandOneChildResult() {
@@ -1285,6 +1374,4 @@ class ApplicationProceedingsHelperTest {
                 ))
                 .build());
     }
-
-
-} 
+}

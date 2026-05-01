@@ -892,4 +892,12 @@ rule "Query - Material content for progression.query.material-content-bulk"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.search-inactive-migrated-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-inactive-migrated-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
 
