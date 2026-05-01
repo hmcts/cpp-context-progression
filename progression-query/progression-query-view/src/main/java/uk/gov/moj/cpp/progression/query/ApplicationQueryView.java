@@ -595,6 +595,7 @@ public class ApplicationQueryView {
         offenceBuilder.withStartDate(offence.getStartDate());
         offenceBuilder.withEndDate(offence.getEndDate());
         offenceBuilder.withCount(offence.getCount());
+        ofNullable(offence.getOrderIndex()).ifPresent(offenceBuilder::withOrderIndex);
         offenceBuilder.withAllocationDecision(offence.getAllocationDecision());
         ofNullable(offence.getPlea()).ifPresent(offenceBuilder::withPlea);
         ofNullable(offence.getVerdict()).ifPresent(offenceBuilder::withVerdict);
