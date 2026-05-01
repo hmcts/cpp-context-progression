@@ -21,8 +21,12 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DefenceQueryService {
     public static final String DEFENCE_ADVOCATE_QUERY_ROLE_IN_CASE = "advocate.query.role-in-case-by-caseid";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefenceQueryService.class);
     private static final String DEFENDING = "defending";
     private static final String IS_ADVOCATE_DEFENDING_OR_PROSECUTING = "isAdvocateDefendingOrProsecuting";
 

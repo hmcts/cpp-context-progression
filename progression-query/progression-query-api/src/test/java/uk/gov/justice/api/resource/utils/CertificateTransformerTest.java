@@ -111,21 +111,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class CertificateTransformerTest {
 
-    public static final String LEGACY_COMPENSATION = "Legacy Compensation";
-    public static final String ORDERING = "Ordering";
-    public static final String COMPENSATION = "Compensation";
-    public static final String RESTRAINING_ORDER = "Restraining order";
-    public static final String LEGACY_NAME = "Legacy Name";
-    public static final String MINOR_CREDITOR_FIRST_NAME = "Minor creditor first name";
-    public static final String AMOUNT_OF_COMPENSATION = "Amount of compensation";
-    public static final String PROTECTED_PERSON_S_NAME = "Protected person's name";
-    public static final String PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1 = "Protected person's address address line 1";
-    public static final String THIS_ORDER_IS_MADE_ON = "this order is made on";
-    public static final String LEGACY_RESULT = "Legacy Result";
-    public static final String RESTRAINING_ORDER_DEFENDANT_LEVEL = "Restraining order Defendant Level";
-    public static final String COMPENSATION_DEFENDANT_LEVEL = "Compensation Defendant Level";
-    public static final String LEGACY_COMPENSATION_DEFENDANT_LEVEL = "Legacy Compensation Defendant Level";
-    public static final String ORDERING_DEFENDANT_LEVEL = "Ordering Defendant Level";
     private static final UUID CASE_ID = randomUUID();
     private static final String PROSECUTION_AUTHORITY_CODE = "TFL";
     private static final String GUILTY = "Guilty";
@@ -134,7 +119,6 @@ public class CertificateTransformerTest {
     private static final String ORGANISATION_NAME = "Liverpool defence";
     private static final String ASSOCIATED_ORGANISATION_NAME = "Associated Defence Org";
     private static final String DESCRIPTION = "Dodged TFL tickets with passion";
-    private static final String APPLICATION_TYPE = "Apil";
     private static final String HEARING1 = "HEARING-1";
     private static final String HEARING2 = "HEARING-2";
     private static final UUID DEFENDANT_ID = randomUUID();
