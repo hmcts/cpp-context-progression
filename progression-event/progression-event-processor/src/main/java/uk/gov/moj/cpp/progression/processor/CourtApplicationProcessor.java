@@ -599,6 +599,14 @@ public class CourtApplicationProcessor {
 
         progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
+        // Send hearing.initiate to hearing-context immediately so the application-hearing
+        // link exists in hearing-context's view store before the session is allocated.
+        // Without this, an application listed only in a draft session has no row in
+        // ha_hearing_application, and getLinkedApplicationHearingsForCourtExtract crashes
+        // with an empty IN-clause when the user opens the application.
+        final JsonObject hearingInitiateCommand = objectToJsonObjectConverter.convert(hearingInitiate);
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(HEARING_INITIATE_COMMAND).build(), hearingInitiateCommand));
+
         // then update application hearing listing status to hearing initiated
         progressionService.updateHearingListingStatusToHearingInitiated(event, hearingInitiate);
 
