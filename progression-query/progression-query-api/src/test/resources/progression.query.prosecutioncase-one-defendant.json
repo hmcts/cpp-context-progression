@@ -1,0 +1,326 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-05-02T08:46:04.006Z",
+        "id": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41",
+        "masterDefendantId": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41",
+        "offences": [
+          {
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "e2658cdb-f591-473c-a388-7ef1e4ff9b08",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1017",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "dvlaCode": "J",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "bea0ae0c-dd4e-4967-a298-f8796412b1e7",
+                "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "label": "Absolute discharge",
+                "lastSharedDateTime": "2025-05-02",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-02",
+                "orderedHearingId": "0f013f3f-5efa-46b4-986c-0e86af9de883",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 53800,
+                "resultText": "AD - Absolute discharge",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "bea0ae0c-dd4e-4967-a298-f8796412b1e7",
+                "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad diamod"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03012",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Rick Streich have set up a TV cable without a valid license."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF013318150",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "2001-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Rick",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Streich",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailConditions": "Proin tincidunt tincidunt ligula, non egestas ante iaculis vitae. Suspendisse at diam vestibulum velit rutrum euismod. Pellentesque nec auctor orci. Duis ut dui euismod, elementum elit vitae, dictum mauris. Mauris efficitur erat eros, vel blandit lectus sodales at. Aliquam erat volutpat. Fusce non convallis enim. Curabitur sed lectus elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur urna ligula, tristique interdum facilisis laoreet, varius id sem. Donec nec vehicula sapien, vestibulum tempor eros. Vestibulum et consequat augue. Praesent accumsan odio nisl, efficitur ultricies neque porttitor eu. Donec mollis sodales orci a tincidunt. Suspendisse congue ipsum sit amet quam elementum, quis aliquet nisl viverra.Mauris efficitur at lectus eget varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam non dapibus erat. Integer ipsum purus, semper vel elit accumsan, laoreet accumsan dolor. Fusce sed erat ut nunc auctor sagittis a non dui. Donec dolor ante, mattis in rhoncus non, dapibus vitae dui. Integer ac bibendum nunc. Phasellus nulla massa, laoreet et velit id, iaculis efficitur massa. Maecenas posuere sollicitudin laoreet. Proin eleifend volutpat elementum. Suspendisse et mi nec neque euismod viverra ac placerat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae laoreet enim. Maecenas accumsan neque vel facilisis ullamcorper. Vestibulum quis dictum ante. Cras dapibus arcu ut purus scelerisque sollicitudin.Nunc tincidunt eros eget convallis aliquet. Aenean egestas posuere aliquet. Proin massa urna, fringilla non interdum quis, interdum eget mi. Sed posuere ac sapien hendrerit venenatis. Cras dapibus diam a consequat ullamcorper. Nunc nec nisl ac odio eleifend sagittis. Donec sed massa enim. Vivamus aliquam venenatis rhoncus. Etiam feugiat tellus sapien, convallis efficitur urna ultricies sit amet. Nulla dapibus tincidunt purus, at eleifend felis aliquet sed. Etiam at dolor eu nisl volutpat blandit.Nunc diam urna, viverra nec commodo non, convallis at risus. Vivamus rhoncus vehicula arcu nec mattis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus fe END",
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF013318150",
+        "prosecutionCaseId": "9b67902a-5d87-4abf-908d-3f3c9fb1dfa4"
+      }
+    ],
+    "id": "9b67902a-5d87-4abf-908d-3f3c9fb1dfa4",
+    "initiationCode": "C",
+    "originatingOrganisation": "GAEAA01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI3318150"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41",
+        "defendantName": "Rick Streich",
+        "hearingIds": [
+          "0f013f3f-5efa-46b4-986c-0e86af9de883"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-02"
+              }
+            ],
+            "defendantId": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "24",
+            "courtApplications": [],
+            "dateOfBirth": "2001-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41"
+            },
+            "id": "e6dc2886-72b6-43c6-a93b-4fae77ee8e41",
+            "judicialResults": [],
+            "name": "Rick Streich",
+            "offences": [
+              {
+                "count": 0,
+                "id": "e2658cdb-f591-473c-a388-7ef1e4ff9b08",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "bea0ae0c-dd4e-4967-a298-f8796412b1e7",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2025-05-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-02",
+                    "orderedHearingId": "0f013f3f-5efa-46b4-986c-0e86af9de883",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 53800,
+                    "resultText": "AD - Absolute discharge",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "bea0ae0c-dd4e-4967-a298-f8796412b1e7",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Rick Streich have set up a TV cable without a valid license."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-02T22:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "0f013f3f-5efa-46b4-986c-0e86af9de883",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "9b67902a-5d87-4abf-908d-3f3c9fb1dfa4",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI3318150"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  }
+}

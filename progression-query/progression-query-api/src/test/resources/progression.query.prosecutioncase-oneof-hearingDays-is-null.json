@@ -1,0 +1,2009 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-07-16T12:35:30.299Z",
+        "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+        "isYouth": false,
+        "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-07-16",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+              "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01BH00",
+              "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+              "lja": {
+                "ljaCode": "2575",
+                "ljaName": "South East London Magistrates' Court"
+              },
+              "name": "Bexley Magistrates' Court",
+              "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+            },
+            "convictionDate": "2025-07-16",
+            "count": 0,
+            "dateHeldInCustodySince": "2025-07-16",
+            "endorsableFlag": false,
+            "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "M",
+                  "primaryDurationValue": 5
+                },
+                "dvlaCode": "E",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "ca707729-6810-4786-8ad7-3f265c394a13",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptReference": "periodofConditionalDischarge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "5 Months",
+                    "welshLabel": "Cyfnod o ryddhad amodol",
+                    "welshValue": "5 Months"
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2025-07-16",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-07-16",
+                "orderedHearingId": "7e4574e4-2520-4b15-a1f4-78fcc0369f39",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 73800,
+                "resultText": "CD - Conditional discharge\nDischarged conditionally for 5 Months.",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "ca707729-6810-4786-8ad7-3f265c394a13",
+                "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
+            "lastAdjournDate": "2025-07-16",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 4,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "OF61102C",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+            "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+            "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+            "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+            "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+              "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+              "pleaDate": "2025-07-16",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "0800PP0777655800001H",
+          "bailConditions": "",
+          "bailReasons": "Attempted suicide, Broken bail conditions",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodialEstablishment": {
+            "custody": "Prison",
+            "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+            "name": "HMIRC The Verne"
+          },
+          "driverNumber": "AUPSU711267IE9ZK",
+          "personDetails": {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "contact": {
+              "home": "015325443756",
+              "primaryEmail": "ressie.mann@gmail.com"
+            },
+            "dateOfBirth": "2000-03-24",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Ressie",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Mann",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "0800PP0777655800001H",
+        "prosecutionCaseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a"
+      }
+    ],
+    "id": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+    "initiationCode": "C",
+    "originatingOrganisation": "0930000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Albany House",
+        "address2": "98 Petty France",
+        "address3": "London",
+        "postcode": "SW1H 9EA"
+      },
+      "contact": {
+        "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+      },
+      "majorCreditorCode": "BTPO",
+      "prosecutionAuthorityCode": "BTP",
+      "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+      "prosecutionAuthorityName": "British Transport Police",
+      "prosecutionAuthorityOUCode": "0930000",
+      "caseURN": "28DI7776558"
+    }
+  },
+  "linkedApplicationsSummary": [
+    {
+      "applicationId": "1d0445d8-6172-4cae-971f-175ed45d24a7",
+      "applicationTitle": "Application to reopen case",
+      "applicationReference": "28DI7776558",
+      "applicationStatus": "LISTED",
+      "applicantDisplayName": "BTP",
+      "respondentDisplayNames": [
+        "Ressie Mann"
+      ],
+      "respondentIds": [
+        "a7b845dc-5dfe-484c-8d1c-65197121885a"
+      ],
+      "subjectId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+      "isAppeal": false
+    },
+    {
+      "applicationId": "b41c1a5f-917a-4aae-b5f1-d2e041e29dcb",
+      "applicationTitle": "Application within criminal proceedings",
+      "applicationReference": "28DI7776558",
+      "applicationStatus": "UN_ALLOCATED",
+      "applicantDisplayName": "BTP",
+      "respondentDisplayNames": [
+        "Ressie Mann"
+      ],
+      "respondentIds": [
+        "a7b845dc-5dfe-484c-8d1c-65197121885a"
+      ],
+      "subjectId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+      "isAppeal": false
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "875ca7e1-0811-4455-95dc-99666e566a12",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Albany House",
+              "address2": "98 Petty France",
+              "address3": "London",
+              "postcode": "SW1H 9EA"
+            },
+            "contact": {
+              "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+            },
+            "majorCreditorCode": "BTPO",
+            "name": "British Transport Police",
+            "prosecutionAuthorityCode": "BTP",
+            "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+            "prosecutionAuthorityOUCode": "0930000",
+            "welshName": "Heddlu Trafnidiaeth Prydeinig"
+          },
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2025-07-16",
+        "applicationReference": "28DI7776558",
+        "applicationStatus": "LISTED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Albany House",
+                "address2": "98 Petty France",
+                "address3": "London",
+                "postcode": "SW1H 9EA"
+              },
+              "contact": {
+                "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+              },
+              "majorCreditorCode": "BTPO",
+              "prosecutionAuthorityCode": "BTP",
+              "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+              "prosecutionAuthorityName": "British Transport Police",
+              "prosecutionAuthorityOUCode": "0930000",
+              "caseURN": "28DI7776558"
+            }
+          }
+        ],
+        "id": "1d0445d8-6172-4cae-971f-175ed45d24a7",
+        "respondents": [
+          {
+            "id": "8550cc34-1f63-48ef-bbab-fb735c6ba9eb",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+                  "caseReference": "28DI7776558",
+                  "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+                }
+              ],
+              "isYouth": false,
+              "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+              "personDefendant": {
+                "arrestSummonsNumber": "0800PP0777655800001H",
+                "bailReasons": "Attempted suicide, Broken bail conditions",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "custodialEstablishment": {
+                  "custody": "Prison",
+                  "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+                  "name": "HMIRC The Verne"
+                },
+                "driverNumber": "AUPSU711267IE9ZK",
+                "personDetails": {
+                  "address": {
+                    "address1": "14",
+                    "address2": "North Westbridge Street",
+                    "address3": "London",
+                    "postcode": "SW11 2TQ"
+                  },
+                  "contact": {
+                    "home": "015325443756",
+                    "primaryEmail": "ressie.mann@gmail.com"
+                  },
+                  "dateOfBirth": "2000-03-24",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "1",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Ressie",
+                  "gender": "MALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Mann",
+                  "occupation": "Accountant",
+                  "occupationCode": "2201",
+                  "title": "MR"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "8550cc34-1f63-48ef-bbab-fb735c6ba9eb",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+                "caseReference": "28DI7776558",
+                "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+              }
+            ],
+            "isYouth": false,
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "personDefendant": {
+              "arrestSummonsNumber": "0800PP0777655800001H",
+              "bailReasons": "Attempted suicide, Broken bail conditions",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "custodialEstablishment": {
+                "custody": "Prison",
+                "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+                "name": "HMIRC The Verne"
+              },
+              "driverNumber": "AUPSU711267IE9ZK",
+              "personDetails": {
+                "address": {
+                  "address1": "14",
+                  "address2": "North Westbridge Street",
+                  "address3": "London",
+                  "postcode": "SW11 2TQ"
+                },
+                "contact": {
+                  "home": "015325443756",
+                  "primaryEmail": "ressie.mann@gmail.com"
+                },
+                "dateOfBirth": "2000-03-24",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "1",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Ressie",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Mann",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Application to reopen a case following conviction {1}. Original case number: {2}",
+          "applicationWordingWelsh": "Cais i ailagor achos yn dilyn euogfarn <[am y trosedd <Original Offence>][am y troseddau <Original Offences>]>. Rhif yr Achos Gwreiddiol: <Original case number>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2025-03-17T10:29:09",
+          "code": "MC80524",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "9d2ae0fe-d4d0-43ca-ab7a-7a2556cafe5e",
+          "initialFeeApplicable": false,
+          "jurisdiction": "MAGISTRATES",
+          "lastModified": "2025-03-17T14:00:38.015Z",
+          "legislation": "In accordance with section 142 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 142 Deddf Llysoedd Ynadon 1980.",
+          "linkType": "SJP",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": true,
+          "prosecutorThirdPartyFlag": true,
+          "pssId": 601835,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application to reopen case",
+          "typeWelsh": "Cais i ailagor achos",
+          "validFrom": "2000-01-06"
+        }
+      },
+      {
+        "applicant": {
+          "id": "6dc33d19-5a3d-4151-b1f5-10f7be9b0e53",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Albany House",
+              "address2": "98 Petty France",
+              "address3": "London",
+              "postcode": "SW1H 9EA"
+            },
+            "contact": {
+              "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+            },
+            "majorCreditorCode": "BTPO",
+            "name": "British Transport Police",
+            "prosecutionAuthorityCode": "BTP",
+            "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+            "prosecutionAuthorityOUCode": "0930000",
+            "welshName": "Heddlu Trafnidiaeth Prydeinig"
+          },
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2025-07-16",
+        "applicationReference": "28DI7776558",
+        "applicationStatus": "UN_ALLOCATED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Albany House",
+                "address2": "98 Petty France",
+                "address3": "London",
+                "postcode": "SW1H 9EA"
+              },
+              "contact": {
+                "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+              },
+              "majorCreditorCode": "BTPO",
+              "prosecutionAuthorityCode": "BTP",
+              "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+              "prosecutionAuthorityName": "British Transport Police",
+              "prosecutionAuthorityOUCode": "0930000",
+              "caseURN": "28DI7776558"
+            }
+          }
+        ],
+        "id": "b41c1a5f-917a-4aae-b5f1-d2e041e29dcb",
+        "proceedingsConcluded": true,
+        "respondents": [
+          {
+            "id": "68866483-0fd8-494c-a888-65fb2729a455",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+                  "caseReference": "28DI7776558",
+                  "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+                }
+              ],
+              "isYouth": false,
+              "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+              "personDefendant": {
+                "arrestSummonsNumber": "0800PP0777655800001H",
+                "bailReasons": "Attempted suicide, Broken bail conditions",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "custodialEstablishment": {
+                  "custody": "Prison",
+                  "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+                  "name": "HMIRC The Verne"
+                },
+                "driverNumber": "AUPSU711267IE9ZK",
+                "personDetails": {
+                  "address": {
+                    "address1": "14",
+                    "address2": "North Westbridge Street",
+                    "address3": "London",
+                    "postcode": "SW11 2TQ"
+                  },
+                  "contact": {
+                    "home": "015325443756",
+                    "primaryEmail": "ressie.mann@gmail.com"
+                  },
+                  "dateOfBirth": "2000-03-24",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "1",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Ressie",
+                  "gender": "MALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Mann",
+                  "occupation": "Accountant",
+                  "occupationCode": "2201",
+                  "title": "MR"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "68866483-0fd8-494c-a888-65fb2729a455",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+                "caseReference": "28DI7776558",
+                "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+              }
+            ],
+            "isYouth": false,
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "personDefendant": {
+              "arrestSummonsNumber": "0800PP0777655800001H",
+              "bailConditions": "",
+              "bailReasons": "Attempted suicide, Broken bail conditions",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "custodialEstablishment": {
+                "custody": "Prison",
+                "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+                "name": "HMIRC The Verne"
+              },
+              "driverNumber": "AUPSU711267IE9ZK",
+              "personDetails": {
+                "address": {
+                  "address1": "14",
+                  "address2": "North Westbridge Street",
+                  "address3": "London",
+                  "postcode": "SW11 2TQ"
+                },
+                "contact": {
+                  "home": "015325443756",
+                  "primaryEmail": "ressie.mann@gmail.com"
+                },
+                "dateOfBirth": "2000-03-24",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "1",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Ressie",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Mann",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Application within criminal proceedings for case number {1}. Nature of application: {2}",
+          "applicationWordingWelsh": "Cais mewn achos troseddol am rif achos <Case number>. Natur y cais: <Nature of application>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "changeDate": "2025-03-17T09:12:13",
+          "code": "AP00501",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "fde5dd50-fb49-4100-8c46-4c10096fb136",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2025-03-17T14:00:39.862Z",
+          "legislation": "Refer to nature of application.",
+          "legislationWelsh": "Cyfeiriwch at natur y cais.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": true,
+          "prosecutorThirdPartyFlag": false,
+          "pssId": 601781,
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application within criminal proceedings",
+          "typeWelsh": "Cais o fewn achos troseddol",
+          "validFrom": "2007-01-07"
+        }
+      }
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+        "defendantName": "Ressie Mann",
+        "hearingIds": [
+          "60847bfa-48f7-4e3f-a20f-9e79f968af39",
+          "7f7ec69e-ca29-4986-883c-24bff890091e",
+          "7e4574e4-2520-4b15-a1f4-78fcc0369f39",
+          "79eca8e7-9b30-45d0-93b4-8454dfde9878",
+          "be119de6-29b3-4b02-a47c-30b6e6f8150b"
+        ],
+        "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "address4": "",
+            "address5": "",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "courtLocationCode": "0433",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "lja": {
+            "ljaCode": "1810",
+            "ljaName": "Merseyside Magistrates' Court"
+          },
+          "name": "Liverpool Crown Court",
+          "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+          "roomName": "Crown Court 3-1"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-07-16"
+              }
+            ],
+            "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+            },
+            "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "judicialResults": [],
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "name": "Ressie Mann",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 5
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "ca707729-6810-4786-8ad7-3f265c394a13",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5 Months",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "5 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-07-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-07-16",
+                    "orderedHearingId": "7e4574e4-2520-4b15-a1f4-78fcc0369f39",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 5 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "ca707729-6810-4786-8ad7-3f265c394a13",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                    "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "pleaDate": "2025-07-16",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+            "courtRoomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 120,
+            "listingSequence": 0,
+            "sittingDay": "2025-07-16T13:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "7e4574e4-2520-4b15-a1f4-78fcc0369f39",
+        "isApplicationHearing": false,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial",
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "address4": "",
+            "address5": "",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "courtLocationCode": "0433",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "lja": {
+            "ljaCode": "1810",
+            "ljaName": "Merseyside Magistrates' Court"
+          },
+          "name": "Liverpool Crown Court",
+          "roomId": "d54eae66-32e7-31da-84f1-66e24ec08d29",
+          "roomName": "Crown Court 3-3"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-07-16"
+              }
+            ],
+            "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [
+              {
+                "applicant": "BTP",
+                "applicationId": "b41c1a5f-917a-4aae-b5f1-d2e041e29dcb",
+                "applicationReceivedDate": "2025-07-16",
+                "applicationType": "Application within criminal proceedings",
+                "isAppeal": false,
+                "respondents": [
+                  {
+                    "name": "Ressie Mann"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+            },
+            "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "judicialResults": [],
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "name": "Ressie Mann",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c32e9de4-f2c1-448f-9f4c-5dd7b0e3e060",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "88170583-26e3-44f6-8c36-a420f316bc2b",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Week Commencing:14/07/2025\nTime of hearing:15:00\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 4-1\nHearing type:Trial of Issue / Newton hearing\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "fc2f4703-b62b-4142-b35a-37fae43810eb",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "312f250a-ea90-4c6f-9db6-932e0bb964c9",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-07-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "3613ed6d-f727-317e-842e-ce437c4dc632",
+                        "roomName": "Crown Court 4-1",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "type": {
+                        "description": "Trial of Issue / Newton hearing",
+                        "id": "b4352aac-5c07-30c5-a7f5-7d123c80775a"
+                      },
+                      "weekCommencingDate": "2025-07-14"
+                    },
+                    "orderedDate": "2025-07-16",
+                    "orderedHearingId": "60847bfa-48f7-4e3f-a20f-9e79f968af39",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing week commencing 14/07/2025 at 15:00 in Crown Court 4-1, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c32e9de4-f2c1-448f-9f4c-5dd7b0e3e060",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                    "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "pleaDate": "2025-07-16",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+            "courtRoomId": "d54eae66-32e7-31da-84f1-66e24ec08d29",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 120,
+            "listingSequence": 0,
+            "sittingDay": "2025-07-16T13:15:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "60847bfa-48f7-4e3f-a20f-9e79f968af39",
+        "isApplicationHearing": true,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Plea and Trial Preparation",
+          "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "Norwich Place",
+            "address2": "Bexleyheath",
+            "address3": "Kent",
+            "address4": "",
+            "address5": "",
+            "postcode": "DA6 7ND"
+          },
+          "code": "B01BH00",
+          "courtHearingLocation": "B01BH01",
+          "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+          "lja": {
+            "ljaCode": "2575",
+            "ljaName": "South East London Magistrates' Court"
+          },
+          "name": "Bexley Magistrates' Court",
+          "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-07-16"
+              }
+            ],
+            "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+            },
+            "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "judicialResults": [],
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "name": "Ressie Mann",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4016",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "6a6b47e3-065b-47b2-afc6-4fa486e26424",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "07ae87ce-fbc9-437a-87b2-258a5454e522",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:16/07/2025\nTime of hearing:14:00\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 3-1\nHearing type:Trial\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison organisation name",
+                        "promptReference": "prisonOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "HMIRC The Verne",
+                        "welshValue": "HMIRC The Verne"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison email address 1",
+                        "promptReference": "prisonEmailAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "omu.theverne@justice.gov.uk",
+                        "welshValue": "omu.theverne@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name organisation name",
+                        "promptReference": "conveyorcustodiannameOrganisationName",
+                        "promptSequence": 400,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Bexley Magistrates' Court: PECS",
+                        "welshValue": "Bexley Magistrates' Court: PECS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name email address 1",
+                        "promptReference": "conveyorcustodiannameEmailAddress1",
+                        "promptSequence": 400,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "PECSBexleyheathMags@serco.com",
+                        "welshValue": "PECSBexleyheathMags@serco.com"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49f9ee68-3dee-4ed1-8020-377818c3697f",
+                        "label": "Remand basis",
+                        "promptReference": "remandBasis",
+                        "promptSequence": 500,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Charged with a violent or sexual offence",
+                        "welshLabel": "Sail remand",
+                        "welshValue": "Wedi'i gyhuddo o drosedd dreisgar neu rywiol"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "7b2e6219-ddcb-4afa-8615-8de978e60af1",
+                        "label": "Bail exception",
+                        "promptReference": "bailException",
+                        "promptSequence": 600,
+                        "qualifier": "MJ",
+                        "type": "FIXLM",
+                        "usergroups": [],
+                        "value": "Likely to offend - cause injury or fear of injury to an associated person",
+                        "welshLabel": "Eithriad rhag caniatáu mechnïaeth",
+                        "welshValue": "Likely to offend - cause injury or fear of injury to an associated person"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "53ac8d08-49a9-4495-ab3a-0ef94ca9e560",
+                        "label": "Bail exception reason",
+                        "promptReference": "bailExceptionReason",
+                        "promptSequence": 800,
+                        "type": "FIXLOM",
+                        "usergroups": [],
+                        "value": "Attempted suicide, Broken bail conditions",
+                        "welshLabel": "Rheswm dros beidio â chaniatáu mechnïaeth",
+                        "welshValue": "Wedi ceisio gwneud amdano’i hun/amdani’i hun, Amodau mechnïaeth wedi torri"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "912ac614-9592-49c1-92de-d0de21119f54",
+                        "promptSequence": 900,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "7accf042-c648-4142-853b-53af2cc64af1",
+                        "promptSequence": 1000,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "5e9f69e4-299d-41e0-93ef-b7523df86954",
+                        "label": "Committed",
+                        "promptReference": "committed",
+                        "promptSequence": 50,
+                        "qualifier": "XJ",
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "as a dangerous adult offender (Section 15 of the Sentencing Act 2020)",
+                        "welshLabel": "Traddodwyd",
+                        "welshValue": "as a dangerous adult offender (Section 15 of the Sentencing Act 2020)"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 70,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "0",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "0"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "583ea6cb-4251-406e-b07a-445fb0dde914",
+                        "label": "Victim personal statement to be presented to court by prosecutor or other person",
+                        "promptReference": "victimPersonalStatementToBePresentedToCourtByProsecutorOrOtherPerson",
+                        "promptSequence": 300,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Datganiad personol i ddioddefwyr i'w gyflwyno i'r llys gan erlynydd neu unigolyn arall",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+                        "label": "PSR ordered",
+                        "promptReference": "pSROrdered",
+                        "promptSequence": 700,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "false",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+                        "label": "Probation / YOT to be notified organisation name",
+                        "promptReference": "probationyottobenotifiedOrganisationName",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Bexley YOT",
+                        "welshValue": "Bexley YOT"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+                        "label": "Probation / YOT to be notified email address 1",
+                        "promptReference": "probationyottobenotifiedEmailAddress1",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "YJSAdmin@bexley.gov.uk",
+                        "welshValue": "YJSAdmin@bexley.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "3132bf21-692c-497a-9de1-56c9e137bab8",
+                    "label": "Committed to Crown Court for sentence in custody",
+                    "lastSharedDateTime": "2025-07-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                        "roomName": "Crown Court 3-1",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2025-07-16T13:00:00.000Z",
+                      "type": {
+                        "description": "Trial",
+                        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                      }
+                    },
+                    "orderedDate": "2025-07-16",
+                    "orderedHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "postHearingCustodyStatus": "C",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "XJ",
+                    "rank": 193300,
+                    "resultDefinitionGroup": "CommittedToCC",
+                    "resultText": "CCSI - Committed to Crown Court for sentence in custody\nCommitted as a dangerous adult offender (Section 15 of the Sentencing Act 2020). Remanded in custody until hearing on 16/07/2025 at 14:00 in Crown Court 3-1, Liverpool Crown Court. Basis: Charged with a violent or sexual offence. Adjournment reason: To attend or a warrant to issue. Bail exceptions: Likely to offend - cause injury or fear of injury to an associated person. Reason for applying: Attempted suicide, Broken bail conditions.. Bail remand days to count (tagged days): 0. Victim personal statement to be presented to court by prosecutor or other person. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "6a6b47e3-065b-47b2-afc6-4fa486e26424",
+                    "rootJudicialResultTypeId": "3132bf21-692c-497a-9de1-56c9e137bab8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Traddodwyd chi i Lys y Goron i’ch dedfrydu tra yn y ddalfa"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                    "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "pleaDate": "2025-07-16",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+            "courtRoomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-07-16T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "7f7ec69e-ca29-4986-883c-24bff890091e",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "name": "Liverpool Crown Court",
+          "psaCode": 1810,
+          "roomId": "3613ed6d-f727-317e-842e-ce437c4dc632",
+          "roomName": "Crown Court 4-1",
+          "welshName": "Llys Y Goron Lerpwl"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "",
+            "courtApplications": [],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+            },
+            "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "judicialResults": [],
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "name": "Ressie Mann",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c32e9de4-f2c1-448f-9f4c-5dd7b0e3e060",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "88170583-26e3-44f6-8c36-a420f316bc2b",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Week Commencing:14/07/2025\nTime of hearing:15:00\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 4-1\nHearing type:Trial of Issue / Newton hearing\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "fc2f4703-b62b-4142-b35a-37fae43810eb",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "312f250a-ea90-4c6f-9db6-932e0bb964c9",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-07-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "3613ed6d-f727-317e-842e-ce437c4dc632",
+                        "roomName": "Crown Court 4-1",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "type": {
+                        "description": "Trial of Issue / Newton hearing",
+                        "id": "b4352aac-5c07-30c5-a7f5-7d123c80775a"
+                      },
+                      "weekCommencingDate": "2025-07-14"
+                    },
+                    "orderedDate": "2025-07-16",
+                    "orderedHearingId": "60847bfa-48f7-4e3f-a20f-9e79f968af39",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing week commencing 14/07/2025 at 15:00 in Crown Court 4-1, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c32e9de4-f2c1-448f-9f4c-5dd7b0e3e060",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                    "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "pleaDate": "2025-07-16",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingListingStatus": "SENT_FOR_LISTING",
+        "id": "79eca8e7-9b30-45d0-93b4-8454dfde9878",
+        "isApplicationHearing": false,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial of Issue / Newton hearing",
+          "id": "b4352aac-5c07-30c5-a7f5-7d123c80775a"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "address4": "",
+            "address5": "",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "lja": {
+            "ljaCode": "1810",
+            "ljaName": "Merseyside Magistrates' Court"
+          },
+          "name": "Liverpool Crown Court",
+          "roomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+          "roomName": "Crown Court 3-2"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [
+              {
+                "applicant": "BTP",
+                "applicationId": "1d0445d8-6172-4cae-971f-175ed45d24a7",
+                "applicationReceivedDate": "2025-07-16",
+                "applicationType": "Application to reopen case",
+                "isAppeal": false,
+                "respondents": [
+                  {
+                    "name": "Ressie Mann"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a"
+            },
+            "id": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "judicialResults": [],
+            "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+            "name": "Ressie Mann",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "judicialResults": [],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                    "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                    "pleaDate": "2025-07-16",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              }
+            ],
+            "proceedingsConcluded": true
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+            "courtRoomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+            "isCancelled": false,
+            "listedDurationMinutes": 120,
+            "listingSequence": 0,
+            "sittingDay": "2025-07-16T13:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "be119de6-29b3-4b02-a47c-30b6e6f8150b",
+        "isApplicationHearing": true,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial - no witnesses",
+          "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+        }
+      }
+    ],
+    "id": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Albany House",
+        "address2": "98 Petty France",
+        "address3": "London",
+        "postcode": "SW1H 9EA"
+      },
+      "contact": {
+        "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+      },
+      "majorCreditorCode": "BTPO",
+      "prosecutionAuthorityCode": "BTP",
+      "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+      "prosecutionAuthorityName": "British Transport Police",
+      "prosecutionAuthorityOUCode": "0930000",
+      "caseURN": "28DI7776558"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  },
+  "activeCourtOrders": [
+    {
+      "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+      "courtOrders": [
+        {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": false,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-07-16",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "sequenceNumber": 100
+                },
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "convictingCourt": {
+                  "code": "B01BH00",
+                  "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                  "lja": {
+                    "ljaCode": "2575",
+                    "ljaName": "South East London Magistrates' Court"
+                  },
+                  "name": "Bexley Magistrates' Court",
+                  "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+                },
+                "convictionDate": "2025-07-16",
+                "count": 0,
+                "dateHeldInCustodySince": "2025-07-16",
+                "endorsableFlag": false,
+                "id": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                "isDisposed": true,
+                "lastAdjournDate": "2025-07-16",
+                "lastAdjournedHearingType": "To attend or a warrant to issue",
+                "listingNumber": 2,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "OF61102C",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "3919e88d-e4d8-420d-907d-62ef43d7b004",
+                  "originatingHearingId": "7f7ec69e-ca29-4986-883c-24bff890091e",
+                  "pleaDate": "2025-07-16",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "wording": "Ressie Mann at Maurice Mountain, conspired together with Bernadette Gutkowski III to assault Edward Gottlieb, thereby occasioning actual bodily harm."
+              },
+              "prosecutionCaseId": "5c91daa6-511e-4063-8adb-c1a3e8ab821a",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Albany House",
+                  "address2": "98 Petty France",
+                  "address3": "London",
+                  "postcode": "SW1H 9EA"
+                },
+                "contact": {
+                  "primaryEmail": "BTP-Justice-Unit@btp.police.uk"
+                },
+                "majorCreditorCode": "BTPO",
+                "prosecutionAuthorityCode": "BTP",
+                "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+                "prosecutionAuthorityName": "British Transport Police",
+                "prosecutionAuthorityOUCode": "0930000",
+                "caseURN": "28DI7776558"
+              }
+            }
+          ],
+          "defendantIds": [
+            "a7b845dc-5dfe-484c-8d1c-65197121885a"
+          ],
+          "endDate": "2025-12-15",
+          "expiryDate": "2025-12-15",
+          "id": "24bb6bd4-7f3b-4f6c-8f3f-fa22e647bd8b",
+          "isSJPOrder": false,
+          "isUnpaidWork": false,
+          "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "label": "Conditional discharge",
+          "masterDefendantId": "a7b845dc-5dfe-484c-8d1c-65197121885a",
+          "orderDate": "2025-07-16",
+          "orderingCourt": {
+            "address": {
+              "address1": "QEII Law Courts",
+              "address2": "Derby Square",
+              "address3": "Liverpool",
+              "address4": "",
+              "address5": "",
+              "postcode": "L2 1XA"
+            },
+            "code": "C05LV00",
+            "courtHearingLocation": "C05LV00",
+            "courtLocationCode": "0433",
+            "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+            "lja": {
+              "ljaCode": "1810",
+              "ljaName": "Merseyside Magistrates' Court"
+            },
+            "name": "Liverpool Crown Court",
+            "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+            "roomName": "Crown Court 3-1"
+          },
+          "orderingHearingId": "7e4574e4-2520-4b15-a1f4-78fcc0369f39",
+          "startDate": "2025-07-16"
+        }
+      ]
+    }
+  ]
+}
