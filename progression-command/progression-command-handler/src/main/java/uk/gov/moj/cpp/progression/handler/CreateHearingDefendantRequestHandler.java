@@ -84,6 +84,7 @@ public class CreateHearingDefendantRequestHandler {
                 .map(ListDefendantRequest::getSummonsApprovedOutcome)
                 .filter(Objects::nonNull)
                 .map(SummonsApprovedOutcome::getHearingId)
+                .filter(Objects::nonNull)
                 .findFirst();
     }
 }

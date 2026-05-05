@@ -623,24 +623,21 @@ public class CourtApplicationProcessor {
                     courtApplicationSummonsApproved.getIsSummonsAmended());
         }
 
-        if (courtApplicationSummonsApproved.getLinkType() == LinkType.FIRST_HEARING) {
-            if (Boolean.TRUE.equals(courtApplicationSummonsApproved.getIsSummonsAmended())) {
-                final JsonObject amendmentRequestPayload = createObjectBuilder()
-                        .add(SUMMONS_APPROVED_OUTCOME, objectToJsonObjectConverter.convert(courtApplicationSummonsApproved.getSummonsApprovedOutcome()))
-                        .build();
+        if (Boolean.TRUE.equals(courtApplicationSummonsApproved.getIsSummonsAmended())) {
+            LOGGER.info("Firing summons amendment requested for application: {} - summonsApprovedOutcome: {}", courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getSummonsApprovedOutcome());
+            final JsonObject amendmentRequestPayload = createObjectBuilder()
+                    .add(SUMMONS_APPROVED_OUTCOME, objectToJsonObjectConverter.convert(courtApplicationSummonsApproved.getSummonsApprovedOutcome()))
+                    .build();
 
-                LOGGER.info("Firing summons amendment requested for application: {}", courtApplicationSummonsApproved.getApplicationId());
+            sender.send(envelop(amendmentRequestPayload).withName(PROGRESSION_COMMAND_AMEND_SUMMONS_DATA).withMetadataFrom(event));
+        } else if (courtApplicationSummonsApproved.getLinkType() == LinkType.FIRST_HEARING) {
+            final PublicProgressionCourtApplicationSummonsApproved summonsApprovedPublicEventPayload = PublicProgressionCourtApplicationSummonsApproved.publicProgressionCourtApplicationSummonsApproved()
+                    .withSummonsApprovedOutcome(courtApplicationSummonsApproved.getSummonsApprovedOutcome())
+                    .withId(courtApplicationSummonsApproved.getApplicationId())
+                    .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
+                    .build();
 
-                sender.send(envelop(amendmentRequestPayload).withName(PROGRESSION_COMMAND_AMEND_SUMMONS_DATA).withMetadataFrom(event));
-            } else {
-                final PublicProgressionCourtApplicationSummonsApproved summonsApprovedPublicEventPayload = PublicProgressionCourtApplicationSummonsApproved.publicProgressionCourtApplicationSummonsApproved()
-                        .withSummonsApprovedOutcome(courtApplicationSummonsApproved.getSummonsApprovedOutcome())
-                        .withId(courtApplicationSummonsApproved.getApplicationId())
-                        .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
-                        .build();
-
-                sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
-            }
+            sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
         }
     }
 
@@ -712,7 +709,7 @@ public class CourtApplicationProcessor {
         listingService.listCourtHearing(event, listCourtHearing);
 
         final SummonsTemplateType summonsTemplateType = application.getType().getSummonsTemplateType();
-        if (summonsTemplateType == SummonsTemplateType.BREACH || summonsTemplateType == SummonsTemplateType.GENERIC_APPLICATION) {
+        if (summonsTemplateType == SummonsTemplateType.BREACH || summonsTemplateType == SummonsTemplateType.GENERIC_APPLICATION || summonsTemplateType == SummonsTemplateType.FIRST_HEARING) {
             final CreateHearingApplicationRequest createHearingApplicationRequest = buildApplicationHearingRequest(initiateCourtHearingAfterSummonsApproved, application, courtHearingId, summonsTemplateType);
             summonsHearingRequestService.addApplicationRequestToHearing(event, createHearingApplicationRequest);
         }
@@ -1167,7 +1164,7 @@ public class CourtApplicationProcessor {
                 .withHearingId(courtHearingId)
                 .withApplicationRequests(singletonList(courtApplicationPartyListingNeeds()
                         .withCourtApplicationId(application.getId())
-                        .withSummonsRequired(summonsTemplateType == SummonsTemplateType.BREACH ? SummonsType.BREACH : SummonsType.APPLICATION)
+                        .withSummonsRequired(summonsTemplateType == SummonsTemplateType.BREACH ? SummonsType.BREACH : summonsTemplateType == SummonsTemplateType.FIRST_HEARING ? SummonsType.FIRST_HEARING : SummonsType.APPLICATION)
                         .withSummonsApprovedOutcome(initiateCourtHearingAfterSummonsApproved.getSummonsApprovedOutcome())
                         .withCourtApplicationPartyId(application.getSubject().getId())
                         .build())).build();

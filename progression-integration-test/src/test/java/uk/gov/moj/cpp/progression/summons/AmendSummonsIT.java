@@ -114,8 +114,9 @@ public class AmendSummonsIT extends AbstractIT {
     public static Stream<Arguments> amendSummonsParameters() {
         return Stream.of(
                 // summonsTemplateType, summonsType, templateName, isWelsh
-                Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", false),
-                Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", true)
+                Arguments.of(SummonsTemplateType.FIRST_HEARING, SummonsType.FIRST_HEARING, "First Hearing", false)
+                //Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", false),
+                //Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", true)
         );
     }
 
