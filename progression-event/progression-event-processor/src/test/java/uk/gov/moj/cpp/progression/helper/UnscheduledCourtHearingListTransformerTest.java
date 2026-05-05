@@ -74,6 +74,35 @@ public class UnscheduledCourtHearingListTransformerTest {
     }
 
     /**
+     * Regression guard: the user-entered duration on the unscheduled-next-hearing flow lives on
+     * judicialResult.nextHearing.estimatedMinutes. It must be carried onto the
+     * HearingUnscheduledListingNeeds posted to the listing context. Previously estimatedMinutes
+     * was hardcoded to 0, which caused the listing-side fallback to substitute the
+     * hearing-type default and lose the user's value.
+     */
+    @Test
+    public void shouldPropagateUserEnteredEstimatedMinutesFromNextHearing() {
+        final JudicialResult resultWithNextHearingAndDuration = JudicialResult.judicialResult()
+                .withIsUnscheduled(false)
+                .withJudicialResultTypeId(UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_NHCCS)
+                .withNextHearing(NextHearing.nextHearing()
+                        .withDateToBeFixed(true)
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("desc").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withEstimatedMinutes(90)
+                        .build())
+                .withLabel(NHCCS_LABEL)
+                .build();
+        final Offence offence = createOffenceWithJR(asList(resultWithNextHearingAndDuration));
+        final Hearing hearing = createHearingWithOffences(asList(offence));
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(90));
+    }
+
+    /**
      * As Case1 above, but the seed hearing id is added to each offence.
      */
     @Test
