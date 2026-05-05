@@ -146,6 +146,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.MigrationCaseStatus;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
@@ -419,7 +420,7 @@ public class CaseAggregate implements Aggregate {
                                             addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             this.defendantLegalAidStatus.put(defendant.getId(), NO_VALUE.getDescription());
-                                            updateDefendantProceedingConcluded(defendant, false);
+                                            updateDefendantProceedingConcluded(defendant, isMigratedCaseInActive(e.getProsecutionCase()));
                                         });
                                     }
                                     e.getProsecutionCase().getDefendants().forEach(d -> defendantsMap.put(d.getId(), d));
@@ -1051,9 +1052,53 @@ public class CaseAggregate implements Aggregate {
         if(nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil() && isNotEmpty(effectiveCivilFeesForTheCase)) {
             return updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(prosecutionCase, effectiveCivilFeesForTheCase);
         } else {
-            return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
+            return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(markMigratedCaseInActive(prosecutionCase))
+                    .build()));
         }
 
+    }
+
+    private ProsecutionCase markMigratedCaseInActive(final ProsecutionCase prosecutionCase) {
+
+        if (!isMigratedCaseInActive(prosecutionCase)) {
+            return prosecutionCase;
+        }
+
+        final List<Defendant> updatedDefendants = prosecutionCase.getDefendants().stream()
+                .map(this::concludeDefendant)
+                .toList();
+
+        return ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withCaseStatus(INACTIVE.getDescription())
+                .withDefendants(updatedDefendants)
+                .build();
+    }
+
+
+    private boolean isMigratedCaseInActive(final ProsecutionCase prosecutionCase) {
+        return Optional.ofNullable(prosecutionCase.getMigrationSourceSystem()).
+                filter(e -> nonNull(e.getMigrationCaseStatus()) && e.getMigrationCaseStatus() == MigrationCaseStatus.INACTIVE).isPresent();
+    }
+
+    private Defendant concludeDefendant(final Defendant defendant) {
+        final List<Offence> updatedOffences = defendant.getOffences().stream()
+                .map(this::concludedOffence)
+                .toList();
+
+        return Defendant.defendant()
+                .withValuesFrom(defendant)
+                .withProceedingsConcluded(true)
+                .withOffences(updatedOffences)
+                .build();
+    }
+
+    private Offence concludedOffence(final Offence offence) {
+        return Offence.offence()
+                .withValuesFrom(offence)
+                .withProceedingsConcluded(true)
+                .build();
     }
 
     private Stream<Object> updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(final ProsecutionCase prosecutionCase, final List<CivilFees> effectiveCivilFeesForTheCase) {
@@ -2608,6 +2653,7 @@ public class CaseAggregate implements Aggregate {
                 .add(casesUnlinked)
                 .build());
     }
+
     public Stream<Object> updateHearingForPartialAllocation(final UUID hearingId, final List<ProsecutionCasesToRemove> prosecutionCasesToRemove) {
         LOGGER.debug("hearing has been updated for partial allocation");
         return apply(Stream.of(HearingUpdatedForPartialAllocation.hearingUpdatedForPartialAllocation()
@@ -3980,6 +4026,10 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.empty());
         }
         return apply(Stream.of(CaseInsertedBdfV2.caseInsertedBdfV2().withProsecutionCase(prosecutionCase).build()));
+    }
+
+    public Map<UUID, Map<UUID, Boolean>> getDefendantProceedingConcluded() {
+        return Map.copyOf(defendantProceedingConcluded);
     }
 
     private static String getReference(final ProsecutionCase prosecutionCase) {

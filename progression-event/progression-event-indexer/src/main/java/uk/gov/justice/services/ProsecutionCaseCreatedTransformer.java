@@ -39,7 +39,12 @@ public class ProsecutionCaseCreatedTransformer implements Transform {
             final UUID prosecutionCaseId = defendant.getProsecutionCaseId();
             caseDetails.setCaseId(prosecutionCaseId.toString());
             caseDetails.set_case_type("PROSECUTION");
-            caseDetails.setCaseStatus("ACTIVE");
+            if (nonNull(prosecutionCase.getMigrationSourceSystem())
+                    && nonNull(prosecutionCase.getMigrationSourceSystem().getMigrationCaseStatus())) {
+                caseDetails.setCaseStatus(prosecutionCase.getMigrationSourceSystem().getMigrationCaseStatus().name());
+            } else {
+                caseDetails.setCaseStatus("ACTIVE");
+            }
 
             if (prosecutionCase.getProsecutionCaseIdentifier() != null) {
                 if (nonNull(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())) {

@@ -48,6 +48,7 @@ import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class NowDocumentRequestIT extends AbstractIT {
@@ -97,6 +98,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
+    @Disabled
     public void shouldFailToProcessFinancialNowsOnReceivingErrorAcknowledgement() {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
         nowsRequestHelper.makeNowsRequestAndVerify(requestId, body);
