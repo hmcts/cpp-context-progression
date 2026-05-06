@@ -24,6 +24,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
 import java.util.ArrayList;
@@ -122,7 +123,7 @@ public class UpdateFinancialMeansDataHandlerTest {
                 .withContainsFinancialMeans(true)
                 .withMaterials(materials)
                 .withDocumentCategory(DocumentCategory.documentCategory()
-                        .withApplicationDocument(ApplicationDocument.applicationDocument().withApplicationId(randomUUID()).build())
+                        .withApplicationDocument(ApplicationDocument.applicationDocument().withProsecutionCaseId(randomUUID()).withApplicationId(randomUUID()).build())
                         .build()
                 ).build();
 
@@ -141,6 +142,84 @@ public class UpdateFinancialMeansDataHandlerTest {
         final CaseAggregate caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        updateFinancialMeansDataHandler.handle(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+    }
+
+    @Test
+    public void shouldProcessCommand_ApplicationDocumentOnlyCaseId() throws Exception {
+        List<UUID> defendantlist = new ArrayList<>();
+        defendantlist.add(DEFENDANT_ID);
+
+        List<Material> materials = new ArrayList<>();
+        Material material = Material.material().withId(MATERIAL_ID).withName("MC100").build();
+        materials.add(material);
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withContainsFinancialMeans(true)
+                .withMaterials(materials)
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withApplicationDocument(ApplicationDocument.applicationDocument().withProsecutionCaseId(randomUUID()).build())
+                        .build()
+                ).build();
+
+        final CreateCourtDocument createCourtDocument = CreateCourtDocument.createCourtDocument()
+                .withCourtDocument(courtDocument)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-financial-means-data")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<CreateCourtDocument> envelope = envelopeFrom(metadata, createCourtDocument);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        updateFinancialMeansDataHandler.handle(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+    }
+
+
+    @Test
+    public void shouldProcessCommand_ApplicationDocumentWithOnlyApplicationIdPresent() throws Exception {
+        List<UUID> defendantlist = new ArrayList<>();
+        defendantlist.add(DEFENDANT_ID);
+
+        List<Material> materials = new ArrayList<>();
+        Material material = Material.material().withId(MATERIAL_ID).withName("MC100").build();
+        materials.add(material);
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withContainsFinancialMeans(true)
+                .withMaterials(materials)
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withApplicationDocument(ApplicationDocument.applicationDocument().withApplicationId(randomUUID()).build())
+                        .build()
+                ).build();
+
+        final CreateCourtDocument createCourtDocument = CreateCourtDocument.createCourtDocument()
+                .withCourtDocument(courtDocument)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-financial-means-data")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<CreateCourtDocument> envelope = envelopeFrom(metadata, createCourtDocument);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         updateFinancialMeansDataHandler.handle(envelope);
 
