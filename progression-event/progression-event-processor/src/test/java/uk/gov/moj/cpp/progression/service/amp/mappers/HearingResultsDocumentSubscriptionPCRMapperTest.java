@@ -25,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType.PRISON_COURT_REGISTER_GENERATED;
 
 @ExtendWith(MockitoExtension.class)
-class AmpPcrMapperTest {
+class HearingResultsDocumentSubscriptionPCRMapperTest {
 
     @InjectMocks
-    AmpPcrMapper mapper;
+    HearingResultsDocumentSubscriptionPCRMapper mapper;
 
     PrisonCourtRegisterCaseOrApplication caseOrApplication = PrisonCourtRegisterCaseOrApplication.prisonCourtRegisterCaseOrApplication()
             .withCaseOrApplicationReference("SJ54CYRNYB")
@@ -49,7 +49,7 @@ class AmpPcrMapperTest {
     @Test
     void mapperShouldCreateAmpPayload() {
         Instant createdAt = Instant.now();
-        PcrEventPayload payload = mapper.mapPcrForAmp(pcr, "wandsworth@example.com", createdAt);
+        PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(pcr, "wandsworth@example.com", createdAt);
 
         assertThat(payload.getEventId(), equalTo(pcr.getId()));
         assertThat(payload.getMaterialId(), equalTo(pcr.getMaterialId()));
@@ -62,7 +62,7 @@ class AmpPcrMapperTest {
     void mapperShouldBeNullSafe() {
         PrisonCourtRegisterGeneratedV2 emptyPcr = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                 .build();
-        PcrEventPayload payload = mapper.mapPcrForAmp(emptyPcr, null, null);
+        PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(emptyPcr, null, null);
 
         assertNull(payload.getEventId());
     }
