@@ -97,8 +97,12 @@ public class UnscheduledCourtHearingListTransformer {
 
             final CourtCentre courtCentre = judicialResultWithNextHearing.get().getNextHearing().getCourtCentre();
 
+            // The user-typed duration on the unscheduled-next-hearing flow lives on
+            // judicialResult.nextHearing.estimatedMinutes — not on the parent Hearing.
+            final Integer estimatedMinutes = judicialResultWithNextHearing.get().getNextHearing().getEstimatedMinutes();
+
             final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
-                    Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre);
+                    Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre, estimatedMinutes);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -117,8 +121,10 @@ public class UnscheduledCourtHearingListTransformer {
                 final JurisdictionType jurisdictionType = getJuristictionType(hearing.getJurisdictionType(), judicialResultWithUnscheduledFlag.get());
                 final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
+                // No next hearing → no duration to forward; null lets the listing-side fallback
+                // (HearingDurationDefaults) substitute a sane default.
                 final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
-                        Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre());
+                        Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre(), null);
 
                 LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                                 "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -203,7 +209,8 @@ public class UnscheduledCourtHearingListTransformer {
 
         if (unscheduledListingNeeds.isPresent()) {
             return Optional.of(createHearingListingNeeds(originalHearing, unscheduledListingNeeds.get().getTypeOfList(), unscheduledListingNeeds.get().getJurisdictionType(),
-                    Arrays.asList(pc), null, unscheduledListingNeeds.get().getType(), unscheduledListingNeeds.get().getCourtCentre()));
+                    Arrays.asList(pc), null, unscheduledListingNeeds.get().getType(), unscheduledListingNeeds.get().getCourtCentre(),
+                    unscheduledListingNeeds.get().getEstimatedMinutes()));
         }
         return Optional.empty();
     }
@@ -221,8 +228,12 @@ public class UnscheduledCourtHearingListTransformer {
             final CourtCentre courtCentre = judicialResultWithNextHearing.get().getNextHearing().getCourtCentre();
             final ProsecutionCase pc = createProsecutionCase(prosecutionCase, defendant, Arrays.asList(offence));
 
+            // The user-typed duration on the unscheduled-next-hearing flow lives on
+            // judicialResult.nextHearing.estimatedMinutes — not on the parent Hearing.
+            final Integer estimatedMinutes = judicialResultWithNextHearing.get().getNextHearing().getEstimatedMinutes();
+
             final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
-                    Arrays.asList(pc), null, hearingType, courtCentre);
+                    Arrays.asList(pc), null, hearingType, courtCentre, estimatedMinutes);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -242,7 +253,7 @@ public class UnscheduledCourtHearingListTransformer {
             final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
             final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
-                    Arrays.asList(pc), null, hearingType, originalHearing.getCourtCentre());
+                    Arrays.asList(pc), null, hearingType, originalHearing.getCourtCentre(), null);
 
             LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -326,7 +337,17 @@ public class UnscheduledCourtHearingListTransformer {
     private HearingUnscheduledListingNeeds createHearingListingNeeds(final Hearing hearing, final TypeOfList typeOfList,
                                                                      final JurisdictionType jurisdictionType,
                                                                      final List<ProsecutionCase> prosecutionCases,
-                                                                     final List<CourtApplication> courtApplications, final HearingType hearingType, final CourtCentre courtCentre) {
+                                                                     final List<CourtApplication> courtApplications, final HearingType hearingType, final CourtCentre courtCentre,
+                                                                     final Integer estimatedMinutes) {
+
+        // Prefer the explicit estimatedMinutes (sourced from judicialResult.nextHearing on the
+        // result-driven unscheduled flow). Fall back to parsing the source Hearing's
+        // estimatedDuration String if no explicit value was supplied. Returning null when nothing
+        // is available lets the listing-side fallback (HearingDurationDefaults) apply a safe
+        // default — preserving the SPRDT-806/807 "never 0 / never null" guarantee.
+        final Integer resolvedEstimatedMinutes = (estimatedMinutes != null)
+                ? estimatedMinutes
+                : EstimatedDurationParser.toMinutes(hearing.getEstimatedDuration());
 
         return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
                 .withId(UUID.randomUUID())
@@ -339,7 +360,7 @@ public class UnscheduledCourtHearingListTransformer {
                         .withId(hearingType.getId())
                         .withDescription(hearingType.getDescription())
                         .build())
-                .withEstimatedMinutes(0)
+                .withEstimatedMinutes(resolvedEstimatedMinutes)
                 .withEstimatedDuration(hearing.getEstimatedDuration())
                 .withCourtCentre(courtCentre)
                 .withCourtApplications(courtApplications)

@@ -74,6 +74,104 @@ public class UnscheduledCourtHearingListTransformerTest {
     }
 
     /**
+     * Regression guard: the user-entered duration on the unscheduled-next-hearing flow lives on
+     * judicialResult.nextHearing.estimatedMinutes. It must be carried onto the
+     * HearingUnscheduledListingNeeds posted to the listing context. Previously estimatedMinutes
+     * was hardcoded to 0, which caused the listing-side fallback to substitute the
+     * hearing-type default and lose the user's value.
+     *
+     * <p>This exercises the prosecution-case → defendant → offence path
+     * ({@code transformDefendantOffence}).
+     */
+    @Test
+    public void shouldPropagateUserEnteredEstimatedMinutesFromNextHearingOnOffencePath() {
+        final JudicialResult resultWithNextHearingAndDuration = nextHearingResultWithEstimatedMinutes(90);
+        final Offence offence = createOffenceWithJR(asList(resultWithNextHearingAndDuration));
+        final Hearing hearing = createHearingWithOffences(asList(offence));
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(90));
+    }
+
+    /**
+     * Same regression guard as above, but exercising the court-application path
+     * ({@code transformCourtApplication}).
+     */
+    @Test
+    public void shouldPropagateUserEnteredEstimatedMinutesFromNextHearingOnApplicationPath() {
+        final JudicialResult resultWithNextHearingAndDuration = nextHearingResultWithEstimatedMinutes(45);
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withJudicialResults(asList(resultWithNextHearingAndDuration))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withCourtApplications(asList(courtApplication))
+                .build();
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(45));
+    }
+
+    /**
+     * When the next hearing carries no estimatedMinutes, the parser should fall back to the
+     * parent Hearing's estimatedDuration string. Documents the fallback chain so a future
+     * change can't silently regress it.
+     */
+    @Test
+    public void shouldFallBackToParseEstimatedDurationStringWhenNextHearingHasNoEstimatedMinutes() {
+        // NextHearing without estimatedMinutes — the legacy fixture that triggered this whole
+        // bug originally.
+        final JudicialResult resultWithNextHearingNoDuration = resultWithNextHearingDateTobeFixed();
+        final Offence offence = createOffenceWithJR(asList(resultWithNextHearingNoDuration));
+        final Hearing hearing = Hearing.hearing()
+                .withValuesFrom(createHearingWithOffences(asList(offence)))
+                .withEstimatedDuration("90 MINUTES")
+                .build();
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(90));
+    }
+
+    /**
+     * When neither source has a usable duration, estimatedMinutes is null on the listing-bound
+     * payload — letting the listing-side {@code HearingDurationDefaults} fallback substitute a
+     * safe default (preserving the SPRDT-806/807 "never 0 / never null" guarantee).
+     */
+    @Test
+    public void shouldEmitNullEstimatedMinutesWhenNoSourceHasDuration() {
+        final JudicialResult resultWithNextHearingNoDuration = resultWithNextHearingDateTobeFixed();
+        final Offence offence = createOffenceWithJR(asList(resultWithNextHearingNoDuration));
+        final Hearing hearing = createHearingWithOffences(asList(offence));
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(nullValue()));
+    }
+
+    private JudicialResult nextHearingResultWithEstimatedMinutes(final int estimatedMinutes) {
+        return JudicialResult.judicialResult()
+                .withIsUnscheduled(false)
+                .withJudicialResultTypeId(UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_NHCCS)
+                .withNextHearing(NextHearing.nextHearing()
+                        .withDateToBeFixed(true)
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("desc").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withEstimatedMinutes(estimatedMinutes)
+                        .build())
+                .withLabel(NHCCS_LABEL)
+                .build();
+    }
+
+    /**
      * As Case1 above, but the seed hearing id is added to each offence.
      */
     @Test
