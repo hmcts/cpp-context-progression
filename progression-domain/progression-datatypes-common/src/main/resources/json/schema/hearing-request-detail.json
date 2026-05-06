@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-request-detail.json",
+  "type": "object",
+  "description": "Contains the hearing creation status, indicating new or existing",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hearingRequestStatus": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/hearingRequestStatus"
+    }
+  },
+  "required": [
+    "hearingId",
+    "courtCentreId",
+    "hearingDateTime",
+    "hearingRequestStatus"
+  ],
+  "additionalProperties": false
+}
