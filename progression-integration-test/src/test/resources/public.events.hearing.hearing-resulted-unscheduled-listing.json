@@ -198,6 +198,18 @@
                     "urgent" : false,
                     "d20" : false,
                     "resultText" : "resultText",
+                    "nextHearing": {
+                      "dateToBeFixed": true,
+                      "estimatedMinutes": 90,
+                      "type": {
+                        "id": "01234567-1234-1234-1234-123456789123",
+                        "description": "Sentence"
+                      },
+                      "courtCentre": {
+                        "id": "111bdd2a-6b7a-4002-bc8c-5c6f93844f40",
+                        "name": "Lavender Hill Magistrate's Court"
+                      }
+                    },
                     "judicialResultPrompts": [
                       {
                         "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",

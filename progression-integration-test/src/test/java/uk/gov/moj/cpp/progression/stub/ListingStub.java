@@ -351,6 +351,39 @@ public class ListingStub {
 
     }
 
+    /**
+     * Regression guard: the user-entered duration on the unscheduled-next-hearing flow lives on
+     * {@code judicialResult.nextHearing.estimatedMinutes} in the inbound public hearing-resulted
+     * event. Progression's {@code UnscheduledCourtHearingListTransformer} must carry that value
+     * onto the {@code estimatedMinutes} field of the {@code list-unscheduled-court-hearing}
+     * command posted to the listing context. Previously hardcoded to 0 — this helper locks the
+     * end-to-end path.
+     */
+    public static void verifyListUnscheduledHearingEstimatedMinutes(final String hearingId,
+                                                                    final int expectedEstimatedMinutes) {
+        waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> {
+                    final Stream<JSONObject> listCourtHearingRequestsAsStream = getListUnscheduledHearingRequestsAsStreamV2();
+                    return listCourtHearingRequestsAsStream.anyMatch(
+                            payload -> {
+                                try {
+                                    if (!payload.has("hearings")) {
+                                        return false;
+                                    }
+                                    final JSONObject hearing = payload.getJSONArray("hearings").getJSONObject(0);
+                                    if (!hearing.has("id") || !hearing.getString("id").equals(hearingId)) {
+                                        return false;
+                                    }
+                                    return hearing.has("estimatedMinutes")
+                                            && hearing.getInt("estimatedMinutes") == expectedEstimatedMinutes;
+                                } catch (JSONException e) {
+                                    return false;
+                                }
+                            }
+                    );
+                }
+        );
+    }
+
     private static Stream<JSONObject> getListUnscheduledHearingRequestsAsStreamV2() {
         return findAll(postRequestedFor(urlMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2)))

@@ -33,6 +33,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.*;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyDeleteNexHearingCommandToListing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingEstimatedMinutes;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -94,6 +95,10 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
         verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
+        // Regression guard for SPRDT-831: the user-typed duration on
+        // judicialResult.nextHearing.estimatedMinutes (90 in the fixture) must be carried onto
+        // the listing-bound payload's estimatedMinutes Integer. Previously hardcoded to 0.
+        verifyListUnscheduledHearingEstimatedMinutes(unscheduledHearingId, 90);
     }
 
     @SuppressWarnings("squid:S1607")
