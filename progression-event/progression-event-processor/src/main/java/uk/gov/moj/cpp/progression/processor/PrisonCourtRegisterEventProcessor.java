@@ -25,9 +25,9 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
-import uk.gov.moj.cpp.progression.service.amp.mappers.AmpPcrMapper;
-import uk.gov.moj.cpp.progression.service.amp.service.AmpClientService;
-import uk.gov.moj.cpp.progression.exception.CrimeHearingCaseEventPcrNotificationException;
+import uk.gov.moj.cpp.progression.service.amp.mappers.HearingResultsDocumentSubscriptionPCRMapper;
+import uk.gov.moj.cpp.progression.service.amp.service.HearingResultsDocumentSubscriptionClient;
+import uk.gov.moj.cpp.progression.exception.HearingResultsDocumentSubscriptionPCRException;
 import static java.lang.Integer.parseInt;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
@@ -107,9 +107,9 @@ public class PrisonCourtRegisterEventProcessor {
     @Inject
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
     @Inject
-    private AmpPcrMapper ampPcrMapper;
+    private HearingResultsDocumentSubscriptionPCRMapper hearingResultsDocumentSubscriptionPCRMapper;
     @Inject
-    private AmpClientService ampClientService;
+    private HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
@@ -216,10 +216,10 @@ public class PrisonCourtRegisterEventProcessor {
 
     /**
      * Handles the prison-court-register-generated-v2 event by sending PCR notification to the CrimeHearingCaseEvent service.
-     * 
+     *
      * This method processes the V2 event for prison court register generation and sends a notification
      * to the Crime Court Hearing service via a direct service-to-service call (not through APIM).
-     * 
+     *
      */
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-generated-v2")
@@ -231,27 +231,27 @@ public class PrisonCourtRegisterEventProcessor {
                 ? emailRecipients.get(0).getEmail()
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
-        PcrEventPayload pcrEventPayload = ampPcrMapper.mapPcrForAmp(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-        
+        PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt);
+
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
-                ? envelope.payloadAsJsonObject().getString("id") 
+                ? envelope.payloadAsJsonObject().getString("id")
                 : fileId.toString();
-        final String url = applicationParameters.getAmpPcrNotificationUrl();
+        final String url = applicationParameters.getHearingResultsDocumentSubscriptionUrl();
             final String payloadDescription = String.format("fileId=%s, materialId=%s, eventId=%s",
                     fileId, pcrEventPayload.getMaterialId(), pcrEventPayload.getEventId());
             retryHelper()
                     .withSupplier(() -> {
-                        Response response = ampClientService.post(url, pcrEventPayload);
+                        Response response = hearingResultsDocumentSubscriptionClient.post(url, pcrEventPayload);
                         int statusCode = response.getStatus();
                         LOGGER.info("progression.event.prison-court-register-generated-v2 response:{}", statusCode);
                         return statusCode;
                     })
-                    .withAmpPcrNotificationUrl(url)
+                    .withHearingResultsDocumentSubscriptionUrl(url)
                     .withPayload(payloadDescription)
-                    .withRetryTimes(parseInt(applicationParameters.getAmpPcrNotificationRetryTimes()))
-                    .withRetryInterval(parseInt(applicationParameters.getAmpPcrNotificationRetryInterval()))
-                    .withExceptionSupplier(() -> new CrimeHearingCaseEventPcrNotificationException(fileId, pcrEventPayload.getMaterialId(), prisonCourtRegisterId, url))
+                    .withRetryTimes(parseInt(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()))
+                    .withRetryInterval(parseInt(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()))
+                    .withExceptionSupplier(() -> new HearingResultsDocumentSubscriptionPCRException(fileId, pcrEventPayload.getMaterialId(), prisonCourtRegisterId, url))
                     .withPredicate(statusCode -> statusCode > 429)
                     .build()
                     .postWithRetry();
