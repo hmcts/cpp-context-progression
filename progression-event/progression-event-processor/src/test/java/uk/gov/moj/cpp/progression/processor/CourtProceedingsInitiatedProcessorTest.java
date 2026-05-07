@@ -443,12 +443,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         final UUID offenceId = UUID.randomUUID();
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
-        String existingCaseId = UUID.randomUUID().toString();
-        final JsonObject searchResult = createObjectBuilder().add("caseId", existingCaseId).build();
-
-        final JsonObject searchProsecutionCaseResult = createObjectBuilder().add("prosecutionCase",createObjectBuilder().add("caseStatus", "EJECTED").build()).build();
-
-
         final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
@@ -464,11 +458,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
         when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester),any())).thenReturn(Optional.of(emptyList()));
         when(azureFunctionService.relayCaseOnCPP(anyString())).thenReturn(1);
-
-
-        doReturn(Optional.of(searchResult)).when(progressionService).caseExistsByCaseUrn(requestMessage, PCF_CASE_URN);
-
-        doReturn(Optional.of(searchProsecutionCaseResult)).when(progressionService).prosecutionCaseByCaseId(requestMessage, existingCaseId);
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         hearingsList.add(HearingListingNeeds.hearingListingNeeds()
@@ -535,10 +524,10 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         String existingCaseId = UUID.randomUUID().toString();
         final JsonObject searchResult = createObjectBuilder().add("caseId", existingCaseId).build();
-        final JsonObject searchProsecutionCaseResult = createObjectBuilder().add("prosecutionCase",createObjectBuilder().add("caseStatus", "NOT_EJECTED").build()).build();
 
 
-        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(), false);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
@@ -555,8 +544,6 @@ public class CourtProceedingsInitiatedProcessorTest {
 
 
         doReturn(Optional.of(searchResult)).when(progressionService).caseExistsByCaseUrn(requestMessage, PCF_CASE_URN);
-
-        doReturn(Optional.of(searchProsecutionCaseResult)).when(progressionService).prosecutionCaseByCaseId(requestMessage, existingCaseId);
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         hearingsList.add(HearingListingNeeds.hearingListingNeeds()
