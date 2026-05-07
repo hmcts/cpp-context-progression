@@ -538,7 +538,8 @@ public class CourtProceedingsInitiatedProcessorTest {
         final JsonObject searchProsecutionCaseResult = createObjectBuilder().add("prosecutionCase",createObjectBuilder().add("caseStatus", "NOT_EJECTED").build()).build();
 
 
-        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(), false);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
