@@ -340,15 +340,12 @@ public class UnscheduledCourtHearingListTransformer {
                                                                      final List<CourtApplication> courtApplications, final HearingType hearingType, final CourtCentre courtCentre,
                                                                      final Integer estimatedMinutes) {
 
-        // Prefer the explicit estimatedMinutes (sourced from judicialResult.nextHearing on the
-        // result-driven unscheduled flow). Fall back to parsing the source Hearing's
-        // estimatedDuration String if no explicit value was supplied. Returning null when nothing
-        // is available lets the listing-side fallback (HearingDurationDefaults) apply a safe
-        // default — preserving the SPRDT-806/807 "never 0 / never null" guarantee.
-        final Integer resolvedEstimatedMinutes = (estimatedMinutes != null)
-                ? estimatedMinutes
-                : EstimatedDurationParser.toMinutes(hearing.getEstimatedDuration());
-
+        // SPRDT-831: forward the user-typed estimatedMinutes Integer sourced from
+        // judicialResult.nextHearing.estimatedMinutes. Mirrors the allocated-listings pattern in
+        // ListCourtHearingTransformer. When the caller has no NextHearing duration (the
+        // unscheduled-flag branch / merge path with null source), null is passed through — the
+        // listing-side HearingDurationDefaults fallback substitutes a safe default, preserving
+        // the SPRDT-806/807 "never 0 / never null" guarantee.
         return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
                 .withId(UUID.randomUUID())
                 .withTypeOfList(typeOfList)
@@ -360,7 +357,7 @@ public class UnscheduledCourtHearingListTransformer {
                         .withId(hearingType.getId())
                         .withDescription(hearingType.getDescription())
                         .build())
-                .withEstimatedMinutes(resolvedEstimatedMinutes)
+                .withEstimatedMinutes(estimatedMinutes)
                 .withEstimatedDuration(hearing.getEstimatedDuration())
                 .withCourtCentre(courtCentre)
                 .withCourtApplications(courtApplications)

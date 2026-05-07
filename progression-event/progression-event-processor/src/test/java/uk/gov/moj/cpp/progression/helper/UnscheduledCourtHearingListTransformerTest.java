@@ -119,28 +119,6 @@ public class UnscheduledCourtHearingListTransformerTest {
     }
 
     /**
-     * When the next hearing carries no estimatedMinutes, the parser should fall back to the
-     * parent Hearing's estimatedDuration string. Documents the fallback chain so a future
-     * change can't silently regress it.
-     */
-    @Test
-    public void shouldFallBackToParseEstimatedDurationStringWhenNextHearingHasNoEstimatedMinutes() {
-        // NextHearing without estimatedMinutes — the legacy fixture that triggered this whole
-        // bug originally.
-        final JudicialResult resultWithNextHearingNoDuration = resultWithNextHearingDateTobeFixed();
-        final Offence offence = createOffenceWithJR(asList(resultWithNextHearingNoDuration));
-        final Hearing hearing = Hearing.hearing()
-                .withValuesFrom(createHearingWithOffences(asList(offence)))
-                .withEstimatedDuration("90 MINUTES")
-                .build();
-
-        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
-
-        assertThat(unscheduledListingNeedsList.size(), is(1));
-        assertThat(unscheduledListingNeedsList.get(0).getEstimatedMinutes(), is(90));
-    }
-
-    /**
      * When neither source has a usable duration, estimatedMinutes is null on the listing-bound
      * payload — letting the listing-side {@code HearingDurationDefaults} fallback substitute a
      * safe default (preserving the SPRDT-806/807 "never 0 / never null" guarantee).

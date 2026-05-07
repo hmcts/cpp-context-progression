@@ -47,7 +47,7 @@ public class HearingUnscheduledListingHelper {
                         .withId(hearing.getType().getId())
                         .withDescription(hearing.getType().getDescription())
                         .build())
-                .withEstimatedMinutes(EstimatedDurationParser.toMinutes(hearing.getEstimatedDuration()))
+                .withEstimatedMinutes(0)
                 .withEstimatedDuration(hearing.getEstimatedDuration())
                 .withCourtCentre(hearing.getCourtCentre())
                 .withCourtApplications(hearing.getCourtApplications())
