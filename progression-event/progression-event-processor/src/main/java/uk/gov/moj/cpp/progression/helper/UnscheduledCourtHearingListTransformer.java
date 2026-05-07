@@ -121,7 +121,7 @@ public class UnscheduledCourtHearingListTransformer {
                 final JurisdictionType jurisdictionType = getJuristictionType(hearing.getJurisdictionType(), judicialResultWithUnscheduledFlag.get());
                 final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
-                // No next hearing → no duration to forward; null lets the listing-side fallback
+                // No next hearing → no duration to forward; null lets the listing-side fallback into action
                 // (HearingDurationDefaults) substitute a sane default.
                 final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
                         Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre(), null);
