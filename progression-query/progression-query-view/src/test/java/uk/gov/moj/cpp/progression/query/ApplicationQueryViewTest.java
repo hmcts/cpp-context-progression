@@ -621,6 +621,7 @@ public class ApplicationQueryViewTest {
     }
 
 
+
     @Test
     public void shouldGetApplicationAtAGlanceWithChildApplication() {
         final UUID applicationId = randomUUID();
