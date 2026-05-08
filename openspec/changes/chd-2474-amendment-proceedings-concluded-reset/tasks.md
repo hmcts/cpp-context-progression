@@ -7,8 +7,7 @@
 - [x] Unit test: offence not in current hearing scope (null guard — previously concluded offence absent from current hearing stays true)
 - [x] Unit test: offence absent from current hearing and never previously resulted stays false
 - [x] Unit test: `HearingAggregateTest` updated to assert `prosecution-cases-resulted-v2` is emitted when judicialResults is empty
-- [x] Integration test: `HearingAmendmentProceedingsConcludedIT` — single defendant, single offence
-- [x] Integration test: `HearingAmendmentProceedingsConcludedIT` — two defendants, one offence each
+- [x] Integration test: `HearingResultedCaseUpdatedIT` — single defendant, amendment deletes result
 
 ---
 
@@ -111,30 +110,17 @@ Add the following test scenarios (follow existing test patterns in the file):
 
 ---
 
-### Integration tests: `HearingAmendmentProceedingsConcludedIT`
+### Integration test: `HearingResultedCaseUpdatedIT`
 
 **File:**
-`progression-integration-test/src/test/java/uk/gov/moj/cpp/progression/HearingAmendmentProceedingsConcludedIT.java`
+`progression-integration-test/src/test/java/uk/gov/moj/cpp/progression/HearingResultedCaseUpdatedIT.java`
 
-**Test 1 — `shouldResetProceedingsConcludedAndCaseStatusWhenResultRemovedViaAmendment`:**
+**`shouldUpdateHearingResultedCaseUpdatedV2_ThenAmendWithResultDeleted`:**
 1. Create 1 case with 1 defendant (1 offence) via `addProsecutionCaseToCrownCourt`
-2. Send `hearing-resulted` with FINAL result → assert `caseStatus = INACTIVE`, `defendant.proceedingsConcluded = true`
-3. Send `hearing-resulted` (amendment) with `judicialResults` absent → assert `caseStatus = ACTIVE`, `defendant.proceedingsConcluded = false`
+2. Send `hearing-resulted` with FINAL result → assert `caseStatus = INACTIVE`, `defendant.proceedingsConcluded = true`, `offence.proceedingsConcluded = true`
+3. Send `hearing-resulted` (amendment) with `judicialResults` deleted → assert `caseStatus = ACTIVE`, `defendant.proceedingsConcluded = false`
 
-Fixtures: `hearing-resulted-case-updated.json` (initial), `hearing-resulted-amendment-deleted.json` (amendment)
-
-**Test 2 — `shouldResetProceedingsConcludedOnlyForAmendedOffenceAcrossTwoDefendantsTwoOffencesEach`:**
-1. Create 1 case with 2 defendants via `addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants`
-2. Send `hearing-resulted` with 2 defendants × 2 offences each (all FINAL) → assert `caseStatus = INACTIVE`, both defendants `proceedingsConcluded = true`
-3. Send `hearing-resulted` (amendment) with D1O1 having `"judicialResults": []`
-4. Assert:
-   - `caseStatus = ACTIVE`
-   - D1: `proceedingsConcluded = false`
-   - D2: `proceedingsConcluded = true` (unchanged)
-   - D1O1 (`aa000001-...`): `proceedingsConcluded = false`
-   - D1O2, D2O1, D2O2: `proceedingsConcluded = true` (unchanged)
-
-Fixtures: `hearing-resulted-two-defendants-two-offences-initial.json`, `hearing-resulted-two-defendants-two-offences-amendment.json`
+Fixtures: `public.events.hearing.hearing-resulted-case-updated.json` (initial), `public.events.hearing.hearing-resulted-amendment-deleted.json` (amendment)
 
 ---
 

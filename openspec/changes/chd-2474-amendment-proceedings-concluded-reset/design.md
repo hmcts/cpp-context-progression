@@ -218,5 +218,5 @@ No changes required to `getUpdatedCaseStatus()`.
 | Simplified by fix | `CaseAggregate.checkIfDefendantProceedingsConcluded()` (now reads pre-computed flags) |
 | Triggers caseStatus revert | `CaseAggregate.getUpdatedCaseStatus()` (unchanged, already handles revert) |
 | Unit tests | `CaseAggregateTest.java`, `HearingAggregateTest.java` |
-| Integration tests | `HearingAmendmentProceedingsConcludedIT.java` (2 test methods) |
+| Integration test | `HearingResultedCaseUpdatedIT.java` (`shouldUpdateHearingResultedCaseUpdatedV2_ThenAmendWithResultDeleted`) |
 | Related secondary risk | `HearingResultEventListener.getUpdatedJudicialResults()` lines 500–515 (cross-day amendment — separate bug) |
