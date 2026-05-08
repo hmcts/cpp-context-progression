@@ -30,7 +30,8 @@ import org.junit.jupiter.api.Test;
  * Integration test for CHD-2474: verifies that proceedingsConcluded and caseStatus are
  * recalculated correctly when a judicial result is removed from an offence via a hearing amendment.
  */
-public class HearingAmendmentProceedingsConcludedIT extends AbstractIT {
+@SuppressWarnings("java:S2699")
+class HearingAmendmentProceedingsConcludedIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String HEARING_RESULTED_INITIAL_FIXTURE = "public.events.hearing.hearing-resulted-case-updated.json";
