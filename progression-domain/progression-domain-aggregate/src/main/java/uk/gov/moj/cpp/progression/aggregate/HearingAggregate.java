@@ -1912,7 +1912,7 @@ public class HearingAggregate implements Aggregate {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .collect(toList()));
-        if (isNotEmpty(hearing.getProsecutionCases()) && isNotEmpty(judicialResults)) {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
             streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
         }
 
