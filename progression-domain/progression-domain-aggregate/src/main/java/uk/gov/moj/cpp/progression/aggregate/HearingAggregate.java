@@ -130,7 +130,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 8888819367477517208L;
+    private static final long serialVersionUID = 8888819367477517209L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -166,8 +166,10 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
+    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
+
     private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
-            "GUILTY",
+            GUILTY_VERDICT_STARTS_WITH,
             "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
             "GUILTY_REQUEST_HEARING",
             "GUILTY_SINGLE_JUSTICE_PROCEDURE",
@@ -178,7 +180,6 @@ public class HearingAggregate implements Aggregate {
             "CHANGE_TO_GUILTY_NO JURY",
             "AUTREFOIS_CONVICT"
     );
-    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
