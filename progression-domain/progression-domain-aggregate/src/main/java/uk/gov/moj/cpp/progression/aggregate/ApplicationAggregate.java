@@ -155,7 +155,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908502L;
+    private static final long serialVersionUID = 1331113876243908503L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
