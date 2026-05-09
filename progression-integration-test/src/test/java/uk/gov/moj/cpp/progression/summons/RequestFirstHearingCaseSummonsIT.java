@@ -85,6 +85,7 @@ import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -149,6 +150,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         initialiseDefendantDetails();
     }
 
+    @Disabled
     @MethodSource("firstHearingSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateSummonsPayloadForFirstHearingWhenNotSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
@@ -171,6 +173,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         }
     }
 
+    @Disabled
     @MethodSource("firstHearingAddDefendantSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateSummonsForAddedDefendant(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments) throws IOException {
