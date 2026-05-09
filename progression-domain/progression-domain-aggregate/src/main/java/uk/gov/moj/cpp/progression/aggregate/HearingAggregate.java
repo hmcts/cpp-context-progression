@@ -14,6 +14,7 @@ import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
+import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -129,7 +130,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 8888819367477517208L;
+    private static final long serialVersionUID = 8888819367477517209L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -165,8 +166,10 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
+    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
+
     private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
-            "GUILTY",
+            GUILTY_VERDICT_STARTS_WITH,
             "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
             "GUILTY_REQUEST_HEARING",
             "GUILTY_SINGLE_JUSTICE_PROCEDURE",
@@ -177,7 +180,6 @@ public class HearingAggregate implements Aggregate {
             "CHANGE_TO_GUILTY_NO JURY",
             "AUTREFOIS_CONVICT"
     );
-    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
@@ -447,7 +449,7 @@ public class HearingAggregate implements Aggregate {
 
         if (isNotEmpty(listDefendantRequests) || isNotEmpty(applicationListingNeeds)) {
             final List<ListDefendantRequest> listDefendantRequestsToSend = buildListDefendantRequestsWithAmendedSummonsOutcome(summonsApprovedOutcome);
-            final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = isNotEmpty(applicationListingNeeds) ? applicationListingNeeds : null;
+            final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = buildApplicationPartyListingNeedsWithAmendedSummonsOutcome(summonsApprovedOutcome);
             final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIdsToSend = buildConfirmedProsecutionCaseIds();
             final CourtCentre courtCentre = getCourtCentre(this.hearing.getCourtCentre());
 
@@ -477,13 +479,23 @@ public class HearingAggregate implements Aggregate {
 
     private List<ListDefendantRequest> buildListDefendantRequestsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
         if (isEmpty(this.listDefendantRequests)) {
-            return emptyList();
+            return null;
         } else {
             return this.listDefendantRequests.stream()
                     .map(listDefendantRequest -> listDefendantRequest()
                             .withValuesFrom(listDefendantRequest).withSummonsApprovedOutcome(summonsApprovedOutcome).build()).
                     collect(toList());
         }
+    }
+
+    private List<CourtApplicationPartyListingNeeds> buildApplicationPartyListingNeedsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        if (isEmpty(this.applicationListingNeeds)) {
+            return null;
+        }
+        return this.applicationListingNeeds.stream()
+                .map(needs -> courtApplicationPartyListingNeeds()
+                        .withValuesFrom(needs).withSummonsApprovedOutcome(summonsApprovedOutcome).build())
+                .collect(toList());
     }
 
     private List<ConfirmedProsecutionCaseId> buildConfirmedProsecutionCaseIds() {
@@ -496,7 +508,8 @@ public class HearingAggregate implements Aggregate {
             }
         }
 
-        return confirmedProsecutionCaseIdsMap.entrySet().stream().map(entry -> ConfirmedProsecutionCaseId.confirmedProsecutionCaseId().withId(entry.getKey()).withConfirmedDefendantIds(entry.getValue()).build()).toList();
+        final List<ConfirmedProsecutionCaseId> result = confirmedProsecutionCaseIdsMap.entrySet().stream().map(entry -> ConfirmedProsecutionCaseId.confirmedProsecutionCaseId().withId(entry.getKey()).withConfirmedDefendantIds(entry.getValue()).build()).toList();
+        return result.isEmpty() ? null : result;
     }
 
     public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final ExtendHearing extendHearing) {

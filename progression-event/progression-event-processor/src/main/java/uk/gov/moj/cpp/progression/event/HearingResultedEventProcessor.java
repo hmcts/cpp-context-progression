@@ -103,7 +103,7 @@ public class HearingResultedEventProcessor {
     public void handlePublicHearingResulted(final JsonEnvelope event) {
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received 'public.events.hearing.hearing-resulted' event with payload: {}", event.toObfuscatedDebugString());
+            LOGGER.info("Received 'public.events.hearing.hearing-resulted' event with payload: {}", event.payloadAsJsonObject());
         }
 
         final JsonObject eventPayload = event.payloadAsJsonObject();

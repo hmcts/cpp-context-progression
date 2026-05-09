@@ -4,6 +4,7 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMet
 
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -16,6 +17,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -44,6 +48,35 @@ public class CreateHearingApplicationRequestHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.createHearingApplicationRequest(applicationRequests);
         appendEventsToStream(createHearingApplicationRequest, eventStream, events);
+
+        linkBoxworkHearingToFirstHearing(createHearingApplicationRequest);
+    }
+
+    private void linkBoxworkHearingToFirstHearing(final Envelope<CreateHearingApplicationRequest> requestEnvelope) throws EventStreamException {
+        final Optional<UUID> boxworkHearingId = getBoxworkHearingId(requestEnvelope);
+
+        if (boxworkHearingId.isPresent()) {
+            final UUID bxwHearingId = boxworkHearingId.get();
+            final UUID firstHearingId = requestEnvelope.payload().getHearingId();
+            final EventStream boxworkHearingEventStream = eventSource.getStreamById(bxwHearingId);
+            final HearingAggregate boxworkHearingAggregate = aggregateService.get(boxworkHearingEventStream, HearingAggregate.class);
+
+            if (boxworkHearingAggregate.isLinkedToFirstHearing()) {
+                LOGGER.info("Boxwork hearing {} already linked to the first hearing {}", bxwHearingId, firstHearingId);
+                return;
+            }
+
+            final Stream<Object> linkEvents = boxworkHearingAggregate.linkBoxworkHearing(bxwHearingId, firstHearingId);
+            appendEventsToStream(requestEnvelope, boxworkHearingEventStream, linkEvents);
+        }
+    }
+
+    private static Optional<UUID> getBoxworkHearingId(final Envelope<CreateHearingApplicationRequest> requestEnvelope) {
+        return requestEnvelope.payload().getApplicationRequests().stream()
+                .map(CourtApplicationPartyListingNeeds::getSummonsApprovedOutcome)
+                .filter(Objects::nonNull)
+                .map(SummonsApprovedOutcome::getHearingId)
+                .findFirst();
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
