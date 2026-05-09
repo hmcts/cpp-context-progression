@@ -135,7 +135,7 @@ public class HearingResultEventProcessor {
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("public.hearing.resulted event arrived with hearingResulted json : {}", event.toObfuscatedDebugString());
+            LOGGER.info("public.hearing.resulted event arrived with hearingResulted json : {}", event.payloadAsJsonObject());
         }
 
         final Hearing hearing = hearingResulted.getHearing();

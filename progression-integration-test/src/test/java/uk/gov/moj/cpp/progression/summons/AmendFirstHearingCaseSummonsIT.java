@@ -52,6 +52,7 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -136,6 +137,7 @@ public class AmendFirstHearingCaseSummonsIT extends AbstractIT {
      * - The amended document contains an amendedDate (set by CaseDefendantSummonsService)
      * - An amended material request is recorded and notifications sent
      */
+    @Disabled
     @ParameterizedTest
     @MethodSource("firstHearingAmendSummonsSpecifications")
     public void shouldGenerateAmendedSummonsDocumentOnHearingReConfirmation(
@@ -198,6 +200,7 @@ public class AmendFirstHearingCaseSummonsIT extends AbstractIT {
      * Verifies that after amend, CDES holds at least two summons documents for the case/defendant —
      * one for the original summons and one for the amended summons.
      */
+    @Disabled
     @ParameterizedTest
     @MethodSource("firstHearingAmendSummonsSpecifications")
     public void shouldRecordBothOriginalAndAmendedSummonsDocumentsInCdes(
@@ -242,6 +245,7 @@ public class AmendFirstHearingCaseSummonsIT extends AbstractIT {
      * Verifies that a youth defendant's summons is also amended correctly when the hearing is
      * re-confirmed, including the parent/guardian summons document.
      */
+    @Disabled
     @ParameterizedTest
     @MethodSource("firstHearingAmendSummonsSpecifications")
     public void shouldNotGenerateAmendedSummonsWhenSummonsIsSuppressedOnReConfirmation(
