@@ -805,7 +805,7 @@ public class ApplicationAggregate implements Aggregate {
         streams.add(courtApplicationSummonsApproved()
                 .withApplicationId(courtApplication.getId())
                 .withLinkType(courtApplication.getType().getLinkType())
-                .withIsSummonsAmended(summonsPreviouslyApproved)
+                .withIsSummonsAmended(summonsPreviouslyApproved || LISTED.equals(this.applicationStatus))
                 .withCaseIds(getCaseIds())
                 .withSummonsApprovedOutcome(summonsApprovedOutcome)
                 .build());

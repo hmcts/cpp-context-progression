@@ -5,12 +5,10 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -28,7 +26,6 @@ import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArgu
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
 import uk.gov.justice.core.courts.*;
-import uk.gov.justice.core.progression.courts.BoxworkHearingLinked;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
@@ -45,9 +42,6 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
-import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
@@ -80,14 +74,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -100,10 +92,9 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -6808,41 +6799,6 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldLinkBoxworkHearingAndProduceBoxworkHearingLinkedEvent() {
-        final UUID boxworkHearingId = randomUUID();
-        final UUID firstHearingId = randomUUID();
-
-        final List<Object> events = hearingAggregate.linkBoxworkHearing(boxworkHearingId, firstHearingId).collect(toList());
-
-        assertThat(events.size(), is(1));
-        assertThat(events.get(0), Matchers.instanceOf(BoxworkHearingLinked.class));
-        final BoxworkHearingLinked event = (BoxworkHearingLinked) events.get(0);
-        assertThat(event.getBoxworkHearingId(), is(boxworkHearingId));
-        assertThat(event.getFirstHearingId(), is(firstHearingId));
-    }
-
-    @Test
-    public void shouldReturnFalseForIsLinkedToFirstHearingWhenNotLinked() {
-        assertThat(hearingAggregate.isLinkedToFirstHearing(), is(false));
-    }
-
-    @Test
-    public void shouldReturnTrueForIsLinkedToFirstHearingAfterLinkingBoxworkHearing() {
-        final UUID boxworkHearingId = randomUUID();
-        final UUID firstHearingId = randomUUID();
-
-        hearingAggregate.linkBoxworkHearing(boxworkHearingId, firstHearingId).collect(toList());
-
-        assertThat(hearingAggregate.isLinkedToFirstHearing(), is(true));
-        assertThat(hearingAggregate.getBoxworkFirstHearingId(), is(firstHearingId));
-    }
-
-    @Test
-    public void shouldReturnNullForGetBoxworkFirstHearingIdWhenNotLinked() {
-        assertThat(hearingAggregate.getBoxworkFirstHearingId(), is(nullValue()));
-    }
-
-    @Test
     public void shouldAmendSummonsDataAndProduceSummonsDataPreparedEvent() {
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
@@ -6862,7 +6818,6 @@ public class HearingAggregateTest {
                         .build());
 
         final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
-                .withHearingId(boxworkHearingId)
                 .withPersonalService(true)
                 .withSummonsSuppressed(false)
                 .build();
@@ -6881,7 +6836,6 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "isSummonsAlreadyApproved", true);
 
         final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
-                .withHearingId(randomUUID())
                 .build();
 
         final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());

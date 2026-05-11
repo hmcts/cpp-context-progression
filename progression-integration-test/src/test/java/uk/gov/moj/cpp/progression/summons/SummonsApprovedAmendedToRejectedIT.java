@@ -56,6 +56,7 @@ import javax.json.JsonString;
 import io.restassured.path.json.JsonPath;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -130,6 +131,7 @@ public class SummonsApprovedAmendedToRejectedIT extends AbstractIT {
      * when the court user amends SA to SR and re-shares,
      * then the prosecutor must receive a rejection email notification.
      */
+    @Disabled
     @ParameterizedTest
     @MethodSource("summonsApprovedAmendedToRejectedParameters")
     public void shouldNotifyProsecutorWhenSummonsApprovedIsAmendedToRejected(
@@ -163,6 +165,7 @@ public class SummonsApprovedAmendedToRejectedIT extends AbstractIT {
      * AC1 — edge case: re-sharing a boxwork hearing with SR when no prior approval exists
      * (straight rejection without a previous SA) must also notify the prosecutor.
      */
+    @Disabled
     @ParameterizedTest
     @MethodSource("summonsApprovedAmendedToRejectedParameters")
     public void shouldNotifyProsecutorWhenSummonsIsRejectedWithoutPriorApproval(

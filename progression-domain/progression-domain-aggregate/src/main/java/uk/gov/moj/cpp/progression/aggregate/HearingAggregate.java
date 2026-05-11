@@ -27,7 +27,6 @@ import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusCh
 import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.core.progression.courts.BoxworkHearingLinked.boxworkHearingLinked;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -48,7 +47,6 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
-import uk.gov.justice.core.progression.courts.BoxworkHearingLinked;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -139,7 +137,7 @@ public class HearingAggregate implements Aggregate {
     private boolean duplicate;
     private boolean deleted;
     private boolean isSummonsAlreadyApproved;
-    private UUID firstHearingId;
+
     private CommittingCourt committingCourt;
     private Map<String, Boolean> hasNextHearingForHearingDay = new HashMap<>();
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
@@ -332,7 +330,6 @@ public class HearingAggregate implements Aggregate {
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
                 when(ApplicationRepOrderUpdatedForHearing.class).apply(this::handleApplicationRepOrderUpdatedForHearing),
-                when(BoxworkHearingLinked.class).apply(e -> this.firstHearingId = e.getFirstHearingId()),
                 when(SummonsDataPrepared.class).apply(this::handleSummonsDataPrepared),
                 otherwiseDoNothing());
     }
@@ -849,15 +846,6 @@ public class HearingAggregate implements Aggregate {
 
     public boolean isResulted() {
         return HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus);
-    }
-
-    public Stream<Object> linkBoxworkHearing(final UUID boxworkHearingId, final UUID firstCaseHearingId) {
-        LOGGER.debug("Linking boxwork hearing {} to first case hearing {}.", boxworkHearingId, firstCaseHearingId);
-
-        return apply(Stream.of(boxworkHearingLinked()
-                .withFirstHearingId(firstCaseHearingId)
-                .withBoxworkHearingId(boxworkHearingId)
-                .build()));
     }
 
     public Stream<Object> createHearingDefendantRequest(final List<ListDefendantRequest> listDefendantRequests) {
@@ -3751,13 +3739,5 @@ public class HearingAggregate implements Aggregate {
         if(!Boolean.TRUE.equals(summonsDataPrepared.getIsSummonsAmended())) {
             this.isSummonsAlreadyApproved = true;
         }
-    }
-
-    public boolean isLinkedToFirstHearing() {
-        return nonNull(this.firstHearingId);
-    }
-
-    public UUID getBoxworkFirstHearingId() {
-        return firstHearingId;
     }
 }
