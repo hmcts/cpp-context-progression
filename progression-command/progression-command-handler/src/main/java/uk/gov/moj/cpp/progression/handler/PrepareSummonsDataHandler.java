@@ -60,26 +60,15 @@ public class PrepareSummonsDataHandler {
         LOGGER.debug("progression.command.amend-summons-data {}", amendSummonsDataEnvelope);
 
         final AmendSummonsData requestSummons = amendSummonsDataEnvelope.payload();
-        final UUID boxworkHearingId = requestSummons.getSummonsApprovedOutcome().getHearingId();
-        final EventStream eventStream = eventSource.getStreamById(boxworkHearingId);
-        final HearingAggregate bwHearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final UUID boxWorkHearingId = requestSummons.getSummonsApprovedOutcome().getHearingId();
+        final EventStream eventStream = eventSource.getStreamById(boxWorkHearingId);
 
-        //Get linked hearing and invoke amend on that
-        final UUID firstHearingId = bwHearingAggregate.getBoxworkFirstHearingId();
-
-        if (firstHearingId == null) {
-            LOGGER.warn("Boxwork hearing {} has no linked first hearing, skipping amend", boxworkHearingId);
-            return;
-        }
-
-        final EventStream fhEventStream = eventSource.getStreamById(firstHearingId);
-        final HearingAggregate hearingAggregate = aggregateService.get(fhEventStream, HearingAggregate.class);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
 
         final Stream<Object> events = hearingAggregate.amendSummonsData(requestSummons.getSummonsApprovedOutcome());
         if ( events != null) {
-            appendEventsToStream(amendSummonsDataEnvelope, fhEventStream, events);
+            appendEventsToStream(amendSummonsDataEnvelope, eventStream, events);
         }
-
     }
 
     @Handles("progression.command.prepare-summons-data-for-extended-hearing")
