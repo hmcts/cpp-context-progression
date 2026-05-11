@@ -1368,6 +1368,13 @@ public class CourtApplicationProcessorTest {
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
         verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
+
+        final ArgumentCaptor<Envelope> senderCaptor = forClass(Envelope.class);
+        verify(sender).send(senderCaptor.capture());
+        final Envelope hearingInitiateEnvelope = senderCaptor.getValue();
+        assertThat(hearingInitiateEnvelope.metadata().name(), is("hearing.initiate"));
+        assertThat(hearingInitiateEnvelope.payload().toString(),
+                isJson(withJsonPath("$.hearing.courtApplications[0].id", equalTo(applicationId.toString()))));
     }
 
     @Test
