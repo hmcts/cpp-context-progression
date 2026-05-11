@@ -54,6 +54,7 @@ public class PublishSummonsDocumentService {
                                                  final EmailChannel emailChannel,
                                                  final UUID materialId) {
         LOGGER.info("Generating '{}' summons for defendant '{}' for case '{}' and sendForRemotePrinting status is '{}'", templateName, defendantId, caseId, sendForRemotePrinting);
+        LOGGER.info("Summons document payload ==> '{}'", objectToJsonObjectConverter.convert(summonsDocumentContent));
         logEmailNotificationStatusForCaseSummons(emailChannel, defendantId);
         generateSummonsDocument(jsonEnvelope, caseId, null, summonsDocumentContent, templateName, sendForRemotePrinting, emailChannel, materialId);
 
@@ -71,6 +72,8 @@ public class PublishSummonsDocumentService {
                                                         final EmailChannel emailChannel,
                                                         final UUID materialId) {
         LOGGER.info("Generating '{}' summons for subject for application '{}' and sendForRemotePrinting status is '{}'", templateName, applicationId, sendForRemotePrinting);
+        LOGGER.info("Summons document payload ==> '{}'", objectToJsonObjectConverter.convert(summonsDocumentContent));
+
         logEmailNotificationStatusForApplicationSummons(emailChannel, applicationId);
         generateSummonsDocument(jsonEnvelope, null, applicationId, summonsDocumentContent, templateName, sendForRemotePrinting, emailChannel, materialId);
 
