@@ -6818,7 +6818,6 @@ public class HearingAggregateTest {
                         .build());
 
         final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
-                .withHearingId(boxworkHearingId)
                 .withPersonalService(true)
                 .withSummonsSuppressed(false)
                 .build();
@@ -6837,7 +6836,6 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "isSummonsAlreadyApproved", true);
 
         final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
-                .withHearingId(randomUUID())
                 .build();
 
         final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());

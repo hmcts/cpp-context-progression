@@ -60,7 +60,7 @@ public class PrepareSummonsDataHandler {
         LOGGER.debug("progression.command.amend-summons-data {}", amendSummonsDataEnvelope);
 
         final AmendSummonsData requestSummons = amendSummonsDataEnvelope.payload();
-        final UUID boxWorkHearingId = requestSummons.getSummonsApprovedOutcome().getHearingId();
+        final UUID boxWorkHearingId = requestSummons.getHearingId();
         final EventStream eventStream = eventSource.getStreamById(boxWorkHearingId);
 
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
