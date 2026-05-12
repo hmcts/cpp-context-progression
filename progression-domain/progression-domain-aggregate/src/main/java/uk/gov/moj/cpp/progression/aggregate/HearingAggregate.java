@@ -14,12 +14,14 @@ import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
+import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
 import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.HearingApplicationRequestCreated.hearingApplicationRequestCreated;
 import static uk.gov.justice.core.courts.HearingDefendantRequestCreated.hearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
+import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3;
 import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
@@ -108,6 +110,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -125,7 +128,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 8888819367477517208L;
+    private static final long serialVersionUID = 8888819367477517209L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -133,6 +136,7 @@ public class HearingAggregate implements Aggregate {
     private Boolean unscheduledHearingListedFromThisHearing;
     private boolean duplicate;
     private boolean deleted;
+    private boolean isSummonsAlreadyApproved;
     private CommittingCourt committingCourt;
     private Map<String, Boolean> hasNextHearingForHearingDay = new HashMap<>();
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
@@ -325,6 +329,7 @@ public class HearingAggregate implements Aggregate {
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
                 when(ApplicationRepOrderUpdatedForHearing.class).apply(this::handleApplicationRepOrderUpdatedForHearing),
+                when(SummonsDataPrepared.class).apply(this::handleSummonsDataPrepared),
                 otherwiseDoNothing());
     }
 
@@ -432,7 +437,75 @@ public class HearingAggregate implements Aggregate {
                     )
                     .build()));
         }
-        return null;
+        return Stream.empty();
+    }
+
+    public Stream<Object> amendSummonsData(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isNotEmpty(listDefendantRequests) || isNotEmpty(applicationListingNeeds)) {
+            final List<ListDefendantRequest> listDefendantRequestsToSend = buildListDefendantRequestsWithAmendedSummonsOutcome(summonsApprovedOutcome);
+            final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend = buildApplicationPartyListingNeedsWithAmendedSummonsOutcome(summonsApprovedOutcome);
+            final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIdsToSend = buildConfirmedProsecutionCaseIds();
+            final CourtCentre courtCentre = getCourtCentre(this.hearing.getCourtCentre());
+
+            streamBuilder.add(summonsDataPrepared()
+                    .withSummonsData(
+                            summonsData()
+                                    .withHearingDateTime(getEarliestDate(this.hearing.getHearingDays(), this.hearing.getId()))
+                                    .withCourtCentre(courtCentre)
+                                    .withConfirmedProsecutionCaseIds(confirmedProsecutionCaseIdsToSend)
+                                    .withListDefendantRequests(listDefendantRequestsToSend)
+                                    .withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsToSend)
+                                    .build())
+                    .withIsSummonsAmended(true)
+                    .build());
+        }
+        return apply(streamBuilder.build());
+    }
+
+    private static CourtCentre getCourtCentre(final CourtCentre courtCentre) {
+        return CourtCentre.courtCentre()
+                .withCode(courtCentre.getCode())
+                .withId(courtCentre.getId())
+                .withRoomId(courtCentre.getRoomId())
+                .withName(courtCentre.getName())
+                .build();
+    }
+
+    private List<ListDefendantRequest> buildListDefendantRequestsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        if (isEmpty(this.listDefendantRequests)) {
+            return null;
+        } else {
+            return this.listDefendantRequests.stream()
+                    .map(listDefendantRequest -> listDefendantRequest()
+                            .withValuesFrom(listDefendantRequest).withSummonsApprovedOutcome(summonsApprovedOutcome).build()).
+                    collect(toList());
+        }
+    }
+
+    private List<CourtApplicationPartyListingNeeds> buildApplicationPartyListingNeedsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
+        if (isEmpty(this.applicationListingNeeds)) {
+            return null;
+        }
+        return this.applicationListingNeeds.stream()
+                .map(needs -> courtApplicationPartyListingNeeds()
+                        .withValuesFrom(needs).withSummonsApprovedOutcome(summonsApprovedOutcome).build())
+                .collect(toList());
+    }
+
+    private List<ConfirmedProsecutionCaseId> buildConfirmedProsecutionCaseIds() {
+        final Map<UUID, List<UUID>> confirmedProsecutionCaseIdsMap = new HashMap<>();
+
+        if (isNotEmpty(this.listDefendantRequests)) {
+            for (final ListDefendantRequest request : this.listDefendantRequests) {
+                confirmedProsecutionCaseIdsMap.computeIfAbsent(request.getProsecutionCaseId(), k -> new ArrayList<>())
+                        .add(request.getDefendantId());
+            }
+        }
+
+        final List<ConfirmedProsecutionCaseId> result = confirmedProsecutionCaseIdsMap.entrySet().stream().map(entry -> ConfirmedProsecutionCaseId.confirmedProsecutionCaseId().withId(entry.getKey()).withConfirmedDefendantIds(entry.getValue()).build()).toList();
+        return result.isEmpty() ? null : result;
     }
 
     public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final ExtendHearing extendHearing) {
@@ -768,6 +841,10 @@ public class HearingAggregate implements Aggregate {
                 .withHearingId(hearingId)
                 .withSharedResultLines(sharedResultLines)
                 .build()));
+    }
+
+    public boolean isResulted() {
+        return HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus);
     }
 
     public Stream<Object> createHearingDefendantRequest(final List<ListDefendantRequest> listDefendantRequests) {
@@ -3639,6 +3716,23 @@ public class HearingAggregate implements Aggregate {
                     .withSendNotificationToParties(this.markedHearingConfirmedForReplay.getSendNotificationToParties())
                     .withHearingInProgression(getDeDupHearing(hearing))
                     .build());
+        }
+    }
+
+    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays, final UUID hearingId) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .filter(Objects::nonNull)
+                .min(ZonedDateTime::compareTo)
+                .orElseThrow(() -> new NoSuchElementException("No hearing days found for hearing " + hearingId));
+    }
+
+    private void handleSummonsDataPrepared(final SummonsDataPrepared summonsDataPrepared) {
+        if (this.isSummonsAlreadyApproved && isNotEmpty(summonsDataPrepared.getSummonsData().getListDefendantRequests())) {
+            final List<ListDefendantRequest> listDefendantRequestList = summonsDataPrepared.getSummonsData().getListDefendantRequests();
+
+            listDefendantRequests.clear();
+            listDefendantRequests.addAll(listDefendantRequestList);
         }
     }
 }

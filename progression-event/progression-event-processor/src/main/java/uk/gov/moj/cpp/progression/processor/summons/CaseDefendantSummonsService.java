@@ -126,6 +126,10 @@ public class CaseDefendantSummonsService {
             summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
             summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
+
+            if(Boolean.TRUE.equals(summonsDataPrepared.getIsSummonsAmended())) {
+                summonsDocumentContent.withAmendedDate(LocalDate.now());
+            }
         }
         summonsDocumentContent.withStatementOfFacts(emptyIfBlank(prosecutionCaseQueried.getStatementOfFacts()));
         summonsDocumentContent.withStatementOfFactsWelsh(emptyIfBlank(prosecutionCaseQueried.getStatementOfFactsWelsh()));

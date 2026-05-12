@@ -5,6 +5,10 @@
   "properties": {
     "summonsData": {
       "$ref": "#/definitions/summonsData"
+    },
+    "isSummonsAmended" : {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

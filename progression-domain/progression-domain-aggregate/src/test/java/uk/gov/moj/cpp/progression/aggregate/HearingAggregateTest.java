@@ -5,12 +5,10 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,6 +21,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.core.courts.SummonsData.summonsData;
+import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
@@ -44,9 +44,6 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
-import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
@@ -79,14 +76,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,10 +94,9 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -6806,5 +6800,114 @@ public class HearingAggregateTest {
         return courtApplicationList;
     }
 
+    @Test
+    public void shouldAmendSummonsDataAndProduceSummonsDataPreparedEvent() {
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
 
+        hearingAggregate.createHearingDefendantRequest(singletonList(
+                ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .build())).collect(toList());
+
+        setField(hearingAggregate, "isSummonsAlreadyApproved", true);
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), Matchers.instanceOf(SummonsDataPrepared.class));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) events.get(0);
+        assertThat(prepared.getSummonsData().getListDefendantRequests().get(0).getSummonsApprovedOutcome(), is(summonsApprovedOutcome));
+        assertThat(prepared.getIsSummonsAmended(), is(true));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenNoListDefendantRequestsAndNoApplicationListingNeeds() {
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnTrueForIsResultedWhenHearingListingStatusIsHearingResulted() {
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_RESULTED);
+
+        assertThat(hearingAggregate.isResulted(), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForIsResultedWhenHearingListingStatusIsNotHearingResulted() {
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.SENT_FOR_LISTING);
+
+        assertThat(hearingAggregate.isResulted(), is(false));
+    }
+
+    @Test
+    public void shouldSetIsSummonsAlreadyApprovedOnFirstSummonsDataPreparedEvent() {
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        hearingAggregate.createHearingDefendantRequest(singletonList(
+                ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .build())).collect(toList());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(false)
+                .withSummonsSuppressed(false)
+                .build();
+
+        // First amendment (isSummonsAmended=false means it's the initial approval)
+        final SummonsDataPrepared firstEvent = summonsDataPrepared()
+                .withSummonsData(summonsData()
+                        .withListDefendantRequests(singletonList(
+                                ListDefendantRequest.listDefendantRequest()
+                                        .withDefendantId(defendantId)
+                                        .withProsecutionCaseId(caseId)
+                                        .withSummonsApprovedOutcome(summonsApprovedOutcome)
+                                        .build()))
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("code").build())
+                        .withHearingDateTime(ZonedDateTime.now())
+                        .build())
+                .withIsSummonsAmended(false)
+                .build();
+
+        hearingAggregate.apply(firstEvent);
+
+        // Now a second amendSummonsData should set isSummonsAmended=true on the produced event
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) events.get(0);
+        assertThat(prepared.getIsSummonsAmended(), is(true));
+    }
 }

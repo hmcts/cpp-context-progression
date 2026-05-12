@@ -442,6 +442,17 @@ public class ReferenceDataStub {
                                 .withBody(FileHelper.read(format("stub-data/referencedata-country-post-code-%s.json", postcode))))));
     }
 
+    public static void stubQueryProsecutorsReturningEmpty() {
+        final String responsePayload = getPayload("restResource/referencedata.query.prosecutors.empty.json");
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
+        stubFor(get(urlPathMatching(urlPath))
+                .withQueryParam("prosecutorCode", matching(".*"))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(responsePayload)));
+    }
+
     public static void stubQueryCourtRoomById(final String courtCentreId) {
             final String payload = getPayload("restResource/referencedata-query-court-room-by-court-centre-id.json");
 
