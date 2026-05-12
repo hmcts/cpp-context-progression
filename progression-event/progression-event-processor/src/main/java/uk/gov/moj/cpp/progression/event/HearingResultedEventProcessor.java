@@ -137,7 +137,7 @@ public class HearingResultedEventProcessor {
             return event.payloadAsJsonObject();
         } catch (Exception ex) {
             LOGGER.error("Error while converting JSON payload, ex");
-            return JsonObject.EMPTY_JSON_OBJECT;
+            return createObjectBuilder().build();
         }
     }
 
