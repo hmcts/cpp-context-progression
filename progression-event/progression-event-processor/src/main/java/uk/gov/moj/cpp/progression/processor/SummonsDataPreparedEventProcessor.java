@@ -34,6 +34,7 @@ import uk.gov.justice.core.courts.summons.SummonsAddressee;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -81,6 +82,9 @@ public class SummonsDataPreparedEventProcessor {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
     private CaseDefendantSummonsService caseDefendantSummonsService;
@@ -221,6 +225,12 @@ public class SummonsDataPreparedEventProcessor {
                 final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                         summonsDataPrepared, defendantSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant, combinedDefendantDetailsForEmailChannel,
                         sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+
+                try {
+                    LOGGER.info("Generated summons document ===> {}'", objectToJsonObjectConverter.convert(defendantSummonsDocumentContent));
+                } catch (Exception ex) {
+                    LOGGER.warn("Exception during summons doc printing");
+                }
 
                 LOGGER.info("Generating {} summons for for defendant '{}' on case '{}'", defendantTemplateName, defendantId, caseId);
                 publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, defendantSummonsDocumentContent,

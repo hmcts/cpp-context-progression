@@ -63,6 +63,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.SummonsType;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -85,6 +86,8 @@ import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -192,7 +195,52 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         whenDefendantIsAddedToCase(addThirdDefendantToCourtProceedings);
 
         verifySummonsGeneratedOnHearingConfirmed(defendantId3, offenceId3, isWelsh, summonsType, templateName, numberOfDocuments, true, isYouth);
+    }
 
+    @Disabled
+    @Test
+    public void shouldGenerateAmendedSummonsForFirstHearingWhenApplicationSummonsIsApproved() throws IOException {
+        final String summonsCode = "M";
+        final String summonsType = "MCA";
+        final String templateName = "MCA";
+        final boolean isYouth = false;
+        final boolean isWelsh = false;
+        final boolean summonsSuppressed = false;
+
+        initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
+        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, 1, isYouth);
+
+       // sendBoxHearingResultedEvent(applicationId);
+
+        verifyDocumentAddedToCdes(defendantId1, 2);
+
+        final String defendantTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + templateName;
+        verifyTemplatePayloadValues(true, defendantTemplateName, summonsType, prosecutorCost, personalService,
+                caseUrn, getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1));
+    }
+
+    private String getPayloadForInitiatingFHACourtApplicationProceedings(final String applicationId) {
+        return getPayload("applications/progression.initiate-court-proceedings-for-fha-summons-generation.json")
+                .replace("APPLICATION_ID", applicationId)
+                .replaceAll("CASE_ID", caseId)
+                .replace("SUMMONS_TEMPLATE_TYPE", "FIRST_HEARING")
+                .replace("SUBJECT_DOB", getSubjectDateOfBirth(false))
+                .replace("FIRST_NAME", getFirstName(defendantId1))
+                .replace("MIDDLE_NAME", getMiddleName(defendantId1))
+                .replace("LAST_NAME", getLastName(defendantId1));
+    }
+
+    private void sendBoxHearingResultedEvent(final String applicationId) {
+        final String eventName = "public.events.hearing.hearing-resulted";
+        final String payloadStr = getPayload("public.events.hearing.hearing-resulted-ft-boxhearing.json")
+                .replace("APPLICATION_ID", applicationId)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("DEFENDANT_ID", defendantId1)
+                .replaceAll("OFFENCE_ID", offenceId1);
+
+        final JsonObject payload = new StringToJsonObjectConverter().convert(payloadStr);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(buildMetadata(eventName, randomUUID()), payload);
+        messageProducerClientPublic.sendMessage(eventName, envelope);
     }
 
     private void whenDefendantIsAddedToCase(final AddDefendantsToCourtProceedings payload) throws IOException {
@@ -422,5 +470,4 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     private List<String> getDefendantParentNameObject(final String defendantId) {
         return defendantNameMap.get(defendantId).get(1);
     }
-
 }

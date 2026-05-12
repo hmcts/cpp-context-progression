@@ -103,7 +103,7 @@ public class HearingResultedEventProcessor {
     public void handlePublicHearingResulted(final JsonEnvelope event) {
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received 'public.events.hearing.hearing-resulted' event with payload: {}", event.toObfuscatedDebugString());
+            LOGGER.info("Received 'public.events.hearing.hearing-resulted' event with payload: {}", getDebugString(event));
         }
 
         final JsonObject eventPayload = event.payloadAsJsonObject();
@@ -132,6 +132,15 @@ public class HearingResultedEventProcessor {
         commandUpdateDefendantWithDriverNumber(hearing, event);
     }
 
+    private static JsonObject getDebugString(final JsonEnvelope event) {
+        try {
+            return event.payloadAsJsonObject();
+        } catch (Exception ex) {
+            LOGGER.error("Error while converting JSON payload, ex");
+            return JsonObject.EMPTY_JSON_OBJECT;
+        }
+    }
+
     @Handles("progression.event.prosecution-cases-resulted-v2")
     public void handleProsecutionCasesResultedV2(final JsonEnvelope event) {
         final ProsecutionCasesResultedV2 prosecutionCasesResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCasesResultedV2.class);
@@ -151,7 +160,7 @@ public class HearingResultedEventProcessor {
     @Handles("progression.event.initiate-application-for-case-requested")
     public void processInitiateApplicationForCaseRequested(final JsonEnvelope event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Received 'progression.event.initiate-application-for-case-requested' event with payload: {}", event.toObfuscatedDebugString());
+            LOGGER.debug("Received 'progression.event.initiate-application-for-case-requested' event with payload: {}", getDebugString(event));
         }
         final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), InitiateApplicationForCaseRequested.class);
 
