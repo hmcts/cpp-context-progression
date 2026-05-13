@@ -7,7 +7,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static uk.gov.justice.core.courts.summons.BreachSummonsDocumentContent.breachSummonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsAddressee.summonsAddressee;
 import static uk.gov.justice.core.courts.summons.SummonsDefendant.summonsDefendant;
-import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
+import static uk.gov.justice.core.courts.summons.SummonsDocument.summonsDocument;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.emptyIfBlank;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getFullName;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getProsecutorCosts;
@@ -32,7 +32,7 @@ import uk.gov.justice.core.courts.summons.ApplicationSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.BreachSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
 import uk.gov.justice.core.courts.summons.SummonsDefendant;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails;
 
 import java.util.Optional;
@@ -41,7 +41,7 @@ import javax.json.JsonObject;
 
 public class ApplicationSummonsService {
 
-    public SummonsDocumentContent generateSummonsDocumentContent(final SummonsDataPrepared summonsDataPrepared,
+    public SummonsDocument generateSummonsDocument(final SummonsDataPrepared summonsDataPrepared,
                                                                  final CourtApplication courtApplication,
                                                                  final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds,
                                                                  final JsonObject courtCentreJson,
@@ -50,7 +50,7 @@ public class ApplicationSummonsService {
         final SummonsType summonsRequired = courtApplicationPartyListingNeeds.getSummonsRequired();
         final SummonsData summonsData = summonsDataPrepared.getSummonsData();
 
-        final SummonsDocumentContent.Builder summonsDocumentContent = summonsDocumentContent();
+        final SummonsDocument.Builder summonsDocumentContent = summonsDocument();
         summonsDocumentContent.withSubTemplateName(summonsRequired.name());
         summonsDocumentContent.withType(summonsRequired.toString());
         summonsDocumentContent.withCaseReference(courtApplication.getApplicationReference());

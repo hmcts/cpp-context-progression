@@ -44,7 +44,7 @@ import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.SummonsAddress;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
@@ -120,7 +120,7 @@ public class ApplicationSummonsServiceTest {
 
     @MethodSource("applicationSummonsSpecifications")
     @ParameterizedTest
-    void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
+    void generateSummonsDocument(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
 
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
         final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
@@ -128,7 +128,7 @@ public class ApplicationSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
 
         final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
-        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+        final SummonsDocument applicationSummonsPayload = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
 
         assertThat(applicationSummonsPayload, notNullValue());
         assertThat(applicationSummonsPayload.getSubTemplateName(), is(summonsRequired.toString()));
@@ -213,7 +213,7 @@ public class ApplicationSummonsServiceTest {
     }
 
     @Test
-    void generateSummonsDocumentContentForBranchCoverage() {
+    void generateSummonsDocumentForBranchCoverage() {
         final SummonsType summonsRequired = APPLICATION;
         final boolean welshValuesPresent = false;
         final PartyType partyType = PartyType.INDIVIDUAL;
@@ -236,7 +236,7 @@ public class ApplicationSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
 
         final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
-        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+        final SummonsDocument applicationSummonsPayload = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
 
         assertThat(applicationSummonsPayload, notNullValue());
         assertThat(applicationSummonsPayload.getSubTemplateName(), is(summonsRequired.toString()));
@@ -271,14 +271,14 @@ public class ApplicationSummonsServiceTest {
 
     @MethodSource("applicationSummonsSpecificationsWithVariousCosts")
     @ParameterizedTest
-    void generateSummonsDocumentContentWithVariousCosts(final SummonsType summonsType, final String costString, final boolean isWelsh) {
+    void generateSummonsDocumentWithVariousCosts(final SummonsType summonsType, final String costString, final boolean isWelsh) {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplicationWithCostAndLanguageNeeds(summonsType, costString, isWelsh);
         final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
         final JsonObject courtCentreJson = generateCourtCentreJson(true);
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
 
         final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
-        final SummonsDocumentContent applicationSummonsPayload = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+        final SummonsDocument applicationSummonsPayload = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
 
         assertThat(applicationSummonsPayload, notNullValue());
         if (isEmpty(costString)) {

@@ -56,7 +56,9 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtCivilApplication;
@@ -1984,6 +1986,89 @@ public class ApplicationAggregateTest {
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getLaaReference(), is(laaReference));
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getApplicationId(), is(applicationId));
 
+    }
+
+    @Test
+    public void shouldApproveSummonsWithIsSummonsAmendedFalseOnFirstApproval() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
+        assertThat(approved.getIsSummonsAmended(), is(false));
+    }
+
+    @Test
+    public void shouldApproveSummonsWithIsSummonsAmendedTrueWhenPreviouslyApproved() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        ReflectionUtil.setField(aggregate, "summonsPreviouslyApproved", true);
+
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
+        assertThat(approved.getIsSummonsAmended(), is(true));
+    }
+
+    @Test
+    public void shouldApproveSummonsWithIsSummonsAmendedTrueWhenApplicationStatusIsListed() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        ReflectionUtil.setField(aggregate, "applicationStatus", LISTED);
+
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
+        assertThat(approved.getIsSummonsAmended(), is(true));
+    }
+
+    @Test
+    public void shouldSetSummonsPreviouslyApprovedWhenCourtApplicationSummonsApprovedEventApplied() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        // Replay a prior CourtApplicationSummonsApproved event onto the aggregate to simulate event sourcing state rebuild
+        aggregate.apply(CourtApplicationSummonsApproved.courtApplicationSummonsApproved()
+                .withApplicationId(courtApplicationId)
+                .withIsSummonsAmended(false)
+                .build());
+
+        // Second approveSummons should now see summonsPreviouslyApproved = true
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
+        assertThat(approved.getIsSummonsAmended(), is(true));
     }
 
     @Test
