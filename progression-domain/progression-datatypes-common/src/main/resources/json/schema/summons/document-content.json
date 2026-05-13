@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/summons/summons-document-content.json",
+  "description": "The contents of a summons document",
+  "type": "object",
+  "properties": {
+    "subTemplateName": {
+      "type": "string"
+    },
+    "type": {
+      "description": "Sub-type of summons.  For example, indicates specific first hearing summons( such as MCA, WS, EW) or SJP_REFERRAL etc...",
+      "type": "string"
+    },
+    "issueDate": {
+      "description": "The court date and time that the summons is for",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "ljaCode": {
+      "type": "string"
+    },
+    "ljaCodeWelsh": {
+      "type": "string"
+    },
+    "ljaName": {
+      "type": "string"
+    },
+    "ljaNameWelsh": {
+      "type": "string"
+    },
+    "addressee": {
+      "$ref": "http://justice.gov.uk/core/courts/summons/summons-addressee.json"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/summons/summons-defendant.json"
+    },
+    "prosecutor": {
+      "$ref": "http://justice.gov.uk/core/courts/summons/summons-prosecutor.json"
+    },
+    "offences": {
+      "type": "array",
+      "description": "The offences for which a defendant is being summonsed.  Only applies to First Hearing and Referral summons",
+      "minItems": 1,
+      "additionalItems": false,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/summons/summons-offence.json"
+      }
+    },
+    "hearingCourtDetails": {
+      "$ref": "http://justice.gov.uk/core/courts/summons/summons-hearing-court-details.json"
+    },
+    "caseReference": {
+      "description": "The reference to the individual case that is the subject of the hearing (case URN or ARN)",
+      "type": "string"
+    },
+    "referralContent": {
+      "description": "The specific content for summons to an SJP referral",
+      "$ref": "http://justice.gov.uk/core/courts/summons/referral-summons-document-content.json"
+    },
+    "applicationContent": {
+      "description": "The specific content for summons to an application hearing",
+      "$ref": "http://justice.gov.uk/core/courts/summons/application-summons-document-content.json"
+    },
+    "breachContent": {
+      "description": "The specific content for summons to a breach application hearing",
+      "$ref": "http://justice.gov.uk/core/courts/summons/breach-summons-document-content.json"
+    },
+    "statementOfFacts": {
+      "type": "string"
+    },
+    "statementOfFactsWelsh": {
+      "type": "string"
+    },
+    "prosecutorCosts": {
+      "type": "string",
+      "description": "Prosecutor cost will be surfaced in the summons and defendant is liable to pay this amount.  Should be captured as £300.00 or english string when cost is zero"
+    },
+    "welshProsecutorCosts": {
+      "type": "string",
+      "description": "Prosecutor cost will be surfaced in the summons and defendant is liable to pay this amount when cost is in welsh.  Should be captured as £300.00 or welsh string when cost is zero"
+    },
+    "personalService": {
+      "type": "boolean",
+      "description": "Flag to indicate if summons will be served to the defendant in person (delivery by hand)"
+    },
+    "amendedDate": {
+      "description": "Populated when the summons is an amendment to a previously issued summons. The document template must display 'Amended on [date]' when this field is present.",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "additionalProperties": false
+}

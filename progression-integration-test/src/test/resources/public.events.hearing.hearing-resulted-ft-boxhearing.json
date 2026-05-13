@@ -1,0 +1,291 @@
+{
+  "isReshare": true,
+  "sharedTime": "2026-05-08T15:24:40.811Z",
+  "hearingDay": "2026-05-08",
+  "shadowListedOffences": [],
+  "hearing": {
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "isBoxHearing": true,
+    "hasSharedResults": true,
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "hearingDays": [
+      {
+        "hasSharedResults": true,
+        "listedDurationMinutes": 10,
+        "sittingDay": "2026-05-08T00:00:00.000Z"
+      }
+    ],
+    "courtApplications": [
+      {
+        "id": "APPLICATION_ID",
+        "applicationReceivedDate": "2026-05-08",
+        "applicationReference": "CQDEXGMBLW",
+        "applicationStatus": "LISTED",
+        "courtCivilApplication": {
+          "isCivil": false
+        },
+        "courtApplicationPayment": {
+          "feeStatus": "NOT_APPLICABLE"
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "code": "MC80804",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": false,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "bfa61811-b917-3bce-9cc1-7ea8e554bd3b",
+          "initialFeeApplicable": false,
+          "jurisdiction": "MAGISTRATES",
+          "lastModified": "2022-08-17T10:09:24.608Z",
+          "legislation": "In accordance with section 1 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 1 Deddf Llysoedd Ynadon 1980.",
+          "linkType": "FIRST_HEARING",
+          "listingNotifTemplate": "NOT_APPLICABLE",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": false,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application for issue of summons to accused or warrant for their arrest in relation to a criminal case",
+          "typeWelsh": "Cais am godi gwŷs i'r sawl a gyhuddwyd neu warant i'w harestio yng nghyswllt achos troseddol",
+          "validTo": "2021-12-31"
+        },
+        "applicant": {
+          "id": "8f12d46a-2fed-36a1-a710-fb4f0a0774c1",
+          "notificationRequired": false,
+          "summonsRequired": false,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Redgrave Court",
+              "address2": "Merton Road",
+              "address3": "Bootle",
+              "address4": "Merseyside",
+              "postcode": "L20 7HS"
+            },
+            "contact": {
+              "primaryEmail": "LSDCaseworkRequests@hse.gov.uk"
+            },
+            "majorCreditorCode": "HSE",
+            "name": "Health and Safety Executive",
+            "prosecutionAuthorityCode": "HSE",
+            "prosecutionAuthorityId": "8f12d46a-2fed-36a1-a710-fb4f0a0774c1",
+            "prosecutionAuthorityOUCode": "GAEHS00"
+          }
+        },
+        "subject": {
+          "id": "DEFENDANT_ID",
+          "notificationRequired": false,
+          "summonsRequired": true,
+          "masterDefendant": {
+            "isYouth": false,
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionAuthorityReference": "0800PP0100000000001H",
+            "personDefendant": {
+              "arrestSummonsNumber": "0800PP0100000000001H",
+              "personDetails": {
+                "address": {
+                  "address1": "23, sdafkjkgsdvvsav",
+                  "postcode": "HA1 3UA"
+                },
+                "dateOfBirth": "1998-10-10",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Suhana",
+                "gender": "NOT_SPECIFIED",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Khan",
+                "title": "Mr"
+              }
+            }
+          }
+        },
+        "respondents": [
+          {
+            "id": "DEFENDANT_ID",
+            "notificationRequired": false,
+            "summonsRequired": true,
+            "masterDefendant": {
+              "isYouth": false,
+              "masterDefendantId": "DEFENDANT_ID",
+              "prosecutionAuthorityReference": "0800PP0100000000001H",
+              "personDefendant": {
+                "arrestSummonsNumber": "0800PP0100000000001H",
+                "personDetails": {
+                  "address": {
+                    "address1": "23, sdafkjkgsdvvsav",
+                    "postcode": "HA1 3UA"
+                  },
+                  "dateOfBirth": "1998-10-10",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Suhana",
+                  "gender": "NOT_SPECIFIED",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Khan",
+                  "title": "Mr"
+                }
+              }
+            }
+          }
+        ],
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "CASE_ID",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Redgrave Court",
+                "address2": "Merton Road",
+                "address3": "Bootle",
+                "address4": "Merseyside",
+                "postcode": "L20 7HS"
+              },
+              "contact": {
+                "primaryEmail": "LSDCaseworkRequests@hse.gov.uk"
+              },
+              "majorCreditorCode": "HSE",
+              "prosecutionAuthorityCode": "HSE",
+              "prosecutionAuthorityId": "8f12d46a-2fed-36a1-a710-fb4f0a0774c1",
+              "prosecutionAuthorityName": "Health and Safety Executive",
+              "prosecutionAuthorityOUCode": "GAEHS00",
+              "caseURN": "CQDEXGMBLW"
+            },
+            "offences": [
+              {
+                "count": 0,
+                "id": "OFFENCE_ID",
+                "laidDate": "2026-04-30",
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "startDate": "2026-04-02",
+                "wording": "On or in 02 Apr 2026 at London attempted to rob Muneer of Tesco  of a value unknown ."
+              }
+            ]
+          }
+        ],
+        "judicialResults": [
+          {
+            "judicialResultId": "393f57c9-d3fd-47fb-abbd-63e9fb0131a9",
+            "judicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+            "amendmentDate": "2026-05-08",
+            "amendmentReason": "Admin error on shared result (a result recorded incorrectly)",
+            "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0",
+            "category": "<from ResultDefinition.category — refdata for 0f44eeb9>",
+            "cjsCode": "<from ResultDefinition.cjsCode — refdata>",
+            "courtClerk": {
+              "userId": "2781b565-4514-4805-8744-a3e827f0f611",
+              "firstName": "Emma",
+              "lastName": "Cleaner"
+            },
+            "isAdjournmentResult": "<from ResultDefinition.isAdjournment — refdata>",
+            "isAvailableForCourtExtract": "<from ResultDefinition — refdata>",
+            "isConvictedResult": "<from ResultDefinition.isConvicted — refdata>",
+            "isDeleted": false,
+            "isFinancialResult": "<from ResultDefinition.financial — refdata>",
+            "isNewAmendment": true,
+            "isUnscheduled": "<from ResultDefinition.unscheduled — refdata>",
+            "label": "Summons approved",
+            "lastSharedDateTime": "2026-05-08",
+            "orderedDate": "2026-05-08",
+            "orderedHearingId": "4053e8d6-6f2d-4a82-9003-b49546159ccd",
+            "rank": "<from ResultDefinition.rank — refdata>",
+            "lifeDuration": false,
+            "publishedAsAPrompt": false,
+            "excludedFromResults": false,
+            "alwaysPublished": false,
+            "urgent": false,
+            "d20": false,
+            "rollUpPrompts": false,
+            "publishedForNows": false,
+            "terminatesOffenceProceedings": false,
+            "preserveActiveOrder": false,
+            "canExtendActiveOrder": false,
+            "committedToCC": false,
+            "sentToCC": false,
+            "resultDefinitionGroup": "<from ResultDefinition — refdata>",
+            "resultWording": "<from ResultDefinition — refdata>",
+            "welshResultWording": "<from ResultDefinition — refdata>",
+            "welshLabel": "<from ResultDefinition — refdata>",
+            "level": "<from ResultDefinition.level — refdata>",
+            "postHearingCustodyStatus": "<from ResultDefinition — refdata>",
+            "judicialResultPrompts": [
+              {
+                "judicialResultPromptTypeId": "428e2b37-88f9-4f9c-beda-450b96bac466",
+                "label": "Prosecution costs",
+                "promptReference": "prosecutionCosts",
+                "value": "455.00",
+                "welshValue": "455.00",
+                "courtExtract": "<from refdata prompt>",
+                "promptSequence": "<from refdata prompt>",
+                "type": "<from refdata prompt>",
+                "isFinancialImposition": "<from refdata prompt>"
+              },
+              {
+                "judicialResultPromptTypeId": "04d5d843-f530-43e4-927f-57942b310d5c",
+                "label": "THIS SUMMONS IS FOR PERSONAL SERVICE",
+                "promptReference": "tHISSUMMONSISFORPERSONALSERVICE",
+                "value": "false",
+                "welshValue": "false",
+                "courtExtract": "<from refdata prompt>",
+                "promptSequence": "<from refdata prompt>",
+                "type": "<from refdata prompt>",
+                "isFinancialImposition": false
+              },
+              {
+                "judicialResultPromptTypeId": "1d068bf5-5149-4bb2-b333-7c8b288ca119",
+                "label": "This summons will be served by a Prosecutor",
+                "promptReference": "thisSummonsWillBeServedByAProsecutor",
+                "value": "false",
+                "welshValue": "false",
+                "courtExtract": "<from refdata prompt>",
+                "promptSequence": "<from refdata prompt>",
+                "type": "<from refdata prompt>",
+                "isFinancialImposition": false
+              },
+              {
+                "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+                "label": "Prosecutor's email address (used summons notification)",
+                "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+                "value": "test@test.com",
+                "welshValue": "test@test.com",
+                "courtExtract": "<from refdata prompt>",
+                "promptSequence": "<from refdata prompt>",
+                "type": "<from refdata prompt>",
+                "isFinancialImposition": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
