@@ -21,6 +21,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.core.courts.SummonsData.summonsData;
+import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
@@ -92,10 +94,9 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -6848,5 +6849,66 @@ public class HearingAggregateTest {
         return courtApplicationList;
     }
 
+    @Test
+    public void shouldAmendSummonsDataAndProduceSummonsDataPreparedEvent() {
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
 
+        hearingAggregate.createHearingDefendantRequest(singletonList(
+                ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .build())).collect(toList());
+
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), Matchers.instanceOf(SummonsDataPrepared.class));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) events.get(0);
+        assertThat(prepared.getSummonsData().getListDefendantRequests().get(0).getSummonsApprovedOutcome(), is(summonsApprovedOutcome));
+        assertThat(prepared.getIsSummonsAmended(), is(true));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenNoListDefendantRequestsAndNoApplicationListingNeeds() {
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnTrueForIsResultedWhenHearingListingStatusIsHearingResulted() {
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_RESULTED);
+
+        assertThat(hearingAggregate.isResulted(), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForIsResultedWhenHearingListingStatusIsNotHearingResulted() {
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.SENT_FOR_LISTING);
+
+        assertThat(hearingAggregate.isResulted(), is(false));
+    }
 }
