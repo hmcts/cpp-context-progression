@@ -793,6 +793,102 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andHearingFound_shouldSendAmendSummonsDataCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .withProsecutorCost("£100.00")
+                        .withProsecutorEmailAddress("test@test.com")
+                        .build())
+                .build();
+
+        final JsonObject hearingsPayload = createObjectBuilder()
+                .add("hearings", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", hearingId.toString()).build())
+                        .build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.of(hearingsPayload));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        assertThat(captor.getValue().metadata().name(), is("progression.command.amend-summons-data"));
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andNoHearingFound_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.empty());
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andHearingsArrayEmpty_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        final JsonObject hearingsPayload = createObjectBuilder()
+                .add("hearings", createArrayBuilder().build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.of(hearingsPayload));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
     public void courtApplicationSummonsRejected_withLinkedLinkType_shouldNotSendPublicEventButShouldNotify() {
         final UUID applicationId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
