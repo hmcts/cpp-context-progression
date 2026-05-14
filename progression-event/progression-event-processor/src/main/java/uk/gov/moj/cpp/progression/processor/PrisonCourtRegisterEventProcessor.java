@@ -216,10 +216,10 @@ public class PrisonCourtRegisterEventProcessor {
 
     /**
      * Handles the prison-court-register-generated-v2 event by sending PCR notification to the CrimeHearingCaseEvent service.
-     * 
+     *
      * This method processes the V2 event for prison court register generation and sends a notification
      * to the Crime Court Hearing service via a direct service-to-service call (not through APIM).
-     * 
+     *
      */
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-generated-v2")
