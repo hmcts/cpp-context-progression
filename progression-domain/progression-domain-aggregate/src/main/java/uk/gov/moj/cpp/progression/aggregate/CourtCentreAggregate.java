@@ -43,7 +43,7 @@ import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublishe
 import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_HEARING_RESULTS_DOCUMENT_SUBSCRIPTION_ENABLED;
 
 public class CourtCentreAggregate implements Aggregate {
-    private static final long serialVersionUID = 1054L;
+    private static final long serialVersionUID = 1055L;
     private List<CourtRegisterRecipient> courtRegisterRecipients;
 
     private UUID courtCentreId;
