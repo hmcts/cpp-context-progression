@@ -3,7 +3,11 @@
     <parent>
         <artifactId>progression-domain</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
+<<<<<<< HEAD
         <version>17.0.231-AMP-186-SNAPSHOT</version>
+=======
+        <version>17.0.229-AMP-467-SNAPSHOT</version>
+>>>>>>> main
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
