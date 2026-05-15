@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.applications;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static io.smallrye.common.constraint.Assert.assertFalse;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -67,17 +68,21 @@ public class GenericSummonsApplicationIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED = "public.progression.court-application-summons-rejected";
+    private static final String PROGRESSION_EVENT_SUMMONS_DATA_PREPARED = "progression.event.summons-data-prepared";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private static final String PROSECUTOR_EMAIL_ADDRESS = randomAlphanumeric(20) + "@random.com";
+    private static final String PROSECUTOR_EMAIL_ADDRESS_2 = randomAlphanumeric(20) + "@random2.com";
 
     private final JmsMessageConsumerClient messageConsumerClientPublicSummonsApproved = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).getMessageConsumerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicSummonsRejected = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED).getMessageConsumerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
     private final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForSummonsAmended = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_SUMMONS_DATA_PREPARED).getMessageConsumerClient();
 
     private String rejectionReason;
     private String prosecutionCost;
+    private String amendedProsecutionCost;
     private boolean personalService;
     private boolean summonsSuppressed;
 
@@ -85,6 +90,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
     public void setUp() {
         rejectionReason = randomAlphabetic(20);
         prosecutionCost = "£" + integer(100);
+        amendedProsecutionCost = "£255";
         personalService = BOOLEAN.next();
         summonsSuppressed = BOOLEAN.next();
     }
@@ -213,6 +219,52 @@ public class GenericSummonsApplicationIT extends AbstractIT {
     }
 
     @Test
+    public void shouldRaiseSummonsDataPreparedWithAmendedDetails() throws Exception {
+        final String userId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String applicationId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-first-hearing-summons-linked-application.json");
+
+        final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
+
+        final String hearingId = hearing.getString("id");
+
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
+
+        final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
+
+        final String expectedOfHearing = getPayload("expected/expected.first-summons.hearing.initiate.json")
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("CASE_ID", caseId);
+
+        assertEquals(expectedOfHearing, requestOfHearing, getCustomComparator(applicationId));
+
+        final String summonsResults = getSummonsApprovedResult(prosecutionCost, personalService, summonsSuppressed, PROSECUTOR_EMAIL_ADDRESS);
+
+        final JsonObject summonResultJsonObject = new StringToJsonObjectConverter().convert(summonsResults);
+
+        final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+
+        verifyCourtApplicationSummonsApprovedPublicEvent(applicationId, caseId);
+
+        final String amendedSummonsResults = getSummonsApprovedResult(amendedProsecutionCost, Boolean.FALSE, Boolean.FALSE, PROSECUTOR_EMAIL_ADDRESS_2);
+        final JsonObject amendedSummonResultJsonObject = new StringToJsonObjectConverter().convert(amendedSummonsResults);
+        final JsonObject amendedPublicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, amendedSummonResultJsonObject);
+
+        final JsonEnvelope amendedPublicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), amendedPublicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, amendedPublicEventEnvelope);
+
+        verifyCourtApplicationSummonsAmendedEvent(amendedProsecutionCost);
+    }
+
+    @Test
     public void shouldRaisePublicSummonsRejectedV2() throws Exception {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -315,6 +367,18 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         assertThat(summonsApprovedOutcome.getString("prosecutorCost"), is(prosecutionCost));
         assertThat(summonsApprovedOutcome.getBoolean("personalService"), is(personalService));
         assertThat(summonsApprovedOutcome.getBoolean("summonsSuppressed"), is(summonsSuppressed));
+    }
+
+    public void verifyCourtApplicationSummonsAmendedEvent(final String amendedCost) {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForSummonsAmended);
+        assertTrue(message.isPresent());
+        assertTrue(message.get().getBoolean("isSummonsAmended"));
+        final JsonObject summonsApprovedOutcome = message.get().getJsonObject("summonsData").getJsonArray("listDefendantRequests")
+                .get(0).asJsonObject().getJsonObject("summonsApprovedOutcome");
+        assertThat(summonsApprovedOutcome.getString("prosecutorEmailAddress"), is(PROSECUTOR_EMAIL_ADDRESS_2));
+        assertThat(summonsApprovedOutcome.getString("prosecutorCost"), is(amendedCost));
+        assertFalse(summonsApprovedOutcome.getBoolean("personalService"));
+        assertFalse(summonsApprovedOutcome.getBoolean("summonsSuppressed"));
     }
 
     public void verifyCourtApplicationSummonsRejectedPublicEvent(String applicationId) {
