@@ -5,12 +5,10 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -46,9 +44,6 @@ import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
-import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -79,14 +74,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1048,12 +1041,11 @@ public class HearingAggregateTest {
 
         final List<Object> events = hearingAggregate.processHearingResults(prosecutionCasesResultedV2.getHearing(),ZonedDateTime.now(),null, LocalDate.now(), referenceResultIds).collect(toList());
 
-        assertTrue(events.stream().noneMatch(event -> event.getClass().equals(ProsecutionCasesResultedV2.class)));
-        assertThat(events.size(), is(3));
+        assertThat(events.size(), is(4));
         assertThat(events.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
         assertThat(events.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
-        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
-
+        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+        assertThat(events.get(3).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
     }
 
     @Test

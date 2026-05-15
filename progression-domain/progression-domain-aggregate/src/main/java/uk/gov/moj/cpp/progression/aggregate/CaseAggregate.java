@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -3138,7 +3139,12 @@ public class CaseAggregate implements Aggregate {
                 if (hasNewAmendment(offence)) {
                     isOffenceConcluded = isConcluded(offence);
                 } else {
-                    isOffenceConcluded = isOffencePreviouslyConcluded(defendantId, offence.getId());
+                    final boolean isOffencePreviouslyConcluded = isOffencePreviouslyConcluded(defendantId, offence.getId());
+                    if(isOffencePreviouslyConcluded && isEmpty(offence.getJudicialResults())){ //result is removed from offence
+                        isOffenceConcluded = false;
+                    } else {
+                        isOffenceConcluded = isOffencePreviouslyConcluded || isConcluded(offence);
+                    }
                 }
                 getUpdatedOffence(updatedOffences, offence, isOffenceConcluded);
             });
@@ -3161,17 +3167,11 @@ public class CaseAggregate implements Aggregate {
         if (nonNull(defendantAllOffences)) {
             defendantAllOffences.forEach(previousOffence -> {
                 final uk.gov.justice.core.courts.Offence currentOffence = getOffenceById(previousOffence.getId(), currentUpdatedOffences);
-
-                if (hasNewAmendment(currentOffence)) {
-                    offenceProceedingsConcludedMap.put(previousOffence.getId(), isConcluded(currentOffence));
+                if (nonNull(currentOffence)) {
+                    offenceProceedingsConcludedMap.put(previousOffence.getId(), currentOffence.getProceedingsConcluded());
                 } else {
-                    //previously resulted but not in current hearing / payload
-                    if (isOffencePreviouslyConcluded(defendantId, previousOffence.getId())) {
-                        offenceProceedingsConcludedMap.put(previousOffence.getId(), TRUE);
-                    } else {
-                        //not yet resulted - concluded is false
-                        offenceProceedingsConcludedMap.put(previousOffence.getId(), isConcluded(previousOffence));
-                    }
+                    // Offence not in current hearing — preserve previously known concluded state
+                    offenceProceedingsConcludedMap.put(previousOffence.getId(), isOffencePreviouslyConcluded(defendantId, previousOffence.getId()));
                 }
             });
         }
