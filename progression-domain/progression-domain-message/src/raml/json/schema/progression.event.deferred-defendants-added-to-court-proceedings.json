@@ -1,10 +1,10 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
-  "id" : "http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json",
+  "id" : "http://justice.gov.uk/core/courts/deferred-defendants-added-to-court-proceedings.json",
   "type" : "object",
   "properties" : {
     "requestId" : {
-      "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "defendants" : {
       "type" : "array",
@@ -27,11 +27,12 @@
         "$ref" : "http://justice.gov.uk/core/courts/hearing-request-detail.json"
       }
     }
-
   },
   "required" : [
+    "requestId",
     "defendants",
-    "listHearingRequests"
+    "listHearingRequests",
+    "hearingRequestDetails"
   ],
   "additionalProperties" : false
 }

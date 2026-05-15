@@ -188,7 +188,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
         // Adding third defendant with hearing details matching first defendant
         final String offenceId3 = randomUUID().toString();
-        final AddDefendantsToCourtProceedings addThirdDefendantToCourtProceedings = buildAddDefendantToCourtProceedings(caseId, defendantId3, offenceId3, false, FIRST_HEARING_START_TIME, summonsSuppressed, isYouth);
+        final AddDefendantsToCourtProceedings addThirdDefendantToCourtProceedings = buildAddDefendantToCourtProceedings(caseId, defendantId3, offenceId3, false, FIRST_HEARING_START_TIME.plusWeeks(1), summonsSuppressed, isYouth);
         whenDefendantIsAddedToCase(addThirdDefendantToCourtProceedings);
 
         verifySummonsGeneratedOnHearingConfirmed(defendantId3, offenceId3, isWelsh, summonsType, templateName, numberOfDocuments, true, isYouth);
