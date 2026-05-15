@@ -826,6 +826,238 @@ class CaseAggregateTest {
         assertThat(getProceedingsConcludedStatus(defendantId3, hearingResultedCaseUpdatedAfterUpdateAfterAggregate.getProsecutionCase()), is(true));
     }
 
+    @Test
+    public void shouldResetProceedingsConcludedWhenResultDeletedViaAmendment() {
+
+        final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final List<Defendant> defendantsWithFinalResult = singletonList(getDefendant(caseId, defendantId, offenceId, true, 5));
+
+        final ProsecutionCase prosecutionCaseInitial = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsWithFinalResult)
+                .withId(caseId)
+                .build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCaseInitial, emptyList());
+
+        // Initial share — offence has FINAL result (isNewAmendment=true via helper) → INACTIVE
+        final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated initialShareEvent =
+                (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
+        assertCaseStatus(initialShareEvent, caseId, INACTIVE);
+
+        // Replay event to populate defendantOffencesResultedOffenceLevel in aggregate
+        caseAggregate.apply(initialShareEvent);
+
+        // Amendment share — same offence, but result deleted (empty judicialResults, no isNewAmendment)
+        final uk.gov.justice.core.courts.Offence offenceWithDeletedResult = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId)
+                .withListingNumber(5)
+                .withJudicialResults(emptyList())
+                .withProceedingsConcluded(false)
+                .build();
+        final Defendant defendantWithDeletedResult = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(singletonList(offenceWithDeletedResult))
+                .build();
+        final ProsecutionCase prosecutionCaseAmendment = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(singletonList(defendantWithDeletedResult))
+                .withId(caseId)
+                .withCaseStatus(INACTIVE.getDescription())
+                .build();
+
+        final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
+                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated amendmentEvent =
+                (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
+
+        assertCaseStatus(amendmentEvent, caseId, ACTIVE);
+        assertThat(getProceedingsConcludedStatus(defendantId, amendmentEvent.getProsecutionCase()), is(false));
+    }
+
+    @Test
+    public void shouldLeaveUnchangedOffenceConcludedWhenOneResultDeletedViaAmendment() {
+
+        final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        // One defendant with two offences, both concluded
+        final List<uk.gov.justice.core.courts.Offence> twoOffencesInitial = new ArrayList<>();
+        twoOffencesInitial.addAll(offencesWith(offenceId1, true, 5));
+        twoOffencesInitial.addAll(offencesWith(offenceId2, true, 5));
+        final List<Defendant> defendantsInitial = singletonList(getDefendant(caseId, defendantId, twoOffencesInitial, true));
+
+        final ProsecutionCase prosecutionCaseInitial = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsInitial)
+                .withId(caseId)
+                .build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCaseInitial, emptyList());
+
+        // Initial share — both FINAL (isNewAmendment=true via helper) → INACTIVE
+        final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated initialShareEvent =
+                (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
+        assertCaseStatus(initialShareEvent, caseId, INACTIVE);
+        caseAggregate.apply(initialShareEvent);
+
+        // Amendment: offence1 result deleted (empty judicialResults), offence2 still has FINAL result
+        final uk.gov.justice.core.courts.Offence offence1Deleted = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1)
+                .withListingNumber(5)
+                .withJudicialResults(emptyList())
+                .withProceedingsConcluded(false)
+                .build();
+        final uk.gov.justice.core.courts.Offence offence2Unchanged = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId2)
+                .withListingNumber(5)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).build()))
+                .withProceedingsConcluded(true)
+                .build();
+        final List<uk.gov.justice.core.courts.Offence> twoOffencesAmended = new ArrayList<>();
+        twoOffencesAmended.add(offence1Deleted);
+        twoOffencesAmended.add(offence2Unchanged);
+        final List<Defendant> defendantsAmended = singletonList(getDefendant(caseId, defendantId, twoOffencesAmended, true));
+        final ProsecutionCase prosecutionCaseAmendment = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsAmended)
+                .withId(caseId)
+                .withCaseStatus(INACTIVE.getDescription())
+                .build();
+
+        final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
+                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated amendmentEvent =
+                (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
+
+        // Offence1 deleted → defendant not fully concluded → ACTIVE
+        // Offence2 unchanged (still has FINAL result) → preserved as concluded
+        assertCaseStatus(amendmentEvent, caseId, ACTIVE);
+        assertThat(getProceedingsConcludedStatus(defendantId, amendmentEvent.getProsecutionCase()), is(false));
+    }
+
+    @Test
+    public void shouldPreserveProceedingsConcludedForOffenceAbsentFromCurrentHearing() {
+
+        final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        // One defendant with two offences, both concluded
+        final List<uk.gov.justice.core.courts.Offence> twoOffencesInitial = new ArrayList<>();
+        twoOffencesInitial.addAll(offencesWith(offenceId1, true, 5));
+        twoOffencesInitial.addAll(offencesWith(offenceId2, true, 5));
+        final List<Defendant> defendantsInitial = singletonList(getDefendant(caseId, defendantId, twoOffencesInitial, true));
+
+        final ProsecutionCase prosecutionCaseInitial = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsInitial)
+                .withId(caseId)
+                .build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCaseInitial, emptyList());
+
+        // Initial share — both FINAL → INACTIVE
+        final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated initialShareEvent =
+                (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
+        assertCaseStatus(initialShareEvent, caseId, INACTIVE);
+        caseAggregate.apply(initialShareEvent);
+
+        // Current hearing only includes offence1 with result deleted; offence2 is entirely absent
+        // (it belongs to a different hearing scope — the null guard must preserve its concluded state)
+        final uk.gov.justice.core.courts.Offence offence1Deleted = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1)
+                .withListingNumber(5)
+                .withJudicialResults(emptyList())
+                .withProceedingsConcluded(false)
+                .build();
+        final List<Defendant> defendantsCurrentHearing = singletonList(
+                getDefendant(caseId, defendantId, singletonList(offence1Deleted), true));
+        final ProsecutionCase prosecutionCaseCurrentHearing = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsCurrentHearing)
+                .withId(caseId)
+                .withCaseStatus(INACTIVE.getDescription())
+                .build();
+
+        final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
+                prosecutionCaseCurrentHearing, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated amendmentEvent =
+                (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
+
+        // Offence1 deleted → not concluded; offence2 absent (currentOffence=null → null guard → stays true)
+        // Defendant has mixed concluded state → proceedingsConcluded=false → ACTIVE
+        assertCaseStatus(amendmentEvent, caseId, ACTIVE);
+        assertThat(getProceedingsConcludedStatus(defendantId, amendmentEvent.getProsecutionCase()), is(false));
+    }
+
+    @Test
+    public void shouldKeepOffenceNotConcludedWhenAbsentFromCurrentHearingAndNeverPreviouslyResulted() {
+
+        final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        // Defendant with two offences, neither has any judicial results initially
+        final uk.gov.justice.core.courts.Offence offence1Initial = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1).withListingNumber(5).withJudicialResults(emptyList()).build();
+        final uk.gov.justice.core.courts.Offence offence2Initial = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId2).withListingNumber(5).withJudicialResults(emptyList()).build();
+        final List<uk.gov.justice.core.courts.Offence> twoUnresultedOffences = new ArrayList<>();
+        twoUnresultedOffences.add(offence1Initial);
+        twoUnresultedOffences.add(offence2Initial);
+        final List<Defendant> defendantsInitial = singletonList(getDefendant(caseId, defendantId, twoUnresultedOffences, false));
+
+        final ProsecutionCase prosecutionCaseInitial = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsInitial)
+                .withId(caseId)
+                .build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCaseInitial, emptyList());
+
+        // Hearing results only offence1 (FINAL + isNewAmendment=true); offence2 is absent from this hearing
+        final List<Defendant> defendantsOffence1Only = singletonList(getDefendant(caseId, defendantId, offenceId1, true, 5));
+        final ProsecutionCase prosecutionCaseOffence1Only = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsOffence1Only)
+                .withId(caseId)
+                .withCaseStatus(ACTIVE.getDescription())
+                .build();
+
+        final Stream<Object> events = this.caseAggregate.updateCase(
+                prosecutionCaseOffence1Only, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated event = (HearingResultedCaseUpdated) events.collect(toList()).get(0);
+
+        // offence1 concluded; offence2 absent + never previously resulted → isConcluded(previousOffence2)=false
+        // defendant not fully concluded → ACTIVE
+        assertCaseStatus(event, caseId, ACTIVE);
+        assertThat(getProceedingsConcludedStatus(defendantId, event.getProsecutionCase()), is(false));
+    }
+
     private boolean getProceedingsConcludedStatus(final UUID defendantId, final ProsecutionCase prosecutionCase) {
         return prosecutionCase.getDefendants().stream().filter(defendant -> defendant.getId().equals(defendantId)).findFirst().get().getProceedingsConcluded();
     }
@@ -2920,8 +3152,6 @@ class CaseAggregateTest {
                 .withCode("code")
                 .build();
         this.caseAggregate.apply(prosecutionCaseCreated);
-
-        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
 
         final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
