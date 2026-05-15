@@ -850,7 +850,8 @@ class CaseAggregateTest {
 
         // Initial share — offence has FINAL result (isNewAmendment=true via helper) → INACTIVE
         final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
-                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
+
         final HearingResultedCaseUpdated initialShareEvent =
                 (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
         assertCaseStatus(initialShareEvent, caseId, INACTIVE);
@@ -879,7 +880,7 @@ class CaseAggregateTest {
                 .build();
 
         final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
-                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated amendmentEvent =
                 (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
 
@@ -913,7 +914,7 @@ class CaseAggregateTest {
 
         // Initial share — both FINAL (isNewAmendment=true via helper) → INACTIVE
         final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
-                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated initialShareEvent =
                 (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
         assertCaseStatus(initialShareEvent, caseId, INACTIVE);
@@ -944,7 +945,7 @@ class CaseAggregateTest {
                 .build();
 
         final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
-                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseAmendment, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated amendmentEvent =
                 (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
 
@@ -980,7 +981,7 @@ class CaseAggregateTest {
 
         // Initial share — both FINAL → INACTIVE
         final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
-                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated initialShareEvent =
                 (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
         assertCaseStatus(initialShareEvent, caseId, INACTIVE);
@@ -1004,7 +1005,7 @@ class CaseAggregateTest {
                 .build();
 
         final Stream<Object> amendmentEvents = this.caseAggregate.updateCase(
-                prosecutionCaseCurrentHearing, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseCurrentHearing, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated amendmentEvent =
                 (HearingResultedCaseUpdated) amendmentEvents.collect(toList()).get(0);
 
@@ -1052,7 +1053,7 @@ class CaseAggregateTest {
                 .build();
 
         final Stream<Object> events = this.caseAggregate.updateCase(
-                prosecutionCaseOffence1Only, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+                prosecutionCaseOffence1Only, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList());
         final HearingResultedCaseUpdated event = (HearingResultedCaseUpdated) events.collect(toList()).get(0);
 
         // offence1 concluded; offence2 absent + never previously resulted → isConcluded(previousOffence2)=false
