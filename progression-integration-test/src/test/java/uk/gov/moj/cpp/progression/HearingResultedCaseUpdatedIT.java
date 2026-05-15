@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -52,6 +53,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated";
+    private static final String HEARING_RESULTED_AMENDMENT_DELETED_FIXTURE = "public.events.hearing.hearing-resulted-amendment-deleted.json";
 
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
@@ -111,17 +113,27 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdateHearingResultedCaseUpdatedV2() throws Exception {
+    public void shouldUpdateHearingResultedCaseUpdatedV2_ThenAmendWithResultDeleted() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
+        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
                 hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
         verifyInMessagingQueueForHearingResulted();
+
+        // Amendment re-share: same offence, but result deleted (judicialResults=[]) → must revert
+        publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(HEARING_RESULTED_AMENDMENT_DELETED_FIXTURE, caseId,
+                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo(ACTIVE.getDescription())),
+                withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded",
+                        equalTo(false)));
     }
 
 

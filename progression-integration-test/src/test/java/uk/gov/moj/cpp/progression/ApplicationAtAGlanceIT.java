@@ -306,7 +306,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.linkedCases[0].caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
-                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
+                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference)),
+                withJsonPath("$.linkedCases[0].offences[0].orderIndex", equalTo(1)),
+                withJsonPath("$.linkedCases[0].offences[0].offenceCode", notNullValue())
         );
     }
 
