@@ -229,6 +229,52 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
 
     @Test
+    public void shouldRaiseSummonsDataPreparedWithAmendedDetails() throws Exception {
+        final String userId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String applicationId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-first-hearing-summons-linked-application.json");
+
+        final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
+
+        final String hearingId = hearing.getString("id");
+
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
+
+        final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
+
+        final String expectedOfHearing = getPayload("expected/expected.first-summons.hearing.initiate.json")
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("CASE_ID", caseId);
+
+        assertEquals(expectedOfHearing, requestOfHearing, getCustomComparator(applicationId));
+
+        final String summonsResults = getSummonsApprovedResult(prosecutionCost, personalService, summonsSuppressed, PROSECUTOR_EMAIL_ADDRESS);
+
+        final JsonObject summonResultJsonObject = new StringToJsonObjectConverter().convert(summonsResults);
+
+        final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+
+        verifyCourtApplicationSummonsApprovedPublicEvent(applicationId, caseId);
+
+        final String amendedSummonsResults = getSummonsApprovedResult(amendedProsecutionCost, Boolean.FALSE, Boolean.FALSE, PROSECUTOR_EMAIL_ADDRESS_2);
+        final JsonObject amendedSummonResultJsonObject = new StringToJsonObjectConverter().convert(amendedSummonsResults);
+        final JsonObject amendedPublicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, amendedSummonResultJsonObject);
+
+        final JsonEnvelope amendedPublicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), amendedPublicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, amendedPublicEventEnvelope);
+
+        verifyCourtApplicationSummonsAmendedEvent(amendedProsecutionCost);
+    }
+
+    @Test
     public void shouldRaisePublicSummonsRejectedV2() throws Exception {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
