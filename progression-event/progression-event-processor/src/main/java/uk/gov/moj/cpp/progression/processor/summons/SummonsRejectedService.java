@@ -57,8 +57,7 @@ public class SummonsRejectedService {
 
     private List<String> getPartyDetails(final CourtApplication courtApplication) {
         final SummonsTemplateType summonsTemplateType = courtApplication.getType().getSummonsTemplateType();
-        if (SummonsTemplateType.BREACH == summonsTemplateType
-                || SummonsTemplateType.GENERIC_APPLICATION == summonsTemplateType) {
+        if (SummonsTemplateType.BREACH == summonsTemplateType || SummonsTemplateType.GENERIC_APPLICATION == summonsTemplateType) {
             return singletonList(getPartyDetails(courtApplication.getSubject()));
         } else {
             return courtApplication.getRespondents().stream().map(this::getPartyDetails).collect(toList());
