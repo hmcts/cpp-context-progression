@@ -20,6 +20,8 @@ import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthority;
+import static uk.gov.justice.core.courts.SummonsTemplateType.BREACH;
+import static uk.gov.justice.core.courts.SummonsTemplateType.GENERIC_APPLICATION;
 import static uk.gov.justice.core.courts.SummonsRejectedOutcome.summonsRejectedOutcome;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getFullName;
 
@@ -65,16 +67,10 @@ public class SummonsRejectedServiceTest {
                 Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
                 Arguments.of(SummonsTemplateType.BREACH, PartyType.INDIVIDUAL),
                 Arguments.of(SummonsTemplateType.BREACH, PartyType.ORGANISATION),
-                Arguments.of(SummonsTemplateType.BREACH, PartyType.PROSECUTION_AUTHORITY)
-                );
-    }
-
-    public static Stream<Arguments> firstHearingSummons() {
-        return Stream.of(
-                // summons template type, personal defendant
+                Arguments.of(SummonsTemplateType.BREACH, PartyType.PROSECUTION_AUTHORITY),
                 Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_PERSON),
                 Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY)
-                );
+        );
     }
 
     @Mock
@@ -115,21 +111,10 @@ public class SummonsRejectedServiceTest {
     @ParameterizedTest
     public void sendSummonsRejectionNotificationForApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
         final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
-        final List<String> partyDetails = getPartyDetails(singletonList(courtApplication.getSubject()), partyType);
-
-        when(summonsNotificationEmailPayloadService.getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS))).thenReturn(emailChannel);
-
-        summonsRejectedService.sendSummonsRejectionNotification(jsonEnvelope, courtApplication, getRejectionOutcome());
-
-        verify(summonsNotificationEmailPayloadService).getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS));
-        verify(notificationService).sendEmail(eq(jsonEnvelope), eq(null), eq(courtApplication.getId()), eq(null), eq(singletonList(emailChannel)));
-    }
-
-    @MethodSource("firstHearingSummons")
-    @ParameterizedTest
-    public void sendSummonsRejectionNotificationForFirstHearingApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
-        final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
-        final List<String> partyDetails = getPartyDetails(courtApplication.getRespondents(), partyType);
+        final List<CourtApplicationParty> parties = (summonsTemplateType == BREACH || summonsTemplateType == GENERIC_APPLICATION)
+                ? singletonList(courtApplication.getSubject())
+                : courtApplication.getRespondents();
+        final List<String> partyDetails = getPartyDetails(parties, partyType);
 
         when(summonsNotificationEmailPayloadService.getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS))).thenReturn(emailChannel);
 
