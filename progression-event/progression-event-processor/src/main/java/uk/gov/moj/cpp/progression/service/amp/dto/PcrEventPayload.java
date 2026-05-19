@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service.amp.dto;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,5 +25,7 @@ public class PcrEventPayload {
     private UUID materialId;
     private Instant timestamp;
     private PcrEventPayloadDefendant defendant;
+    @JsonRawValue
+    private String rawPayload;
 }
 

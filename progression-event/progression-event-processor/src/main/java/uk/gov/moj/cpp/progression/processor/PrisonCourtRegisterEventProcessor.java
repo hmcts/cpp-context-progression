@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegiste
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterHearingVenue;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -110,6 +111,9 @@ public class PrisonCourtRegisterEventProcessor {
     private HearingResultsDocumentSubscriptionPCRMapper hearingResultsDocumentSubscriptionPCRMapper;
     @Inject
     private HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
@@ -231,9 +235,12 @@ public class PrisonCourtRegisterEventProcessor {
                 ? emailRecipients.get(0).getEmail()
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
-        PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
+        final String rawPayload = fileService.retrievePayload(fileId)
+                .map(JsonObject::toString)
+                .orElseGet(() -> objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated).toString());
+        PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper
+                .mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt, rawPayload);
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
                 ? envelope.payloadAsJsonObject().getString("id")
                 : fileId.toString();
