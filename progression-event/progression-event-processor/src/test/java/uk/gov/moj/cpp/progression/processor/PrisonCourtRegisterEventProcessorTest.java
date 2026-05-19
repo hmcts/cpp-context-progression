@@ -44,13 +44,13 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -73,9 +73,7 @@ public class PrisonCourtRegisterEventProcessorTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    private ObjectMapper processorObjectMapper = new ObjectMapperProducer().objectMapper();
-
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Mock
     private SystemDocGeneratorService systemDocGeneratorService;
@@ -421,11 +419,10 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        @SuppressWarnings("unchecked")
-        final ArgumentCaptor<Map<String, Object>> rawPayloadCaptor = ArgumentCaptor.forClass(Map.class);
+        final ArgumentCaptor<String> rawPayloadCaptor = ArgumentCaptor.forClass(String.class);
         verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
                 any(), anyString(), any(), rawPayloadCaptor.capture());
-        assertThat(rawPayloadCaptor.getValue().get("courtHouse"), equalTo("Southwark Crown Court"));
+        assertThat(rawPayloadCaptor.getValue(), containsString("Southwark Crown Court"));
     }
 
     @Test
@@ -461,8 +458,7 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        @SuppressWarnings("unchecked")
-        final ArgumentCaptor<Map<String, Object>> rawPayloadCaptor = ArgumentCaptor.forClass(Map.class);
+        final ArgumentCaptor<String> rawPayloadCaptor = ArgumentCaptor.forClass(String.class);
         verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
                 any(), anyString(), any(), rawPayloadCaptor.capture());
         assertThat(rawPayloadCaptor.getValue(), is(notNullValue()));

@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegiste
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterHearingVenue;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -112,7 +113,7 @@ public class PrisonCourtRegisterEventProcessor {
     private HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
 
     @Inject
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
@@ -235,12 +236,9 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
-        final Map<String, Object> rawPayload = fileService.retrievePayload(fileId)
-                .map(sp -> objectMapper.convertValue(
-                        sp, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {}))
-                .orElseGet(() -> objectMapper.convertValue(
-                        prisonCourtRegisterGenerated,
-                        new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {}));
+        final String rawPayload = fileService.retrievePayload(fileId)
+                .map(JsonObject::toString)
+                .orElseGet(() -> objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated).toString());
         PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper
                 .mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt, rawPayload);
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")

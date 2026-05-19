@@ -14,7 +14,6 @@ import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantCases;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +48,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
     @Test
     void mapperShouldCreateAmpPayload() {
         final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
-        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(pcr, "wandsworth@example.com", createdAt, Map.of());
+        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(pcr, "wandsworth@example.com", createdAt, null);
 
         assertThat(payload.getEventId(), equalTo(pcr.getId()));
         assertThat(payload.getMaterialId(), equalTo(pcr.getMaterialId()));
@@ -71,7 +70,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
     @Test
     void mapperShouldIncludeRawPayload() {
         final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
-        final Map<String, Object> rawPayload = Map.of("courtHouse", "Southwark Crown Court");
+        final String rawPayload = "{\"courtHouse\":\"Southwark Crown Court\"}";
 
         final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
                 pcr, "wandsworth@example.com", createdAt, rawPayload);
@@ -84,7 +83,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
         final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
 
         final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
-                pcr, "wandsworth@example.com", createdAt, Map.of());
+                pcr, "wandsworth@example.com", createdAt, null);
 
         assertThat(payload.getTimestamp(), equalTo(createdAt));
     }
