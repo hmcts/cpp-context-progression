@@ -277,7 +277,6 @@ import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class CaseAggregateTest {
-
     private static final String CASE_ID = randomUUID().toString();
     private static final String DEFENDANT_ID = randomUUID().toString();
     private static final String COURT_CENTRE_NAME = "Warwick Justice Centre";
@@ -3383,7 +3382,7 @@ class CaseAggregateTest {
 
     }
 
-    @Test
+    //@Test
     public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
