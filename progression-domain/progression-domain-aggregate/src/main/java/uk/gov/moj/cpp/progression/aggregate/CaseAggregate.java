@@ -51,24 +51,7 @@ import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getCivilOffence;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getExparteValueFromRefDataOffenceJsonObject;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestrictionAndExparteValue;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndexAndExparteValue;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.*;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
@@ -1741,14 +1724,18 @@ public class CaseAggregate implements Aggregate {
                     defendantListForProceedingsConcludedEventTrigger.add(updatedDefendant);
                 }
             });
-
-            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
+            // LAA suppression of false proceedings concluded
+            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger) && isAllDefendantProceedingConcluded(prosecutionCase, defendantListForProceedingsConcludedEventTrigger)) {
+                // filter for defendants having representation
+                final List<Defendant> listOfDefendantsWithLaaRepresentation = getDefendantsWithLaaRepresentation(defendantListForProceedingsConcludedEventTrigger);
                 final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
-                streamBuilder.add(laaDefendantProceedingConcludedChanged()
-                        .withDefendants(defendantListForProceedingsConcludedEventTrigger)
-                        .withHearingId(resultedHearingId)
-                        .withProsecutionCaseId(prosecutionCase.getId())
-                        .build());
+                if (!listOfDefendantsWithLaaRepresentation.isEmpty()) {
+                    streamBuilder.add(laaDefendantProceedingConcludedChanged()
+                            .withDefendants(listOfDefendantsWithLaaRepresentation)
+                            .withHearingId(resultedHearingId)
+                            .withProsecutionCaseId(prosecutionCase.getId())
+                            .build());
+                }
             }
 
             final String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
