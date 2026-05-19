@@ -13,6 +13,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
@@ -20,6 +21,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.listing.courts.HearingPartiallyUpdated;
 import uk.gov.justice.listing.events.HearingRequestedForListing;
@@ -32,6 +34,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.CourtScheduleQueryAdapter;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
@@ -90,6 +93,9 @@ public class ListHearingRequestedProcessor {
     @Inject
     private HearingNotificationHelper hearingNotificationHelper;
 
+    @Inject
+    private CourtScheduleQueryAdapter courtScheduleQueryAdapter;
+
     @ServiceComponent(EVENT_PROCESSOR)
     @Inject
     private Sender sender;
@@ -98,7 +104,18 @@ public class ListHearingRequestedProcessor {
     @Handles("progression.event.list-hearing-requested")
     public void handle(final JsonEnvelope jsonEnvelope) {
 
-        final ListHearingRequested listHearingRequested = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ListHearingRequested.class);
+        ListHearingRequested listHearingRequested = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ListHearingRequested.class);
+
+        // Defence-in-depth for unallocated CROWN: when the user picks a DRAFT court-schedule
+        // slot via the CCP2 UI, the payload arrives with courtCentre.roomId / roomName
+        // populated (denormalised from bookedSlots for display purposes). That data must
+        // not be written to hearing.payload or surfaced in the new-hearing notification
+        // email - for an unallocated hearing there is no confirmed courtroom yet. Listing
+        // strips this on its side (HearingEnrichmentOrchestrator.stripRoomInfoIfAnyDraft,
+        // SPRDT-858) but progression sees the payload first and would otherwise leak it
+        // into hearing.payload and the notification. Mirror the strip here by asking
+        // listing-query-api whether any of the booked sessions is DRAFT.
+        listHearingRequested = stripCourtCentreRoomIfAnyDraftSession(listHearingRequested, jsonEnvelope);
 
         final ListCourtHearing listCourtHearing = convertListCourtHearing(listHearingRequested, jsonEnvelope);
 
@@ -114,6 +131,48 @@ public class ListHearingRequestedProcessor {
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", listHearingRequested.getHearingId(), false);
         }
+    }
+
+    private ListHearingRequested stripCourtCentreRoomIfAnyDraftSession(final ListHearingRequested original, final JsonEnvelope jsonEnvelope) {
+        final CourtHearingRequest listNewHearing = original.getListNewHearing();
+        if (listNewHearing == null
+                || !JurisdictionType.CROWN.equals(listNewHearing.getJurisdictionType())
+                || listNewHearing.getBookedSlots() == null
+                || listNewHearing.getBookedSlots().isEmpty()
+                || listNewHearing.getCourtCentre() == null
+                || listNewHearing.getCourtCentre().getRoomId() == null) {
+            return original;
+        }
+
+        final List<UUID> courtScheduleIds = listNewHearing.getBookedSlots().stream()
+                .map(RotaSlot::getCourtScheduleId)
+                .filter(Objects::nonNull)
+                .filter(s -> !s.isBlank())
+                .map(UUID::fromString)
+                .collect(toList());
+
+        if (courtScheduleIds.isEmpty() || !courtScheduleQueryAdapter.anySessionIsDraft(jsonEnvelope, courtScheduleIds)) {
+            return original;
+        }
+
+        LOGGER.info("Stripping courtCentre.roomId/roomName for hearingId={} - at least one booked court-schedule session is DRAFT (unallocated CROWN)",
+                original.getHearingId());
+
+        final CourtCentre strippedCourtCentre = CourtCentre.courtCentre()
+                .withValuesFrom(listNewHearing.getCourtCentre())
+                .withRoomId(null)
+                .withRoomName(null)
+                .build();
+
+        final CourtHearingRequest strippedListNewHearing = CourtHearingRequest.courtHearingRequest()
+                .withValuesFrom(listNewHearing)
+                .withCourtCentre(strippedCourtCentre)
+                .build();
+
+        return ListHearingRequested.listHearingRequested()
+                .withValuesFrom(original)
+                .withListNewHearing(strippedListNewHearing)
+                .build();
     }
 
     @Handles("public.listing.hearing-requested-for-listing")
