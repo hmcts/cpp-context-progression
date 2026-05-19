@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -24,5 +25,6 @@ public class PcrEventPayload {
     private UUID materialId;
     private Instant timestamp;
     private PcrEventPayloadDefendant defendant;
+    private Map<String, Object> rawPayload;
 }
 

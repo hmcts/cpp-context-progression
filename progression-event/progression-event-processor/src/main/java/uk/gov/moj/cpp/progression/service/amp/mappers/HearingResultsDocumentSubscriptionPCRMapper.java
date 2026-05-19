@@ -13,18 +13,24 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class HearingResultsDocumentSubscriptionPCRMapper {
 
-    public PcrEventPayload mapPcrForhearingResultsDocument(PrisonCourtRegisterGeneratedV2 pcrIn, String prisonEmail, Instant createdAt) {
+    public PcrEventPayload mapPcrForhearingResultsDocument(
+            final PrisonCourtRegisterGeneratedV2 pcrIn,
+            final String prisonEmail,
+            final Instant createdAt,
+            final Map<String, Object> rawPayload) {
         return PcrEventPayload.builder()
                 .eventType(PcrEventType.PRISON_COURT_REGISTER_GENERATED)
                 .eventId(pcrIn.getId())
                 .hearingId(pcrIn.getHearingId())
                 .materialId(pcrIn.getMaterialId())
-                .timestamp(Instant.now())
+                .timestamp(createdAt)
                 .defendant(mapDefendant(pcrIn, prisonEmail))
+                .rawPayload(rawPayload)
                 .build();
     }
 

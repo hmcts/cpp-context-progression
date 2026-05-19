@@ -14,13 +14,12 @@ import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayloadDefendantCases;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.moj.cpp.progression.service.amp.dto.PcrEventType.PRISON_COURT_REGISTER_GENERATED;
 
@@ -49,24 +48,45 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
 
     @Test
     void mapperShouldCreateAmpPayload() {
-        Instant createdAt = Instant.now();
-        PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(pcr, "wandsworth@example.com", createdAt);
+        final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
+        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(pcr, "wandsworth@example.com", createdAt, Map.of());
 
         assertThat(payload.getEventId(), equalTo(pcr.getId()));
         assertThat(payload.getMaterialId(), equalTo(pcr.getMaterialId()));
         assertThat(payload.getHearingId(), equalTo(pcr.getHearingId()));
         assertThat(payload.getEventType(), equalTo(PRISON_COURT_REGISTER_GENERATED));
-        assertThat(payload.getTimestamp(), is(notNullValue()));
+        assertThat(payload.getTimestamp(), equalTo(createdAt));
         assertDefendant(payload.getDefendant());
     }
 
     @Test
     void mapperShouldBeNullSafe() {
-        PrisonCourtRegisterGeneratedV2 emptyPcr = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+        final PrisonCourtRegisterGeneratedV2 emptyPcr = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                 .build();
-        PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(emptyPcr, null, null);
+        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(emptyPcr, null, null, null);
 
         assertNull(payload.getEventId());
+    }
+
+    @Test
+    void mapperShouldIncludeRawPayload() {
+        final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
+        final Map<String, Object> rawPayload = Map.of("courtHouse", "Southwark Crown Court");
+
+        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
+                pcr, "wandsworth@example.com", createdAt, rawPayload);
+
+        assertThat(payload.getRawPayload(), equalTo(rawPayload));
+    }
+
+    @Test
+    void mapperShouldUseCreatedAtNotNow() {
+        final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
+
+        final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
+                pcr, "wandsworth@example.com", createdAt, Map.of());
+
+        assertThat(payload.getTimestamp(), equalTo(createdAt));
     }
 
     private void assertDefendant(PcrEventPayloadDefendant defendant) {
