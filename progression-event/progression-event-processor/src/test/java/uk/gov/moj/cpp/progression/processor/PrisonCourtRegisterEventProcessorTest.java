@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
@@ -43,12 +44,14 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +71,9 @@ public class PrisonCourtRegisterEventProcessorTest {
     @InjectMocks
     private PrisonCourtRegisterEventProcessor prisonCourtRegisterEventProcessor;
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    private ObjectMapper processorObjectMapper = new ObjectMapperProducer().objectMapper();
 
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
@@ -227,7 +233,8 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(fileService.retrievePayload(any(UUID.class))).thenReturn(Optional.empty());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any())).thenReturn(pcrEventPayload);
         when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://amp-url");
         when(hearingResultsDocumentSubscriptionClient.post("http://amp-url", pcrEventPayload)).thenReturn(Response.ok().build());
         when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
@@ -236,7 +243,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
         verify(hearingResultsDocumentSubscriptionClient).post("http://amp-url", pcrEventPayload);
-        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any());
     }
 
     @Test
@@ -265,7 +272,8 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .build();
         // Recipients exist but don't have emailAddress1, so filterEmailRecipients returns empty list
         // resulting in empty string for emailRecipient
-        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(fileService.retrievePayload(any(UUID.class))).thenReturn(Optional.empty());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class), any())).thenReturn(pcrEventPayload);
         when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
         when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
         when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
@@ -274,7 +282,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
         verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
-        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq(""), any(Instant.class), any());
     }
 
     @Test
@@ -301,7 +309,8 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(fileService.retrievePayload(any(UUID.class))).thenReturn(Optional.empty());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any())).thenReturn(pcrEventPayload);
         when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
         when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
         when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
@@ -310,7 +319,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
         verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
-        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any());
     }
 
     @Test
@@ -337,7 +346,8 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .materialId(randomUUID())
                 .eventId(randomUUID())
                 .build();
-        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class))).thenReturn(pcrEventPayload);
+        when(fileService.retrievePayload(any(UUID.class))).thenReturn(Optional.empty());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any())).thenReturn(pcrEventPayload);
         when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds-address");
         when(hearingResultsDocumentSubscriptionClient.post("http://hrds-address", pcrEventPayload)).thenReturn(Response.ok().build());
         when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
@@ -346,7 +356,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
         verify(hearingResultsDocumentSubscriptionClient).post("http://hrds-address", pcrEventPayload);
-        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class));
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(any(PrisonCourtRegisterGeneratedV2.class), eq("test@hmcst.net"), any(Instant.class), any());
     }
 
     @Test
@@ -374,6 +384,88 @@ public class PrisonCourtRegisterEventProcessorTest {
         verify(notificationNotifyService).sendEmailNotification(eq(requestMessage), notificationJsonObjectCaptor.capture());
         assertThat(notificationJsonObjectCaptor.getValue().getString("fileId"), is(fileId.toString()));
         assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldPassRawPayloadFromFileServiceToMapper() throws InterruptedException {
+        final UUID fileId = randomUUID();
+        final JsonObject sourcePayloadJson = Json.createObjectBuilder()
+                .add("courtHouse", "Southwark Crown Court").build();
+
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGeneratedV2 =
+                PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                        .withId(randomUUID())
+                        .withFileId(fileId)
+                        .withMaterialId(randomUUID())
+                        .withHearingId(randomUUID())
+                        .withCourtCentreId(randomUUID())
+                        .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                                .withEmailAddress1("prison@example.com")
+                                .withEmailTemplateName("templateName").build()))
+                        .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                                .withName("Test Defendant").build())
+                        .build();
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated-v2"),
+                objectToJsonObjectConverter.convert(prisonCourtRegisterGeneratedV2));
+
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds/notifications");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
+        when(fileService.retrievePayload(fileId)).thenReturn(Optional.of(sourcePayloadJson));
+        when(hearingResultsDocumentSubscriptionClient.post(anyString(), any()))
+                .thenReturn(Response.ok().build());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(
+                any(), anyString(), any(), any())).thenReturn(PcrEventPayload.builder().build());
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        @SuppressWarnings("unchecked")
+        final ArgumentCaptor<Map<String, Object>> rawPayloadCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
+                any(), anyString(), any(), rawPayloadCaptor.capture());
+        assertThat(rawPayloadCaptor.getValue().get("courtHouse"), equalTo("Southwark Crown Court"));
+    }
+
+    @Test
+    public void shouldFallBackToV2EventJsonWhenFileServiceReturnsEmpty() throws InterruptedException {
+        final UUID fileId = randomUUID();
+
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGeneratedV2 =
+                PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                        .withId(randomUUID())
+                        .withFileId(fileId)
+                        .withMaterialId(randomUUID())
+                        .withHearingId(randomUUID())
+                        .withCourtCentreId(randomUUID())
+                        .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                                .withEmailAddress1("prison@example.com")
+                                .withEmailTemplateName("templateName").build()))
+                        .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                                .withName("Test Defendant").build())
+                        .build();
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated-v2"),
+                objectToJsonObjectConverter.convert(prisonCourtRegisterGeneratedV2));
+
+        when(applicationParameters.getHearingResultsDocumentSubscriptionUrl()).thenReturn("http://hrds/notifications");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryTimes()).thenReturn("3");
+        when(applicationParameters.getHearingResultsDocumentSubscriptionRetryInterval()).thenReturn("1000");
+        when(fileService.retrievePayload(fileId)).thenReturn(Optional.empty());
+        when(hearingResultsDocumentSubscriptionClient.post(anyString(), any()))
+                .thenReturn(Response.ok().build());
+        when(hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(
+                any(), anyString(), any(), any())).thenReturn(PcrEventPayload.builder().build());
+
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
+
+        @SuppressWarnings("unchecked")
+        final ArgumentCaptor<Map<String, Object>> rawPayloadCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
+                any(), anyString(), any(), rawPayloadCaptor.capture());
+        assertThat(rawPayloadCaptor.getValue(), is(notNullValue()));
     }
 
 }

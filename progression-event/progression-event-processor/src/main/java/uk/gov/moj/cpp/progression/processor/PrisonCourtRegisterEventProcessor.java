@@ -111,6 +111,9 @@ public class PrisonCourtRegisterEventProcessor {
     @Inject
     private HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
 
+    @Inject
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
     public void generatePrisonCourtRegister(final JsonEnvelope envelope) {
@@ -231,9 +234,15 @@ public class PrisonCourtRegisterEventProcessor {
                 ? emailRecipients.get(0).getEmail()
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
-        PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper.mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt);
-
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
+        final Map<String, Object> rawPayload = fileService.retrievePayload(fileId)
+                .map(sp -> objectMapper.convertValue(
+                        sp, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {}))
+                .orElseGet(() -> objectMapper.convertValue(
+                        prisonCourtRegisterGenerated,
+                        new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {}));
+        PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper
+                .mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt, rawPayload);
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
                 ? envelope.payloadAsJsonObject().getString("id")
                 : fileId.toString();
