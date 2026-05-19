@@ -36,6 +36,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.listing.courts.Defendants;
@@ -56,6 +57,7 @@ import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.CourtScheduleQueryAdapter;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -150,6 +152,9 @@ public class ListHearingRequestedProcessorTest {
 
     @Mock
     private ApplicationParameters applicationParameters;
+
+    @Mock
+    private CourtScheduleQueryAdapter courtScheduleQueryAdapter;
 
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
@@ -833,6 +838,165 @@ public class ListHearingRequestedProcessorTest {
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
 
         org.mockito.Mockito.verify(sender, org.mockito.Mockito.never()).send(any());
+    }
+
+    // ─── courtCentre.roomId / roomName strip for unallocated CROWN ───────────────────
+
+    @Test
+    public void shouldStripCourtCentreRoomWhenCrownHearingHasDraftSession() {
+        final UUID scheduleId = randomUUID();
+        final CourtHearingRequest crownHearingWithRoom = crownBookedSlotPayloadWithCourtCentreRoom(scheduleId);
+        final ListHearingRequested event = ListHearingRequested.listHearingRequested()
+                .withHearingId(randomUUID())
+                .withListNewHearing(crownHearingWithRoom)
+                .withSendNotificationToParties(false)
+                .build();
+        final JsonEnvelope envelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
+                objectToJsonObjectConverter.convert(event));
+
+        when(courtScheduleQueryAdapter.anySessionIsDraft(any(JsonEnvelope.class), any())).thenReturn(true);
+        final ArgumentCaptor<CourtHearingRequest> transformerArg = ArgumentCaptor.forClass(CourtHearingRequest.class);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), transformerArg.capture(), any(UUID.class)))
+                .thenReturn(ListCourtHearing.listCourtHearing().build());
+
+        listHearingRequestedProcessor.handle(envelope);
+
+        // After the strip, the CourtHearingRequest handed to the downstream transformer must
+        // have null roomId / roomName on courtCentre, even though the input had them populated.
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomId(), is((UUID) null));
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is((String) null));
+    }
+
+    @Test
+    public void shouldNotStripCourtCentreRoomWhenCrownHearingHasOnlyNonDraftSessions() {
+        final UUID scheduleId = randomUUID();
+        final CourtHearingRequest crownHearingWithRoom = crownBookedSlotPayloadWithCourtCentreRoom(scheduleId);
+        final ListHearingRequested event = ListHearingRequested.listHearingRequested()
+                .withHearingId(randomUUID())
+                .withListNewHearing(crownHearingWithRoom)
+                .withSendNotificationToParties(false)
+                .build();
+        final JsonEnvelope envelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
+                objectToJsonObjectConverter.convert(event));
+
+        when(courtScheduleQueryAdapter.anySessionIsDraft(any(JsonEnvelope.class), any())).thenReturn(false);
+        final ArgumentCaptor<CourtHearingRequest> transformerArg = ArgumentCaptor.forClass(CourtHearingRequest.class);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), transformerArg.capture(), any(UUID.class)))
+                .thenReturn(ListCourtHearing.listCourtHearing().build());
+
+        listHearingRequestedProcessor.handle(envelope);
+
+        // Hearing is allocated (no draft sessions); courtCentre.roomId / roomName should be preserved.
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomId().toString().isEmpty(), is(false));
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is("Courtroom 01"));
+    }
+
+    @Test
+    public void shouldSkipAdapterAndNotStripWhenJurisdictionIsMagistrates() {
+        final UUID roomId = randomUUID();
+        final CourtHearingRequest magsHearingWithRoom = CourtHearingRequest.courtHearingRequest()
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).withDescription("First").build())
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Court 1")
+                        .withRoomId(roomId)
+                        .withRoomName("Courtroom 1")
+                        .build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(CASE_ID)
+                        .withDefendantOffences(singletonList(randomUUID()))
+                        .withDefendantId(MULTI_OFFENCE_DEFENDANT_ID)
+                        .build()))
+                .withEarliestStartDateTime(ZonedDateTime.now())
+                .build();
+        final ListHearingRequested event = ListHearingRequested.listHearingRequested()
+                .withHearingId(randomUUID())
+                .withListNewHearing(magsHearingWithRoom)
+                .withSendNotificationToParties(false)
+                .build();
+        final JsonEnvelope envelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
+                objectToJsonObjectConverter.convert(event));
+
+        final ArgumentCaptor<CourtHearingRequest> transformerArg = ArgumentCaptor.forClass(CourtHearingRequest.class);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), transformerArg.capture(), any(UUID.class)))
+                .thenReturn(ListCourtHearing.listCourtHearing().build());
+
+        listHearingRequestedProcessor.handle(envelope);
+
+        org.mockito.Mockito.verify(courtScheduleQueryAdapter, org.mockito.Mockito.never()).anySessionIsDraft(any(JsonEnvelope.class), any());
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomId(), is(roomId));
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is("Courtroom 1"));
+    }
+
+    @Test
+    public void shouldSkipAdapterAndNotStripWhenCrownHearingHasNoBookedSlots() {
+        final UUID roomId = randomUUID();
+        final CourtHearingRequest crownHearingNoBookedSlots = CourtHearingRequest.courtHearingRequest()
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Crown Court 1")
+                        .withRoomId(roomId)
+                        .withRoomName("Courtroom 5")
+                        .build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(CASE_ID)
+                        .withDefendantOffences(singletonList(randomUUID()))
+                        .withDefendantId(MULTI_OFFENCE_DEFENDANT_ID)
+                        .build()))
+                .withEarliestStartDateTime(ZonedDateTime.now())
+                .build();
+        final ListHearingRequested event = ListHearingRequested.listHearingRequested()
+                .withHearingId(randomUUID())
+                .withListNewHearing(crownHearingNoBookedSlots)
+                .withSendNotificationToParties(false)
+                .build();
+        final JsonEnvelope envelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
+                objectToJsonObjectConverter.convert(event));
+
+        final ArgumentCaptor<CourtHearingRequest> transformerArg = ArgumentCaptor.forClass(CourtHearingRequest.class);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), transformerArg.capture(), any(UUID.class)))
+                .thenReturn(ListCourtHearing.listCourtHearing().build());
+
+        listHearingRequestedProcessor.handle(envelope);
+
+        // No bookedSlots means no court-schedule sessions to check; adapter must not be called.
+        org.mockito.Mockito.verify(courtScheduleQueryAdapter, org.mockito.Mockito.never()).anySessionIsDraft(any(JsonEnvelope.class), any());
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomId(), is(roomId));
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is("Courtroom 5"));
+    }
+
+    private CourtHearingRequest crownBookedSlotPayloadWithCourtCentreRoom(final UUID courtScheduleId) {
+        return CourtHearingRequest.courtHearingRequest()
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Blackfriars Crown Court")
+                        .withRoomId(randomUUID())
+                        .withRoomName("Courtroom 01")
+                        .build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withBookedSlots(singletonList(RotaSlot.rotaSlot()
+                        .withCourtScheduleId(courtScheduleId.toString())
+                        .withCourtRoomId(235)
+                        .withRoomId(randomUUID().toString())
+                        .withSession("AD")
+                        .withStartTime(ZonedDateTime.now())
+                        .withDuration(120)
+                        .build()))
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(CASE_ID)
+                        .withDefendantOffences(singletonList(randomUUID()))
+                        .withDefendantId(MULTI_OFFENCE_DEFENDANT_ID)
+                        .build()))
+                .withEarliestStartDateTime(ZonedDateTime.now())
+                .build();
     }
 
     private CourtHearingRequest receivePayloadOfListHearingRequestWithOneCaseMultipleDefendantsWithReferralReason() {
