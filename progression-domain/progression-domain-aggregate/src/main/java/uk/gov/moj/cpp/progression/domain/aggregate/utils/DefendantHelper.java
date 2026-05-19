@@ -126,6 +126,12 @@ public class DefendantHelper {
                 .collect(toList());
     }
 
+    public static List<Defendant> getDefendantsWithLaaRepresentation(final List<Defendant> defendants) {
+        return defendants.stream()
+                .filter(defendant -> LegalAidStatusEnum.GRANTED.equals(defendant.getLegalAidStatus()))
+                .collect(toList());
+    }
+
     public static List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase) {
         return prosecutionCase.getDefendants().stream()
                 .map(DefendantHelper::getUpdatedDefendant)
