@@ -1,19 +1,27 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.fileservice.api.FileRetriever;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.justice.services.fileservice.domain.FileReference;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +38,8 @@ public class FileServiceTest {
     private FileService fileService;
     @Mock
     private FileStorer fileStorer;
+    @Mock
+    private FileRetriever fileRetriever;
 
     @Test
     public void shouldStorePayloadIntoFileService() throws FileServiceException {
@@ -58,6 +68,33 @@ public class FileServiceTest {
 
         assertThrows(RuntimeException.class, () -> fileService.storePayload(createObjectBuilder().build(), fileName, templateName));
 
+    }
+
+    @Test
+    void retrievePayloadShouldReturnParsedJsonObject() throws FileServiceException {
+        final UUID fileId = randomUUID();
+        final String json = "{\"courtHouse\":\"Southwark Crown Court\",\"registerDate\":\"2024-10-01\"}";
+        final FileReference fileRef = new FileReference(
+                fileId,
+                Json.createObjectBuilder().build(),
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(fileRetriever.retrieve(fileId)).thenReturn(Optional.of(fileRef));
+
+        final Optional<JsonObject> result = fileService.retrievePayload(fileId);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().getString("courtHouse"), equalTo("Southwark Crown Court"));
+        assertThat(result.get().getString("registerDate"), equalTo("2024-10-01"));
+    }
+
+    @Test
+    void retrievePayloadShouldReturnEmptyWhenFileNotFound() throws FileServiceException {
+        final UUID fileId = randomUUID();
+        when(fileRetriever.retrieve(fileId)).thenReturn(Optional.empty());
+
+        final Optional<JsonObject> result = fileService.retrievePayload(fileId);
+
+        assertTrue(result.isEmpty());
     }
 
 }
