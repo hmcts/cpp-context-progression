@@ -34,6 +34,7 @@ import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.DeletedOffences;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.UpdatedOffences;
+import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.events.CustodialEstablishment;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
@@ -87,6 +88,7 @@ public class DefendantHelper {
                 .allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
     }
 
+    // initial implemented filter code
     public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
         return prosecutionCase.getDefendants().stream().map(defendant -> {
             final List<Offence> updatedOffences = new ArrayList<>();
@@ -100,6 +102,12 @@ public class DefendantHelper {
 
             return proceedingConcluded;
         }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded.equals(TRUE));
+    }
+
+    public static List<Defendant> getDefendantsWithLaaRepresentation(final List<Defendant> defendants) {
+        return defendants.stream()
+                .filter(defendant -> LegalAidStatusEnum.GRANTED.equals(defendant.getLegalAidStatus()))
+                .collect(toList());
     }
 
     public static List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase) {
