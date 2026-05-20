@@ -47,6 +47,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
@@ -658,10 +659,10 @@ public class CourtApplicationProcessor {
     }
 
     private Optional<UUID> getHearingIdForSummonGeneration(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
-        if(isFirstHearing(courtApplicationSummonsApproved)){
+        if (isFirstHearing(courtApplicationSummonsApproved)) {
             final UUID caseId = courtApplicationSummonsApproved.getCaseIds().get(0);
             return getFirstHearingId(caseId);
-        } else if(isLinkedHearing(courtApplicationSummonsApproved)){
+        } else if (isLinkedHearing(courtApplicationSummonsApproved)) {
             final UUID applicationId = courtApplicationSummonsApproved.getApplicationId();
             return getBreachHearingId(applicationId);
         } else {
@@ -1012,7 +1013,7 @@ public class CourtApplicationProcessor {
                 .map(this::updatedDefendant)
                 .filter(defendant -> isNotEmpty(defendant.getOffences()))
                 .collect(toList());
-        if (courtApplication != null && (courtApplication.getCourtCivilApplication() != null && courtApplication.getCourtCivilApplication().getIsCivil())) {
+        if (isCivil(courtApplication)) {
             final CivilFees initialFees = CivilFees.civilFees()
                     .withFeeType(FeeType.INITIAL)
                     .withFeeId(randomUUID())
@@ -1035,6 +1036,13 @@ public class CourtApplicationProcessor {
                     .withDefendants(defendantList).build();
         }
         return prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendantList).build();
+    }
+
+    private static boolean isCivil(final CourtApplication courtApplication) {
+        return ofNullable(courtApplication)
+                .map(CourtApplication::getCourtCivilApplication)
+                .map(CourtCivilApplication::getIsCivil)
+                .orElse(false);
     }
 
     private Defendant updatedDefendant(final Defendant defendant) {
