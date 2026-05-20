@@ -41,7 +41,10 @@ public class SummonsRejectedService {
     public void sendSummonsRejectionNotification(final JsonEnvelope jsonEnvelope, final CourtApplication courtApplication, final SummonsRejectedOutcome summonsRejectedOutcome) {
 
         final SummonsTemplateType summonsTemplateType = courtApplication.getType().getSummonsTemplateType();
-        if (summonsTemplateType != SummonsTemplateType.BREACH && summonsTemplateType != SummonsTemplateType.GENERIC_APPLICATION && summonsTemplateType != SummonsTemplateType.FIRST_HEARING) {
+        if (summonsTemplateType != SummonsTemplateType.BREACH
+                && summonsTemplateType != SummonsTemplateType.GENERIC_APPLICATION
+                && summonsTemplateType != SummonsTemplateType.FIRST_HEARING
+                && summonsTemplateType != SummonsTemplateType.NOT_APPLICABLE) {
             LOGGER.info("Application rejection notification not raised for court application '{}' of type '{}'", courtApplication.getId(), summonsTemplateType);
             return;
         }
