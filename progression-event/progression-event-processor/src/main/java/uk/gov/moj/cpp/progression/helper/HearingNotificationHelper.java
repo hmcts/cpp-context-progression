@@ -337,14 +337,12 @@ public class HearingNotificationHelper {
         final UUID notificationId = randomUUID();
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
 
-        if(shouldSendTheNotifications(prosecutionCase, defendant)) {
-            if (isNotEmpty(prosecutorEmail)) {
-                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
-                sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
-            } else {
-                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
-                notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
-            }
+        if (isNotEmpty(prosecutorEmail)) {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
+            sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
+        } else {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
         }
     }
 
