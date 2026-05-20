@@ -104,6 +104,8 @@ import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.progression.query.laa.HearingSummary;
+import uk.gov.justice.progression.query.laa.HearingType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -878,6 +880,111 @@ public class CourtApplicationProcessorTest {
                 .build();
 
         when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.of(hearingsPayload));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andBreachHearingFound_shouldSendAmendSummonsDataCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID breachHearingId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .withProsecutorCost("£100.00")
+                        .withProsecutorEmailAddress("test@test.com")
+                        .build())
+                .build();
+
+        final HearingType breachHearingType = HearingType.hearingType()
+                .withId(UUID.fromString("136dfc3a-a874-32ce-8493-e50849590b49"))
+                .build();
+        final HearingSummary breachHearingSummary = HearingSummary.hearingSummary()
+                .withHearingId(breachHearingId)
+                .withHearingType(breachHearingType)
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.of(singletonList(breachHearingSummary)));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        assertThat(captor.getValue().metadata().name(), is("progression.command.amend-summons-data"));
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andNoBreachHearingFound_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        final HearingType nonBreachHearingType = HearingType.hearingType()
+                .withId(randomUUID())
+                .build();
+        final HearingSummary nonBreachHearingSummary = HearingSummary.hearingSummary()
+                .withHearingId(randomUUID())
+                .withHearingType(nonBreachHearingType)
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.of(singletonList(nonBreachHearingSummary)));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andNoHearingsForApplication_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.empty());
 
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
