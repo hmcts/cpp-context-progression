@@ -16,19 +16,14 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_FAILED;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 import uk.gov.moj.cpp.progression.it.framework.ContextNameProvider;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -137,9 +132,8 @@ public class NowsDocumentRequestHelper extends AbstractTestHelper {
     private String getPrisonCourtRegisterDocumentRequests(final String requestStatus, final Matcher... matchers) {
         return poll(requestParams(getReadUrl(StringUtils.join("/prison-court-register/request/", requestStatus)),
                 "application/vnd.progression.query.prison-court-register-document-by-court-centre+json")
-                .withHeader(HeaderConstants.USER_ID, USER_ID).build(),
-                new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)),
-                Duration.ofSeconds(TIMEOUT_IN_SECONDS))
+                .withHeader(HeaderConstants.USER_ID, USER_ID))
+                .timeout(40, TimeUnit.SECONDS)
                 .until(
                         status().is(Response.Status.OK),
                         payload().isJson(allOf(

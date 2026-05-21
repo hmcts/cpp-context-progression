@@ -33,8 +33,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupHmctsUsersGroupQueryStub;
@@ -57,7 +55,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,7 +68,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class HearingEventLogIT extends AbstractIT {
 
@@ -525,7 +521,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     private void verifyHearingEventsLogsDocumentGenerated(final String TEMPLATE_NAME) {
-        await().atMost(Duration.ofSeconds(15)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)))
+        await().with().timeout(30, SECONDS)
                 .until(() -> {
                     try {
                         final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);

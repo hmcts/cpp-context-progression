@@ -2476,7 +2476,7 @@ public class ProsecutionCaseQueryViewTest {
                 """.formatted(caseId.toString());
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(CASE_IDS_SEARCH_PARAM, caseId.toString())
                 .build();
 

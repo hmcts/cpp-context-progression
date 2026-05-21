@@ -1,25 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
-import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
-import uk.gov.justice.services.test.utils.core.rest.RestClient;
-
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import java.io.StringReader;
-import java.time.Duration;
-import java.util.UUID;
-
 import static io.restassured.RestAssured.given;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -34,17 +14,38 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
+import uk.gov.justice.services.test.utils.core.rest.RestClient;
+
+import java.io.StringReader;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+
 public class RestHelper {
 
-    public static final int TIMEOUT_IN_SECONDS = 15;
-    public static final int INTERVAL_IN_MILLISECONDS = 100;
+    public static final int TIMEOUT_IN_SECONDS = 30;
+    public static final int INTERVAL_IN_MILLISECONDS = 300;
     public static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int PORT = 8080;
     private static final String BASE_URI = "http://" + HOST + ":" + PORT;
 
     private static final RestClient restClient = new RestClient();
     private static final RequestSpecification REQUEST_SPECIFICATION = new RequestSpecBuilder().setBaseUri(BASE_URI).build();
-    public static final int INITIAL_INTERVAL_IN_MILLISECONDS = 10;
 
     public static javax.ws.rs.core.Response getMaterialContentResponse(final String path, final UUID userId, final String mediaType) {
         final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
@@ -71,9 +72,9 @@ public class RestHelper {
 
     public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final Matcher... payloadMatchers) {
         return poll(requestParams(getReadUrl(path), mediaType)
-                        .withHeader(USER_ID, userId).build(),
-                new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)),
-                Duration.ofSeconds(TIMEOUT_IN_SECONDS))
+                .withHeader(USER_ID, userId).build())
+                .pollInterval(INTERVAL_IN_MILLISECONDS, TimeUnit.MILLISECONDS)
+                .timeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
                 .until(
                         responseStatusMatcher,
                         payload().isJson(allOf(payloadMatchers))
