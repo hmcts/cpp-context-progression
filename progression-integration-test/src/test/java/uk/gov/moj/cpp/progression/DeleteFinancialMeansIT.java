@@ -1,22 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
-import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
-
-import java.io.IOException;
-import java.util.UUID;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
@@ -29,6 +14,18 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocuments
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class DeleteFinancialMeansIT extends AbstractIT {
 
@@ -75,7 +72,12 @@ public class DeleteFinancialMeansIT extends AbstractIT {
 
 
     private void assertCourtDocumentRemoved() {
-        getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId, new Matcher[]{withJsonPath("$.documentIndices.length()", is(0))});
+        final String actualPayload = getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId);
+
+        final String expectedPayload = "{\"documentIndices\":[]}";
+
+        assertThat(expectedPayload, equalTo(actualPayload));
+
     }
 
     private void addCourtDocumentToProsecutionCase() {
