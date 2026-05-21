@@ -20,6 +20,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -81,6 +82,9 @@ public class UpdateDefendantListingStatusHandlerTest {
     private EventStream eventStream;
 
     @Mock
+    private EventStream caseEventStream;
+
+    @Mock
     private AggregateService aggregateService;
 
     @Mock
@@ -121,9 +125,12 @@ public class UpdateDefendantListingStatusHandlerTest {
                 .withId(randomUUID())
                 .build();
         final UpdateDefendantListingStatusV2 updateDefendantListingStatus = getUpdateDefendantListingStatus();
+        final UUID caseId = updateDefendantListingStatus.getHearing().getProsecutionCases().get(0).getId();
         final Envelope<UpdateDefendantListingStatusV2> envelope = envelopeFrom(metadata, updateDefendantListingStatus);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         handler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -152,12 +159,15 @@ public class UpdateDefendantListingStatusHandlerTest {
                 .withId(randomUUID())
                 .build();
         final UpdateDefendantListingStatusV2 updateDefendantListingStatus = getUpdateDefendantListingStatusWithGroupMasterCase();
+        final UUID caseId = updateDefendantListingStatus.getHearing().getProsecutionCases().get(0).getId();
         final Envelope<UpdateDefendantListingStatusV2> envelope = envelopeFrom(metadata, updateDefendantListingStatus);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
         when(groupCaseAggregate.getMemberCases()).thenReturn(memberCases);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase()
                 .withId(MEMBER_CASE_ID)
                 .withIsGroupMaster(false)
@@ -189,6 +199,7 @@ public class UpdateDefendantListingStatusHandlerTest {
         return UpdateDefendantListingStatusV2.updateDefendantListingStatusV2()
                 .withHearing(Hearing.hearing()
                         .withId(HEARING_ID).withIsGroupProceedings(true)
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
                         .withType(HearingType.hearingType().withDescription(HEARING_TYPE).build())
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                                 .withId(MASTER_CASE_ID)
@@ -204,6 +215,7 @@ public class UpdateDefendantListingStatusHandlerTest {
         return UpdateDefendantListingStatusV2.updateDefendantListingStatusV2()
                 .withHearing(Hearing.hearing()
                         .withId(HEARING_ID).withIsGroupProceedings(false)
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
                         .withType(HearingType.hearingType().withDescription(HEARING_TYPE).build())
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(MASTER_CASE_ID)
                                .build())
