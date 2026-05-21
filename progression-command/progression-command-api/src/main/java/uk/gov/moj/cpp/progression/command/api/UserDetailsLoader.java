@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.command.api;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -45,7 +45,7 @@ public class UserDetailsLoader {
 
 
     public static boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final Requester requester, final String applicationTypeCode) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder()
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder()
                 .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
                 .add(OBJECT, applicationTypeCode)
                 .build();
@@ -63,7 +63,7 @@ public class UserDetailsLoader {
 
 
     public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
         final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.permissions");
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);

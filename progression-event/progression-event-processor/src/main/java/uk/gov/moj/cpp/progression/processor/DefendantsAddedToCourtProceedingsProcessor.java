@@ -5,8 +5,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -60,7 +58,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -69,6 +66,7 @@ import javax.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class DefendantsAddedToCourtProceedingsProcessor {
 
@@ -154,11 +152,11 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     private void replayDefendantsAddedToCourtProceedings(final JsonEnvelope jsonEnvelope, final String prosecutionCaseId, final int retryInterval) {
         Optional<Integer> retryInt = Arrays.stream(applicationParameters.getAddDefendantRetryIntervals().split("-")).sorted().skip(retryInterval).findFirst().map(Integer::valueOf);
         if(retryInt.isPresent()) {
-            final JsonObjectBuilder builder = createObjectBuilder();
+            final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
             jsonEnvelope.payloadAsJsonObject().forEach(builder::add);
             builder.add("interval", retryInterval +1);
 
-            final ExecutionInfo executionInfo = new ExecutionInfo(createObjectBuilder()
+            final ExecutionInfo executionInfo = new ExecutionInfo(JsonObjects.createObjectBuilder()
                     .add("metadata", metadataFrom(jsonEnvelope.metadata()).withName("progression.command.replay-defendants-added-to-court-proceedings").build().asJsonObject())
                     .add("payload", builder.build())
                     .build(),
@@ -268,7 +266,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     public void increaseListingNumber(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final UUID hearingId, final JsonArray offenceListingNumbersJsonArray) {
-        final JsonObjectBuilder updateCommandBuilder = createObjectBuilder()
+        final JsonObjectBuilder updateCommandBuilder = JsonObjects.createObjectBuilder()
                 .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
                 .add("hearingId", hearingId.toString())
                 .add("offenceIds", offenceListingNumbersJsonArray);
@@ -359,7 +357,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private static JsonArray getDefendantOffences(final List<Defendant> defendants) {
-        final JsonArrayBuilder offenceIdArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceIdArrayBuilder = JsonObjects.createArrayBuilder();
         defendants.stream()
                 .flatMap(r -> r.getOffences().stream())
                 .map(Offence::getId)
@@ -369,11 +367,11 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private void processConfirmHearingRequestsSentForListing(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final List<HearingRequestDetail> hearingRequestDetailList) {
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        final JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
         hearingRequestDetailList.stream().map(objectToJsonObjectConverter::convert).forEach(arrayBuilder::add);
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.confirm-hearing-request"),
-                createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
                         .add("hearingRequestDetails",  arrayBuilder.build())
                         .build());
@@ -381,7 +379,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
     private void publishDefendantAddedToCase(final JsonEnvelope jsonEnvelope, final String prosecutionCaseId) {
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.process-matched-defendants"),
-                createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add(PROSECUTION_CASE_ID, prosecutionCaseId)
                         .build());
 
@@ -407,7 +405,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
     private static JsonEnvelope getJsonEnvelope(final JsonEnvelope jsonEnvelope) {
         final var payload = jsonEnvelope.payloadAsJsonObject();
-        final JsonObjectBuilder builder = createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
 
         payload.entrySet().stream()
                 .filter(entry -> !KEYS_TO_EXCLUDE.contains(entry.getKey()))

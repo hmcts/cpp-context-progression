@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -54,7 +54,7 @@ public class UserService {
             final Metadata metadata = metadataFrom(action.envelope().metadata())
                     .withName("usersgroups.get-groups-by-user").build();
             final JsonObject payload =
-                    Json.createObjectBuilder().add("userId", userId.get()).build();
+                    JsonObjects.createObjectBuilder().add("userId", userId.get()).build();
             final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
             final Envelope<JsonObject> response =

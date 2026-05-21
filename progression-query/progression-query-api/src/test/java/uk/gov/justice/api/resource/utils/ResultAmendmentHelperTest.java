@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -77,7 +77,7 @@ public class ResultAmendmentHelperTest {
                                         .withAmendmentDate(ZonedDateTime.now())
                                         .withAmendmentReason(slipRuleAmendmentReason)
                                         .withResultPromptsRecord(List.of(ResultPrompt.prompt().withId(promptId)
-                                                .withPromptRef("promptRef").withLabel("End Date").withValue(Json.createValue("2024-03-21")).build()))
+                                                .withPromptRef("promptRef").withLabel("End Date").withValue(JsonObjects.getProvider().createValue("2024-03-21")).build()))
                                         .build(),
                                 AmendmentRecord.amendmentRecord()
                                         .withAmendmentDate(ZonedDateTime.now())

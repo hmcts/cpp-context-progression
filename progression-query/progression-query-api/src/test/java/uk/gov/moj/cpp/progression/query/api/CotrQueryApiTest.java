@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.query.api;
 
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -317,7 +317,7 @@ public class CotrQueryApiTest {
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
-        return Json.createReader(
+        return JsonObjects.createReader(
                 new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }

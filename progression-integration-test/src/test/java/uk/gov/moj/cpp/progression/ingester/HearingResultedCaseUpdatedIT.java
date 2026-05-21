@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingRes
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -32,8 +33,9 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
+import uk.gov.justice.services.messaging.JsonObjects;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -81,9 +83,11 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         verifyInitialElasticSearchCase(inputProsecutionCase, initialElasticSearchCaseResponseJsonObject.get(), "ACTIVE");
 
+        sleepToBeRefactored(); // not all events are processed immediately
         sendEventToMessageQueue();
 
-        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE"))};
+        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.parties[0].postCode", equalTo("GIR 0AA"))};
         final Optional<JsonObject> updatedElasticSearchCaseResponseJsonObject = findBy(postMatchers);
 
         assertTrue(updatedElasticSearchCaseResponseJsonObject.isPresent());
@@ -144,7 +148,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
         final DocumentContext prosecutionCase = parse(commandJsonInputJson);
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
-        final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
+        final JsonObject prosecutionCaseEvent = JsonObjects.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
         return parse(prosecutionCaseEvent);
     }
 }

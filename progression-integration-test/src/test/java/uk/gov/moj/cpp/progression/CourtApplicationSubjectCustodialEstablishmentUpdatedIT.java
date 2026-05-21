@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -257,7 +257,7 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
     }
 
     public static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

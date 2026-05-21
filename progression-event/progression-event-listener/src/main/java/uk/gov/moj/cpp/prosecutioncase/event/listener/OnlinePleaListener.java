@@ -34,7 +34,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ResultListOpaNoticeRepository;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
@@ -287,7 +287,7 @@ public class OnlinePleaListener {
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -115,7 +115,7 @@ public class CourtRegisterEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-register-generated"),
                 jsonObject);
 
-        final JsonObject fileStorePayload = Json.createObjectBuilder().add("templatePayload", "some values").build();
+        final JsonObject fileStorePayload = JsonObjects.createObjectBuilder().add("templatePayload", "some values").build();
         when(courtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(fileStorePayload);
 
         final UUID fileId = UUID.randomUUID();
@@ -135,14 +135,14 @@ public class CourtRegisterEventProcessorTest {
 
     @Test
     public void shouldNotifyCourt() {
-        final JsonArrayBuilder recipientJsonArray = Json.createArrayBuilder();
+        final JsonArrayBuilder recipientJsonArray = JsonObjects.createArrayBuilder();
         final String templateId = UUID.randomUUID().toString();
         final String emailAddress1 = "abc@test.com";
-        recipientJsonArray.add(Json.createObjectBuilder().add("templateId", templateId)
+        recipientJsonArray.add(JsonObjects.createObjectBuilder().add("templateId", templateId)
                 .add("recipientName", "yots court center")
                 .add("emailTemplateName", "some template")
                 .add("emailAddress1", emailAddress1).build());
-        final JsonObject notificationObject = Json.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
+        final JsonObject notificationObject = JsonObjects.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("progression.event.court-register-notified").withUserId(UUID.randomUUID().toString()),
                 notificationObject);
@@ -158,14 +158,14 @@ public class CourtRegisterEventProcessorTest {
 
     @Test
     public void shouldNotifyCourtV2() {
-        final JsonArrayBuilder recipientJsonArray = Json.createArrayBuilder();
+        final JsonArrayBuilder recipientJsonArray = JsonObjects.createArrayBuilder();
         final String templateId = UUID.randomUUID().toString();
         final String emailAddress1 = "abc@test.com";
-        recipientJsonArray.add(Json.createObjectBuilder().add("templateId", templateId)
+        recipientJsonArray.add(JsonObjects.createObjectBuilder().add("templateId", templateId)
                 .add("recipientName", "yots court center")
                 .add("emailTemplateName", "some template")
                 .add("emailAddress1", emailAddress1).build());
-        final JsonObject notificationObject = Json.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
+        final JsonObject notificationObject = JsonObjects.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("progression.event.court-register-notified").withUserId(UUID.randomUUID().toString()),
                 notificationObject);

@@ -4,7 +4,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.UUID.fromString;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.awaitility.Awaitility.with;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -71,7 +71,7 @@ public class MaterialService {
             throw new RuntimeException("UserId missing from event.");
         }
         LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
-        final JsonObject uploadMaterialPayload = Json.createObjectBuilder()
+        final JsonObject uploadMaterialPayload = JsonObjects.createObjectBuilder()
                 .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())
                 .build();

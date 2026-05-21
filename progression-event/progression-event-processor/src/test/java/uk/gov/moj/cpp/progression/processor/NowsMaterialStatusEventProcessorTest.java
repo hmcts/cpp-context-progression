@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("secondClassLetter", false)
                                 .add("isNotificationApi", false)
                                 .add("isCps", false)
-                                .add("emailNotifications", Json.createArrayBuilder()
+                                .add("emailNotifications", JsonObjects.createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("sendToAddress", "sendToAddress")
                                                 .build())

@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociation
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -28,7 +28,7 @@ public class DefendantByLAAContractNumberQueryView {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final String laaContractNumber = payload.getString("laaContractNumber");
         final List<DefendantLAAAssociationEntity> defenceLAAAssociations = defendantLAAAssociationRepository.findByLAAContractNUmber(laaContractNumber);
-        final JsonObject responsePayload = Json.createObjectBuilder()
+        final JsonObject responsePayload = JsonObjects.createObjectBuilder()
                 .add("defendants",convertProsecutionCaseEntityToDefendantsList(defenceLAAAssociations))
                 .build();
         return JsonEnvelope.envelopeFrom(
@@ -41,7 +41,7 @@ public class DefendantByLAAContractNumberQueryView {
                 .map(DefendantLAAAssociationEntity ::getDefendantLAAKey)
                 .map(defendantLAAKey -> defendantLAAKey.getDefendantId().toString())
                 .collect(toList());
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         defendantIdList.stream().forEach(jsonArrayBuilder :: add);
         return  jsonArrayBuilder.build();
     }

@@ -23,8 +23,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import io.restassured.response.Response;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Matcher;
@@ -66,6 +66,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 @SuppressWarnings("squid:S1607")
 public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT {
@@ -375,6 +376,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         final JsonObject publicEvent = createObjectBuilder().add("newHearingId", newHearingId).add("seedingHearingId", hearingId)
                 .add("oldHearingIds", createArrayBuilder().add(nextHearingId)).build();
         publicEventEnvelope = envelopeFrom(buildMetadata("public.listing.offences-moved-to-next-hearing", userId), publicEvent);
+        sleepToBeRefactored();
         messageProducerClientPublic.sendMessage("public.listing.offences-moved-to-next-hearing", publicEventEnvelope);
 
         assertTrue(retrieveMessageBody(messageConsumerPublicEvent1).isPresent());
