@@ -102,6 +102,7 @@ import java.util.UUID;
 import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 
 import org.junit.jupiter.api.BeforeEach;
