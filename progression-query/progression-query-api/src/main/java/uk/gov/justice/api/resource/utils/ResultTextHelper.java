@@ -27,6 +27,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 public class ResultTextHelper {
     private static final String EXCLUDED_PROMPT_REFERENCE = "hmiSlots";
@@ -100,7 +101,7 @@ public class ResultTextHelper {
                 .withPromptRef(resultPrompt.getPromptRef())
                 .withType(resultPrompt.getType())
                 .withLabel(resultPrompt.getLabel())
-                .withValue(createValue(value))
+                .withValue(JsonObjects.getProvider().createValue(value))
                 .build();
     }
 

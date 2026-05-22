@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Objects;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -36,7 +36,7 @@ public class FileUtil {
 
     public static JsonObject jsonFromString(final String jsonObjectStr) {
 
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

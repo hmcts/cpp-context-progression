@@ -14,7 +14,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ public class DefendantDefenceAssocationLockedProcessorTest {
                 .withName("public.progression.defence-association-for-laa-locked")
                 .withUserId(userId.toString());
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .add("prosecutionCaseId", prosecutionCaseId.toString())
                 .add("lockedByRepOrder", true)

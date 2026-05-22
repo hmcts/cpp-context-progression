@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -110,7 +110,7 @@ public class ListingService {
     public List<UUID> getShadowListedOffenceIds(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
         final Set<UUID> shadowListedOffenceIds = new HashSet<>();
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         final Hearing hearingListed = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();
@@ -141,7 +141,7 @@ public class ListingService {
     public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final String caseUrn) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_ANY_ALLOCATION_SEARCH_HEARINGS);
         final LocalDate startDate = utcClock.now().toLocalDate();
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add("caseUrn", caseUrn)
                 .add("startDate", startDate.toString())
                 .build();
@@ -176,7 +176,7 @@ public class ListingService {
 
     private Hearing searchHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();

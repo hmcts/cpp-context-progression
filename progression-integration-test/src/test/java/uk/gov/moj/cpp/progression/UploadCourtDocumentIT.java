@@ -227,7 +227,8 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
 
     private void assertCourtDocumentByApplication(String documentId, String documentTypeId, String materialId, String applicationId) throws JSONException {
-        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId);
+        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId,
+                new Matcher[]{withJsonPath("$.documentIndices[0].document.courtDocumentId", is(documentId))});
         final String expectedPayload = getPayload("expected/expected.progression.upload.court-document-1.json")
                 .replace("%DOCUMENT_ID%", documentId)
                 .replace("%APPLICATION_ID%", applicationId)

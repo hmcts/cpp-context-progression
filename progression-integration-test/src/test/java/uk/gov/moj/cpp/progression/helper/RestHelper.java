@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.getJsonReaderFactory;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -21,7 +22,7 @@ import java.io.StringReader;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
+
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.ws.rs.core.HttpHeaders;
@@ -83,7 +84,7 @@ public class RestHelper {
 
     public static JsonObject getJsonObject(final String jsonAsString) {
         final JsonObject payload;
-        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
+        try (final JsonReader jsonReader = getJsonReaderFactory().createReader(new StringReader(jsonAsString))) {
             payload = jsonReader.readObject();
         }
         return payload;
