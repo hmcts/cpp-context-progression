@@ -473,40 +473,6 @@ public class HearingAggregate implements Aggregate {
     private List<UUID> collectApplicationIds(final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsToSend) {
         if (isNull(courtApplicationPartyListingNeedsToSend)) {
             return null;
-        } else {
-            return this.listDefendantRequests.stream()
-                    .map(listDefendantRequest -> listDefendantRequest()
-                            .withValuesFrom(listDefendantRequest).withSummonsApprovedOutcome(summonsApprovedOutcome).build()).
-                    collect(toList());
-        }
-    }
-
-    private List<CourtApplicationPartyListingNeeds> buildApplicationPartyListingNeedsWithAmendedSummonsOutcome(final SummonsApprovedOutcome summonsApprovedOutcome) {
-        if (isEmpty(this.applicationListingNeeds)) {
-            return null;
-        }
-        return this.applicationListingNeeds.stream()
-                .map(needs -> courtApplicationPartyListingNeeds()
-                        .withValuesFrom(needs).withSummonsApprovedOutcome(summonsApprovedOutcome).build())
-                .collect(toList());
-    }
-
-    private List<ConfirmedProsecutionCaseId> buildConfirmedProsecutionCaseIds() {
-        final Map<UUID, List<UUID>> confirmedProsecutionCaseIdsMap = new HashMap<>();
-
-        if (isNotEmpty(this.listDefendantRequests)) {
-            for (final ListDefendantRequest request : this.listDefendantRequests) {
-                confirmedProsecutionCaseIdsMap.computeIfAbsent(request.getProsecutionCaseId(), k -> new ArrayList<>())
-                        .add(request.getDefendantId());
-            }
-        }
-
-        final List<ConfirmedProsecutionCaseId> result = confirmedProsecutionCaseIdsMap.entrySet()
-                .stream()
-                .map(entry -> ConfirmedProsecutionCaseId.confirmedProsecutionCaseId().withId(entry.getKey()).withConfirmedDefendantIds(entry.getValue()).build())
-                .toList();
-
-        return result.isEmpty() ? null : result;
         }
         return courtApplicationPartyListingNeedsToSend.stream()
                 .map(CourtApplicationPartyListingNeeds::getCourtApplicationId)
