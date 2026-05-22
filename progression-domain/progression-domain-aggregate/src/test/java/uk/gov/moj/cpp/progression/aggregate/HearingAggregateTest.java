@@ -6881,6 +6881,37 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldAmendSummonsDataAndPopulateConfirmedApplicationIds() {
+        final UUID applicationId = randomUUID();
+
+        final List<CourtApplicationPartyListingNeeds> list = new ArrayList<>();
+        list.add(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                .withCourtApplicationId(applicationId)
+                .build());
+
+        hearingAggregate.createHearingApplicationRequest(list).collect(toList());
+
+        setField(hearingAggregate, "hearing",
+                Hearing.hearing()
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withCode("testCode").build())
+                        .withHearingDays(of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .build());
+
+        final SummonsApprovedOutcome summonsApprovedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withSummonsSuppressed(false)
+                .build();
+
+        final List<Object> events = hearingAggregate.amendSummonsData(summonsApprovedOutcome).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) events.get(0);
+        assertThat(prepared.getSummonsData().getConfirmedApplicationIds(), notNullValue());
+        assertThat(prepared.getSummonsData().getConfirmedApplicationIds().size(), is(1));
+        assertThat(prepared.getSummonsData().getConfirmedApplicationIds().get(0), is(applicationId));
+    }
+
+    @Test
     public void shouldReturnEmptyStreamWhenNoListDefendantRequestsAndNoApplicationListingNeeds() {
         setField(hearingAggregate, "hearing",
                 Hearing.hearing()
