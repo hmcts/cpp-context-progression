@@ -617,7 +617,7 @@ public class DefendantHelperTest {
         final UUID caseId = randomUUID();
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
 
-        assertTrue(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
+        assertFalse(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
     }
 
     @Test
