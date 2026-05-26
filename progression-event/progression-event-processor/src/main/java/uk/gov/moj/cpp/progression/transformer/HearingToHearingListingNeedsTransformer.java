@@ -19,6 +19,7 @@ import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -186,10 +187,16 @@ public class HearingToHearingListingNeedsTransformer {
         final String key;
         if (nonNull(bookingReference)) {
             if (!bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
-                logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
-                return;
+                if (isCrownNextHearing(nextHearing)) {
+                    // Crown has no provisional booking concept: the bookingReference value IS the courtScheduleId.
+                    key = createMapKey(Set.of(bookingReference), nextHearing.getType());
+                } else {
+                    logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
+                    return;
+                }
+            } else {
+                key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference), nextHearing.getType());
             }
-            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference), nextHearing.getType());
         } else {
             key = createMapKey(nextHearing);
         }
@@ -233,7 +240,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         final UUID bookingReference = nextHearing.getBookingReference();
 
-        if (nonNull(bookingReference) && !bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
+        if (nonNull(bookingReference) && !bookingReferenceCourtScheduleIdMap.containsKey(bookingReference) && !isCrownNextHearing(nextHearing)) {
             logger.warn("CourtScheduleId not found for BookingReference: {} for Application Id: {}", bookingReference, courtApplication.getId());
             return;
         }
@@ -266,11 +273,20 @@ public class HearingToHearingListingNeedsTransformer {
     private String getKey(Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, NextHearing nextHearing, UUID bookingReference) {
         final String key;
         if (nonNull(bookingReference)) {
-            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference), nextHearing.getType());
+            Set<UUID> courtScheduleIds = bookingReferenceCourtScheduleIdMap.get(bookingReference);
+            if (isNull(courtScheduleIds) && isCrownNextHearing(nextHearing)) {
+                // Crown has no provisional booking concept: the bookingReference value IS the courtScheduleId.
+                courtScheduleIds = Set.of(bookingReference);
+            }
+            key = createMapKey(courtScheduleIds, nextHearing.getType());
         } else {
             key = createMapKey(nextHearing);
         }
         return key;
+    }
+
+    private boolean isCrownNextHearing(final NextHearing nextHearing) {
+        return JurisdictionType.CROWN == nextHearing.getJurisdictionType();
     }
 
     private boolean validateNextHearing(JudicialResult judicialResult) {
