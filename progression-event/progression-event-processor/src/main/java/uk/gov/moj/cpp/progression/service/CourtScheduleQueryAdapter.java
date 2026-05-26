@@ -70,16 +70,24 @@ public class CourtScheduleQueryAdapter {
                     .withMetadataFrom(sourceEnvelope, LISTING_QUERY_COURT_SCHEDULE_DRAFT_STATUS)
                     .apply(requestPayload));
         } catch (Exception ex) {
-            LOGGER.warn("listing.query.court.schedule.draft.status threw {} for {} ids - failing-safe by treating sessions as DRAFT",
+            // Fail-open: if we cannot prove a session is draft (e.g. listing not yet deployed
+            // with the endpoint, dispatch error, network blip) we preserve the original
+            // payload by returning false. The original unallocated-CROWN leak resumes during
+            // the outage, but allocated CROWN hearings keep their courtroom info - which is
+            // the much more common case. Operators will see this WARN if the call is
+            // persistently failing.
+            LOGGER.warn("listing.query.court.schedule.draft.status threw {} for {} ids - failing-open (anyDraft=false, no strip)",
                     ex.getClass().getSimpleName(), courtScheduleIds.size());
-            return true;
+            return false;
         }
 
         final JsonObject responseBody = response == null ? null : response.payloadAsJsonObject();
         if (responseBody == null || !responseBody.containsKey(ANY_DRAFT) || responseBody.isNull(ANY_DRAFT)) {
-            LOGGER.warn("listing.query.court.schedule.draft.status returned an unexpected payload for {} ids - failing-safe by treating sessions as DRAFT",
+            // Same fail-open rationale as the catch block above - if listing's response is
+            // malformed we cannot prove draft state, so preserve the input.
+            LOGGER.warn("listing.query.court.schedule.draft.status returned an unexpected payload for {} ids - failing-open (anyDraft=false, no strip)",
                     courtScheduleIds.size());
-            return true;
+            return false;
         }
 
         return responseBody.getBoolean(ANY_DRAFT);

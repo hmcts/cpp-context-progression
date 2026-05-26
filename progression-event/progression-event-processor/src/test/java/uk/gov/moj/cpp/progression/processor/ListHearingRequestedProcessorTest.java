@@ -872,6 +872,12 @@ public class ListHearingRequestedProcessorTest {
     public void shouldNotStripCourtCentreRoomWhenCrownHearingHasOnlyNonDraftSessions() {
         final UUID scheduleId = randomUUID();
         final CourtHearingRequest crownHearingWithRoom = crownBookedSlotPayloadWithCourtCentreRoom(scheduleId);
+        // Capture the exact roomId / roomName on the way in so we can assert byte-for-byte
+        // preservation through the handler. (Previously this asserted only that
+        // toString().isEmpty() == false, which is trivially true for any UUID and would have
+        // passed even if the strip leaked through.)
+        final UUID expectedRoomId = crownHearingWithRoom.getCourtCentre().getRoomId();
+        final String expectedRoomName = crownHearingWithRoom.getCourtCentre().getRoomName();
         final ListHearingRequested event = ListHearingRequested.listHearingRequested()
                 .withHearingId(randomUUID())
                 .withListNewHearing(crownHearingWithRoom)
@@ -888,9 +894,13 @@ public class ListHearingRequestedProcessorTest {
 
         listHearingRequestedProcessor.handle(envelope);
 
-        // Hearing is allocated (no draft sessions); courtCentre.roomId / roomName should be preserved.
-        assertThat(transformerArg.getValue().getCourtCentre().getRoomId().toString().isEmpty(), is(false));
-        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is("Courtroom 01"));
+        // Hearing is allocated (no draft sessions): courtCentre.roomId / roomName must be
+        // preserved exactly. This is the regression we hit in ns-ste-ccm-72 where allocated
+        // CROWN hearings were losing their courtroom in the notification email because the
+        // adapter fail-safed to "treat as draft" on listing-query errors. Adapter now fails
+        // open (returns false on error), so non-draft paths flow through unchanged.
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomId(), is(expectedRoomId));
+        assertThat(transformerArg.getValue().getCourtCentre().getRoomName(), is(expectedRoomName));
     }
 
     @Test

@@ -70,16 +70,30 @@ public class CourtScheduleQueryAdapterTest {
     }
 
     @Test
-    public void failsSafeToTrueWhenListingResponseOmitsAnyDraftKey() {
+    public void failsOpenToFalseWhenListingResponseOmitsAnyDraftKey() {
+        // Fail-open: if we cannot prove the session is draft, preserve the input (don't strip).
+        // Allocated CROWN hearings keep their courtCentre.roomId during a listing outage;
+        // the unallocated-leak guard is best-effort and resumes once listing is reachable.
         givenListingReturnsBody(Json.createObjectBuilder().build());
-        assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1)), is(true));
+        assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1)), is(false));
     }
 
     @Test
-    public void failsSafeToTrueWhenListingCallThrows() {
+    public void failsOpenToFalseWhenListingCallThrows() {
         when(enveloper.withMetadataFrom(any(JsonEnvelope.class), any(String.class)))
                 .thenThrow(new RuntimeException("simulated dispatch failure"));
-        assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1)), is(true));
+        assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1)), is(false));
+    }
+
+    @Test
+    public void failsOpenToFalseWhenListingReturnsNullEnvelope() {
+        // The Requester contract allows null in some dispatch failures; treat the same way
+        // as malformed - we cannot prove draft state, so preserve the input.
+        when(enveloper.withMetadataFrom(any(JsonEnvelope.class), any(String.class))).thenReturn(envelopeBuilder);
+        when(envelopeBuilder.apply(any())).thenReturn(envelopeFrom(metadataWithRandomUUID("listing.query.court.schedule.draft.status"), Json.createObjectBuilder().build()));
+        when(requester.requestAsAdmin(any())).thenReturn(null);
+
+        assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1)), is(false));
     }
 
     private void givenListingReturns(final boolean anyDraft) {
