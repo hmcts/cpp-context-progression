@@ -43,7 +43,6 @@ public class CourtScheduleQueryAdapter {
 
     private static final String LISTING_QUERY_COURT_SCHEDULE_DRAFT_STATUS = "listing.query.court.schedule.draft.status";
     private static final String COURT_SCHEDULE_ID_LIST = "courtScheduleIdList";
-    private static final String COURT_SCHEDULE_ID = "courtScheduleId";
     private static final String ANY_DRAFT = "anyDraft";
 
     @Inject
@@ -59,7 +58,7 @@ public class CourtScheduleQueryAdapter {
         }
 
         final JsonArrayBuilder list = createArrayBuilder();
-        courtScheduleIds.forEach(id -> list.add(createObjectBuilder().add(COURT_SCHEDULE_ID, id.toString())));
+        courtScheduleIds.forEach(id -> list.add(id.toString()));
         final JsonObject requestPayload = createObjectBuilder()
                 .add(COURT_SCHEDULE_ID_LIST, list)
                 .build();

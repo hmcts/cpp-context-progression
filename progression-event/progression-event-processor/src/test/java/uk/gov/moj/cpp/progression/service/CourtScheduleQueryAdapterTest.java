@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -13,6 +15,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +26,7 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,6 +65,39 @@ public class CourtScheduleQueryAdapterTest {
     public void returnsTrueWhenListingResponseSaysAnyDraft() {
         givenListingReturns(true);
         assertThat(adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1, SCHEDULE_ID_2)), is(true));
+    }
+
+    @Test
+    public void sendsRequestAsFlatArrayOfUuidStringsNotObjectWrapped() {
+        // Wire contract for the request body to listing.query.court.schedule.draft.status:
+        //   { "courtScheduleIdList": ["<uuid>", "<uuid>"] }
+        // NOT the older form {"courtScheduleIdList": [{"courtScheduleId":"<uuid>"}, ...]}.
+        // This test captures the actual body built by the adapter so a regression to the
+        // wrapped form would fail loudly here.
+        givenListingReturns(false);
+        final ArgumentCaptor<JsonObject> payloadCaptor = ArgumentCaptor.forClass(JsonObject.class);
+
+        adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1, SCHEDULE_ID_2));
+
+        verify(envelopeBuilder).apply(payloadCaptor.capture());
+        final JsonObject sent = payloadCaptor.getValue();
+        final List<String> idsInPayload = new ArrayList<>();
+        sent.getJsonArray("courtScheduleIdList").forEach(v -> idsInPayload.add(((javax.json.JsonString) v).getString()));
+        assertThat(idsInPayload, containsInAnyOrder(SCHEDULE_ID_1.toString(), SCHEDULE_ID_2.toString()));
+    }
+
+    @Test
+    public void sendsRequestPreservingScheduleIdOrder() {
+        givenListingReturns(false);
+        final ArgumentCaptor<JsonObject> payloadCaptor = ArgumentCaptor.forClass(JsonObject.class);
+
+        adapter.anySessionIsDraft(sourceEnvelope(), List.of(SCHEDULE_ID_1, SCHEDULE_ID_2));
+
+        verify(envelopeBuilder).apply(payloadCaptor.capture());
+        final List<String> idsInPayload = new ArrayList<>();
+        payloadCaptor.getValue().getJsonArray("courtScheduleIdList")
+                .forEach(v -> idsInPayload.add(((javax.json.JsonString) v).getString()));
+        assertThat(idsInPayload, contains(SCHEDULE_ID_1.toString(), SCHEDULE_ID_2.toString()));
     }
 
     @Test
