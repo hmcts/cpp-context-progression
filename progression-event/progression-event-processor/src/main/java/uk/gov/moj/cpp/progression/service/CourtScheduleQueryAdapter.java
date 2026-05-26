@@ -2,7 +2,9 @@ package uk.gov.moj.cpp.progression.service;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -45,6 +47,7 @@ public class CourtScheduleQueryAdapter {
     private static final String ANY_DRAFT = "anyDraft";
 
     @Inject
+    @ServiceComponent(EVENT_PROCESSOR)
     private Requester requester;
 
     @Inject
