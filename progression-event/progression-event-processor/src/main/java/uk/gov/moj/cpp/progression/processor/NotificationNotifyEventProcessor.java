@@ -19,8 +19,7 @@ import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import com.azure.storage.blob.BlobContainerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
@@ -73,7 +72,7 @@ public class NotificationNotifyEventProcessor {
     private NotificationInfoJdbcRepository notificationInfoJdbcRepository;
 
     @Inject
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
 
     @Inject
     private Logger logger;
@@ -198,9 +197,9 @@ public class NotificationNotifyEventProcessor {
 
     private void deleteFile(final UUID notificationId) {
         try {
-            fileStorer.delete(notificationId);
-        } catch (final FileServiceException e) {
-            logger.debug(format("Failed to delete file for given notification id: '%s' from FileService. This could be due to the notification not having an associated file.", notificationId), e);
+            blobContainerClient.getBlobClient(notificationId.toString()).deleteIfExists();
+        } catch (final Exception e) {
+            logger.debug(format("Failed to delete blob for notification id: '%s'. This could be due to the notification not having an associated file.", notificationId), e);
         }
     }
 }

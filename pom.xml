@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.104.0</version>
+        <version>17.104.3</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -60,6 +60,9 @@
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
         <sonar.cpd.exclusions>**/uk/gov/moj/cpp/**/*.java</sonar.cpd.exclusions>
+        <!-- JDK HTTP transport for Azure SDK v12 — avoids netty conflicts with WildFly 26's own netty modules.
+             TODO: move to cpp-platform-maven-common-bom once available there -->
+        <azure-core-http-jdk-httpclient.version>1.0.0-beta.14</azure-core-http-jdk-httpclient.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
@@ -193,6 +196,11 @@
                 <artifactId>javafaker</artifactId>
                 <version>${javafaker.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-jdk-httpclient</artifactId>
+                <version>${azure-core-http-jdk-httpclient.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

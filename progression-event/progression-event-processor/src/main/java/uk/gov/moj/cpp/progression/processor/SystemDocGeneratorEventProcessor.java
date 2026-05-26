@@ -30,9 +30,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.client.FileService;
-import uk.gov.justice.services.fileservice.domain.FileReference;
+import com.azure.storage.blob.BlobContainerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
@@ -112,7 +110,7 @@ public class SystemDocGeneratorEventProcessor {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
-    private FileService fileService;
+    private BlobContainerClient blobContainerClient;
 
     @Inject
     private UtcClock utcClock;
@@ -128,7 +126,7 @@ public class SystemDocGeneratorEventProcessor {
 
 
     @Handles(PUBLIC_DOCUMENT_AVAILABLE_EVENT_NAME)
-    public void handleDocumentAvailable(final JsonEnvelope documentAvailableEvent) throws FileServiceException {
+    public void handleDocumentAvailable(final JsonEnvelope documentAvailableEvent) {
         LOGGER.info(PUBLIC_DOCUMENT_AVAILABLE_EVENT_NAME + " {}", documentAvailableEvent.payload());
 
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
@@ -146,10 +144,9 @@ public class SystemDocGeneratorEventProcessor {
                     this.objectToJsonObjectConverter.convert(notifyCourtRegister)));
         } else if (isForPleaDocument(originatingSource)) {
             final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
-            final FileReference payloadFileReference = fileService.retrieve(payloadFileId).orElseThrow(() -> new BadRequestException("Failed to retrieve file"));
-            LOGGER.info("Retrieved file reference '{}' successfully", payloadFileReference);
+            LOGGER.info("Retrieving payload blob '{}' from blob store", payloadFileId);
 
-            try (JsonReader reader = Json.createReader(payloadFileReference.getContentStream())) {
+            try (JsonReader reader = Json.createReader(blobContainerClient.getBlobClient(payloadFileId.toString()).downloadContent().toStream())) {
                 final JsonObject rawPayload = reader.readObject();
                 LOGGER.info("Read payload '{}'", rawPayload);
                 this.sender.send(envelopeFrom(metadataFrom(documentAvailableEvent.metadata()).withName("progression.command.handle-online-plea-document-creation").build(),

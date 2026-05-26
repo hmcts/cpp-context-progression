@@ -126,8 +126,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>file-service-persistence</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-jdk-httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>

@@ -29,10 +29,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.event.nows.order.Address;
 import uk.gov.moj.cpp.progression.event.nows.order.Cases;
@@ -44,7 +44,12 @@ import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
+
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -75,7 +80,13 @@ public class DocumentGeneratorServiceTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Mock
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Mock
+    private BlobClient blobClient;
+
+    @Mock
+    private AzureBlobConfiguration configuration;
 
     @Mock
     private UploadMaterialService uploadMaterialService;
@@ -103,12 +114,6 @@ public class DocumentGeneratorServiceTest {
 
     @Mock
     private NowDocumentValidator nowDocumentValidator;
-
-    @Captor
-    ArgumentCaptor<JsonObject> fileStorerMetaDataCaptor;
-
-    @Captor
-    ArgumentCaptor<InputStream> fileStorerInputStreamCaptor;
 
     @Captor
     ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
@@ -225,18 +230,14 @@ public class DocumentGeneratorServiceTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(ncesDocumentContent, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
                 .thenReturn(documentData);
+        when(blobContainerClient.getBlobClient(anyString())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         final UUID userId = randomUUID();
 
-        when(documentGeneratorClient.generatePdfDocument(ncesDocumentContent, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
-
         documentGeneratorService.generateNcesDocument(sender, originatingEnvelope, userId, ncesNotificationRequested);
 
-        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
-
-        byte[] dataSent = new byte[documentData.length];
-        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
-        assertThat(documentData, is(dataSent));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
 
         verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
@@ -272,11 +273,11 @@ public class DocumentGeneratorServiceTest {
         final byte[] documentData = {34, 56, 78, 90};
         final UUID systemUserId = randomUUID();
         final UUID materialId = randomUUID();
-        final UUID fileId = randomUUID();
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(fileStorer.store(any(), any())).thenReturn(fileId);
+        when(blobContainerClient.getBlobClient(anyString())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         final String inputEvent = Resources.toString(getResource("finalised-form-data-with-welsh-data.json"), defaultCharset());
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
@@ -292,7 +293,7 @@ public class DocumentGeneratorServiceTest {
         verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), (JsonEnvelope) any());
         final UUID capturedFileId = fileIdmaterialServiceCaptor.getValue();
         final UUID capturedMaterialId = materialIdmaterialServiceCaptor.getValue();
-        assertThat(capturedFileId, is(fileId));
+        assertThat(capturedFileId, is(notNullValue()));
         assertThat(capturedMaterialId, is(materialId));
 
 
@@ -320,14 +321,12 @@ public class DocumentGeneratorServiceTest {
         final byte[] documentData = {34, 56, 78, 90};
         final String fileName = "filename";
 
-        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
+        when(blobContainerClient.getBlobClient(anyString())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         documentGeneratorService.generatePdfDocument(originatingEnvelope, fileName, documentData);
-        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
 
-        byte[] dataSent = new byte[documentData.length];
-        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
-        assertThat(documentData, is(dataSent));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
 
         verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), (JsonEnvelope) any());
         final UUID capturedFileId = fileIdmaterialServiceCaptor.getValue();

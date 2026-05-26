@@ -23,8 +23,10 @@ import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
+
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
@@ -34,6 +36,11 @@ import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
 import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
+
+import static com.azure.core.util.BinaryData.fromStream;
+import static com.azure.core.util.Context.NONE;
+import static java.util.Map.of;
+import static java.util.UUID.randomUUID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -80,7 +87,9 @@ public class DocumentGeneratorService {
 
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    private final FileStorer fileStorer;
+    private final BlobContainerClient blobContainerClient;
+
+    private final AzureBlobConfiguration configuration;
 
     private final UploadMaterialService uploadMaterialService;
 
@@ -98,7 +107,8 @@ public class DocumentGeneratorService {
     public DocumentGeneratorService(final SystemUserProvider systemUserProvider,
                                     final DocumentGeneratorClientProducer documentGeneratorClientProducer,
                                     final ObjectToJsonObjectConverter objectToJsonObjectConverter,
-                                    final FileStorer fileStorer,
+                                    final BlobContainerClient blobContainerClient,
+                                    final AzureBlobConfiguration configuration,
                                     final UploadMaterialService uploadMaterialService,
                                     final MaterialUrlGenerator materialUrlGenerator,
                                     final ApplicationParameters applicationParameters,
@@ -107,7 +117,8 @@ public class DocumentGeneratorService {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
         this.objectToJsonObjectConverter = objectToJsonObjectConverter;
-        this.fileStorer = fileStorer;
+        this.blobContainerClient = blobContainerClient;
+        this.configuration = configuration;
         this.uploadMaterialService = uploadMaterialService;
         this.materialUrlGenerator = materialUrlGenerator;
         this.applicationParameters = applicationParameters;
@@ -306,7 +317,7 @@ public class DocumentGeneratorService {
             final UUID fileId = storeFile(fileContent, filename);
             LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
             materialService.uploadMaterial(fileId, materialId, originatingEnvelope);
-        } catch (final FileServiceException e) {
+        } catch (final Exception e) {
             LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
             throw new FileUploadException(e);
         }
@@ -340,7 +351,7 @@ public class DocumentGeneratorService {
                     .setSecondClassLetter(isRemotePrintingRequired)
                     .build());
 
-        } catch (final FileServiceException e) {
+        } catch (final Exception e) {
             LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
             throw new FileUploadException(e);
         }
@@ -368,7 +379,7 @@ public class DocumentGeneratorService {
                     .setSecondClassLetter(false)
                     .build());
 
-        } catch (final FileServiceException e) {
+        } catch (final Exception e) {
             LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
             throw new FileUploadException(e);
         }
@@ -472,9 +483,14 @@ public class DocumentGeneratorService {
         return nonNull(nowDistribution) && nonNull(nowDistribution.getIsNotificationApi()) && nowDistribution.getIsNotificationApi();
     }
 
-    private UUID storeFile(final InputStream fileContent, final String fileName) throws FileServiceException {
-        final JsonObject metadata = createObjectBuilder().add("fileName", fileName).build();
-        return fileStorer.store(metadata, fileContent);
+    private UUID storeFile(final InputStream fileContent, final String fileName) {
+        final UUID fileId = randomUUID();
+        blobContainerClient.getBlobClient(fileId.toString())
+                .uploadWithResponse(
+                        new BlobParallelUploadOptions(fromStream(fileContent))
+                                .setMetadata(of("fileName", fileName.strip())),
+                        configuration.getTransferTimeout(), NONE);
+        return fileId;
     }
 
     private void updateMaterialStatusAsFailed(Sender sender, final JsonEnvelope originatingEnvelope, UUID materialId) {

@@ -25,8 +25,8 @@ import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
 
 import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.CommunicationType;
@@ -74,7 +74,10 @@ public class NotificationNotifyEventProcessorTest {
     private SystemIdMapping systemIdMapping;
 
     @Mock
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Mock
+    private BlobClient blobClient;
 
     @Mock
     private Logger logger;
@@ -104,7 +107,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldFailSilentlyAndLogMessage() throws FileServiceException {
+    public void shouldFailSilentlyAndLogMessage() {
         final UUID notificationId = randomUUID();
 
         final JsonEnvelope letterNotification = envelope()
@@ -142,7 +145,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleFailedPrintOrderRequestForApplication() throws FileServiceException {
+    public void shouldHandleFailedPrintOrderRequestForApplication() {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
@@ -159,7 +162,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleFailedPrintOrderRequestForMaterial() throws FileServiceException {
+    public void shouldHandleFailedPrintOrderRequestForMaterial() {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
@@ -175,7 +178,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleSucceededPrintOrderRequestForApplication() throws FileServiceException {
+    public void shouldHandleSucceededPrintOrderRequestForApplication() {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
         NotificationInfoResult notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.EMAIL.getType());
@@ -199,7 +202,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleSucceededPrintOrderRequestForCase() throws FileServiceException {
+    public void shouldHandleSucceededPrintOrderRequestForCase() {
         final UUID notificationId = randomUUID();
         final UUID caseId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = Optional.of(new SystemIdMapping(null, null, null,caseId , null , null ));
@@ -226,7 +229,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleSucceededPrintOrderRequestForMaterial() throws FileServiceException {
+    public void shouldHandleSucceededPrintOrderRequestForMaterial() {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
@@ -247,7 +250,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldHandlePrintOrderRequestFailSilentlyAndLogMessage() throws FileServiceException {
+    public void shouldHandlePrintOrderRequestFailSilentlyAndLogMessage() {
         final UUID notificationId = randomUUID();
 
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
@@ -270,7 +273,7 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldDeleteAssociatedFileAndUpdatePrintDateTimeWhenNotificationSendSucceeded() throws FileServiceException {
+    public void shouldDeleteAssociatedFileAndUpdatePrintDateTimeWhenNotificationSendSucceeded() {
         final UUID notificationId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID courtDocumentId = randomUUID();
@@ -282,9 +285,10 @@ public class NotificationNotifyEventProcessorTest {
                 .build();
         when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
         when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
+        when(blobContainerClient.getBlobClient(notificationId.toString())).thenReturn(blobClient);
         notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
-        verify(fileStorer).delete(notificationId);
+        verify(blobClient).deleteIfExists();
         verify(sender).send(envelopeCaptor.capture());
         final Envelope<UpdateCourtDocumentPrintTime> command = envelopeCaptor.getValue();
         final UpdateCourtDocumentPrintTime courtDocumentPrintTime = command.payload();
@@ -295,56 +299,60 @@ public class NotificationNotifyEventProcessorTest {
     }
 
     @Test
-    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenCompletionTimeNotAvailable() throws FileServiceException {
+    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenCompletionTimeNotAvailable() {
         final UUID notificationId = randomUUID();
         final UUID materialId = randomUUID();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(materialId.toString(), "materialId")
                 .build();
+        when(blobContainerClient.getBlobClient(notificationId.toString())).thenReturn(blobClient);
         notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
-        verify(fileStorer).delete(notificationId);
+        verify(blobClient).deleteIfExists();
         verifyNoInteractions(systemIdMapperService, systemIdMapping);
     }
 
     @Test
-    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenMaterialIsNotAvailable() throws FileServiceException {
+    public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenMaterialIsNotAvailable() {
         final UUID notificationId = randomUUID();
         final ZonedDateTime completedAt = now();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(completedAt.toString(), "completedAt")
                 .build();
+        when(blobContainerClient.getBlobClient(notificationId.toString())).thenReturn(blobClient);
          notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
-        verify(fileStorer).delete(notificationId);
+        verify(blobClient).deleteIfExists();
         verifyNoInteractions(systemIdMapperService, systemIdMapping);
     }
 
     @Test
-    public void shouldDeleteAssociatedFileWhenNotificationSendFailed() throws FileServiceException {
+    public void shouldDeleteAssociatedFileWhenNotificationSendFailed() {
         final UUID notificationId = randomUUID();
         final JsonEnvelope notificationFailedEvent = envelope()
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
 
+        when(blobContainerClient.getBlobClient(notificationId.toString())).thenReturn(blobClient);
         notificationNotifyEventProcessor.handleNotificationRequestFailed(notificationFailedEvent);
 
-        verify(fileStorer).delete(notificationId);
+        verify(blobClient).deleteIfExists();
     }
 
     @Test
-    public void shouldSilentlyFailAndLogWhenUnableToDeleteFileAssociatedWithNotification() throws FileServiceException {
+    public void shouldSilentlyFailAndLogWhenUnableToDeleteFileAssociatedWithNotification() {
         final UUID notificationId = randomUUID();
         final JsonEnvelope notificationFailedEvent = envelope()
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
 
-        final FileServiceException exception = new FileServiceException("Delete from metadata table affected 0 rows!");
-        doThrow(exception).when(fileStorer).delete(notificationId);
+        final RuntimeException exception = new RuntimeException("delete failed");
+        when(blobContainerClient.getBlobClient(notificationId.toString())).thenReturn(blobClient);
+        doThrow(exception).when(blobClient).deleteIfExists();
 
         notificationNotifyEventProcessor.handleNotificationRequestFailed(notificationFailedEvent);
 
-        verify(fileStorer).delete(notificationId);
+        verify(blobClient).deleteIfExists();
 
         verify(logger).debug(format("Failed to delete file for given notification id: '%s' from FileService. This could be due to the notification not having an associated file.", notificationId), exception);
 

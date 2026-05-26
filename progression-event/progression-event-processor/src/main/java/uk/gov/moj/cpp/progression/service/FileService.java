@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static javax.json.Json.createObjectBuilder;
+import static com.azure.core.util.BinaryData.fromBytes;
+import static com.azure.core.util.Context.NONE;
+import static java.util.Map.of;
+import static java.util.UUID.randomUUID;
 
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
 
-import java.io.ByteArrayInputStream;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
+
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -15,31 +19,33 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S2139", "squid:S00112"})
+@SuppressWarnings("squid:S2139")
 public class FileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileService.class);
 
     @Inject
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Inject
+    private AzureBlobConfiguration configuration;
 
     public UUID storePayload(final JsonObject payload, final String fileName, final String templateName) {
+        final byte[] jsonPayloadInBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+        final UUID fileId = randomUUID();
         try {
-            final byte[] jsonPayloadInBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
-
-            final JsonObject metadata = createObjectBuilder()
-                    .add("fileName", fileName)
-                    .add("conversionFormat", ConversionFormat.PDF.toString())
-                    .add("templateName", templateName)
-                    .add("numberOfPages", 1)
-                    .add("fileSize", jsonPayloadInBytes.length)
-                    .build();
-
-            return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
-
-        } catch (FileServiceException fileServiceException) {
-            LOGGER.error("failed to store json payload metadata into file service", fileServiceException);
-            throw new RuntimeException(fileServiceException.getMessage());
+            blobContainerClient.getBlobClient(fileId.toString())
+                    .uploadWithResponse(
+                            new BlobParallelUploadOptions(fromBytes(jsonPayloadInBytes))
+                                    .setMetadata(of(
+                                            "fileName", fileName.strip(),
+                                            "templateName", templateName,
+                                            "conversionFormat", ConversionFormat.PDF.toString())),
+                            configuration.getTransferTimeout(), NONE);
+        } catch (final Exception e) {
+            LOGGER.error("failed to store json payload into blob store", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
+        return fileId;
     }
 }

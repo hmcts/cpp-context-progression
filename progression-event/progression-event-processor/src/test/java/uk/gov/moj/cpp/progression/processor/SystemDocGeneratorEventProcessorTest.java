@@ -25,21 +25,18 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.client.FileService;
-import uk.gov.justice.services.fileservice.domain.FileReference;
+import com.azure.core.util.BinaryData;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,9 +45,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParsingException;
-
-import org.apache.http.client.utils.DateUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +98,13 @@ public class SystemDocGeneratorEventProcessorTest {
     private Sender sender;
 
     @Mock
-    private FileService fileService;
+    private BlobContainerClient blobContainerClient;
+
+    @Mock
+    private BlobClient blobClient;
+
+    @Mock
+    private BinaryData binaryData;
 
     @Mock
     private SystemUserProvider userProvider;
@@ -125,7 +125,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleDocumentAvailable() throws FileServiceException {
+    public void shouldHandleDocumentAvailable() {
         final UUID courtCentreId = UUID.randomUUID();
         final JsonObject docPayload = documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID(), "CourtRegister");
         when(envelope.payloadAsJsonObject()).thenReturn(docPayload);
@@ -139,16 +139,18 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnHandleDocument() throws FileServiceException, IOException {
+    public void shouldThrowExceptionOnHandleDocument() {
         final UUID courtCentreId = UUID.randomUUID();
         final JsonObject docPayload = documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID(), "IndividualOnlinePlea");
         when(envelope.payloadAsJsonObject()).thenReturn(docPayload);
-        when(fileService.retrieve(any())).thenReturn(java.util.Optional.of(getFileReference()));
+        when(blobContainerClient.getBlobClient(any())).thenReturn(blobClient);
+        when(blobClient.downloadContent()).thenReturn(binaryData);
+        when(binaryData.toStream()).thenReturn(new ByteArrayInputStream("not-valid-json".getBytes(StandardCharsets.UTF_8)));
         assertThrows(JsonParsingException.class, () -> systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope));
     }
 
     @Test
-    public void shouldProcessPrisonCourtRegisterDocumentAvailable() throws FileServiceException {
+    public void shouldProcessPrisonCourtRegisterDocumentAvailable() {
 
         final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
         final UUID fileId = UUID.randomUUID();
@@ -196,7 +198,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessRecordSheetDocumentAvailable() throws FileServiceException {
+    public void shouldProcessRecordSheetDocumentAvailable() {
         final UUID streamId = UUID.randomUUID();
         final UUID fileId = UUID.randomUUID();
         final UUID caseId = UUID.randomUUID();
@@ -273,7 +275,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessNowsDocumentAvailableWhenOriginatingSourceIsNows() throws FileServiceException {
+    public void shouldProcessNowsDocumentAvailableWhenOriginatingSourceIsNows() {
 
         final UUID materialId = UUID.randomUUID();
 
@@ -344,7 +346,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldNotProcessNowsDocumentAvailableWhenOriginatingSourceIsNotNows() throws FileServiceException {
+    public void shouldNotProcessNowsDocumentAvailableWhenOriginatingSourceIsNotNows() {
         final UUID materialId = UUID.randomUUID();
         final UUID fileId = UUID.randomUUID();
         final UUID systemDocGeneratorId = UUID.randomUUID();
@@ -409,18 +411,4 @@ public class SystemDocGeneratorEventProcessorTest {
                 .build();
     }
 
-    private FileReference getFileReference() throws IOException {
-
-        PDDocument pdDocument = new PDDocument();
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        pdDocument.save(outStream);
-        InputStream inputStream = new ByteArrayInputStream(outStream.toByteArray());
-
-        final String formatDate = DateUtils.formatDate(new Date());
-        final JsonObject metaData = createObjectBuilder()
-                .add("fileName",
-                        "MaterialFile" + "_" + randomUUID() + "_" + formatDate)
-                .build();
-        return new FileReference(UUID.randomUUID(), metaData, inputStream);
-    }
 }
