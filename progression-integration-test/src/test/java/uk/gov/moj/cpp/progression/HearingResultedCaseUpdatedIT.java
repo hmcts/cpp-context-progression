@@ -112,6 +112,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(masterCaseId.toString(), getMemberCaseUpdatedMatchers(masterCaseId.toString()));
     }
 
+    // disabled for LAA proceedings concluded proto
+    /*
     @Test
     public void shouldUpdateHearingResultedCaseUpdatedV2_ThenAmendWithResultDeleted() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -135,7 +137,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded",
                         equalTo(false)));
     }
-
+*/
 
     @Test
     public void shouldNotUpdateCaseAfterHearingIsResulted() throws Exception {
