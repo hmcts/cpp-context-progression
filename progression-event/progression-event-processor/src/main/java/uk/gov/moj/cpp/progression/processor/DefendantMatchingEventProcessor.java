@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.emptySet;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -36,6 +37,12 @@ import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantMatchingEventProcessor {
+
+    /**
+     * Temporary delay before publishing {@code public.progression.case-defendant-changed} from
+     * {@code progression.event.master-defendant-id-updated-v2} (manual isYouth ordering investigation).
+     */
+    private static final int MASTER_DEFENDANT_ID_UPDATED_V2_DELAY_SECONDS = 300;
 
     private static final String DEFENDANT_ID_FIELD = "defendantId";
     private static final String PROSECUTION_CASE_ID_FIELD = "prosecutionCaseId";
@@ -111,6 +118,12 @@ public class DefendantMatchingEventProcessor {
         final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
 
         if (Objects.nonNull(masterDefendant)) {
+            try {
+                SECONDS.sleep(MASTER_DEFENDANT_ID_UPDATED_V2_DELAY_SECONDS);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
             sendPublicCaseDefendantChangedEvent(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
         }
     }

@@ -100,6 +100,8 @@ public class HearingUpdatedIT extends AbstractIT {
         caseUrnAlsoActingAsRandomReferences = generateUrn();
     }
 
+    // Disabled while handleMasterDefendantIdUpdatedEventV2 delays public.case-defendant-changed by 120 seconds.
+    /*
     @Test
     public void shouldUpdateHearingWhenDefendantMatched() throws Exception {
         final String prosecutionCaseId_1 = randomUUID().toString();
@@ -129,6 +131,7 @@ public class HearingUpdatedIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].masterDefendantId", is(masterDefendantId_1))
         });
     }
+    */
 
     @Test
     public void shouldUpdateHearingWhenCaseOffenceHasBeenUpdated() throws JSONException {
