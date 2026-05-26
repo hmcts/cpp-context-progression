@@ -1731,7 +1731,7 @@ public class CaseAggregate implements Aggregate {
                 final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
                 if (!listOfDefendantsWithLaaRepresentation.isEmpty()) {
                     streamBuilder.add(laaDefendantProceedingConcludedChanged()
-                            .withDefendants(listOfDefendantsWithLaaRepresentation)
+                            .withDefendants(defendantListForProceedingsConcludedEventTrigger)//listOfDefendantsWithLaaRepresentation)
                             .withHearingId(resultedHearingId)
                             .withProsecutionCaseId(prosecutionCase.getId())
                             .build());
