@@ -38,6 +38,8 @@ public class ListingStub {
     private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
     private static final String LISTING_HEARING_COMMAND_V2 = "/listing-service/command/api/rest/listing/hearings/.*";
     private static final String LISTING_DELETE_HEARING_COMMAND = "/listing-command-api/command/api/rest/listing/delete-hearing/";
+    private static final String LISTING_COURT_SCHEDULE_DRAFT_STATUS = "/listing-service/query/api/rest/listing/courtScheduleDraftStatus";
+    private static final String LISTING_COURT_SCHEDULE_DRAFT_STATUS_RESPONSE_TYPE = "application/vnd.listing.query.court.schedule.draft.status.response+json";
     private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
@@ -444,6 +446,31 @@ public class ListingStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
+    }
+
+    /**
+     * Stubs {@code POST /listing-service/query/api/rest/listing/courtScheduleDraftStatus} to
+     * return {@code { "anyDraft": true }}. Use in tests that exercise the draft-session strip
+     * path in {@code ListHearingRequestedProcessor.stripCourtCentreRoomIfAnyDraftSession}.
+     */
+    public static void stubCourtScheduleDraftStatusReturnsDraft() {
+        stubCourtScheduleDraftStatusInternal("{\"anyDraft\":true}");
+    }
+
+    /**
+     * Stubs {@code POST /listing-service/query/api/rest/listing/courtScheduleDraftStatus} to
+     * return {@code { "anyDraft": false }}. Use in tests that exercise the non-draft
+     * (preserve-courtCentre) path - allocated CROWN hearings keep their roomId/roomName.
+     */
+    public static void stubCourtScheduleDraftStatusReturnsNonDraft() {
+        stubCourtScheduleDraftStatusInternal("{\"anyDraft\":false}");
+    }
+
+    private static void stubCourtScheduleDraftStatusInternal(final String body) {
+        stubFor(post(urlPathEqualTo(LISTING_COURT_SCHEDULE_DRAFT_STATUS))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(CONTENT_TYPE, LISTING_COURT_SCHEDULE_DRAFT_STATUS_RESPONSE_TYPE)
+                        .withBody(body)));
     }
 
     public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
