@@ -69,10 +69,10 @@
         <material.version>17.0.72</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.120</referencedata.version>
-        <listing.version>17.0.125</listing.version>
-        <hearing.version>17.0.134</hearing.version>
-        <usersgroups.version>17.0.37</usersgroups.version>
+        <referencedata.version>17.103.132</referencedata.version>
+        <listing.version>17.103.163</listing.version>
+        <hearing.version>17.104.168</hearing.version>
+        <usersgroups.version>17.104.49</usersgroups.version>
         <defence.version>17.0.85</defence.version>
         <referencedata.offence.version>17.0.38</referencedata.offence.version>
         <coredomain.version>17.104.1</coredomain.version>
@@ -83,7 +83,7 @@
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
-        <sjp.version>17.0.130</sjp.version>
+        <sjp.version>17.103.171</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>

@@ -31,7 +31,6 @@ function runLiquibase {
   runJobStoreLiquibase
   runSystemLiquibase
   runEventTrackingLiquibase
-  runFileServiceLiquibase
   echo "All liquibase $LIQUIBASE_COMMAND scripts run"
 }
 
@@ -39,7 +38,7 @@ function buildDeployAndTest {
   loginToDockerContainerRegistry
   buildWars
   undeployWarsFromDocker
-  buildAndStartContainersWithElasticSearch
+  buildAndStartContainers "--profile es --profile azurite"
   runLiquibase
   deployWiremock
   deployWars

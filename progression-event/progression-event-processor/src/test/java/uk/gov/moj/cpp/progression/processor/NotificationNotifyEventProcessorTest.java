@@ -354,7 +354,7 @@ public class NotificationNotifyEventProcessorTest {
 
         verify(blobClient).deleteIfExists();
 
-        verify(logger).debug(format("Failed to delete file for given notification id: '%s' from FileService. This could be due to the notification not having an associated file.", notificationId), exception);
+        verify(logger).debug(format("Failed to delete blob for notification id: '%s'. This could be due to the notification not having an associated file.", notificationId), exception);
 
     }
 

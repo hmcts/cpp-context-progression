@@ -34,6 +34,10 @@ public class AzureBlobConfiguration {
         return containerName;
     }
 
+    public boolean hasConnectionString() {
+        return connectionString != null && !connectionString.isBlank() && !"DefaultAzureCredential".equals(connectionString);
+    }
+
     public Duration getTransferTimeout() {
         return Duration.ofSeconds(300);
     }

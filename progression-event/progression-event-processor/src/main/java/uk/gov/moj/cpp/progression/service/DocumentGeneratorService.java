@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static com.google.common.collect.ImmutableList.of;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -39,7 +38,7 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 
 import static com.azure.core.util.BinaryData.fromStream;
 import static com.azure.core.util.Context.NONE;
-import static java.util.Map.of;
+import static com.google.common.collect.ImmutableList.of;
 import static java.util.UUID.randomUUID;
 
 import java.io.ByteArrayInputStream;
@@ -488,7 +487,7 @@ public class DocumentGeneratorService {
         blobContainerClient.getBlobClient(fileId.toString())
                 .uploadWithResponse(
                         new BlobParallelUploadOptions(fromStream(fileContent))
-                                .setMetadata(of("fileName", fileName.strip())),
+                                .setMetadata(java.util.Map.of("fileName", fileName.strip())),
                         configuration.getTransferTimeout(), NONE);
         return fileId;
     }
