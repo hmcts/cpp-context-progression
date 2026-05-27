@@ -1,0 +1,9 @@
+{
+  "hearingId": "HEARING_ID",
+  "hearingType": "PTP",
+  "caseUrns": [
+    {
+      "caseURN": "CASE_URN"
+    }
+  ]
+}
