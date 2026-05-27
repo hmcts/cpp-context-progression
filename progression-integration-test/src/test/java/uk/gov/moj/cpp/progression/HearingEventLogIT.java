@@ -108,8 +108,6 @@ public class HearingEventLogIT extends AbstractIT {
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
     }
 
-    // disabled for LAA proceedings concluded api
-    /*
     @Test
     public void shouldGenerateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
         final String userId = randomUUID().toString();
@@ -155,7 +153,6 @@ public class HearingEventLogIT extends AbstractIT {
         verifyMaterialCreated();
         verifyPublicEventHearingEventLogsDocumentSuccess();
     }
-*/
 
     @Test
     public void shouldGenerateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
@@ -343,8 +340,6 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
 
-    // disabled for LAA proceedings concluded proto
-    /*
     @Test
     public void shouldGenerateAAAGHearingEventLogDocumentForInActiveCaseIfApplicationExists() throws Exception {
         final String TEMPLATE_NAME = "HearingEventLog";
@@ -394,7 +389,6 @@ public class HearingEventLogIT extends AbstractIT {
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, "INACTIVE");
         verifyPublicEventHearingEventLogsDocumentSuccess();
     }
-     */
 
     @Test
     public void shouldNotGenerateAAAGHearingEventLogDocumentForNonHmctsUser() throws Exception {

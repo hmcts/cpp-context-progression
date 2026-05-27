@@ -82,8 +82,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
         pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
 
-        // disabled for LAA proceedings concluded proto
-        //verifyPublicEventHearingResultedCaseUpdated();
+        verifyPublicEventHearingResultedCaseUpdated();
 
     }
 
@@ -101,8 +100,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
         pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
 
-        // disabled for LAA proceedings cocluded proto
-        //verifyPublicEventHearingResultedCaseUpdated();
+        verifyPublicEventHearingResultedCaseUpdated();
 
     }
 
@@ -116,8 +114,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
-        // disabled for LAA proceedings concluded proto
-        // verifyPublicEventHearingResultedCaseUpdated();
+        verifyPublicEventHearingResultedCaseUpdated();
     }
 
     private Matcher[] getHearingAtaGlanceMatchersWithReportingRestrictions() {
