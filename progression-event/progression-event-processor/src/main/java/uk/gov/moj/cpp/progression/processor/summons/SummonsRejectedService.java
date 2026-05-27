@@ -6,9 +6,6 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static uk.gov.justice.core.courts.SummonsTemplateType.BREACH;
-import static uk.gov.justice.core.courts.SummonsTemplateType.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsTemplateType.GENERIC_APPLICATION;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getFullName;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -42,9 +39,12 @@ public class SummonsRejectedService {
     private SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService;
 
     public void sendSummonsRejectionNotification(final JsonEnvelope jsonEnvelope, final CourtApplication courtApplication, final SummonsRejectedOutcome summonsRejectedOutcome) {
-        final SummonsTemplateType summonsTemplateType = courtApplication.getType().getSummonsTemplateType();
 
-        if (summonsTemplateType != FIRST_HEARING && summonsTemplateType != BREACH && summonsTemplateType != GENERIC_APPLICATION) {
+        final SummonsTemplateType summonsTemplateType = courtApplication.getType().getSummonsTemplateType();
+        if (summonsTemplateType != SummonsTemplateType.BREACH
+                && summonsTemplateType != SummonsTemplateType.GENERIC_APPLICATION
+                && summonsTemplateType != SummonsTemplateType.FIRST_HEARING
+                && summonsTemplateType != SummonsTemplateType.NOT_APPLICABLE) {
             LOGGER.info("Application rejection notification not raised for court application '{}' of type '{}'", courtApplication.getId(), summonsTemplateType);
             return;
         }
@@ -57,7 +57,7 @@ public class SummonsRejectedService {
 
     private List<String> getPartyDetails(final CourtApplication courtApplication) {
         final SummonsTemplateType summonsTemplateType = courtApplication.getType().getSummonsTemplateType();
-        if (BREACH == summonsTemplateType || GENERIC_APPLICATION == summonsTemplateType) {
+        if (SummonsTemplateType.BREACH == summonsTemplateType || SummonsTemplateType.GENERIC_APPLICATION == summonsTemplateType) {
             return singletonList(getPartyDetails(courtApplication.getSubject()));
         } else {
             return courtApplication.getRespondents().stream().map(this::getPartyDetails).collect(toList());
