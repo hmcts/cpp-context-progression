@@ -1725,7 +1725,7 @@ public class CaseAggregate implements Aggregate {
                 }
             });
             // LAA suppression of false proceedings concluded
-            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger) && isAllDefendantProceedingConcluded(prosecutionCase, defendantListForProceedingsConcludedEventTrigger)) {
+            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger) && isAllDefendantProceedingConcludedLaa(prosecutionCase, defendantListForProceedingsConcludedEventTrigger)) {
                 // filter for defendants having representation
                 final List<Defendant> listOfDefendantsWithLaaRepresentation = getDefendantsWithLaaRepresentation(defendantListForProceedingsConcludedEventTrigger);
                 final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
