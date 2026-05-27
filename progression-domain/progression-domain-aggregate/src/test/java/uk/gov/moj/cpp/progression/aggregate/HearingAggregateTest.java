@@ -1090,8 +1090,8 @@ public class HearingAggregateTest {
                 .filter(ApplicationsResulted.class::isInstance)
                 .findFirst()
                 .orElseThrow(AssertionError::new);
-        // disabled for LAA prototype
-        // assertEquals("INACTIVE", hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+
+        assertEquals("INACTIVE", hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
         assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
                 applicationsResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
         assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
