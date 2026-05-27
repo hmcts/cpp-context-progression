@@ -73,8 +73,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     }
 
 
-    // disabled for LAA proceedings concluded proto
-    /*
     @Test
     public void shouldVerifyRelatedCasesWhenAllCasesInActive() throws Exception {
         // initiation of case
@@ -163,7 +161,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
         );
     }
-     */
 
     private void closeTheCase(final String caseId, final String defendantId, final String hearingId) {
 
