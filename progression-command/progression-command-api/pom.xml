@@ -47,13 +47,20 @@
             <artifactId>rest-client-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.framework-generators</groupId>
-            <artifactId>rest-adapter-file-service</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>file-alfresco</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-jdk-httpclient</artifactId>
         </dependency>
 
         <dependency>

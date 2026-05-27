@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.healthchecks;
 
 import static java.util.List.of;
+import static uk.gov.justice.services.healthcheck.healthchecks.FileStoreHealthcheck.FILE_STORE_HEALTHCHECK_NAME;
 import static uk.gov.justice.services.healthcheck.healthchecks.JobStoreHealthcheck.JOB_STORE_HEALTHCHECK_NAME;
 
 import uk.gov.justice.services.healthcheck.api.DefaultIgnoredHealthcheckNamesProvider;
@@ -18,6 +19,6 @@ public class ProgressionIgnoredHealthcheckNamesProvider extends DefaultIgnoredHe
 
     @Override
     public List<String> getNamesOfIgnoredHealthChecks() {
-        return of(JOB_STORE_HEALTHCHECK_NAME);
+        return of(JOB_STORE_HEALTHCHECK_NAME, FILE_STORE_HEALTHCHECK_NAME);
     }
 }

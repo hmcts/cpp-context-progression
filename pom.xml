@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.104.0</version>
+        <version>17.104.3</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -60,16 +60,19 @@
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
         <sonar.cpd.exclusions>**/uk/gov/moj/cpp/**/*.java</sonar.cpd.exclusions>
+        <!-- JDK HTTP transport for Azure SDK v12 — avoids netty conflicts with WildFly 26's own netty modules.
+             TODO: move to cpp-platform-maven-common-bom once available there -->
+        <azure-core-http-jdk-httpclient.version>1.0.0-beta.14</azure-core-http-jdk-httpclient.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
         <material.version>17.0.72</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.120</referencedata.version>
-        <listing.version>17.0.125</listing.version>
-        <hearing.version>17.0.134</hearing.version>
-        <usersgroups.version>17.0.37</usersgroups.version>
+        <referencedata.version>17.103.132</referencedata.version>
+        <listing.version>17.103.163</listing.version>
+        <hearing.version>17.104.168</hearing.version>
+        <usersgroups.version>17.104.49</usersgroups.version>
         <defence.version>17.0.85</defence.version>
         <referencedata.offence.version>17.0.38</referencedata.offence.version>
         <coredomain.version>17.104.1</coredomain.version>
@@ -80,7 +83,7 @@
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
-        <sjp.version>17.0.130</sjp.version>
+        <sjp.version>17.103.171</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
@@ -193,6 +196,11 @@
                 <artifactId>javafaker</artifactId>
                 <version>${javafaker.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-jdk-httpclient</artifactId>
+                <version>${azure-core-http-jdk-httpclient.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

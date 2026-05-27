@@ -51,7 +51,6 @@ import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
@@ -117,8 +116,6 @@ public class ReferralDisqualificationWarningTest {
     private Sender sender;
     @Mock
     private NotificationService notificationService;
-    @Mock
-    private FileStorer fileStorer;
     @Mock
     private DocumentGeneratorService documentGeneratorService;
     @Mock

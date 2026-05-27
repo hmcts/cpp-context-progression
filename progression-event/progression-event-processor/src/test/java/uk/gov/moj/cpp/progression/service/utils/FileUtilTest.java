@@ -1,30 +1,22 @@
 package uk.gov.moj.cpp.progression.service.utils;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.fileservice.api.FileRetriever;
-import uk.gov.justice.services.fileservice.domain.FileReference;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.models.BlobProperties;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import org.apache.http.client.utils.DateUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,51 +26,37 @@ public class FileUtilTest {
     private FileUtil fileUtil;
 
     @Mock
-    private FileRetriever fileRetriever;
+    private BlobContainerClient blobContainerClient;
 
     @Mock
-    private FileReference fileReference1;
+    private BlobClient blobClient;
 
-    private static FileReference fileReference;
-    private static final String FILE_NAME = "MaterialFile";
-
-    @BeforeEach
-    public void setUp() throws IOException {
-        fileReference = getFileReference();
-    }
-
-    private UUID fileStoreId = UUID.randomUUID();
+    @Mock
+    private BlobProperties blobProperties;
 
     @Test
-    public void shouldRetrieveFileName() throws Exception {
+    public void shouldRetrieveFileName() {
+        final UUID fileId = randomUUID();
+        final String expectedFileName = "MaterialFile_abc";
 
-        when(fileRetriever.retrieve(fileStoreId)).thenReturn(java.util.Optional.of(fileReference));
-        String fileName = fileUtil.retrieveFileName(fileStoreId);
+        when(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient);
+        when(blobClient.getProperties()).thenReturn(blobProperties);
+        when(blobProperties.getMetadata()).thenReturn(Map.of("fileName", expectedFileName));
 
-        assertTrue(fileName.contains(FILE_NAME));
+        final String fileName = fileUtil.retrieveFileName(fileId);
+
+        assertThat(fileName, is(expectedFileName));
     }
 
     @Test
-    public void shouldCloseFileReference() throws Exception {
+    public void shouldReturnEmptyStringWhenBlobNotFound() {
+        final UUID fileId = randomUUID();
 
-        when(fileRetriever.retrieve(fileStoreId)).thenReturn(java.util.Optional.of(fileReference1));
-        fileUtil.retrieveFileName(fileStoreId);
+        when(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient);
+        when(blobClient.getProperties()).thenThrow(new RuntimeException("blob not found"));
 
-        verify(fileReference1).close();
-    }
+        final String fileName = fileUtil.retrieveFileName(fileId);
 
-    private FileReference getFileReference() throws IOException {
-
-        PDDocument pdDocument = new PDDocument();
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        pdDocument.save(outStream);
-        InputStream inputStream = new ByteArrayInputStream(outStream.toByteArray());
-
-        final String formatDate = DateUtils.formatDate(new Date());
-        final JsonObject metaData = createObjectBuilder()
-                .add("fileName",
-                        FILE_NAME + "_" + randomUUID() + "_" + formatDate)
-                .build();
-        return new FileReference(UUID.randomUUID(), metaData, inputStream);
+        assertThat(fileName, is(StringUtils.EMPTY));
     }
 }

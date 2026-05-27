@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.azure.core.util.BinaryData.fromBytes;
+import static com.azure.core.util.Context.NONE;
+import static java.util.Map.of;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -11,14 +14,15 @@ import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCo
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
+
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -53,7 +57,10 @@ public class CourtRegisterEventProcessor {
     public static final String PDF = "pdf";
 
     @Inject
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Inject
+    private AzureBlobConfiguration configuration;
 
     @Inject
     private CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator;
@@ -73,7 +80,7 @@ public class CourtRegisterEventProcessor {
 
     @SuppressWarnings({"squid:S1160", "squid:S3655"})
     @Handles("progression.event.court-register-generated")
-    public void generateCourtRegister(final JsonEnvelope envelope) throws FileServiceException {
+    public void generateCourtRegister(final JsonEnvelope envelope) {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
         final List<JsonObject> courtRegisterDocumentRequests = payload.getJsonArray(FIELD_COURT_REGISTER_DOCUMENT_REQUESTS).getValuesAs(JsonObject.class);
@@ -164,17 +171,18 @@ public class CourtRegisterEventProcessor {
         );
     }
 
-    private UUID storeCourtRegisterGeneratorPayload(final JsonObject courtRegisterGeneratorPayload, final String fileName) throws FileServiceException {
+    private UUID storeCourtRegisterGeneratorPayload(final JsonObject courtRegisterGeneratorPayload, final String fileName) {
         final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(courtRegisterGeneratorPayload);
-
-        final JsonObject metadata = createObjectBuilder()
-                .add(FILE_NAME, fileName)
-                .add("conversionFormat", PDF)
-                .add("templateName", COURT_REGISTER_TEMPLATE)
-                .add("numberOfPages", 1)
-                .add("fileSize", jsonPayloadInBytes.length)
-                .build();
-        return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
+        final UUID fileId = randomUUID();
+        blobContainerClient.getBlobClient(fileId.toString())
+                .uploadWithResponse(
+                        new BlobParallelUploadOptions(fromBytes(jsonPayloadInBytes))
+                                .setMetadata(of(
+                                        "fileName", fileName.strip(),
+                                        "conversionFormat", PDF,
+                                        "templateName", COURT_REGISTER_TEMPLATE)),
+                        configuration.getTransferTimeout(), NONE);
+        return fileId;
     }
 
 }

@@ -20,9 +20,11 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileRetriever;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
@@ -32,11 +34,12 @@ import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,7 +51,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -70,7 +72,16 @@ public class OnlinePleaEventProcessorTest {
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
 
     @Mock
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Mock
+    private BlobClient blobClient;
+
+    @Mock
+    private BlobProperties blobProperties;
+
+    @Mock
+    private AzureBlobConfiguration configuration;
 
     @Mock
     private SystemUserProvider systemUserProvider;
@@ -84,14 +95,8 @@ public class OnlinePleaEventProcessorTest {
     @Mock
     private SystemUserProvider userProvider;
 
-    @Mock
-    private FileRetriever fileRetriever;
-
     @InjectMocks
     private OnlinePleaEventProcessor onlinePleaEventProcessor;
-
-    @Captor
-    private ArgumentCaptor<JsonObject> filestorerMetadata;
 
     private PleadOnline personDefendantPleadOnline;
     private PleadOnline legalEntityDefendantPleadOnline;
@@ -112,13 +117,13 @@ public class OnlinePleaEventProcessorTest {
     }
 
     @BeforeEach
-    public void setup() throws FileServiceException {
+    public void setup() {
         personDefendantPleadOnline = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("person-defendant-online-plea-payload.json"), PleadOnline.class);
         legalEntityDefendantPleadOnline = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("legal-entity-defendant-online-plea-payload.json"), PleadOnline.class);
     }
 
     @Test
-    public void shouldGenerateIndividualOnlinePleaDocument() throws FileServiceException {
+    public void shouldGenerateIndividualOnlinePleaDocument() {
 
         final PleaDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = PleaDocumentForOnlinePleaSubmitted.pleaDocumentForOnlinePleaSubmitted()
                 .withCaseId(caseId)
@@ -133,14 +138,17 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(PLEA_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        final ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         onlinePleaEventProcessor.generateOnlinePleaDocument(requestMessage);
 
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
-        assertCommonProps(captor, INDIVIDUAL_ONLINE_PLEA.getDescription(), INDIVIDUAL_ONLINE_PLEA.getDescription(), caseId, fileId);
+        assertCommonProps(captor, INDIVIDUAL_ONLINE_PLEA.getDescription(), INDIVIDUAL_ONLINE_PLEA.getDescription(), caseId, capturedFileId);
     }
 
     private void assertCommonProps(ArgumentCaptor<Envelope> captor, String individualOriginatingSource, String individualOnlinePleaTemplate, UUID caseId, UUID fileId) {
@@ -153,7 +161,7 @@ public class OnlinePleaEventProcessorTest {
     }
 
     @Test
-    public void shouldGenerateCompanyOnlinePleaDocument() throws FileServiceException {
+    public void shouldGenerateCompanyOnlinePleaDocument() {
 
         final PleaDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = PleaDocumentForOnlinePleaSubmitted.pleaDocumentForOnlinePleaSubmitted()
                 .withCaseId(caseId)
@@ -168,18 +176,21 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(PLEA_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        final ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         onlinePleaEventProcessor.generateOnlinePleaDocument(requestMessage);
 
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
-        assertCommonProps(captor, COMPANY_ONLINE_PLEA.getDescription(), COMPANY_ONLINE_PLEA.getDescription(), caseId, fileId);
+        assertCommonProps(captor, COMPANY_ONLINE_PLEA.getDescription(), COMPANY_ONLINE_PLEA.getDescription(), caseId, capturedFileId);
     }
 
     @Test
-    public void shouldGenerateCompanyFinanceDocument() throws FileServiceException {
+    public void shouldGenerateCompanyFinanceDocument() {
 
         final FinanceDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = FinanceDocumentForOnlinePleaSubmitted.financeDocumentForOnlinePleaSubmitted()
                 .withCaseId(caseId)
@@ -194,18 +205,21 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        final ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
 
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
-        assertCommonProps(captor, COMPANY_FINANCE_DATA.getDescription(), COMPANY_FINANCE_DATA.getDescription(), caseId, fileId);
+        assertCommonProps(captor, COMPANY_FINANCE_DATA.getDescription(), COMPANY_FINANCE_DATA.getDescription(), caseId, capturedFileId);
     }
 
     @Test
-    public void shouldGenerateIndividualFinanceDocument() throws FileServiceException {
+    public void shouldGenerateIndividualFinanceDocument() {
 
         final FinanceDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = FinanceDocumentForOnlinePleaSubmitted.financeDocumentForOnlinePleaSubmitted()
                 .withCaseId(caseId)
@@ -220,18 +234,21 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        final ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
 
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
-        assertCommonProps(captor, INDIVIDUAL_FINANCE_DATA.getDescription(), INDIVIDUAL_FINANCE_DATA.getDescription(), caseId, fileId);
+        assertCommonProps(captor, INDIVIDUAL_FINANCE_DATA.getDescription(), INDIVIDUAL_FINANCE_DATA.getDescription(), caseId, capturedFileId);
     }
 
     @Test
-    public void shouldProcessOnlinePleaDocumentUpload() throws FileServiceException {
+    public void shouldProcessOnlinePleaDocumentUpload() {
         final UUID fileId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID systemUserId = randomUUID();
@@ -244,12 +261,10 @@ public class OnlinePleaEventProcessorTest {
                         .add("pleaNotificationType", "IndividualFinanceData")
                         .build());
 
-        final JsonObject fileRetrieverResponseJson = createObjectBuilder()
-                .add("fileName", "documentFileName")
-                .build();
-
         when(userProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(fileRetriever.retrieveMetadata(fileId)).thenReturn(Optional.of(fileRetrieverResponseJson));
+        when(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient);
+        when(blobClient.getProperties()).thenReturn(blobProperties);
+        when(blobProperties.getMetadata()).thenReturn(Map.of("fileName", "documentFileName"));
 
         onlinePleaEventProcessor.processOnlinePleaMaterialUploadRequest(event);
 
@@ -257,7 +272,7 @@ public class OnlinePleaEventProcessorTest {
     }
 
     @Test
-    public void shouldGenerateCompanyFinanceDocumentWhenLegalEntityFinancialMeansIsNotPresent() throws FileServiceException {
+    public void shouldGenerateCompanyFinanceDocumentWhenLegalEntityFinancialMeansIsNotPresent() {
 
         final PleadOnline legalEntityDefendantPleadOnline1 = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("legal-entity-defendant-online-plea-payload1.json"), PleadOnline.class);
         final FinanceDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = FinanceDocumentForOnlinePleaSubmitted.financeDocumentForOnlinePleaSubmitted()
@@ -273,13 +288,16 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        final ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
 
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
-        assertCommonProps(captor, COMPANY_FINANCE_DATA.getDescription(), COMPANY_FINANCE_DATA.getDescription(), caseId, fileId);
+        assertCommonProps(captor, COMPANY_FINANCE_DATA.getDescription(), COMPANY_FINANCE_DATA.getDescription(), caseId, capturedFileId);
     }
 }

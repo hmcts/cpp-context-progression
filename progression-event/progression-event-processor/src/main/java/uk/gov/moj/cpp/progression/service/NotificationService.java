@@ -44,7 +44,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
@@ -292,9 +291,7 @@ public class NotificationService {
         try {
             materialName = materialService.getMaterialMetadataV2(sourceEnvelope, materialId);
             fileName = fileUtil.retrieveFileName(materialDetails.getFileId());
-        } catch (FileServiceException e) {
-            LOGGER.warn("Failed to retrieve file details.", e);
-        } catch(Exception e) {
+        } catch (final Exception e) {
             LOGGER.info("Exception while fetching materialName",e);
         }
 

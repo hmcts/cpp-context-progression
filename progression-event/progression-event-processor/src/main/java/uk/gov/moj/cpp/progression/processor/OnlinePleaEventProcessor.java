@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.azure.core.util.BinaryData.fromBytes;
+import static com.azure.core.util.Context.NONE;
 import static java.lang.String.format;
+import static java.util.Map.of;
+import static java.util.UUID.randomUUID;
 import static java.lang.String.join;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
@@ -33,9 +37,10 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileRetriever;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
+
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.OnlinePleaDocumentUploadedAsCaseMaterial;
@@ -44,7 +49,6 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 
-import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -109,9 +113,9 @@ public class OnlinePleaEventProcessor {
     public static final String DEFENDANT_ID = "defendantId";
 
     @Inject
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
     @Inject
-    private FileRetriever fileRetriever;
+    private AzureBlobConfiguration configuration;
     @Inject
     private Sender sender;
     @Inject
@@ -129,7 +133,7 @@ public class OnlinePleaEventProcessor {
 
     @SuppressWarnings({"squid:S1160", "squid:S3655"})
     @Handles("progression.event.plea-document-for-online-plea-submitted")
-    public void generateOnlinePleaDocument(final JsonEnvelope envelope) throws FileServiceException {
+    public void generateOnlinePleaDocument(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final String caseId = payload.getString(CASE_ID);
 
@@ -151,7 +155,7 @@ public class OnlinePleaEventProcessor {
 
     @SuppressWarnings({"squid:S1160", "squid:S3655"})
     @Handles("progression.event.finance-document-for-online-plea-submitted")
-    public void generateFinanceOnlinePleaDocument(final JsonEnvelope envelope) throws FileServiceException {
+    public void generateFinanceOnlinePleaDocument(final JsonEnvelope envelope) {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
         final String caseId = payload.getString(CASE_ID);
@@ -171,15 +175,14 @@ public class OnlinePleaEventProcessor {
     }
 
     @Handles("progression.event.online-plea-document-uploaded-as-case-material")
-    public void processOnlinePleaMaterialUploadRequest(final JsonEnvelope event) throws FileServiceException {
+    public void processOnlinePleaMaterialUploadRequest(final JsonEnvelope event) {
 
         final Optional<UUID> contextSystemUserId = userProvider.getContextSystemUserId();
         final OnlinePleaDocumentUploadedAsCaseMaterial uploadedAsCaseMaterial = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), OnlinePleaDocumentUploadedAsCaseMaterial.class);
 
-        final Optional<JsonObject> fileMetaData = fileRetriever.retrieveMetadata(uploadedAsCaseMaterial.getFileId());
-        if (fileMetaData.isPresent()) {
-            final JsonObject fileMetaDataJsonObject = fileMetaData.get();
-            final String fileName = fileMetaDataJsonObject.getJsonString(FILE_NAME).getString();
+        final String fileName = blobContainerClient.getBlobClient(uploadedAsCaseMaterial.getFileId().toString())
+                .getProperties().getMetadata().getOrDefault(FILE_NAME, "");
+        if (!fileName.isEmpty()) {
             materialService.uploadMaterial(uploadedAsCaseMaterial.getFileId(), uploadedAsCaseMaterial.getMaterialId(), contextSystemUserId.orElse(null));
 
             final JsonObject jsonObject = Json.createObjectBuilder()
@@ -223,17 +226,18 @@ public class OnlinePleaEventProcessor {
         );
     }
 
-    private UUID storeOnlinePleaDocumentGeneratorPayload(final JsonObject docGeneratorPayload, final String fileName, final String templateName) throws FileServiceException {
+    private UUID storeOnlinePleaDocumentGeneratorPayload(final JsonObject docGeneratorPayload, final String fileName, final String templateName) {
         final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(docGeneratorPayload);
-
-        final JsonObject metadata = createObjectBuilder()
-                .add(FILE_NAME, fileName)
-                .add("conversionFormat", PDF)
-                .add("templateName", templateName)
-                .add("numberOfPages", 1)
-                .add("fileSize", jsonPayloadInBytes.length)
-                .build();
-        return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
+        final UUID fileId = randomUUID();
+        blobContainerClient.getBlobClient(fileId.toString())
+                .uploadWithResponse(
+                        new BlobParallelUploadOptions(fromBytes(jsonPayloadInBytes))
+                                .setMetadata(of(
+                                        FILE_NAME, fileName.strip(),
+                                        "conversionFormat", PDF,
+                                        "templateName", templateName)),
+                        configuration.getTransferTimeout(), NONE);
+        return fileId;
     }
 
     private JsonObject getOnlinePleaDocGeneratorPayload(final JsonObject payload, final JsonObject jsonObject) {

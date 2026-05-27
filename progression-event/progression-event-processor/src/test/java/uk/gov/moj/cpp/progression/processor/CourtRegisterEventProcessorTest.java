@@ -20,8 +20,10 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
+import uk.gov.moj.cpp.progression.blobstore.AzureBlobConfiguration;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
@@ -31,8 +33,8 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -56,7 +58,13 @@ public class CourtRegisterEventProcessorTest {
     private CourtRegisterEventProcessor courtRegisterEventProcessor;
 
     @Mock
-    private FileStorer fileStorer;
+    private BlobContainerClient blobContainerClient;
+
+    @Mock
+    private BlobClient blobClient;
+
+    @Mock
+    private AzureBlobConfiguration configuration;
 
     @Mock
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
@@ -81,9 +89,6 @@ public class CourtRegisterEventProcessorTest {
     private DocumentGeneratorClient documentGeneratorClient;
 
     @Captor
-    private ArgumentCaptor<JsonObject> filestorerMetadata;
-
-    @Captor
     private ArgumentCaptor<JsonObject> notificationJson;
 
     @Mock
@@ -98,7 +103,7 @@ public class CourtRegisterEventProcessorTest {
     }
 
     @Test
-    public void shouldGenerateCourtRegister() throws IOException, FileServiceException {
+    public void shouldGenerateCourtRegister() throws IOException {
         final UUID courtCentreId = UUID.randomUUID();
         final ZonedDateTime registerDate = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
 
@@ -118,11 +123,13 @@ public class CourtRegisterEventProcessorTest {
         final JsonObject fileStorePayload = Json.createObjectBuilder().add("templatePayload", "some values").build();
         when(courtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(fileStorePayload);
 
-        final UUID fileId = UUID.randomUUID();
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        ArgumentCaptor<String> blobNameCaptor = ArgumentCaptor.forClass(String.class);
+        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
+        when(configuration.getTransferTimeout()).thenReturn(Duration.ofSeconds(300));
 
         courtRegisterEventProcessor.generateCourtRegister(requestMessage);
-        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        final UUID capturedFileId = UUID.fromString(blobNameCaptor.getValue());
+        verify(blobClient).uploadWithResponse(any(BlobParallelUploadOptions.class), any(), any());
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());
         assertThat(captor.getValue().metadata().name(), is("systemdocgenerator.generate-document"));
@@ -130,7 +137,7 @@ public class CourtRegisterEventProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("templateIdentifier"), is(COURT_REGISTER_TEMPLATE));
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("conversionFormat"), is("pdf"));
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("sourceCorrelationId"), is(getCourtRegisterStreamId(courtCentreId.toString(), registerDate.toLocalDate().toString()).toString()));
-        assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("payloadFileServiceId"), is(fileId.toString()));
+        assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("payloadFileServiceId"), is(capturedFileId.toString()));
     }
 
     @Test
