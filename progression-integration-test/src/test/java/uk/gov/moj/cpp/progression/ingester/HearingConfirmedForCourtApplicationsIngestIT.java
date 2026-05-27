@@ -96,8 +96,6 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    // disabled for LAA proceedings concluded proto
-    /*
     @Test
     public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearings() throws Exception {
 
@@ -121,7 +119,6 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
         final DocumentContext inputProsecutionCase = initialCase();
 
-
         verifyInitialElasticSearchCase(inputProsecutionCase, initialElasticSearchCaseResponseJsonObject.get(), "INACTIVE");
 
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
@@ -141,7 +138,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         assertTrue(finalElasticSearchCaseResponseJsonObject.isPresent());
 
         verifyCaseCreated(1l, inputProsecutionCase, finalElasticSearchCaseResponseJsonObject.get());
-    }*/
+    }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
                                                           final String defendantId, final String courtCentreId, final String bailStatusCode,
