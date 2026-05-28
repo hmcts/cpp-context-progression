@@ -118,6 +118,7 @@ public class DefendantHelper {
         return result;
     }
 
+    // dummy comment to force rebuild - ignore
     public static boolean isAllDefendantProceedingConcludedLaa(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
 
         List<Defendant> defs = prosecutionCase.getDefendants();
