@@ -146,7 +146,7 @@ public class CourtCentreAggregate implements Aggregate {
             PrisonCourtRegisterGeneratedV2 pcrEvent2 = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
                     .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
                     .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
-                    .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
+                    .withFileId(payloadFileId)
                     .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
                     .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
                     .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())

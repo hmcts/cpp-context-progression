@@ -214,7 +214,7 @@ public class CourtCentreAggregateTest {
 
         final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated2 = (PrisonCourtRegisterGeneratedV2) eventStream.get(1);
         assertThat(prisonCourtRegisterGenerated2.getCourtCentreId(), is(courtCentreId));
-        assertThat(prisonCourtRegisterGenerated2.getFileId(), is(systemDocumentId));
+        assertThat(prisonCourtRegisterGenerated2.getFileId(), is(payloadFileId));
     }
 
 
