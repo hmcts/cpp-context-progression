@@ -218,7 +218,7 @@ public class PrisonCourtRegisterHandlerTest {
                 metadata().withName("progression.event.prison-court-register-generated-v2"),
                 JsonEnvelopePayloadMatcher.payload().isJson(
                         allOf(withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.fileId", is(SYSTEM_DOCUMENT_ID.toString())))));
+                                withJsonPath("$.fileId", is(PAYLOAD_FILE_ID.toString())))));
         assertThat(envelopeStream0, streamContaining(matcher1, matcher2));
     }
 
