@@ -54,6 +54,12 @@ public class FileService {
     public Optional<JsonObject> retrievePayload(final UUID fileId) {
         try {
             return fileRetriever.retrieve(fileId).map(ref -> {
+                final JsonObject metadata = ref.getMetadata();
+                if (metadata != null && metadata.containsKey("payloadFileServiceId")) {
+                    final UUID jsonPayloadFileId = UUID.fromString(metadata.getString("payloadFileServiceId"));
+                    LOGGER.info("fileId {} is a PDF; navigating to JSON payload via payloadFileServiceId {}", fileId, jsonPayloadFileId);
+                    return retrieveJsonFromFileId(jsonPayloadFileId);
+                }
                 try (InputStream stream = ref.getContentStream()) {
                     final String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
                     return Json.createReader(new StringReader(json)).readObject();
@@ -64,6 +70,25 @@ public class FileService {
             });
         } catch (FileServiceException e) {
             LOGGER.error("Failed to retrieve payload from file service for fileId {}", fileId, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private JsonObject retrieveJsonFromFileId(final UUID fileId) {
+        try {
+            return fileRetriever.retrieve(fileId)
+                    .map(ref -> {
+                        try (InputStream stream = ref.getContentStream()) {
+                            final String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                            return Json.createReader(new StringReader(json)).readObject();
+                        } catch (java.io.IOException e) {
+                            LOGGER.error("Failed to read content stream for fileId {}", fileId, e);
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .orElseThrow(() -> new RuntimeException("No file found for fileId: " + fileId));
+        } catch (FileServiceException e) {
+            LOGGER.error("Failed to retrieve JSON payload for fileId {}", fileId, e);
             throw new RuntimeException(e);
         }
     }

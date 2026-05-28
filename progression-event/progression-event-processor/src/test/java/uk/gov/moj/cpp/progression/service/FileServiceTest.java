@@ -97,4 +97,44 @@ public class FileServiceTest {
         assertTrue(result.isEmpty());
     }
 
+    @Test
+    void retrievePayloadShouldNavigateToJsonPayloadWhenFileIdPointsToPdf() throws FileServiceException {
+        final UUID pdfFileId = randomUUID();
+        final UUID jsonPayloadFileId = randomUUID();
+        final String json = "{\"courtHouse\":\"Southwark Crown Court\",\"registerDate\":\"2024-10-01\"}";
+
+        final JsonObject pdfMetadata = Json.createObjectBuilder()
+                .add("payloadFileServiceId", jsonPayloadFileId.toString())
+                .build();
+        final FileReference pdfRef = new FileReference(pdfFileId, pdfMetadata,
+                new ByteArrayInputStream("%PDF-1.6".getBytes(StandardCharsets.UTF_8)));
+        final FileReference jsonRef = new FileReference(jsonPayloadFileId,
+                Json.createObjectBuilder().build(),
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+        when(fileRetriever.retrieve(pdfFileId)).thenReturn(Optional.of(pdfRef));
+        when(fileRetriever.retrieve(jsonPayloadFileId)).thenReturn(Optional.of(jsonRef));
+
+        final Optional<JsonObject> result = fileService.retrievePayload(pdfFileId);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().getString("courtHouse"), equalTo("Southwark Crown Court"));
+        assertThat(result.get().getString("registerDate"), equalTo("2024-10-01"));
+    }
+
+    @Test
+    void retrievePayloadShouldParseDirectlyWhenMetadataHasNoPayloadFileServiceId() throws FileServiceException {
+        final UUID fileId = randomUUID();
+        final String json = "{\"courtHouse\":\"Southwark Crown Court\"}";
+        final FileReference fileRef = new FileReference(fileId,
+                Json.createObjectBuilder().build(),
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(fileRetriever.retrieve(fileId)).thenReturn(Optional.of(fileRef));
+
+        final Optional<JsonObject> result = fileService.retrievePayload(fileId);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().getString("courtHouse"), equalTo("Southwark Crown Court"));
+    }
+
 }
