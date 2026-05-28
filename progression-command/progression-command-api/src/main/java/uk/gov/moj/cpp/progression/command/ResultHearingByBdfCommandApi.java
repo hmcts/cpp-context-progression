@@ -44,4 +44,17 @@ public class ResultHearingByBdfCommandApi {
                 .withName("progression.command.handler.update-hearing-bdf")
                 .withMetadataFrom(envelope));
     }
+
+    @Handles("progression.command.api-stop-ctl-bdf")
+    public void handleStopCustodyTimeLimitBdf(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.events.custody-time-limit-clock-stopped'
+         * event to set custody time limit stop to the offence data at MI Report.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.stop-custody-time-limit-clock")
+                .withMetadataFrom(envelope));
+    }
 }
