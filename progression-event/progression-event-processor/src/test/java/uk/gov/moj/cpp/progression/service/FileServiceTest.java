@@ -137,4 +137,53 @@ public class FileServiceTest {
         assertThat(result.get().getString("courtHouse"), equalTo("Southwark Crown Court"));
     }
 
+    @Test
+    void retrieveRawPayloadShouldReturnRawBytesWithoutParsingJson() throws FileServiceException {
+        final UUID fileId = randomUUID();
+        final String json = "{\"wording\":\"Count 1: guilty\\nCount 2: not guilty\"}";
+        final FileReference fileRef = new FileReference(fileId,
+                Json.createObjectBuilder().build(),
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(fileRetriever.retrieve(fileId)).thenReturn(Optional.of(fileRef));
+
+        final Optional<String> result = fileService.retrieveRawPayload(fileId);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get(), equalTo(json));
+    }
+
+    @Test
+    void retrieveRawPayloadShouldReturnEmptyWhenFileNotFound() throws FileServiceException {
+        final UUID fileId = randomUUID();
+        when(fileRetriever.retrieve(fileId)).thenReturn(Optional.empty());
+
+        final Optional<String> result = fileService.retrieveRawPayload(fileId);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void retrieveRawPayloadShouldNavigateToJsonPayloadWhenFileIdPointsToPdf() throws FileServiceException {
+        final UUID pdfFileId = randomUUID();
+        final UUID jsonPayloadFileId = randomUUID();
+        final String json = "{\"wording\":\"Count 1: guilty\\nCount 2: not guilty\"}";
+
+        final JsonObject pdfMetadata = Json.createObjectBuilder()
+                .add("payloadFileServiceId", jsonPayloadFileId.toString())
+                .build();
+        final FileReference pdfRef = new FileReference(pdfFileId, pdfMetadata,
+                new ByteArrayInputStream("%PDF-1.6".getBytes(StandardCharsets.UTF_8)));
+        final FileReference jsonRef = new FileReference(jsonPayloadFileId,
+                Json.createObjectBuilder().build(),
+                new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+        when(fileRetriever.retrieve(pdfFileId)).thenReturn(Optional.of(pdfRef));
+        when(fileRetriever.retrieve(jsonPayloadFileId)).thenReturn(Optional.of(jsonRef));
+
+        final Optional<String> result = fileService.retrieveRawPayload(pdfFileId);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get(), equalTo(json));
+    }
+
 }

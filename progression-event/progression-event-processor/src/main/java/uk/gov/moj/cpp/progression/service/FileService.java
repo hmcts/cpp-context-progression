@@ -82,6 +82,43 @@ public class FileService {
         }
     }
 
+    public Optional<String> retrieveRawPayload(final UUID fileId) {
+        try {
+            return fileRetriever.retrieve(fileId).map(ref -> {
+                final JsonObject metadata = ref.getMetadata();
+                if (metadata != null && metadata.containsKey(PAYLOAD_FILE_SERVICE_ID)) {
+                    final UUID jsonPayloadFileId = UUID.fromString(metadata.getString(PAYLOAD_FILE_SERVICE_ID));
+                    LOGGER.info("fileId {} is a PDF; navigating to JSON payload via payloadFileServiceId {}", fileId, jsonPayloadFileId);
+                    return retrieveRawStringFromFileId(jsonPayloadFileId);
+                }
+                return readRawString(ref.getContentStream(), fileId);
+            });
+        } catch (FileServiceException fileServiceException) {
+            LOGGER.error("Failed to retrieve raw payload from file service for fileId {}", fileId, fileServiceException);
+            throw new RuntimeException(fileServiceException.getMessage());
+        }
+    }
+
+    private String retrieveRawStringFromFileId(final UUID fileId) {
+        try {
+            return fileRetriever.retrieve(fileId)
+                    .map(ref -> readRawString(ref.getContentStream(), fileId))
+                    .orElseThrow(() -> new RuntimeException("No file found for fileId: " + fileId));
+        } catch (FileServiceException fileServiceException) {
+            LOGGER.error("Failed to retrieve raw JSON for fileId {}", fileId, fileServiceException);
+            throw new RuntimeException(fileServiceException.getMessage());
+        }
+    }
+
+    private String readRawString(final InputStream stream, final UUID fileId) {
+        try (final InputStream is = stream) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOGGER.error("Failed to read content stream for fileId {}", fileId, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private JsonObject readJson(final InputStream stream, final UUID fileId) {
         try (final InputStream is = stream;
              final JsonReader reader = Json.createReader(new StringReader(new String(is.readAllBytes(), StandardCharsets.UTF_8)))) {
