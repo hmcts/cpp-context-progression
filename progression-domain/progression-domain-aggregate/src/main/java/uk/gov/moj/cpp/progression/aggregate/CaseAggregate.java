@@ -1726,16 +1726,12 @@ public class CaseAggregate implements Aggregate {
             });
             // LAA suppression of false proceedings concluded
             if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger) && isAllDefendantProceedingConcludedLaa(prosecutionCase, defendantListForProceedingsConcludedEventTrigger)) {
-                // filter for defendants having representation
-                final List<Defendant> listOfDefendantsWithLaaRepresentation = getDefendantsWithLaaRepresentation(defendantListForProceedingsConcludedEventTrigger);
                 final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
-                if (!listOfDefendantsWithLaaRepresentation.isEmpty()) {
                     streamBuilder.add(laaDefendantProceedingConcludedChanged()
                             .withDefendants(defendantListForProceedingsConcludedEventTrigger)//listOfDefendantsWithLaaRepresentation)
                             .withHearingId(resultedHearingId)
                             .withProsecutionCaseId(prosecutionCase.getId())
                             .build());
-                }
             }
 
             final String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
