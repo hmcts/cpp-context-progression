@@ -426,6 +426,51 @@ public class ApplicationSummonsServiceTest {
         }
     }
 
+    @Test
+    void generateSummonsDocument_setsAmendedDate_whenIsSummonsAmendedIsTrue() {
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared()
+                .withSummonsData(getSummonsDataPreparedForApplication(BREACH).getSummonsData())
+                .withIsSummonsAmended(true)
+                .build();
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocument result = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(result.getAmendedDate(), is(LocalDate.now()));
+    }
+
+    @Test
+    void generateSummonsDocument_doesNotSetAmendedDate_whenIsSummonsAmendedIsFalse() {
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared()
+                .withSummonsData(getSummonsDataPreparedForApplication(BREACH).getSummonsData())
+                .withIsSummonsAmended(false)
+                .build();
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocument result = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(result.getAmendedDate(), nullValue());
+    }
+
+    @Test
+    void generateSummonsDocument_doesNotSetAmendedDate_whenIsSummonsAmendedIsNull() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(BREACH);
+        final CourtApplication courtApplication = getCourtApplication(false, PartyType.INDIVIDUAL);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+
+        final CourtApplicationPartyListingNeeds subjectNeeds = summonsDataPrepared.getSummonsData().getCourtApplicationPartyListingNeeds().get(0);
+        final SummonsDocument result = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplication, subjectNeeds, courtCentreJson, optionalLjaDetails);
+
+        assertThat(result.getAmendedDate(), nullValue());
+    }
+
     private Optional<LjaDetails> getLjaDetails() {
         return of(ljaDetails().withLjaCode(LJA_CODE).withLjaName(LJA_NAME).withWelshLjaName(WELSH_LJA_NAME).build());
     }

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor.summons;
 
 import static java.time.LocalDate.now;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static uk.gov.justice.core.courts.summons.BreachSummonsDocumentContent.breachSummonsDocumentContent;
@@ -42,10 +43,10 @@ import javax.json.JsonObject;
 public class ApplicationSummonsService {
 
     public SummonsDocument generateSummonsDocument(final SummonsDataPrepared summonsDataPrepared,
-                                                                 final CourtApplication courtApplication,
-                                                                 final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds,
-                                                                 final JsonObject courtCentreJson,
-                                                                 final Optional<LjaDetails> optionalLjaDetails) {
+                                                   final CourtApplication courtApplication,
+                                                   final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds,
+                                                   final JsonObject courtCentreJson,
+                                                   final Optional<LjaDetails> optionalLjaDetails) {
 
         final SummonsType summonsRequired = courtApplicationPartyListingNeeds.getSummonsRequired();
         final SummonsData summonsData = summonsDataPrepared.getSummonsData();
@@ -81,6 +82,9 @@ public class ApplicationSummonsService {
             summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
             summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
+            if (isTrue(summonsDataPrepared.getIsSummonsAmended())) {
+                summonsDocumentContent.withAmendedDate(now());
+            }
         }
 
         summonsDocumentContent.withApplicationContent(buildApplicationContent(courtApplication));
