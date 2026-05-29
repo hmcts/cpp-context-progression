@@ -4,11 +4,11 @@ import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command - remove court document"
+rule "Command - remove court document automation"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.remove-court-document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Second Line Support", "Court Administrators", "NCES"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Administrators", "NCES"));
   then
     $outcome.setSuccess(true);
 end
