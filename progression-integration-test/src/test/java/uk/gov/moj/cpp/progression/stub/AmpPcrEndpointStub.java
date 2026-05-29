@@ -42,6 +42,10 @@ public class AmpPcrEndpointStub {
         verifyPostPcrToAmp(exactly(count), null);
     }
 
+    public static void verifyPostPcrToAmpWithPayload(int count) {
+        verifyPostPcrToAmp(exactly(count), List.of("\"payload\":{"));
+    }
+
     private static void verifyPostPcrToAmp(CountMatchingStrategy countStrategy, List<String> expectedValues) {
         await().atMost(30, SECONDS)
                 .pollInterval(500, MILLISECONDS)

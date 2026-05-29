@@ -29,7 +29,7 @@ public class HearingResultsDocumentSubscriptionPCRMapper {
                 .materialId(pcrIn.getMaterialId())
                 .timestamp(createdAt)
                 .defendant(mapDefendant(pcrIn, prisonEmail))
-                .rawPayload(rawPayload)
+                .payload(rawPayload)
                 .build();
     }
 

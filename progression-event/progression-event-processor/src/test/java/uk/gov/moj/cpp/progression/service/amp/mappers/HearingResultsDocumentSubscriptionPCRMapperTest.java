@@ -75,7 +75,7 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
         final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
                 pcr, "wandsworth@example.com", createdAt, rawPayload);
 
-        assertThat(payload.getRawPayload(), equalTo(rawPayload));
+        assertThat(payload.getPayload(), equalTo(rawPayload));
     }
 
     @Test
