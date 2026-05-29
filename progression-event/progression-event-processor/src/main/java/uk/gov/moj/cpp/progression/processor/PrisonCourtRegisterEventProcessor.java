@@ -236,8 +236,7 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
-        final String rawPayload = fileService.retrievePayload(fileId)
-                .map(JsonObject::toString)
+        final String rawPayload = fileService.retrieveRawPayload(fileId)
                 .orElseGet(() -> objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated).toString());
         PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper
                 .mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt, rawPayload);
