@@ -26,6 +26,6 @@ public class PcrEventPayload {
     private Instant timestamp;
     private PcrEventPayloadDefendant defendant;
     @JsonRawValue
-    private String rawPayload;
+    private String payload;
 }
 

@@ -81,7 +81,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final String prisonCourtRegisterId = additionalInformationArray.getJSONObject(0).getString("propertyValue");
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, prisonCourtRegisterId);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId, prisonCourtRegisterId);
-        AmpPcrEndpointStub.verifyPostPcrToAmp(1);
+        AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(1);
 
         writeResponse = postCommand(getWriteUrl("/prison-court-register"),
                 "application/vnd.progression.add-prison-court-register+json",
@@ -96,7 +96,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final String prisonCourtRegisterId1 = additionalInformationArray1.getJSONObject(0).getString("propertyValue");
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId1, documentFileServiceId1, prisonCourtRegisterId1);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId1, prisonCourtRegisterId1);
-        AmpPcrEndpointStub.verifyPostPcrToAmp(2);
+        AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(2);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final UUID documentFileServiceId = randomUUID();
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, StringUtils.EMPTY);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGeneratedWithoutPrisonCourtRegisterId(courtCentreId, documentFileServiceId);
-        AmpPcrEndpointStub.verifyPostPcrToAmp(1);
+        AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(1);
     }
 
     @Test
