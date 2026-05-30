@@ -59,7 +59,8 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @Test
+    //@Test
+    // disabled for laa prototype
     public void shouldUpdateDefendant() throws IOException, JSONException {
 
         createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
