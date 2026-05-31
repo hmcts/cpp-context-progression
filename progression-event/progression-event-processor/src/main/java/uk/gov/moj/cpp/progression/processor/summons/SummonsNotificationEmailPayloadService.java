@@ -59,23 +59,24 @@ public class SummonsNotificationEmailPayloadService {
                                                                   final String emailAddress, final List<UUID> confirmedDefendantIds,
                                                                   final Defendant defendant, final List<String> defendantDetails,
                                                                   final boolean sendForRemotePrinting, final boolean addresseeIsYouth, final UUID materialId,
-                                                                  final SummonsType summonsRequired) {
+                                                                  final SummonsType summonsRequired, final boolean isExparte) {
         return getEmailChannelForCaseDefendant(summonsDataPrepared, summonsDocumentContent, emailAddress, confirmedDefendantIds,
-                defendant, defendantDetails, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired, false);
+                defendant, defendantDetails, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired, isExparte, false);
     }
 
     public Optional<EmailChannel> getEmailChannelForCaseDefendantParent(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                         final String emailAddress, final List<UUID> confirmedDefendantIds, final Defendant defendant,
                                                                         final List<String> defendantDetails, final boolean sendForRemotePrinting, final UUID materialId,
-                                                                        final SummonsType summonsRequired) {
+                                                                        final SummonsType summonsRequired, final boolean isExparte) {
         return getEmailChannelForCaseDefendant(summonsDataPrepared, summonsDocumentContent, emailAddress, confirmedDefendantIds,
-                defendant, defendantDetails, sendForRemotePrinting, false, materialId, summonsRequired, true);
+                defendant, defendantDetails, sendForRemotePrinting, false, materialId, summonsRequired, isExparte, true);
     }
 
     private Optional<EmailChannel> getEmailChannelForCaseDefendant(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                    final String emailAddress, final List<UUID> confirmedDefendantIds, final Defendant defendant,
                                                                    final List<String> defendantDetails, final boolean sendForRemotePrinting, final boolean addresseeIsYouth,
-                                                                   final UUID materialId, final SummonsType summonsRequired, final boolean notificationForParentOrGuardian) {
+                                                                   final UUID materialId, final SummonsType summonsRequired, final boolean isExparte,
+                                                                   final boolean notificationForParentOrGuardian) {
         if (conditionNotMetToRaiseEmailNotification(summonsRequired, emailAddress, sendForRemotePrinting, notificationForParentOrGuardian)) {
             return empty();
         }
@@ -86,6 +87,9 @@ public class SummonsNotificationEmailPayloadService {
                 return Optional.of(buildEmailNotificationForSummonsNotSuppressed(summonsDataPrepared, emailAddress, summonsDocumentContent, defendantDetails));
             }
         } else {
+            if (isExparte) {
+               return Optional.of(buildEmailNotificationForExParteTrue(summonsDataPrepared, emailAddress, summonsDocumentContent, defendantDetails));
+            }
             return Optional.of(buildEmailNotificationForCaseSummonsSuppressed(summonsDataPrepared, emailAddress, summonsDocumentContent, defendant, addresseeIsYouth,
                     materialId, notificationForParentOrGuardian));
         }
@@ -186,6 +190,23 @@ public class SummonsNotificationEmailPayloadService {
         return emailChannel()
                 .withSendToAddress(emailAddress)
                 .withTemplateId(fromString(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()))
+                .withPersonalisation(personalisation()
+                        .withAdditionalProperty(PROPERTY_CASE_REFERENCE, summonsDocumentContent.getCaseReference())
+                        .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, defendantDetails.stream().collect(joining(lineSeparator())))
+                        .withAdditionalProperty(PROPERTY_COURT_LOCATION, summonsDocumentContent.getHearingCourtDetails().getCourtName())
+                        .withAdditionalProperty(PROPERTY_HEARING_DATE, getHearingDateForEmailNotification(summonsDataPrepared.getSummonsData().getHearingDateTime()))
+                        .withAdditionalProperty(PROPERTY_HEARING_TIME, summonsDocumentContent.getHearingCourtDetails().getHearingTime())
+                        .build())
+                .build();
+    }
+
+    private EmailChannel buildEmailNotificationForExParteTrue(final SummonsDataPrepared summonsDataPrepared,
+                                                                       final String emailAddress,
+                                                                       final SummonsDocumentContent summonsDocumentContent,
+                                                                       final List<String> defendantDetails) {
+        return emailChannel()
+                .withSendToAddress(emailAddress)
+                .withTemplateId(fromString(applicationParameters.getSummonsApprovedExParteTrueTemplateId()))
                 .withPersonalisation(personalisation()
                         .withAdditionalProperty(PROPERTY_CASE_REFERENCE, summonsDocumentContent.getCaseReference())
                         .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, defendantDetails.stream().collect(joining(lineSeparator())))
