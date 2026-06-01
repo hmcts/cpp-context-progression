@@ -4671,6 +4671,128 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldUpdateExistingApplicationListingNeedsWhenSameCourtApplicationIdAndPartyIdReceived() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID courtApplicationPartyId = randomUUID();
+
+        final SummonsApprovedOutcome originalOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(false)
+                .withProsecutorEmailAddress("original@test.com")
+                .build();
+        final SummonsApprovedOutcome updatedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .withProsecutorEmailAddress("updated@test.com")
+                .build();
+
+        final List<CourtApplicationPartyListingNeeds> firstRequest = singletonList(
+                CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(courtApplicationId)
+                        .withCourtApplicationPartyId(courtApplicationPartyId)
+                        .withSummonsApprovedOutcome(originalOutcome)
+                        .build());
+
+        final List<CourtApplicationPartyListingNeeds> secondRequest = singletonList(
+                CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(courtApplicationId)
+                        .withCourtApplicationPartyId(courtApplicationPartyId)
+                        .withSummonsApprovedOutcome(updatedOutcome)
+                        .build());
+
+        hearingAggregate.createHearingApplicationRequest(firstRequest).collect(toList());
+        hearingAggregate.createHearingApplicationRequest(secondRequest).collect(toList());
+
+        final List<Object> summonsEvents = hearingAggregate.createSummonsData(
+                CourtCentre.courtCentre().build(), ZonedDateTime.now(), new ArrayList<>(), new ArrayList<>()).collect(toList());
+
+        assertThat(summonsEvents.size(), is(1));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) summonsEvents.get(0);
+        final List<CourtApplicationPartyListingNeeds> result = prepared.getSummonsData().getCourtApplicationPartyListingNeeds();
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getSummonsApprovedOutcome(), is(updatedOutcome));
+    }
+
+    @Test
+    public void shouldAddNewApplicationWhenCourtApplicationIdDiffers() {
+        final UUID firstApplicationId = randomUUID();
+        final UUID secondApplicationId = randomUUID();
+
+        final List<CourtApplicationPartyListingNeeds> firstRequest = singletonList(
+                CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(firstApplicationId)
+                        .withCourtApplicationPartyId(randomUUID())
+                        .build());
+
+        final List<CourtApplicationPartyListingNeeds> secondRequest = singletonList(
+                CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(secondApplicationId)
+                        .withCourtApplicationPartyId(randomUUID())
+                        .build());
+
+        hearingAggregate.createHearingApplicationRequest(firstRequest).collect(toList());
+        hearingAggregate.createHearingApplicationRequest(secondRequest).collect(toList());
+
+        final List<Object> summonsEvents = hearingAggregate.createSummonsData(
+                CourtCentre.courtCentre().build(), ZonedDateTime.now(), new ArrayList<>(), new ArrayList<>()).collect(toList());
+
+        assertThat(summonsEvents.size(), is(1));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) summonsEvents.get(0);
+        final List<CourtApplicationPartyListingNeeds> result = prepared.getSummonsData().getCourtApplicationPartyListingNeeds();
+        assertThat(result.size(), is(2));
+    }
+
+    @Test
+    public void shouldUpdateOnlyMatchingPartyWhenSameApplicationHasMultipleParties() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID firstPartyId = randomUUID();
+        final UUID secondPartyId = randomUUID();
+
+        final SummonsApprovedOutcome originalOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(false)
+                .build();
+        final SummonsApprovedOutcome updatedOutcome = SummonsApprovedOutcome.summonsApprovedOutcome()
+                .withPersonalService(true)
+                .build();
+
+        final List<CourtApplicationPartyListingNeeds> initialRequests = new ArrayList<>();
+        initialRequests.add(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                .withCourtApplicationId(courtApplicationId)
+                .withCourtApplicationPartyId(firstPartyId)
+                .withSummonsApprovedOutcome(originalOutcome)
+                .build());
+        initialRequests.add(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                .withCourtApplicationId(courtApplicationId)
+                .withCourtApplicationPartyId(secondPartyId)
+                .withSummonsApprovedOutcome(originalOutcome)
+                .build());
+
+        final List<CourtApplicationPartyListingNeeds> updateRequest = singletonList(
+                CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                        .withCourtApplicationId(courtApplicationId)
+                        .withCourtApplicationPartyId(firstPartyId)
+                        .withSummonsApprovedOutcome(updatedOutcome)
+                        .build());
+
+        hearingAggregate.createHearingApplicationRequest(initialRequests).collect(toList());
+        hearingAggregate.createHearingApplicationRequest(updateRequest).collect(toList());
+
+        final List<Object> summonsEvents = hearingAggregate.createSummonsData(
+                CourtCentre.courtCentre().build(), ZonedDateTime.now(), new ArrayList<>(), new ArrayList<>()).collect(toList());
+
+        assertThat(summonsEvents.size(), is(1));
+        final SummonsDataPrepared prepared = (SummonsDataPrepared) summonsEvents.get(0);
+        final List<CourtApplicationPartyListingNeeds> result = prepared.getSummonsData().getCourtApplicationPartyListingNeeds();
+        assertThat(result.size(), is(2));
+        final CourtApplicationPartyListingNeeds updatedParty = result.stream()
+                .filter(n -> firstPartyId.equals(n.getCourtApplicationPartyId()))
+                .findFirst().orElseThrow();
+        final CourtApplicationPartyListingNeeds unchangedParty = result.stream()
+                .filter(n -> secondPartyId.equals(n.getCourtApplicationPartyId()))
+                .findFirst().orElseThrow();
+        assertThat(updatedParty.getSummonsApprovedOutcome(), is(updatedOutcome));
+        assertThat(unchangedParty.getSummonsApprovedOutcome(), is(originalOutcome));
+    }
+
+    @Test
     public void shouldCreateSummonsData(){
         final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
         listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
