@@ -3,12 +3,23 @@ package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.justice.api.resource.CourtDocumentCommandProvider courtDocumentCommandProvider;
 
 rule "Command - remove court document automation"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.remove-court-document");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Administrators", "NCES"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - remove court document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-court-document");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.getDeleteCourtDocumentPermission()))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument(courtDocumentCommandProvider.getDocumentTypeId($action)));
   then
     $outcome.setSuccess(true);
 end

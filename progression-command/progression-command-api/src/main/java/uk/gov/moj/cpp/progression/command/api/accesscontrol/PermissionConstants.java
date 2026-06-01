@@ -9,7 +9,9 @@ public class PermissionConstants {
     static final String OBJECT = "object";
     static final String ACTION = "action";
     private static final String CREATE_ACTION = "Create";
+    private static final String DELETE_ACTION = "Delete";
     private static final String OBJECT_CASE = "Case";
+    private static final String OBJECT_COURT_DOCUMENT = "CourtDocument";
 
 
     private PermissionConstants() {
@@ -57,5 +59,11 @@ public class PermissionConstants {
 
     public static String[] getUsersForCourtProceedingsForApplication() {
         return new String[]{"Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "NCES"};
+    }
+
+    public static String[] getDeleteCourtDocumentPermission() {
+        return new String[]{
+                createObjectBuilder().add(OBJECT, OBJECT_COURT_DOCUMENT).add(ACTION, DELETE_ACTION).build().toString(),
+        };
     }
 }
