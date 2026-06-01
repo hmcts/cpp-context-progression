@@ -250,7 +250,12 @@ public class HearingAggregate implements Aggregate {
                 }),
                 when(HearingApplicationRequestCreated.class).apply(e -> {
                     if (isNotEmpty(e.getApplicationRequests())) {
-                        applicationListingNeeds.addAll(e.getApplicationRequests());
+                        e.getApplicationRequests().forEach(incoming -> {
+                            applicationListingNeeds.removeIf(existing ->
+                                    Objects.equals(existing.getCourtApplicationId(), incoming.getCourtApplicationId()) &&
+                                    Objects.equals(existing.getCourtApplicationPartyId(), incoming.getCourtApplicationPartyId()));
+                            applicationListingNeeds.add(incoming);
+                        });
                     }
                 }),
                 when(ExtendHearingDefendantRequestUpdated.class).apply(e -> {
@@ -472,6 +477,7 @@ public class HearingAggregate implements Aggregate {
         return courtApplicationPartyListingNeedsToSend.stream()
                 .map(CourtApplicationPartyListingNeeds::getCourtApplicationId)
                 .filter(Objects::nonNull)
+                .distinct()
                 .collect(toList());
     }
 
