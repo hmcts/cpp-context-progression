@@ -42,40 +42,33 @@ public class PermissionConstantsTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldAllowAuthorisedUserToCourtProceedingsForApplication() throws JsonProcessingException {
-        final Map<String, String> metadata = new HashMap();
-        metadata.putIfAbsent("id", UUID.randomUUID().toString());
-        metadata.putIfAbsent("name", "progression.initiate-court-proceedings-for-application");
-        action = createActionFor(metadata);
+        final Action action = createActionFor("progression.initiate-court-proceedings-for-application");
         given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, PermissionConstants.getUsersForCourtProceedingsForApplication())).willReturn(true);
         given(userAndGroupProvider.hasPermission(action, PermissionConstants.getCaseCreatePermission())).willReturn(true);
+
         final ExecutionResults results = executeRulesWith(action);
+
         assertSuccessfulOutcome(results);
         verify(userAndGroupProvider, times(1)).isMemberOfAnyOfTheSuppliedGroups(action, PermissionConstants.getUsersForCourtProceedingsForApplication());
         verify(userAndGroupProvider, times(1)).hasPermission(action, PermissionConstants.getCaseCreatePermission());
-
     }
 
     @Test
     public void shouldAllowAuthorisedUserWithPermissionToCourtProceedingsForApplication() throws JsonProcessingException {
-        final Map<String, String> metadata = new HashMap();
-        metadata.putIfAbsent("id", UUID.randomUUID().toString());
-        metadata.putIfAbsent("name", "progression.initiate-court-proceedings-for-application");
-        action = createActionFor(metadata);
+        final Action action = createActionFor("progression.initiate-court-proceedings-for-application");
         given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, PermissionConstants.getUsersForCourtProceedingsForApplication())).willReturn(false);
         given(userAndGroupProvider.hasPermission(action, PermissionConstants.getCaseCreatePermission())).willReturn(true);
+
         final ExecutionResults results = executeRulesWith(action);
+
         assertSuccessfulOutcome(results);
         verify(userAndGroupProvider, times(1)).isMemberOfAnyOfTheSuppliedGroups(action, PermissionConstants.getUsersForCourtProceedingsForApplication());
         verify(userAndGroupProvider, times(1)).hasPermission(action, PermissionConstants.getCaseCreatePermission());
-
     }
 
     @Test
     public void shouldNotAllowUnauthorisedUserToCourtProceedingsForApplication() throws JsonProcessingException {
-        final Map<String, String> metadata = new HashMap();
-        metadata.putIfAbsent("id", UUID.randomUUID().toString());
-        metadata.putIfAbsent("name", "progression.initiate-court-proceedings-for-application");
-        action = createActionFor(metadata);
+        final Action action = createActionFor("progression.initiate-court-proceedings-for-application");
         given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, PermissionConstants.getUsersForCourtProceedingsForApplication())).willReturn(false);
         given(userAndGroupProvider.hasPermission(action, PermissionConstants.getCaseCreatePermission())).willReturn(false);
 
