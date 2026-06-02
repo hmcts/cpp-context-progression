@@ -30,6 +30,7 @@ import static uk.gov.justice.core.courts.ProsecutionCaseCreated.prosecutionCaseC
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
@@ -46,6 +47,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -166,7 +168,7 @@ public class CaseAggregateLaaTest {
                 .build();
         this.caseAggregate.apply(prosecutionCaseCreated);
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
 
@@ -239,7 +241,7 @@ public class CaseAggregateLaaTest {
                 .build();
         List<DefendantJudicialResult> defendantJudicialResults = emptyList();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()),  "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
@@ -307,7 +309,7 @@ public class CaseAggregateLaaTest {
                 .build();
         List<DefendantJudicialResult> defendantJudicialResults = emptyList();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
@@ -386,7 +388,7 @@ public class CaseAggregateLaaTest {
                 .build());
 
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
@@ -456,7 +458,7 @@ public class CaseAggregateLaaTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        List<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+        List<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
         LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
 
         assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
@@ -497,7 +499,7 @@ public class CaseAggregateLaaTest {
                         .withCategory(JudicialResultCategory.ANCILLARY)
                         .build()).build());
 
-        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
         laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
 
@@ -539,7 +541,7 @@ public class CaseAggregateLaaTest {
                         .withCategory(FINAL)
                         .build()).build());
 
-        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
         laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
 
@@ -612,7 +614,7 @@ public class CaseAggregateLaaTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        List<Object> eventList = this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        List<Object> eventList = this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
         LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
 
         assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
@@ -654,7 +656,7 @@ public class CaseAggregateLaaTest {
                         .withCategory(JudicialResultCategory.ANCILLARY)
                         .build()).build());
 
-        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
 
@@ -697,7 +699,7 @@ public class CaseAggregateLaaTest {
                         .withCategory(FINAL)
                         .build()).build());
 
-        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
 
@@ -740,7 +742,7 @@ public class CaseAggregateLaaTest {
                         .withCategory(FINAL)
                         .build()).build());
 
-        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
         laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
 
