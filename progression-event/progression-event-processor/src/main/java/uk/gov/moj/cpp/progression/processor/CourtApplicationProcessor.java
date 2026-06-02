@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
@@ -119,6 +120,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,7 +242,7 @@ public class CourtApplicationProcessor {
             LOGGER.info("CourtApplication  {}", courtApplication.getId());
         }
 
-        if(isNotEmpty(courtApplication.getCourtApplicationCases())){
+        if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             courtApplication.getCourtApplicationCases()
                     .stream()
                     .filter(courtApplicationCase -> INACTIVE.equals(courtApplicationCase.getCaseStatus()))
@@ -327,13 +329,13 @@ public class CourtApplicationProcessor {
                     }));
         } else if (nonNull(courtApplicationProceedingsInitiated.getCourtApplication()) && nonNull(courtApplicationProceedingsInitiated.getCourtApplication().getCourtOrder())) {
             courtApplicationProceedingsInitiated.getCourtApplication().getCourtOrder().getCourtOrderOffences().stream().map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toSet())
-            .forEach(prosecutionCaseId ->
-                progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc -> {
-                    final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                    updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
-                    final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplicationProceedingsInitiated.getCourtApplication());
-                    prosecutionCases.add(enrichedCase);
-                }));
+                    .forEach(prosecutionCaseId ->
+                            progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc -> {
+                                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                                updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
+                                final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplicationProceedingsInitiated.getCourtApplication());
+                                prosecutionCases.add(enrichedCase);
+                            }));
         }
         final JsonArrayBuilder prosecutionsWithCaseArray = createArrayBuilder();
         prosecutionCases.forEach(prosecutionCase -> prosecutionsWithCaseArray.add(objectToJsonObjectConverter.convert(prosecutionCase)));
@@ -414,9 +416,9 @@ public class CourtApplicationProcessor {
 
     private static DefendantUpdate enrichDefendantUpdateWithDefendantId(final List<Defendant> defendants, DefendantUpdate defendantUpdate) {
         final Optional<UUID> defendantId = getMatchingDefendantIdFromDefendantList(defendants, defendantUpdate);
-        if(defendantId.isPresent()){
+        if (defendantId.isPresent()) {
             defendantUpdate = DefendantUpdate.defendantUpdate().withValuesFrom(defendantUpdate).withId(defendantId.get()).build();
-        }else{
+        } else {
             defendantUpdate = DefendantUpdate.defendantUpdate().withValuesFrom(defendantUpdate).withId(defendantUpdate.getMasterDefendantId()).build();
         }
         return defendantUpdate;
@@ -507,8 +509,8 @@ public class CourtApplicationProcessor {
             courtApplicationProceedingsEdited.getCourtApplication().getCourtOrder().getCourtOrderOffences().stream().map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toSet())
                     .forEach(prosecutionCaseId ->
                             progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc -> {
-                                    final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                                    updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
+                                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                                updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
                             }));
         }
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
@@ -833,7 +835,6 @@ public class CourtApplicationProcessor {
                             .build();
 
                     final BreachedApplications breachedApplication = breachApplicationCreationRequested.getBreachedApplications();
-                    final List<Offence> offences = nonNull(defendant.get().getOffences()) ? defendant.get().getOffences().stream().collect(toList()) : null;
 
                     final CourtApplication courtApplication = CourtApplication.courtApplication()
                             .withId(breachedApplication.getId())
@@ -844,10 +845,10 @@ public class CourtApplicationProcessor {
                             .withApplicant(applicant)
                             .withSubject(respondent)
                             .withRespondents(singletonList(respondent))
-                            .withCourtApplicationCases(Arrays.asList(CourtApplicationCase.courtApplicationCase()
+                            .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase()
                                     .withIsSJP(Boolean.FALSE)
                                     .withProsecutionCaseId(prosecutionCase.getId())
-                                    .withOffences(offences)
+                                    .withOffences(buildOffencesForCourtApplicationCases(defendant, prosecutionCase))
                                     .withCaseStatus("ACTIVE")
                                     .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                                     .build()))
@@ -869,6 +870,18 @@ public class CourtApplicationProcessor {
                 }
             }
         }
+    }
+
+    private @Nullable List<Offence> buildOffencesForCourtApplicationCases(final Optional<Defendant> defendant, final ProsecutionCase prosecutionCase) {
+        if (activeCase(prosecutionCase.getCaseStatus())) {
+            return null;
+        }
+
+        return nonNull(defendant.get().getOffences()) ? defendant.get().getOffences().stream().toList() : null;
+    }
+
+    private boolean activeCase(final String caseStatus) {
+        return nonNull(caseStatus) && !"INACTIVE".equalsIgnoreCase(caseStatus) && !"CLOSED".equalsIgnoreCase(caseStatus);
     }
 
 
@@ -900,25 +913,25 @@ public class CourtApplicationProcessor {
                 .map(defendant -> defendant().withValuesFrom(defendant).withDefendantCaseJudicialResults(null).build())
                 .collect(toList());
         Optional.ofNullable(courtApplication).ifPresent(c -> {
-            Optional.ofNullable(c.getApplicant()).ifPresent(a -> {
-                if (Optional.ofNullable(a.getMasterDefendant()).isPresent()) {
-                    defendants.stream().filter(defendant -> defendant.getMasterDefendantId().equals(a.getMasterDefendant().getMasterDefendantId()))
-                            .findFirst().ifPresent(d -> defendantsFromCourtApplication.add(d));
+                    Optional.ofNullable(c.getApplicant()).ifPresent(a -> {
+                        if (Optional.ofNullable(a.getMasterDefendant()).isPresent()) {
+                            defendants.stream().filter(defendant -> defendant.getMasterDefendantId().equals(a.getMasterDefendant().getMasterDefendantId()))
+                                    .findFirst().ifPresent(d -> defendantsFromCourtApplication.add(d));
+                        }
+                    });
+                    Optional.ofNullable(c.getRespondents()).ifPresent(respondents -> defendantsFromCourtApplication.addAll(defendants.stream()
+                            .filter(defendant -> respondents.stream().anyMatch(respondent -> nonNull(respondent.getMasterDefendant()) && defendant.getMasterDefendantId().equals(respondent.getMasterDefendant().getMasterDefendantId())))
+                            .collect(Collectors.toSet())));
                 }
-            });
-            Optional.ofNullable(c.getRespondents()).ifPresent(respondents -> defendantsFromCourtApplication.addAll(defendants.stream()
-                    .filter(defendant -> respondents.stream().anyMatch(respondent -> nonNull(respondent.getMasterDefendant()) && defendant.getMasterDefendantId().equals(respondent.getMasterDefendant().getMasterDefendantId())))
-                    .collect(Collectors.toSet())));
-        }
         );
-        if(isEmpty(defendantsFromCourtApplication)) {
+        if (isEmpty(defendantsFromCourtApplication)) {
             defendantsFromCourtApplication.addAll(defendants);
         }
         final List<Defendant> defendantList = defendantsFromCourtApplication.stream()
                 .map(this::updatedDefendant)
                 .filter(defendant -> isNotEmpty(defendant.getOffences()))
                 .collect(toList());
-        if(courtApplication != null && (courtApplication.getCourtCivilApplication() !=null && courtApplication.getCourtCivilApplication().getIsCivil())) {
+        if (courtApplication != null && (courtApplication.getCourtCivilApplication() != null && courtApplication.getCourtCivilApplication().getIsCivil())) {
             final CivilFees initialFees = CivilFees.civilFees()
                     .withFeeType(FeeType.INITIAL)
                     .withFeeId(randomUUID())
