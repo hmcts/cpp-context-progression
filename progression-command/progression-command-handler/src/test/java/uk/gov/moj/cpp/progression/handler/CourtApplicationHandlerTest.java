@@ -3152,4 +3152,48 @@ public class CourtApplicationHandlerTest {
                 .withConvictionDate(convictionDate)
                 .build();
     }
+
+    @Test
+    public void shouldUpdateOffenceWordingForActiveCaseWhenNoCourtOrder() throws EventStreamException {
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                buildInitiateCourtApplicationProceedings(randomUUID(), false, true, false, true, LinkType.LINKED, "ACTIVE");
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final String expectedWording = "Resentenced Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+        final String expectedWordingWelsh = "Resentenced Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING_WELSH;
+        final UUID activeOffenceId = initiateCourtApplicationProceedings.getCourtApplication().getCourtApplicationCases().get(0).getOffences().get(0).getId();
+        final UUID activeProsecutionCaseId = initiateCourtApplicationProceedings.getCourtApplication().getCourtApplicationCases().get(0).getProsecutionCaseId();
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", is(activeProsecutionCaseId.toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", is(activeOffenceId.toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].offenceCode", is(RESENTENCING_ACTIVATION_CODE)),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wording", is(expectedWording)),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wordingWelsh", is(expectedWordingWelsh))
+                        ))
+                )
+        ));
+    }
 }
