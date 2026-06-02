@@ -836,6 +836,8 @@ public class CourtApplicationProcessor {
 
                     final BreachedApplications breachedApplication = breachApplicationCreationRequested.getBreachedApplications();
 
+                    final List<Offence> offences = buildOffencesForCourtApplicationCases(defendant, prosecutionCase);
+
                     final CourtApplication courtApplication = CourtApplication.courtApplication()
                             .withId(breachedApplication.getId())
                             .withType(breachedApplication.getApplicationType())
@@ -848,7 +850,7 @@ public class CourtApplicationProcessor {
                             .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase()
                                     .withIsSJP(Boolean.FALSE)
                                     .withProsecutionCaseId(prosecutionCase.getId())
-                                    .withOffences(buildOffencesForCourtApplicationCases(defendant, prosecutionCase))
+                                    .withOffences(offences)
                                     .withCaseStatus("ACTIVE")
                                     .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                                     .build()))
