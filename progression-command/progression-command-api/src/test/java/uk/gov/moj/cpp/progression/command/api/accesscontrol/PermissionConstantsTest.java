@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 
 import com.google.common.collect.ImmutableMap;
@@ -12,7 +13,6 @@ import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
