@@ -53,6 +53,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
@@ -106,6 +107,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -242,6 +246,9 @@ public class HearingResultEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<UUID> hearingIdCaptor;
+
+    @Captor
+    private ArgumentCaptor<List<HearingDay>> hearingDaysTimeCaptor;
     @Captor
     private ArgumentCaptor<HearingType> hearingTypeCaptor;
     @Captor
@@ -350,7 +357,6 @@ public class HearingResultEventProcessorTest {
 
     @Test
     public void handleResultWhenProsecutionCaseIsPresentOnHearing() {
-
         final UUID courtApplicationId = randomUUID();
 
         final UUID commonUUID = randomUUID();
@@ -379,7 +385,6 @@ public class HearingResultEventProcessorTest {
         final ProsecutionCase prosecutionCase = prosecutionCase().withDefendants(defendants).build();
         prosecutionCases.add(prosecutionCase);
 
-
         final List<CourtApplication> courtApplications = singletonList(courtApplication()
                 .withJudicialResults(asList(judicialResult()
                         .withCategory(JudicialResultCategory.FINAL).build(), judicialResult()
@@ -391,6 +396,7 @@ public class HearingResultEventProcessorTest {
         final ProsecutionCasesResulted prosecutionCasesResulted = prosecutionCasesResulted()
                 .withHearing(Hearing.hearing()
                         .withId(randomUUID())
+                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
                         .withDefendantAttendance(
                                 asList(defendantAttendance()
                                         .withDefendantId(randomUUID())
@@ -723,9 +729,11 @@ public class HearingResultEventProcessorTest {
         final List<UUID> shadowListedOffences = Arrays.asList(offenceUuid1, offenceUuid2);
 
         final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final ProsecutionCasesResulted prosecutionCasesResulted = prosecutionCasesResulted()
                 .withHearing(hearing()
                         .withId(hearingId)
+                        .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(hearingDateTime).build()))
                         .withType(hearingType().withDescription("Trial").build())
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withProsecutionCases(prosecutionCases)
@@ -748,7 +756,7 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
@@ -757,6 +765,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test
@@ -941,9 +950,11 @@ public class HearingResultEventProcessorTest {
     private void sendToCrownCourt(final List<ProsecutionCase> prosecutionCases, final UUID defendantUUUID) throws IOException {
         final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
         final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final ProsecutionCasesResulted prosecutionCasesResulted = prosecutionCasesResulted()
                 .withHearing(hearing()
                         .withId(hearingId)
+                        .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(hearingDateTime).build()))
                         .withType(hearingType().withDescription("Trial").build())
                         .withProsecutionCases(prosecutionCases)
                         .withJurisdictionType(JurisdictionType.CROWN)
@@ -969,7 +980,7 @@ public class HearingResultEventProcessorTest {
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
         verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
-        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
@@ -977,6 +988,7 @@ public class HearingResultEventProcessorTest {
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode, final String resultDefinitionGroup) {
