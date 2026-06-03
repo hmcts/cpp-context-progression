@@ -17,6 +17,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_FAILED;
+import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_SENT;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -52,11 +53,13 @@ public class PrisonCourtRegisterDocumentRequestHelper extends AbstractTestHelper
     private static final String ORIGINATOR = "PRISON_COURT_REGISTER";
 
     private JmsMessageConsumerClient privateEventsConsumer3;
+    private JmsMessageConsumerClient prisonCourtRegisterSentConsumer;
 
     protected JmsMessageProducerClient publicMessageProducer;
 
     public PrisonCourtRegisterDocumentRequestHelper() {
         privateEventsConsumer3 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_FAILED).getMessageConsumerClient();
+        prisonCourtRegisterSentConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_SELECTOR_PRISON_COURT_REGISTER_SENT).getMessageConsumerClient();
         publicMessageProducer = JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         consumerForCourtApplicationCreated = JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
@@ -88,7 +91,6 @@ public class PrisonCourtRegisterDocumentRequestHelper extends AbstractTestHelper
         assertThat(payloadJsonObject.getString("hearingId"), is(hearingId.toString()));
     }
 
-
     public String verifyPrisonCourtRegisterIsGenerated(final UUID courtCentreId, final UUID payloadFileServiceId, final String prisonCourtRegisterId) {
         return getPrisonCourtRegisterDocumentRequests(courtCentreId.toString(), allOf(
                 JsonPathMatchers.withJsonPath("$.prisonCourtRegisterDocumentRequests[*].fileId", hasItem(payloadFileServiceId.toString())),
@@ -114,6 +116,11 @@ public class PrisonCourtRegisterDocumentRequestHelper extends AbstractTestHelper
         final String commandName = "public.systemdocgenerator.events.generation-failed";
         final Metadata metadata = getMetadataFrom(userId.toString(), courtCentreId, commandName);
         publicMessageProducer.sendMessage(commandName, envelopeFrom(metadata, documentFailedPayload(payloadFileServiceId, "OEE_Layout5", courtCentreId.toString(), prisonCourtRegisterId)));
+    }
+
+    public void verifyForPrisonCourtRegisterSentEvent() {
+        final Optional<JsonObject> message = retrieveMessageBody(prisonCourtRegisterSentConsumer);
+        assertTrue(message.isPresent());
     }
 
     public void verifyCourtApplicationCreatedPublicEvent() {
