@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -419,10 +420,10 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        final ArgumentCaptor<String> rawPayloadCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<JsonNode> rawPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
         verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
                 any(), anyString(), any(), rawPayloadCaptor.capture());
-        assertThat(rawPayloadCaptor.getValue(), containsString("Southwark Crown Court"));
+        assertThat(rawPayloadCaptor.getValue().toString(), containsString("Southwark Crown Court"));
     }
 
     @Test
@@ -458,7 +459,7 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegisterV2(requestMessage);
 
-        final ArgumentCaptor<String> rawPayloadCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<JsonNode> rawPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
         verify(hearingResultsDocumentSubscriptionPCRMapper).mapPcrForhearingResultsDocument(
                 any(), anyString(), any(), rawPayloadCaptor.capture());
         assertThat(rawPayloadCaptor.getValue(), is(notNullValue()));

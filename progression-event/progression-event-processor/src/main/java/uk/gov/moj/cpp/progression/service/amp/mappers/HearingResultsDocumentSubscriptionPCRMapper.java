@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service.amp.mappers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
@@ -21,7 +22,7 @@ public class HearingResultsDocumentSubscriptionPCRMapper {
             final PrisonCourtRegisterGeneratedV2 pcrIn,
             final String prisonEmail,
             final Instant createdAt,
-            final String rawPayload) {
+            final JsonNode rawPayload) {
         return PcrEventPayload.builder()
                 .eventType(PcrEventType.PRISON_COURT_REGISTER_GENERATED)
                 .eventId(pcrIn.getId())

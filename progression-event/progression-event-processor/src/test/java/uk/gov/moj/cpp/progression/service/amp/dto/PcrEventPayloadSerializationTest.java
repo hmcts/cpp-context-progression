@@ -20,6 +20,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * Proves {@code PcrEventPayload} with {@code JsonNode payload} produces valid JSON AMP accepts.
+ * Root cause: {@code @JsonRawValue} on a field is ignored by the RESTEasy Jackson provider →
+ * payload serialised as a quoted string → AMP's {@code Map<String, Object>} 400.
+ * Fix: {@code JsonNode} serialises inline natively.
+ */
 class PcrEventPayloadSerializationTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
@@ -27,8 +33,8 @@ class PcrEventPayloadSerializationTest {
             .disable(WRITE_DATES_AS_TIMESTAMPS);
 
     @Test
-    void serializing_pcr_payload_with_raw_file_content_produces_valid_json_accepted_by_amp() throws Exception {
-        final String rawPcrPayload = loadFixture("pcr-payload-production-sample.json");
+    void serializing_pcr_payload_as_json_node_produces_valid_json_accepted_by_amp() throws Exception {
+        final JsonNode rawPcrPayload = loadFixture("pcr-payload-production-sample.json");
         final PcrEventPayload payload = buildProductionPayload(rawPcrPayload);
 
         final String json = OBJECT_MAPPER.writeValueAsString(payload);
@@ -42,18 +48,7 @@ class PcrEventPayloadSerializationTest {
         assertThat(json, containsString("bodily harm.\\nContrary"));
     }
 
-    @Test
-    void serializing_pcr_payload_with_wildfly_tostring_bug_produces_invalid_json() throws Exception {
-        // WildFly's JsonObject::toString() converts \n JSON escape → literal U+000A — proves root cause.
-        final String buggyRawPayload = loadFixture("pcr-payload-production-sample.json").replace("\\n", "\n");
-        final PcrEventPayload payload = buildProductionPayload(buggyRawPayload);
-
-        final String json = OBJECT_MAPPER.writeValueAsString(payload);
-
-        assertThat(json, containsString("actual bodily harm.\nContrary"));
-    }
-
-    private PcrEventPayload buildProductionPayload(final String rawPayload) {
+    private PcrEventPayload buildProductionPayload(final JsonNode rawPayload) {
         return PcrEventPayload.builder()
                 .eventType(PcrEventType.PRISON_COURT_REGISTER_GENERATED)
                 .eventId(UUID.fromString("a4554152-10fb-44fe-a015-226f8d547c91"))
@@ -75,10 +70,10 @@ class PcrEventPayloadSerializationTest {
                 .build();
     }
 
-    private String loadFixture(final String name) throws IOException {
+    private JsonNode loadFixture(final String name) throws IOException {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(name)) {
             if (is == null) throw new IllegalStateException("Fixture not found: " + name);
-            return new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();
+            return OBJECT_MAPPER.readTree(new String(is.readAllBytes(), StandardCharsets.UTF_8).trim());
         }
     }
 }

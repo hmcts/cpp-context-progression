@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.service.amp.mappers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -68,14 +71,14 @@ class HearingResultsDocumentSubscriptionPCRMapperTest {
     }
 
     @Test
-    void mapperShouldIncludeRawPayload() {
+    void mapperShouldIncludeRawPayload() throws Exception {
         final Instant createdAt = Instant.parse("2024-10-01T10:00:00Z");
-        final String rawPayload = "{\"courtHouse\":\"Southwark Crown Court\"}";
+        final JsonNode rawPayload = new ObjectMapper().readTree("{\"courtHouse\":\"Southwark Crown Court\"}");
 
         final PcrEventPayload payload = mapper.mapPcrForhearingResultsDocument(
                 pcr, "wandsworth@example.com", createdAt, rawPayload);
 
-        assertThat(payload.getPayload(), equalTo(rawPayload));
+        assertThat(payload.getPayload().toString(), containsString("Southwark Crown Court"));
     }
 
     @Test

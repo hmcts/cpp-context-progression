@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
@@ -12,7 +15,7 @@ import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegiste
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterHearingVenue;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -61,6 +64,7 @@ public class PrisonCourtRegisterEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrisonCourtRegisterEventProcessor.class);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     private static final String PRISON_COURT_REGISTER_TEMPLATE = "OEE_Layout5";
     private static final String FIELD_RECIPIENTS = "recipients";
     private static final String FIELD_NOTIFICATION_ID = "notificationId";
@@ -111,9 +115,6 @@ public class PrisonCourtRegisterEventProcessor {
     private HearingResultsDocumentSubscriptionPCRMapper hearingResultsDocumentSubscriptionPCRMapper;
     @Inject
     private HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
-
-    @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
@@ -236,8 +237,20 @@ public class PrisonCourtRegisterEventProcessor {
                 : "";
         Instant createdAt = envelope.metadata().createdAt().orElse(ZonedDateTime.now()).toInstant();
         final UUID fileId = prisonCourtRegisterGenerated.getFileId();
-        final String rawPayload = fileService.retrieveRawPayload(fileId)
-                .orElseGet(() -> objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated).toString());
+        final JsonNode rawPayload;
+        final Optional<String> rawPayloadStr = fileService.retrieveRawPayload(fileId);
+        if (rawPayloadStr.isPresent()) {
+            JsonNode parsed;
+            try {
+                parsed = objectMapper.readTree(rawPayloadStr.get());
+            } catch (JsonProcessingException e) {
+                LOGGER.warn("Failed to parse raw payload as JSON for fileId {}: {}", fileId, e.getMessage());
+                parsed = objectMapper.valueToTree(prisonCourtRegisterGenerated);
+            }
+            rawPayload = parsed;
+        } else {
+            rawPayload = objectMapper.valueToTree(prisonCourtRegisterGenerated);
+        }
         PcrEventPayload pcrEventPayload = hearingResultsDocumentSubscriptionPCRMapper
                 .mapPcrForhearingResultsDocument(prisonCourtRegisterGenerated, emailRecipient, createdAt, rawPayload);
         final String prisonCourtRegisterId = envelope.payloadAsJsonObject().containsKey("id")
