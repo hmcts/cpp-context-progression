@@ -2376,6 +2376,147 @@ public class CourtApplicationProcessorTest {
                 .readObject();
     }
 
+    @Test
+    public void shouldSetOffencesToNullWhenProsecutionCaseIsActiveOnBreachApplicationCreation() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.breach-application-creation-requested");
+        final UUID hearingId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("ACTIVE")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(masterDefendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(masterDefendantId)
+                                .withOffences(Arrays.asList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityCode(STRING.next())
+                                .withProsecutionAuthorityId(randomUUID())
+                                .withProsecutionAuthorityReference(STRING.next())
+                                .build())
+                        .build()))
+                .build();
+        final BreachApplicationCreationRequested breachApplicationCreationRequested = BreachApplicationCreationRequested.breachApplicationCreationRequested()
+                .withHearingId(hearingId)
+                .withBreachedApplications(BreachedApplications.breachedApplications()
+                        .withApplicationType(CourtApplicationType.courtApplicationType().build()).build())
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(breachApplicationCreationRequested);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        final JsonObject jsonObjectHearing = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build();
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), BreachApplicationCreationRequested.class)).thenReturn(breachApplicationCreationRequested);
+        when(progressionService.getHearing(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(jsonObjectHearing));
+
+        courtApplicationProcessor.processBreachApplicationCreationRequested(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        final JsonObject actual = objectToJsonObjectConverter.convert(captor.getValue().payload());
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases")
+                .getJsonObject(0).getJsonArray("offences"), is(Matchers.nullValue()));
+    }
+
+    @Test
+    public void shouldReturnOffencesWhenProsecutionCaseIsInactiveOnBreachApplicationCreation() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.breach-application-creation-requested");
+        final UUID hearingId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("INACTIVE")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(masterDefendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(masterDefendantId)
+                                .withOffences(Arrays.asList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityCode(STRING.next())
+                                .withProsecutionAuthorityId(randomUUID())
+                                .withProsecutionAuthorityReference(STRING.next())
+                                .build())
+                        .build()))
+                .build();
+        final BreachApplicationCreationRequested breachApplicationCreationRequested = BreachApplicationCreationRequested.breachApplicationCreationRequested()
+                .withHearingId(hearingId)
+                .withBreachedApplications(BreachedApplications.breachedApplications()
+                        .withApplicationType(CourtApplicationType.courtApplicationType().build()).build())
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(breachApplicationCreationRequested);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        final JsonObject jsonObjectHearing = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build();
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), BreachApplicationCreationRequested.class)).thenReturn(breachApplicationCreationRequested);
+        when(progressionService.getHearing(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(jsonObjectHearing));
+
+        courtApplicationProcessor.processBreachApplicationCreationRequested(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        final JsonObject actual = objectToJsonObjectConverter.convert(captor.getValue().payload());
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases")
+                .getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId.toString()));
+    }
+
+    @Test
+    public void shouldReturnOffencesWhenProsecutionCaseIsClosedOnBreachApplicationCreation() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.breach-application-creation-requested");
+        final UUID hearingId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("CLOSED")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(masterDefendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(masterDefendantId)
+                                .withOffences(Arrays.asList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityCode(STRING.next())
+                                .withProsecutionAuthorityId(randomUUID())
+                                .withProsecutionAuthorityReference(STRING.next())
+                                .build())
+                        .build()))
+                .build();
+        final BreachApplicationCreationRequested breachApplicationCreationRequested = BreachApplicationCreationRequested.breachApplicationCreationRequested()
+                .withHearingId(hearingId)
+                .withBreachedApplications(BreachedApplications.breachedApplications()
+                        .withApplicationType(CourtApplicationType.courtApplicationType().build()).build())
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(breachApplicationCreationRequested);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        final JsonObject jsonObjectHearing = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).build();
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), BreachApplicationCreationRequested.class)).thenReturn(breachApplicationCreationRequested);
+        when(progressionService.getHearing(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(jsonObjectHearing));
+
+        courtApplicationProcessor.processBreachApplicationCreationRequested(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        final JsonObject actual = objectToJsonObjectConverter.convert(captor.getValue().payload());
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases")
+                .getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId.toString()));
+    }
+
     private CustomComparator getCustomComparator() {
         return new CustomComparator(STRICT,
                 new Customization("hearing.id", (o1, o2) -> o1 != null && o2 != null),
