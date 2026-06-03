@@ -79,6 +79,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final UUID documentFileServiceId = randomUUID();
         final JSONArray additionalInformationArray = jsonObject.getJSONArray("additionalInformation");
         final String prisonCourtRegisterId = additionalInformationArray.getJSONObject(0).getString("propertyValue");
+        prisonCourtRegisterDocumentRequestHelper.verifyForPrisonCourtRegisterSentEvent();
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, prisonCourtRegisterId);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId, prisonCourtRegisterId);
         AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(1);
@@ -94,6 +95,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final UUID documentFileServiceId1 = randomUUID();
         final JSONArray additionalInformationArray1 = jsonObject1.getJSONArray("additionalInformation");
         final String prisonCourtRegisterId1 = additionalInformationArray1.getJSONObject(0).getString("propertyValue");
+        prisonCourtRegisterDocumentRequestHelper.verifyForPrisonCourtRegisterSentEvent();
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId1, documentFileServiceId1, prisonCourtRegisterId1);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId1, prisonCourtRegisterId1);
         AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(2);
@@ -139,6 +141,7 @@ public class PrisonCourtRegisterDocumentRequestWithAmpIT extends AbstractIT {
         final JSONObject jsonObject = jsonObjects.get(0);
         final UUID payloadFileServiceId = fromString(jsonObject.getString("payloadFileServiceId"));
         final UUID documentFileServiceId = randomUUID();
+        prisonCourtRegisterDocumentRequestHelper.verifyForPrisonCourtRegisterSentEvent();
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, StringUtils.EMPTY);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGeneratedWithoutPrisonCourtRegisterId(courtCentreId, documentFileServiceId);
         AmpPcrEndpointStub.verifyPostPcrToAmpWithPayload(1);
