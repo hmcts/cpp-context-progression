@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -46,6 +47,36 @@ class PcrEventPayloadSerializationTest {
         assertThat(json, containsString("\"payload\":{"));
         assertThat(json, not(containsString("actual bodily harm.\nContrary")));
         assertThat(json, containsString("bodily harm.\\nContrary"));
+    }
+
+    @Test
+    void serialized_payload_carries_real_content_not_jsonnode_introspection_fields() throws Exception {
+        final JsonNode rawPcrPayload = loadFixture("pcr-payload-production-sample.json");
+        final PcrEventPayload payload = buildProductionPayload(rawPcrPayload);
+
+        final String json = OBJECT_MAPPER.writeValueAsString(payload);
+        final JsonNode parsed = OBJECT_MAPPER.readTree(json);
+        final JsonNode payloadNode = parsed.get("payload");
+
+        assertThat(payloadNode.isObject(), is(true));
+        assertThat(payloadNode.has("cases"), is(true));
+        assertThat(payloadNode.has("registerDate"), is(true));
+        assertThat(payloadNode.get("cases").isArray(), is(true));
+
+        for (final String introspectionKey : List.of(
+                "nodeType", "containerNode", "object", "array", "textual",
+                "valueNode", "missingNode", "int", "long", "double", "float", "pojo")) {
+            assertThat("payload must not contain JsonNode introspection field '" + introspectionKey + "'",
+                    payloadNode.has(introspectionKey), is(false));
+        }
+        assertThat(json, not(containsString("\"nodeType\":")));
+        assertThat(json, not(containsString("\"containerNode\":")));
+
+        assertThat(parsed.get("timestamp").asText(), is("2026-05-29T10:23:29Z"));
+        assertThat(parsed.get("eventId").asText(), is("a4554152-10fb-44fe-a015-226f8d547c91"));
+        assertThat(parsed.get("materialId").asText(), is("886a3d9c-2543-4fdd-8b5c-1597e3d36ebb"));
+        assertThat(parsed.get("hearingId").asText(), is("b2c3d4e5-f6a7-8901-bcde-f12345678901"));
+        assertThat(parsed.get("defendant").get("name").asText(), is("Leo Kuhn"));
     }
 
     private PcrEventPayload buildProductionPayload(final JsonNode rawPayload) {
