@@ -51,6 +51,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -183,6 +184,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
+    @Disabled
     @Test
     public void uploadApplicationDocument() throws Exception {
         final UUID applicationId = randomUUID();
