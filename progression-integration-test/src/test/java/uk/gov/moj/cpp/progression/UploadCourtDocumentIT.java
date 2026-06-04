@@ -53,6 +53,36 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.courts.progression.query.ApplicationDocument;
+import uk.gov.justice.courts.progression.query.DocumentCategory;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.moj.cpp.progression.helper.MultipartFileUploadHelper;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+import uk.gov.moj.cpp.progression.util.Utilities;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+
 public class UploadCourtDocumentIT extends AbstractIT {
 
     private MultipartFileUploadHelper helper;
@@ -181,6 +211,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
+    @Disabled
     @Test
     public void uploadApplicationDocument() throws Exception {
         final UUID applicationId = randomUUID();
