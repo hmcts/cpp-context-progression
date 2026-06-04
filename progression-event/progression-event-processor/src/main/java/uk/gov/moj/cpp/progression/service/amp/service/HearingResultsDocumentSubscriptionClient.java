@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression.service.amp.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import uk.gov.justice.services.common.configuration.Value;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
 
 import javax.annotation.PostConstruct;
@@ -25,6 +28,8 @@ public class HearingResultsDocumentSubscriptionClient {
 
     ResteasyClient client;
 
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
     @PostConstruct
     public void createClient() {
         client = new ResteasyClientBuilderImpl().disableTrustManager()
@@ -35,6 +40,14 @@ public class HearingResultsDocumentSubscriptionClient {
     public Response post(final String url, final PcrEventPayload payload) {
         final Invocation.Builder request = this.client.target(url).request();
         request.headers(new MultivaluedHashMap(Map.of(CONTENT_TYPE, MediaType.APPLICATION_JSON)));
-        return request.post(Entity.json(payload));
+        return request.post(Entity.json(serialize(payload)));
+    }
+
+    String serialize(final PcrEventPayload payload) {
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialise PcrEventPayload to JSON", e);
+        }
     }
 }
