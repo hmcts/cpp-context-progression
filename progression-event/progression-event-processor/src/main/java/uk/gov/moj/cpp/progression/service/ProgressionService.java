@@ -1035,7 +1035,7 @@ public class ProgressionService {
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
         final SeedingHearing seedingHearing = listNextHearings.getSeedingHearing();
         listNextHearings.getHearings().forEach(hearingListingNeeds -> {
-            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, false, null);
+            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, hearingListingNeeds.getIsGroupProceedings(), hearingListingNeeds.getNumberOfGroupCases());
 
             if (isNotEmpty(hearing.getProsecutionCases())) {
                 final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
