@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.0.267-SNI-8554-SNAPSHOT</version>
+        <version>17.0.268-SNI-8554-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-processor</artifactId>
     <packaging>war</packaging>
