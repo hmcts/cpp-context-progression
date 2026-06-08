@@ -304,6 +304,8 @@ public class CourtExtractTransformer {
                         .toList()
                         .contains(id)))
                 .map(Defendants::getId)
+                .filter(id-> hearingsAtAGlance.getDefendantHearings().stream()
+                        .noneMatch(defendantHearings -> id.equals(defendantHearings.getDefendantId())))
                 .toList());
 
         Optional.ofNullable(hearingsAtAGlance.getCourtApplications()).stream().flatMap(Collection::stream)
