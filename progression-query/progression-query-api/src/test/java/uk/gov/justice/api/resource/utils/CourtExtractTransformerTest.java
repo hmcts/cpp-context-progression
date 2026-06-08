@@ -1488,6 +1488,23 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    void shouldCourtExtractDoesNotShowOtherDefendantOffencesWhenLinkedApplicationHasBothDefendant(){
+        final String defendantId = "0ff99523-e5fe-47a8-8c21-2e864af3a83b";
+        final String offenceId = "5e1bdb1f-44a9-4f50-911d-fcd63e7a5d17";
+        final String hearingId = "f9b7b3a6-8e29-416d-a248-6f9d1f35b241";
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-sni-8554.json"));
+        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
+        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
+        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getId(), is(fromString(offenceId)));
+    }
+
+    @Test
     void shouldGetOffenceWhenHearingHasDifferentMasterAndDefendantId() {
         final String defendantId = "d90ac10b-ef12-4ab3-91db-f9394b8f949d";
         final String hearingId = "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c";
