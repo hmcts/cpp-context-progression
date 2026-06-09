@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -7,7 +8,6 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -215,7 +215,7 @@ class CourtApplicationHandlerMHSourceTest {
                         metadata().withName("progression.event.court-application-proceedings-initiated"),
                         payload().isJson(allOf(
                                 withJsonPath("$.courtApplication.courtApplicationCases[0].caseStatus", is("ACTIVE")),
-                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences", nullValue())
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences")
                         ))
                 )));
     }
@@ -269,8 +269,8 @@ class CourtApplicationHandlerMHSourceTest {
                 jsonEnvelope(
                         metadata().withName("progression.event.court-application-proceedings-initiated"),
                         payload().isJson(allOf(
-                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences", nullValue()),
-                                withJsonPath("$.courtApplication.courtApplicationCases[1].offences", nullValue())
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences"),
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[1].offences")
                         ))
                 )));
     }
@@ -434,7 +434,7 @@ class CourtApplicationHandlerMHSourceTest {
                 jsonEnvelope(
                         metadata().withName("progression.event.court-application-proceedings-initiated"),
                         payload().isJson(allOf(
-                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences", nullValue()),
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences"),
                                 withJsonPath("$.courtApplication.courtApplicationCases[1].offences[0].id", is(inactiveOffenceId.toString()))
                         ))
                 )));
@@ -604,7 +604,7 @@ class CourtApplicationHandlerMHSourceTest {
                 jsonEnvelope(
                         metadata().withName("progression.event.court-application-proceedings-initiated"),
                         payload().isJson(
-                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences", nullValue())
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences")
                         )
                 )));
     }
