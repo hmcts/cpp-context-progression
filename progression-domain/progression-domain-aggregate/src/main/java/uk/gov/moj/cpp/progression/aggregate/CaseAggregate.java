@@ -1725,13 +1725,19 @@ public class CaseAggregate implements Aggregate {
                 }
             });
             // LAA suppression of false proceedings concluded
-            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger) && isAllDefendantProceedingConcludedLaa(prosecutionCase, defendantListForProceedingsConcludedEventTrigger)) {
-                final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
+            final List<uk.gov.justice.core.courts.Defendant> defendantsForLaaProceedingsConcludedCheck = new ArrayList<>();
+            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)
+                    && isAllDefendantProceedingConcludedLaa(prosecutionCase, defendantsForLaaProceedingsConcludedCheck)) {
+                final List<Defendant> defendantsWithLaaRepresentation =
+                        getDefendantsWithLaaRepresentation(defendantListForProceedingsConcludedEventTrigger);
+                if (!defendantsWithLaaRepresentation.isEmpty()) {
+                    final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
                     streamBuilder.add(laaDefendantProceedingConcludedChanged()
-                            .withDefendants(defendantListForProceedingsConcludedEventTrigger)//listOfDefendantsWithLaaRepresentation)
+                            .withDefendants(defendantsWithLaaRepresentation)
                             .withHearingId(resultedHearingId)
                             .withProsecutionCaseId(prosecutionCase.getId())
                             .build());
+                }
             }
 
             final String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
