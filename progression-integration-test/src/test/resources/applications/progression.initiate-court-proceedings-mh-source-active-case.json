@@ -47,7 +47,7 @@
         "caseStatus": "ACTIVE",
         "offences": [
           {
-            "id": "OFFENCE_ID",
+            "id": "3ebe41c9-666d-4964-aa80-a005d89927a4",
             "chargeDate": "2020-03-14",
             "count": 1,
             "isDisposed": false,
