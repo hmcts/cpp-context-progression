@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -399,6 +400,228 @@ public class CPSEmailNotificationProcessorTest {
         assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
         assertThat(capturedEventPayload.getString("applicationId"),  is(applicationId.toString()));
 
+    }
+
+    @Test
+    public void shouldSendCPSNotificationForCivilCaseWhenProsecutionAuthorityIsCPS() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+
+        final JsonObject cpsProsecutionCaseResponse = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("id", caseId.toString())
+                        .add("isCivil", true)
+                        .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                .add("prosecutionAuthorityReference", "CPS12345")
+                                .build())
+                        .add("prosecutor", createObjectBuilder()
+                                .add("isCps", true)
+                                .build())
+                        .add("defendants", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", defendantId.toString())
+                                        .add("personDefendant", createObjectBuilder()
+                                                .add("personDetails", createObjectBuilder()
+                                                        .add("firstName", "Fred")
+                                                        .add("lastName", "Smith")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .add("hearingsAtAGlance", createObjectBuilder()
+                        .add("hearings", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", hearingId.toString())
+                                        .add("hearingListingStatus", "HEARING_INITIALISED")
+                                        .add("courtCentre", createObjectBuilder()
+                                                .add("id", courtCentreId.toString())
+                                                .add("name", "Test Court")
+                                                .build())
+                                        .add("hearingDays", createArrayBuilder()
+                                                .add(createObjectBuilder()
+                                                        .add("sittingDay", "2099-12-31T09:00:00.000Z")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final JsonObject instructionPayload = createObjectBuilder()
+                .add("firstInstruction", true)
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("organisationId", organisationId.toString())
+                .build();
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.event.record-instruction-details"),
+                instructionPayload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any()))
+                .thenReturn(Optional.of(cpsProsecutionCaseResponse));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any()))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsEmailAddress", "cps@court.gov.uk").build()));
+        when(usersGroupService.getDefenceOrganisationDetails(any(), any()))
+                .thenReturn(buildDefenceOrganisationVO());
+
+        cpsEmailNotificationProcessor.processInstructedEmailNotification(envelope);
+
+        verify(notificationService, times(1)).sendCPSNotification(any(), any());
+    }
+
+    @Test
+    public void shouldSkipCPSNotificationForCivilCaseWhenProsecutionAuthorityIsNotCPS() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+
+        final JsonObject tflProsecutionCaseResponse = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("id", caseId.toString())
+                        .add("isCivil", true)
+                        .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                .add("prosecutionAuthorityReference", "TFL12345")
+                                .build())
+                        .add("prosecutor", createObjectBuilder()
+                                .add("isCps", false)
+                                .build())
+                        .build())
+                .build();
+
+        final JsonObject instructionPayload = createObjectBuilder()
+                .add("firstInstruction", true)
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("organisationId", organisationId.toString())
+                .build();
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.event.record-instruction-details"),
+                instructionPayload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any()))
+                .thenReturn(Optional.of(tflProsecutionCaseResponse));
+
+        cpsEmailNotificationProcessor.processInstructedEmailNotification(envelope);
+
+        verify(notificationService, never()).sendCPSNotification(any(), any());
+    }
+
+    @Test
+    public void shouldNotifyCPSWhenLAADisassociationFromCPSCivilCase() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+
+        final JsonObject cpsCivilCaseResponse = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("id", caseId.toString())
+                        .add("isCivil", true)
+                        .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                .add("prosecutionAuthorityReference", "CPS12345")
+                                .build())
+                        .add("prosecutor", createObjectBuilder()
+                                .add("isCps", true)
+                                .build())
+                        .add("defendants", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", defendantId.toString())
+                                        .add("personDefendant", createObjectBuilder()
+                                                .add("personDetails", createObjectBuilder()
+                                                        .add("firstName", "Fred")
+                                                        .add("lastName", "Smith")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .add("hearingsAtAGlance", createObjectBuilder()
+                        .add("hearings", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("id", hearingId.toString())
+                                        .add("hearingListingStatus", "HEARING_INITIALISED")
+                                        .add("courtCentre", createObjectBuilder()
+                                                .add("id", courtCentreId.toString())
+                                                .add("name", "Test Court")
+                                                .build())
+                                        .add("hearingDays", createArrayBuilder()
+                                                .add(createObjectBuilder()
+                                                        .add("sittingDay", "2099-12-31T09:00:00.000Z")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final JsonObject disassociationPayload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("organisationId", organisationId.toString())
+                .add("isLAA", true)
+                .build();
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.defence-organisation-disassociated"),
+                disassociationPayload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any()))
+                .thenReturn(Optional.of(cpsCivilCaseResponse));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any()))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsEmailAddress", "cps@court.gov.uk").build()));
+        when(usersGroupService.getDefenceOrganisationDetails(any(), any()))
+                .thenReturn(buildDefenceOrganisationVO());
+
+        cpsEmailNotificationProcessor.processDisassociatedEmailNotification(envelope);
+
+        verify(notificationService, times(1)).sendCPSNotification(any(), any());
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void shouldNotNotifyCPSWhenLAADisassociationFromNonCPSCivilCase() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+
+        final JsonObject nonCpsCivilCaseResponse = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("id", caseId.toString())
+                        .add("isCivil", true)
+                        .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                .add("prosecutionAuthorityReference", "TFL12345")
+                                .build())
+                        .add("prosecutor", createObjectBuilder()
+                                .add("isCps", false)
+                                .build())
+                        .build())
+                .build();
+
+        final JsonObject disassociationPayload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("organisationId", organisationId.toString())
+                .add("isLAA", true)
+                .build();
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.defence-organisation-disassociated"),
+                disassociationPayload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any()))
+                .thenReturn(Optional.of(nonCpsCivilCaseResponse));
+
+        cpsEmailNotificationProcessor.processDisassociatedEmailNotification(envelope);
+
+        verify(notificationService, never()).sendCPSNotification(any(), any());
+        verify(sender, never()).send(any());
     }
 
     private JsonObject getProsecutionCaseResponse(String sampleJson) {

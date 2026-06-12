@@ -19,17 +19,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCPSProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCivilProsecutionCaseToCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 
 public class CPSNotificationIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED = "public.defence.event.record-instruction-details";
+    private static final String PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED = "public.defence.defence-organisation-disassociated";
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE = "public.defence.event.record-instruction-details.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed-cps-notification.json";
@@ -58,9 +64,10 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPS() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
+    public void shouldNotifyCPSWhenDefenceAssociatedWithCPSCriminalCase() throws Exception {
+        addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName));
@@ -77,6 +84,150 @@ public class CPSNotificationIT extends AbstractIT {
 
         // notify by email
         verifyEmailNotificationIsRaisedWithoutAttachment(newArrayList(ORGANISATION_NAME));
+    }
+
+    @Test
+    public void shouldNotNotifyCPSWhenProsecutorIsNotCPS() throws Exception {
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        final JsonObject recordInstructedPublicEvent =
+                getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope publicEventInstructedEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_RECORD_INSTRUCTED, userId), recordInstructedPublicEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_RECORD_INSTRUCTED, publicEventInstructedEnvelope);
+
+        verifyNoEmailNotificationIsRaised();
+    }
+
+    @Test
+    public void shouldNotifyCPSWhenDefenceAssociatedWithCPSCivilCase() throws Exception {
+        addCivilProsecutionCaseToCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        final JsonObject recordInstructedPublicEvent =
+                getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope publicEventInstructedEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_RECORD_INSTRUCTED, userId), recordInstructedPublicEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_RECORD_INSTRUCTED, publicEventInstructedEnvelope);
+
+        verifyEmailNotificationIsRaisedWithoutAttachment(newArrayList(ORGANISATION_NAME));
+    }
+
+    @Test
+    public void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceAssociatedWithCivilCase() throws Exception {
+        addCivilProsecutionCaseToCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        final JsonObject recordInstructedPublicEvent =
+                getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope publicEventInstructedEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_RECORD_INSTRUCTED, userId), recordInstructedPublicEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_RECORD_INSTRUCTED, publicEventInstructedEnvelope);
+
+        verifyNoEmailNotificationIsRaised();
+    }
+
+    @Test
+    public void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCriminalCase() throws Exception {
+        addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope disassociationEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, userId), buildDisassociationPayload());
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, disassociationEnvelope);
+
+        verifyEmailNotificationIsRaisedWithoutAttachment(newArrayList(ORGANISATION_NAME));
+    }
+
+    @Test
+    public void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceDisassociatedFromCriminalCase() throws Exception {
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope disassociationEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, userId), buildDisassociationPayload());
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, disassociationEnvelope);
+
+        verifyNoEmailNotificationIsRaised();
+    }
+
+    @Test
+    public void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCivilCase() throws Exception {
+        addCivilProsecutionCaseToCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope disassociationEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, userId), buildDisassociationPayload());
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, disassociationEnvelope);
+
+        verifyEmailNotificationIsRaisedWithoutAttachment(newArrayList(ORGANISATION_NAME));
+    }
+
+    @Test
+    public void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceDisassociatedFromCivilCase() throws Exception {
+        addCivilProsecutionCaseToCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        pollHearingWithStatusInitialised(hearingId);
+
+        Thread.sleep(1000 * 5);
+        final JsonEnvelope disassociationEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, userId), buildDisassociationPayload());
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED, disassociationEnvelope);
+
+        verifyNoEmailNotificationIsRaised();
+    }
+
+    private JsonObject buildDisassociationPayload() {
+        return createObjectBuilder()
+                .add("caseId", caseId)
+                .add("defendantId", defendantId)
+                .add("organisationId", ORGANISATION_ID)
+                .add("isLAA", false)
+                .build();
     }
 
     private JsonObject getInstructedJsonObject(final String path, final String caseId, final String hearingId,

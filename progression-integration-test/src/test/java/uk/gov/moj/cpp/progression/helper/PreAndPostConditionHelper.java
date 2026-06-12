@@ -195,6 +195,24 @@ public class PreAndPostConditionHelper {
                 jsonPayload.toString());
     }
 
+    public static Response addCPSProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws JSONException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(),
+                "progression.command.prosecution-case-refer-to-court-cps.json"));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON,
+                jsonPayload.toString());
+    }
+
+    public static Response addCivilProsecutionCaseToCourt(final String caseId, final String defendantId) {
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String dob = LocalDate.now().minusYears(25).toString();
+        return civilCaseInitiateCourtProceedings(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
+                randomUUID().toString(), listedStartDateTime, earliestStartDateTime, dob, randomUUID().toString());
+    }
+
     public static Response addProsecutionCaseToCrownCourtFirstHearing(final String caseId, final String defendantId, final String caseUrn, final boolean isYouth) throws JSONException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtFirstHearingJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn, isYouth));

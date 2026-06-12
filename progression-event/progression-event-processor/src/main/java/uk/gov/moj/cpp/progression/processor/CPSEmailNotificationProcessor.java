@@ -143,6 +143,13 @@ public class CPSEmailNotificationProcessor {
         final UUID organisationId = fromString(requestJson.getString(ORGANISATION_ID));
 
         final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId);
+
+        final boolean isCivil = isCivilCase(prosecutionCaseOptional);
+        if (isCivil && !isCpsProsecutor(prosecutionCaseOptional)) {
+            log.info("Skipping CPS notification: civil case {} is not a CPS prosecution", caseId);
+            return;
+        }
+
         final Optional<HearingVO> hearingVO = getHearingDetails(prosecutionCaseOptional);
         final boolean isHearingPresent = hearingVO.isPresent() && hearingVO.get().getHearingDate() != null;
 
@@ -175,6 +182,24 @@ public class CPSEmailNotificationProcessor {
         } else {
             log.error("CPS notification email not found");
         }
+    }
+
+    private boolean isCivilCase(final Optional<JsonObject> prosecutionCaseOptional) {
+        if (prosecutionCaseOptional.isEmpty()) {
+            return false;
+        }
+        return prosecutionCaseOptional.get().getJsonObject("prosecutionCase").getBoolean("isCivil", false);
+    }
+
+    private boolean isCpsProsecutor(final Optional<JsonObject> prosecutionCaseOptional) {
+        if (prosecutionCaseOptional.isEmpty()) {
+            return false;
+        }
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject("prosecutionCase");
+        if (!prosecutionCaseJson.containsKey("prosecutor")) {
+            return false;
+        }
+        return prosecutionCaseJson.getJsonObject("prosecutor").getBoolean("isCps", false);
     }
 
     private Optional<DefendantVO> getDefendantDetails(final String defendantId, final Optional<JsonObject> prosecutionCaseOptional) {
