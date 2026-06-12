@@ -196,10 +196,12 @@ public class CPSEmailNotificationProcessor {
             return false;
         }
         final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject("prosecutionCase");
-        if (!prosecutionCaseJson.containsKey("prosecutor")) {
+        if (!prosecutionCaseJson.containsKey("prosecutionCaseIdentifier")) {
             return false;
         }
-        return prosecutionCaseJson.getJsonObject("prosecutor").getBoolean("isCps", false);
+        final String prosecutionAuthorityCode = prosecutionCaseJson.getJsonObject("prosecutionCaseIdentifier")
+                .getString("prosecutionAuthorityCode", "");
+        return prosecutionAuthorityCode.toUpperCase().startsWith("CPS");
     }
 
     private Optional<DefendantVO> getDefendantDetails(final String defendantId, final Optional<JsonObject> prosecutionCaseOptional) {

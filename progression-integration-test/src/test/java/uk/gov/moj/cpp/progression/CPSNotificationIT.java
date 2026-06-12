@@ -67,7 +67,6 @@ public class CPSNotificationIT extends AbstractIT {
     public void shouldNotifyCPSWhenDefenceAssociatedWithCPSCriminalCase() throws Exception {
         addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName));
@@ -151,7 +150,6 @@ public class CPSNotificationIT extends AbstractIT {
     public void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCriminalCase() throws Exception {
         addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        new CaseProsecutorUpdateHelper(caseId).updateCaseProsecutor();
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName));
