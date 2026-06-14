@@ -899,12 +899,37 @@ public class HearingToHearingListingNeedsTransformerTest {
     }
 
     @Test
-    public void shouldWarnAndSkipWhenNhccNextHearingBookingReferenceNotFoundInSlots() {
+    public void shouldUseBookingReferenceAsCourtScheduleIdWhenNhccNextHearingBookingReferenceNotFoundInSlots() {
+        // Crown has no provisional booking concept: when the bookingReference is not present in the
+        // slots map, the transformer uses the bookingReference itself as the courtScheduleId rather
+        // than warning and skipping (see HearingToHearingListingNeedsTransformer#isCrownNextHearing).
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
                 buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1,
                         buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+        ));
+
+        final List<HearingListingNeeds> result = transformer.transform(hearing);
+
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getBookingReference(), equalTo(BOOKING_REFERENCE_1));
+    }
+
+    @Test
+    public void shouldWarnAndSkipWhenNhmcNextHearingBookingReferenceNotFoundInSlots() {
+        // Non-Crown (Magistrates) next hearings still warn and skip when the bookingReference has no
+        // matching provisional booking slot.
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+
+        final NextHearing magsNextHearing = NextHearing.nextHearing()
+                .withValuesFrom(buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, magsNextHearing)
         ));
 
         final List<HearingListingNeeds> result = transformer.transform(hearing);
