@@ -101,8 +101,10 @@ public class UnscheduledCourtHearingListTransformer {
             // judicialResult.nextHearing.estimatedMinutes — not on the parent Hearing.
             final Integer estimatedMinutes = judicialResultWithNextHearing.get().getNextHearing().getEstimatedMinutes();
 
+            final UUID bookingReference = judicialResultWithNextHearing.get().getNextHearing().getBookingReference();
+
             final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
-                    Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre, estimatedMinutes);
+                    Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre, estimatedMinutes, bookingReference);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -124,7 +126,7 @@ public class UnscheduledCourtHearingListTransformer {
                 // No next hearing → no duration to forward; null lets the listing-side fallback into action
                 // (HearingDurationDefaults) substitute a sane default.
                 final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
-                        Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre(), null);
+                        Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre(), null, null);
 
                 LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                                 "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -210,7 +212,7 @@ public class UnscheduledCourtHearingListTransformer {
         if (unscheduledListingNeeds.isPresent()) {
             return Optional.of(createHearingListingNeeds(originalHearing, unscheduledListingNeeds.get().getTypeOfList(), unscheduledListingNeeds.get().getJurisdictionType(),
                     Arrays.asList(pc), null, unscheduledListingNeeds.get().getType(), unscheduledListingNeeds.get().getCourtCentre(),
-                    unscheduledListingNeeds.get().getEstimatedMinutes()));
+                    unscheduledListingNeeds.get().getEstimatedMinutes(), unscheduledListingNeeds.get().getBookingReference()));
         }
         return Optional.empty();
     }
@@ -232,8 +234,10 @@ public class UnscheduledCourtHearingListTransformer {
             // judicialResult.nextHearing.estimatedMinutes — not on the parent Hearing.
             final Integer estimatedMinutes = judicialResultWithNextHearing.get().getNextHearing().getEstimatedMinutes();
 
+            final UUID bookingReference = judicialResultWithNextHearing.get().getNextHearing().getBookingReference();
+
             final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
-                    Arrays.asList(pc), null, hearingType, courtCentre, estimatedMinutes);
+                    Arrays.asList(pc), null, hearingType, courtCentre, estimatedMinutes, bookingReference);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -253,7 +257,7 @@ public class UnscheduledCourtHearingListTransformer {
             final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
             final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(originalHearing, typeOfList, jurisdictionType,
-                    Arrays.asList(pc), null, hearingType, originalHearing.getCourtCentre(), null);
+                    Arrays.asList(pc), null, hearingType, originalHearing.getCourtCentre(), null, null);
 
             LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
                             "hearingType {} , courtCentre {} from court application {}  in HearingId: {}.",
@@ -338,7 +342,8 @@ public class UnscheduledCourtHearingListTransformer {
                                                                      final JurisdictionType jurisdictionType,
                                                                      final List<ProsecutionCase> prosecutionCases,
                                                                      final List<CourtApplication> courtApplications, final HearingType hearingType, final CourtCentre courtCentre,
-                                                                     final Integer estimatedMinutes) {
+                                                                     final Integer estimatedMinutes,
+                                                                     final UUID bookingReference) {
 
         // SPRDT-831: forward the user-typed estimatedMinutes Integer sourced from
         // judicialResult.nextHearing.estimatedMinutes. Mirrors the allocated-listings pattern in
@@ -348,6 +353,7 @@ public class UnscheduledCourtHearingListTransformer {
         // the SPRDT-806/807 "never 0 / never null" guarantee.
         return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
                 .withId(UUID.randomUUID())
+                .withBookingReference(bookingReference)
                 .withTypeOfList(typeOfList)
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withProsecutionCases(prosecutionCases)

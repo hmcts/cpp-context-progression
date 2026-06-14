@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearingForApplication;
@@ -18,11 +20,14 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CommittingCourt;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -861,6 +866,98 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         assertThat(defendant2.getOffences().size(), is(1));
         assertThat(defendant2.getOffences().get(0).getId(), equalTo(OFFENCE_ID_2));
+    }
+
+    @Test
+    public void shouldCarryBookingReferenceAndGroupOffencesWhenNhccNextHearingHasBookingReference() {
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1,
+                        buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2,
+                        buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+        ));
+
+        final List<HearingListingNeeds> result = transformer.transform(hearing);
+
+        assertThat(result.size(), is(1));
+        final HearingListingNeeds needs = result.get(0);
+        assertThat(needs.getBookingReference(), equalTo(BOOKING_REFERENCE_1));
+        assertThat(needs.getProsecutionCases().size(), is(2));
+
+        final Optional<ProsecutionCase> case1 = needs.getProsecutionCases().stream().filter(pc -> pc.getId().equals(CASE_ID_1)).findFirst();
+        final Optional<ProsecutionCase> case2 = needs.getProsecutionCases().stream().filter(pc -> pc.getId().equals(CASE_ID_2)).findFirst();
+        assertThat(case1.isPresent(), is(true));
+        assertThat(case2.isPresent(), is(true));
+        assertThat(case1.get().getDefendants().get(0).getOffences().get(0).getId(), equalTo(OFFENCE_ID_1));
+        assertThat(case2.get().getDefendants().get(0).getOffences().get(0).getId(), equalTo(OFFENCE_ID_2));
+    }
+
+    @Test
+    public void shouldUseBookingReferenceAsCourtScheduleIdWhenNhccNextHearingBookingReferenceNotFoundInSlots() {
+        // Crown has no provisional booking concept: when the bookingReference is not present in the
+        // slots map, the transformer uses the bookingReference itself as the courtScheduleId rather
+        // than warning and skipping (see HearingToHearingListingNeedsTransformer#isCrownNextHearing).
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1,
+                        buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+        ));
+
+        final List<HearingListingNeeds> result = transformer.transform(hearing);
+
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getBookingReference(), equalTo(BOOKING_REFERENCE_1));
+    }
+
+    @Test
+    public void shouldWarnAndSkipWhenNhmcNextHearingBookingReferenceNotFoundInSlots() {
+        // Non-Crown (Magistrates) next hearings still warn and skip when the bookingReference has no
+        // matching provisional booking slot.
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+
+        final NextHearing magsNextHearing = NextHearing.nextHearing()
+                .withValuesFrom(buildNextHearing(HEARING_TYPE_1, BOOKING_REFERENCE_1, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, magsNextHearing)
+        ));
+
+        final List<HearingListingNeeds> result = transformer.transform(hearing);
+
+        assertThat(result.size(), is(0));
+        verify(logger).warn(any(String.class), eq(BOOKING_REFERENCE_1), eq(CASE_ID_1));
+    }
+
+    @Test
+    public void shouldSkipNhccsJudicialResultWithDateToBeFixedEvenWhenBookingReferenceIsPresent() {
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(BOOKING_REFERENCE_1, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+
+        final NextHearing nhccsNextHearing = NextHearing.nextHearing()
+                .withDateToBeFixed(true)
+                .withBookingReference(BOOKING_REFERENCE_1)
+                .withType(HearingType.hearingType().withId(HEARING_TYPE_1).withDescription("desc").build())
+                .withCourtCentre(CourtCentre.courtCentre().withCourtHearingLocation(COURT_LOCATION).build())
+                .build();
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, nhccsNextHearing)
+        ));
+
+        final List<HearingListingNeeds> result = transformer.transform(hearing);
+
+        assertThat(result.size(), is(0));
     }
 
     private JsonObject getHearing(final String path) {

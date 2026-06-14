@@ -645,5 +645,63 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .build();
     }
 
+    private JudicialResult resultWithNextHearingDateTobeFixedAndBookingReference(final UUID bookingReference) {
+        return JudicialResult.judicialResult()
+                .withIsUnscheduled(false)
+                .withJudicialResultTypeId(UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_NHCCS)
+                .withNextHearing(NextHearing.nextHearing()
+                        .withDateToBeFixed(true)
+                        .withBookingReference(bookingReference)
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("desc").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .build())
+                .withLabel(NHCCS_LABEL)
+                .build();
+    }
+
+    @Test
+    public void shouldPropagateBookingReferenceFromNextHearingOnOffencePath() {
+        final UUID bookingReference = randomUUID();
+        final JudicialResult result = resultWithNextHearingDateTobeFixedAndBookingReference(bookingReference);
+        final Offence offence = createOffenceWithJR(asList(result));
+        final Hearing hearing = createHearingWithOffences(asList(offence));
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getBookingReference(), is(bookingReference));
+    }
+
+    @Test
+    public void shouldPropagateBookingReferenceFromNextHearingOnApplicationPath() {
+        final UUID bookingReference = randomUUID();
+        final JudicialResult result = resultWithNextHearingDateTobeFixedAndBookingReference(bookingReference);
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withJudicialResults(asList(result))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withCourtApplications(asList(courtApplication))
+                .build();
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getBookingReference(), is(bookingReference));
+    }
+
+    @Test
+    public void shouldNotSetBookingReferenceWhenJudicialResultHasUnscheduledFlagOnly() {
+        final Offence offence = createOffenceWithJR(asList(wofnResult()));
+        final Hearing hearing = createHearingWithOffences(asList(offence));
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformHearing(hearing);
+
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getBookingReference(), is(nullValue()));
+    }
+
 
 }
