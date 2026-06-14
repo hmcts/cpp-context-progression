@@ -88,7 +88,7 @@ public class PreAndPostConditionHelper {
 
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String materialIdOne,
-                                                          final String materialIdTwo, final String courtDocumentId, final String referralId) throws IOException {
+                                                          final String materialIdTwo, final String courtDocumentId, final String referralId) {
         return addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, generateUrn());
     }
 
@@ -166,23 +166,23 @@ public class PreAndPostConditionHelper {
         return headers;
     }
 
-    public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws IOException, JSONException {
+    public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId) throws JSONException {
         return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn());
     }
 
-    public static Response addProsecutionCaseToCrownCourtFirstHearing(final String caseId, final String defendantId, final boolean isYouth) throws IOException, JSONException {
+    public static Response addProsecutionCaseToCrownCourtFirstHearing(final String caseId, final String defendantId, final boolean isYouth) throws JSONException {
         return addProsecutionCaseToCrownCourtFirstHearing(caseId, defendantId, generateUrn(), isYouth);
     }
 
-    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId) throws IOException, JSONException {
+    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId) throws JSONException {
         return addProsecutionCaseToMagsCourt(caseId, defendantId, generateUrn());
     }
 
-    public static Response referSJPCaseToMagsCourt(final String caseId, final String defendantId, final String courtCentreId) throws IOException, JSONException {
+    public static Response referSJPCaseToMagsCourt(final String caseId, final String defendantId, final String courtCentreId) throws JSONException {
         return referSJPCaseToMagsCourt(caseId, defendantId, generateUrn(), courtCentreId);
     }
 
-    public static Response addProsecutionCaseToCrownCourtWithDefendantAsAdult(final String caseId, final String defendantId) throws IOException, JSONException {
+    public static Response addProsecutionCaseToCrownCourtWithDefendantAsAdult(final String caseId, final String defendantId) throws JSONException {
         return addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId, generateUrn());
     }
 
@@ -211,6 +211,19 @@ public class PreAndPostConditionHelper {
         final String dob = LocalDate.now().minusYears(25).toString();
         return civilCaseInitiateCourtProceedings(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 randomUUID().toString(), listedStartDateTime, earliestStartDateTime, dob, randomUUID().toString());
+    }
+
+    public static Response addCPSCivilProsecutionCaseToCourt(final String caseId, final String defendantId) {
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String dob = LocalDate.now().minusYears(25).toString();
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getCivilCaseInitiateCourtProceedingsJsonFromResource(
+                        "progression.command.civil-case-initiate-court-proceedings-cps.json",
+                        caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
+                        randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime,
+                        dob, randomUUID().toString(), ""));
     }
 
     public static Response addProsecutionCaseToCrownCourtFirstHearing(final String caseId, final String defendantId, final String caseUrn, final boolean isYouth) throws JSONException {

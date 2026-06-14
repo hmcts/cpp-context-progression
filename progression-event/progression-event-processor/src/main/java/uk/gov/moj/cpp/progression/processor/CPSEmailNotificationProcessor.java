@@ -67,7 +67,6 @@ public class CPSEmailNotificationProcessor {
     private static final String PROSECUTION_AUTHORITY_CODE = "prosecutionAuthorityCode";
     private static final String CPS_AUTHORITY_CODE_PREFIX = "CPS";
     private static final String IS_LAA = "isLAA";
-    private static final String IS_CIVIL = "isCivil";
     private static final String CASE_ID = "caseId";
     private static final String FIRST_INSTRUCTION = "firstInstruction";
     private static final String HEARINGS_AT_A_GLANCE = "hearingsAtAGlance";
@@ -197,13 +196,18 @@ public class CPSEmailNotificationProcessor {
     }
 
     private boolean isCivilCase(final Optional<JsonObject> prosecutionCaseOptional) {
+
         if (prosecutionCaseOptional.isEmpty()) {
             return false;
         }
-        return prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE).getBoolean(IS_CIVIL, false);
+
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE);
+        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+        return nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
     }
 
     private boolean isCpsProsecutor(final Optional<JsonObject> prosecutionCaseOptional) {
+
         if (prosecutionCaseOptional.isEmpty()) {
             return false;
         }
@@ -211,6 +215,7 @@ public class CPSEmailNotificationProcessor {
         if (!prosecutionCaseJson.containsKey(PROSECUTION_CASE_IDENTIFIER)) {
             return false;
         }
+
         final String prosecutionAuthorityCode = prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)
                 .getString(PROSECUTION_AUTHORITY_CODE, "");
         return prosecutionAuthorityCode.toUpperCase().startsWith(CPS_AUTHORITY_CODE_PREFIX);
