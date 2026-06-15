@@ -89,6 +89,18 @@ public class NotificationServiceStub {
         verifyEmailNotificationIsRaisedWithoutAttachment(expectedValues, moreThanOrExactly(1));
     }
 
+    public static void verifyNoEmailNotificationIsRaised() {
+        await().pollDelay(10, SECONDS).atMost(11, SECONDS).until(() -> {
+            try {
+                verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
+        });
+    }
+
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues) {
         verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.empty());
     }
