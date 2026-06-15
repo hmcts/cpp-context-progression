@@ -555,8 +555,7 @@ class CourtApplicationHandlerMHSourceTest {
                 jsonEnvelope(
                         metadata().withName("progression.event.court-application-proceedings-initiated"),
                         payload().isJson(
-                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", is(offenceId.toString()))
-                        )
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences"))
                 )));
     }
 
