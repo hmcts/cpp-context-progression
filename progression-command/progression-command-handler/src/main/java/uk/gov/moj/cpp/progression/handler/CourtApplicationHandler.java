@@ -486,7 +486,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     }
 
     private boolean ignoreCaseOffences(final String caseStatus, final ApplicationSource applicationSource) {
-        final boolean activeCase = nonNull(caseStatus) && !(INACTIVE.name().equalsIgnoreCase(caseStatus) || CLOSED.name().equalsIgnoreCase(caseStatus));
+        final boolean activeCase = !(INACTIVE.name().equalsIgnoreCase(caseStatus) || CLOSED.name().equalsIgnoreCase(caseStatus));
 
         return activeCase && MH == applicationSource;
     }
