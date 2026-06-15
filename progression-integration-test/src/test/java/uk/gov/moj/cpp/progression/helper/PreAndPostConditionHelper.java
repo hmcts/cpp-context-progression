@@ -217,13 +217,15 @@ public class PreAndPostConditionHelper {
         final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         final String dob = LocalDate.now().minusYears(25).toString();
-        return postCommand(getWriteUrl("/initiatecourtproceedings"),
-                "application/vnd.progression.initiate-court-proceedings+json",
-                getCivilCaseInitiateCourtProceedingsJsonFromResource(
+        final String payload = getCivilCaseInitiateCourtProceedingsJsonFromResource(
                         "progression.command.civil-case-initiate-court-proceedings-cps.json",
                         caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                         randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime,
-                        dob, randomUUID().toString(), ""));
+                        dob, randomUUID().toString(), "")
+                .replace("RANDOM_CPS_ORG_ID", randomUUID().toString());
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                payload);
     }
 
     public static Response addProsecutionCaseToCrownCourtFirstHearing(final String caseId, final String defendantId, final String caseUrn, final boolean isYouth) throws JSONException {

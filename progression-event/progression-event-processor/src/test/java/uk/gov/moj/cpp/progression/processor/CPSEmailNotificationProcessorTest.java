@@ -338,7 +338,7 @@ class CPSEmailNotificationProcessorTest {
     }
 
     @Test
-    void shouldSendCPSNotificationForCivilCaseWhenProsecutionAuthorityIsCPS() {
+    void shouldSendCPSNotificationForCivilCaseWhenCpsOrganisationIdIsPresent() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID organisationId = randomUUID();
@@ -349,9 +349,10 @@ class CPSEmailNotificationProcessorTest {
                 .add("prosecutionCase", createObjectBuilder()
                         .add("id", caseId.toString())
                         .add("isCivil", true)
+                        .add("cpsOrganisationId", randomUUID().toString())
                         .add("prosecutionCaseIdentifier", createObjectBuilder()
-                                .add("prosecutionAuthorityReference", "CPS12345")
-                                .add("prosecutionAuthorityCode", "CPS")
+                                .add("prosecutionAuthorityReference", "TVL12345")
+                                .add("prosecutionAuthorityCode", "TVL")
                                 .build())
                         .add("defendants", createArrayBuilder()
                                 .add(createObjectBuilder()
@@ -408,7 +409,7 @@ class CPSEmailNotificationProcessorTest {
     }
 
     @Test
-    void shouldSkipCPSNotificationForCivilCaseWhenProsecutionAuthorityIsNotCPS() {
+    void shouldSkipCPSNotificationForCivilCaseWhenCpsOrganisationIdIsAbsent() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID organisationId = randomUUID();
@@ -418,8 +419,8 @@ class CPSEmailNotificationProcessorTest {
                         .add("id", caseId.toString())
                         .add("isCivil", true)
                         .add("prosecutionCaseIdentifier", createObjectBuilder()
-                                .add("prosecutionAuthorityReference", "TFL12345")
-                                .add("prosecutionAuthorityCode", "TFL")
+                                .add("prosecutionAuthorityReference", "TVL12345")
+                                .add("prosecutionAuthorityCode", "TVL")
                                 .build())
                         .build())
                 .build();
@@ -455,9 +456,10 @@ class CPSEmailNotificationProcessorTest {
                 .add("prosecutionCase", createObjectBuilder()
                         .add("id", caseId.toString())
                         .add("isCivil", true)
+                        .add("cpsOrganisationId", randomUUID().toString())
                         .add("prosecutionCaseIdentifier", createObjectBuilder()
-                                .add("prosecutionAuthorityReference", "CPS12345")
-                                .add("prosecutionAuthorityCode", "CPS")
+                                .add("prosecutionAuthorityReference", "TVL12345")
+                                .add("prosecutionAuthorityCode", "TVL")
                                 .build())
                         .add("defendants", createArrayBuilder()
                                 .add(createObjectBuilder()
@@ -525,8 +527,8 @@ class CPSEmailNotificationProcessorTest {
                         .add("id", caseId.toString())
                         .add("isCivil", true)
                         .add("prosecutionCaseIdentifier", createObjectBuilder()
-                                .add("prosecutionAuthorityReference", "TFL12345")
-                                .add("prosecutionAuthorityCode", "TFL")
+                                .add("prosecutionAuthorityReference", "TVL12345")
+                                .add("prosecutionAuthorityCode", "TVL")
                                 .build())
                         .build())
                 .build();
