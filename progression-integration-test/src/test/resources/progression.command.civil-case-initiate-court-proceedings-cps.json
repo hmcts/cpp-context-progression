@@ -28,7 +28,7 @@
           "prosecutionAuthorityReference": "RANDOM_REFERENCE"
         },
         "originatingOrganisation": "G01FT01AB",
-        "cpsOrganisation": "A01",
+        "cpsOrganisationId": "RANDOM_CPS_ORG_ID",
         "initiationCode": "O",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",

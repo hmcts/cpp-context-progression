@@ -63,9 +63,7 @@ public class CPSEmailNotificationProcessor {
     private static final String PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED = "progression.command.handler.disassociate-defence-organisation";
     private static final String PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED_FOR_APPLICATION = "progression.command.handler.disassociate-defence-organisation-for-application";
     private static final String PROSECUTION_CASE = "prosecutionCase";
-    private static final String PROSECUTION_CASE_IDENTIFIER = "prosecutionCaseIdentifier";
-    private static final String PROSECUTION_AUTHORITY_CODE = "prosecutionAuthorityCode";
-    private static final String CPS_AUTHORITY_CODE_PREFIX = "CPS";
+    private static final String CPS_ORGANISATION_ID = "cpsOrganisationId";
     private static final String IS_LAA = "isLAA";
     private static final String CASE_ID = "caseId";
     private static final String FIRST_INSTRUCTION = "firstInstruction";
@@ -212,13 +210,8 @@ public class CPSEmailNotificationProcessor {
             return false;
         }
         final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE);
-        if (!prosecutionCaseJson.containsKey(PROSECUTION_CASE_IDENTIFIER)) {
-            return false;
-        }
-
-        final String prosecutionAuthorityCode = prosecutionCaseJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER)
-                .getString(PROSECUTION_AUTHORITY_CODE, "");
-        return prosecutionAuthorityCode.toUpperCase().startsWith(CPS_AUTHORITY_CODE_PREFIX);
+        final String cpsOrganisationId = prosecutionCaseJson.getString(CPS_ORGANISATION_ID, null);
+        return nonNull(cpsOrganisationId) && !cpsOrganisationId.isBlank();
     }
 
     private Optional<DefendantVO> getDefendantDetails(final String defendantId, final Optional<JsonObject> prosecutionCaseOptional) {
