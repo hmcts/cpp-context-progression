@@ -3366,8 +3366,8 @@ class CaseAggregateTest {
 
     }
 
-    //@Test
-    public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
+    @Test
+    public void shouldNotUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();

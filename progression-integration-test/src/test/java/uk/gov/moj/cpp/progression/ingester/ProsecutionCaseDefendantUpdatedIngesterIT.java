@@ -59,8 +59,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    //@Test
-    // disabled for laa prototype
+    @Test
     public void shouldUpdateDefendant() throws IOException, JSONException {
 
         createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
@@ -72,7 +71,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
 
         final Optional<JsonObject> defendantUpdatedResponseJsonObject = pollAfterDefendantUpdated();
 
-        //assertTrue(defendantUpdatedResponseJsonObject.isPresent());
+        assertTrue(defendantUpdatedResponseJsonObject.isPresent());
 
         final String indexedContent = getJsonArray(defendantUpdatedResponseJsonObject.get(), "index").get().getString(0);
         final JsonObject outputIndexedJson = jsonFromString(indexedContent);
