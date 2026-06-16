@@ -86,6 +86,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
@@ -99,7 +100,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -120,7 +120,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -836,8 +835,6 @@ public class CourtApplicationProcessor {
 
                     final BreachedApplications breachedApplication = breachApplicationCreationRequested.getBreachedApplications();
 
-                    final List<Offence> offences = buildOffencesForCourtApplicationCases(defendant, prosecutionCase);
-
                     final CourtApplication courtApplication = CourtApplication.courtApplication()
                             .withId(breachedApplication.getId())
                             .withType(breachedApplication.getApplicationType())
@@ -850,8 +847,8 @@ public class CourtApplicationProcessor {
                             .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase()
                                     .withIsSJP(Boolean.FALSE)
                                     .withProsecutionCaseId(prosecutionCase.getId())
-                                    .withOffences(offences)
-                                    .withCaseStatus("ACTIVE")
+                                    .withOffences(null)
+                                    .withCaseStatus(CaseStatusEnum.ACTIVE.getDescription())
                                     .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                                     .build()))
                             .build();
@@ -873,19 +870,6 @@ public class CourtApplicationProcessor {
             }
         }
     }
-
-    private @Nullable List<Offence> buildOffencesForCourtApplicationCases(final Optional<Defendant> defendant, final ProsecutionCase prosecutionCase) {
-        if (activeCase(prosecutionCase.getCaseStatus())) {
-            return null;
-        }
-
-        return nonNull(defendant.get().getOffences()) ? defendant.get().getOffences().stream().toList() : null;
-    }
-
-    private boolean activeCase(final String caseStatus) {
-        return nonNull(caseStatus) && !"INACTIVE".equalsIgnoreCase(caseStatus) && !"CLOSED".equalsIgnoreCase(caseStatus);
-    }
-
 
     private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
