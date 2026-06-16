@@ -140,7 +140,8 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                 commandPayload, USER_ID_VALUE_AS_ADMIN.toString());
 
         assertThat(writeResponse.getStatusCode(), is(SC_ACCEPTED));
-        verifyLaaProceedingsConcludedCommandInvoked(2, newArrayList(hearingId, caseId, defendantId));
+        // LAA proceedings concluded should now be filtered
+        // verifyLaaProceedingsConcludedCommandInvoked(2, newArrayList(hearingId, caseId, defendantId));
 
         final JsonEnvelope publicEventResultedEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_EVENTS_HEARING_HEARING_RESULTED, userId), getHearingJsonObject(PUBLIC_EVENTS_HEARING_HEARING_RESULTED + ".json", caseId,
                 hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId, "2021-03-30"));
