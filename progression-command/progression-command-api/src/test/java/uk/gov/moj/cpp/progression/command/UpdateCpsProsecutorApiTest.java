@@ -14,7 +14,7 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +62,7 @@ public class UpdateCpsProsecutorApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

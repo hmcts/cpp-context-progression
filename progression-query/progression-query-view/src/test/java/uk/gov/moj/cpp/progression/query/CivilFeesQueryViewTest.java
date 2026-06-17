@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class CivilFeesQueryViewTest {
         List<CivilFeeEntity> civilFeeEntities = List.of(civilFeeEntityOne, civilFeeEntityTwo);
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne, uuidTwo))).thenReturn(civilFeeEntities);
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("feeIds", uuidOne + "," + uuidTwo)
                 .build();
 
@@ -66,7 +66,7 @@ class CivilFeesQueryViewTest {
         UUID uuidTwo = UUID.randomUUID();
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne, uuidTwo))).thenReturn(Collections.emptyList());
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("feeIds", uuidOne + "," + uuidTwo)
                 .build();
 
@@ -88,7 +88,7 @@ class CivilFeesQueryViewTest {
         List<CivilFeeEntity> civilFeeEntities = List.of(civilFeeEntityOne);
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne))).thenReturn(civilFeeEntities);
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("feeIds", String.valueOf(uuidOne))
                 .build();
 

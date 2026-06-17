@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -302,7 +302,7 @@ public class HearingApplicationLinkCreatedListenerTest {
                 .build();
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);

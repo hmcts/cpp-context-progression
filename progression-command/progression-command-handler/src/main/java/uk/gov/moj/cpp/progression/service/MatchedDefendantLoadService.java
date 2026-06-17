@@ -32,7 +32,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -116,7 +116,7 @@ public class MatchedDefendantLoadService {
         Integer totalResult = 0;
         final List<Cases> casesList = new ArrayList<>();
         while (true) {
-            final JsonObjectBuilder criteriaBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder criteriaBuilder = JsonObjects.createObjectBuilder();
             criteria.forEach(criteriaBuilder::add);
             criteriaBuilder.add(START_FROM, page);
 

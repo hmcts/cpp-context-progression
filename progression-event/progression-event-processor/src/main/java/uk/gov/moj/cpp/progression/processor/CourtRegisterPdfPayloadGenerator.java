@@ -13,7 +13,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -43,7 +43,7 @@ public class CourtRegisterPdfPayloadGenerator {
 
     @SuppressWarnings({"squid:S1188", "squid:S1192"})
     public JsonObject mapPayload(final JsonObject jsonObject) {
-        final JsonObjectBuilder payloadForPdf = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadForPdf = JsonObjects.createObjectBuilder();
         jsonObject.getJsonArray("courtRegisterDocumentRequests").stream().findAny().map(JsonObject.class::cast)
                 .ifPresent(json -> {
                     payloadForPdf.add("registerDate", formatZonedDate(json.getString("registerDate")));
@@ -58,12 +58,12 @@ public class CourtRegisterPdfPayloadGenerator {
                     });
                 });
 
-        final JsonArrayBuilder caseArray = Json.createArrayBuilder();
+        final JsonArrayBuilder caseArray = JsonObjects.createArrayBuilder();
         jsonObject.getJsonArray("courtRegisterDocumentRequests").stream().map(JsonObject.class::cast)
                 .forEach(courtRegisterDocumentRequest -> courtRegisterDocumentRequest.getJsonArray("defendants").stream().map(r -> (JsonObject) r)
                         .forEach(defendant -> defendant.getJsonArray("prosecutionCasesOrApplications").stream().map(JsonObject.class::cast).collect(Collectors.toList())
                                 .forEach(pcoa -> {
-                                    final JsonObjectBuilder caseJson = Json.createObjectBuilder();
+                                    final JsonObjectBuilder caseJson = JsonObjects.createObjectBuilder();
                                     caseJson.add("defendantType", courtRegisterDocumentRequest.getString("defendantType", ""));
                                     buildNameAndAddress(defendant, caseJson);
                                     buildHearingDetails(defendant, caseJson);
@@ -94,11 +94,11 @@ public class CourtRegisterPdfPayloadGenerator {
     }
 
     private void buildDefendantResults(JsonObject defendant, JsonObjectBuilder caseJson) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         Optional.ofNullable(defendant.getJsonArray("defendantResults")).ifPresent(results -> {
             final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
             resultList.forEach(result -> {
-                final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
+                final JsonObjectBuilder resultBuilder = JsonObjects.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
                         .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
@@ -112,9 +112,9 @@ public class CourtRegisterPdfPayloadGenerator {
     }
 
     private void buildCaseResults(JsonObject pcoa, JsonObjectBuilder caseJson) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         Optional.ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
-            final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder resultBuilder = JsonObjects.createObjectBuilder()
                     .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
                     .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
             jsonArrayBuilder.add(resultBuilder.build());
@@ -127,10 +127,10 @@ public class CourtRegisterPdfPayloadGenerator {
     }
 
     private void buildApplication(final JsonObject pcoaJson, JsonObjectBuilder caseJson) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
 
         if (isApplicationValid(pcoaJson)) {
-            final JsonObject application = Json.createObjectBuilder()
+            final JsonObject application = JsonObjects.createObjectBuilder()
                     .add("type", pcoaJson.getString("applicationType", DASH))
                     .add("decision", pcoaJson.getString("applicationDecision", DASH))
                     .add("decisionDate", formatDate(pcoaJson.getString("applicationDecisionDate", DASH)))
@@ -221,10 +221,10 @@ public class CourtRegisterPdfPayloadGenerator {
     }
 
     private void buildOffences(final JsonObject pcoaJson, JsonObjectBuilder caseJson) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         Optional.ofNullable(pcoaJson.getJsonArray("offences")).ifPresent(offences -> offences.stream().map(JsonObject.class::cast).forEach(offenceJson -> {
             final String convictionDate = formatDate(offenceJson.getString(CONVICTION_DATE, DASH));
-            final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder offenceBuilder = JsonObjects.createObjectBuilder()
                     .add("offenceCode", offenceJson.getString("offenceCode", DASH))
                     .add("offenceTitle", clearUndesiredCharacters(offenceJson.getString("offenceTitle", DASH)))
                     .add("wording", addNewLineIfDesired(clearUndesiredCharacters(offenceJson.getString("wording", DASH))))
@@ -245,11 +245,11 @@ public class CourtRegisterPdfPayloadGenerator {
     }
 
     private void setResults(final JsonArray resultsArray, JsonObjectBuilder offenceBuilder) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         Optional.ofNullable(resultsArray).ifPresent(results -> {
             final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
             resultList.forEach(result -> {
-                final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
+                final JsonObjectBuilder resultBuilder = JsonObjects.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
                         .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());

@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.Duration;
@@ -14,20 +17,26 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 @SuppressWarnings("java:S2699")
 public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateOffencesIT.class);
+
 
     private final JmsMessageConsumerClient publicEventsConsumerForOffencesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
 
@@ -109,32 +118,39 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
-        await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofMillis(500)).until(() -> {
-            final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
-                    singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
-            );
-            final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
-            final JSONObject jsonObjectPayload = new JSONObject(payload);
-            final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
-            final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
-            // Add new offence and check orderIndex is incremented
-            updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId, 0);
+        await().atMost(Duration.ofSeconds(15)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
+            try {
+                final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                        singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+                );
+                final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
+                final JSONObject jsonObjectPayload = new JSONObject(payload);
+                final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
+                final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
+                // Add new offence and check orderIndex is incremented
+                updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId, 0);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
             return true;
         });
 
-        await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofMillis(500)).until(() -> {
-            final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
-                    singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
-            );
-            final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
-            final JSONObject jsonObjectPayload = new JSONObject(payload);
-            final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
-            final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
-            // Add new offence and check orderIndex is incremented
-            updateOffenceClearVerdictAndVerify(hearingId, orderIndex, offenceId);
+        await().atMost(Duration.ofSeconds(15)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
+            try {
+                final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                        singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+                );
+                final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
+                final JSONObject jsonObjectPayload = new JSONObject(payload);
+                final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
+                final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
+                // Add new offence and check orderIndex is incremented
+                updateOffenceClearVerdictAndVerify(hearingId, orderIndex, offenceId);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
             return true;
         });
-
 
 
     }

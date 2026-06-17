@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ public class SummonsServiceTest {
                 .withProsecutionAuthorityId(UUID.randomUUID())
                 .build();
 
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().build();
         when(referenceDataService.getProsecutor(envelope, prosecutionCaseIdentifier.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(jsonObject));
 
         summonsService.getProsecutor(envelope, prosecutionCaseIdentifier);
