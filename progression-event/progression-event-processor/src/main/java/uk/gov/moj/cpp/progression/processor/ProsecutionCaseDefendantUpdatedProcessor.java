@@ -72,6 +72,8 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedProcessor.class.getCanonicalName());
     private static final String HEARING_ID = "hearingId";
     private static final String CPS_FLAG = "cpsFlag";
+    private static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final String CPS_ORGANISATION_ID = "cpsOrganisationId";
     public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION = "progression.command.update-matched-defendant-custodial-information";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION = "progression.command.update-defendant-custodial-information-for-application";
@@ -137,12 +139,11 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         if (nonNull(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId()) && nonNull(prosecutionCaseDefendantUpdated.getUpdatedOrganisation())) {
             final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
             final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
-            if (prosecutorDetails.isPresent()) {
-                final JsonObject prosecutorsJsonObject = prosecutorDetails.get();
-                final boolean isCpsProsecutor = prosecutorsJsonObject.getBoolean(CPS_FLAG, false);
-                if (isCpsProsecutor) {
-                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
-                }
+            final boolean isCivil = isCivilCase(prosecutionCaseOptional);
+            final boolean isCpsProsecutorByRefData = !isCivil && prosecutorDetails.isPresent() && prosecutorDetails.get().getBoolean(CPS_FLAG, false);
+            final boolean isCpsProsecutorByCpsOrgId = isCivil && isCpsProsecutorByCpsOrganisationId(prosecutionCaseOptional);
+            if (isCpsProsecutorByRefData || isCpsProsecutorByCpsOrgId) {
+                sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
             }
         }
         handleUpdateDefendantCustodialInformationForApplication(jsonEnvelope, defendant, prosecutionCaseOptional);
@@ -363,6 +364,29 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             return cpsEmail;
         }
         return cpsEmail;
+    }
+
+    private boolean isCivilCase(final Optional<JsonObject> prosecutionCaseOptional) {
+        if (prosecutionCaseOptional.isEmpty()) {
+            return false;
+        }
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE);
+        if (prosecutionCaseJson == null) {
+            return false;
+        }
+        return prosecutionCaseJson.getBoolean("isCivil", false);
+    }
+
+    private boolean isCpsProsecutorByCpsOrganisationId(final Optional<JsonObject> prosecutionCaseOptional) {
+        if (prosecutionCaseOptional.isEmpty()) {
+            return false;
+        }
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE);
+        if (prosecutionCaseJson == null) {
+            return false;
+        }
+        final String cpsOrganisationId = prosecutionCaseJson.getString(CPS_ORGANISATION_ID, null);
+        return nonNull(cpsOrganisationId) && !cpsOrganisationId.isBlank();
     }
 
     private Optional<DefendantVO> getDefendantDetails(final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated) {
