@@ -11,7 +11,6 @@ import javax.json.JsonObject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.lang.Thread.sleep;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.hamcrest.Matcher;
@@ -35,6 +34,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingDeletedCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.Utilities.sleepToBeRefactored;
 
 public class HearingDeletedIT extends AbstractIT {
 
@@ -135,7 +135,7 @@ public class HearingDeletedIT extends AbstractIT {
         pollForApplication(applicationId);
 
         //FIXME not sure why this sleep is required
-        sleep(1000 * 5);
+        sleepToBeRefactored();
         final JsonEnvelope publicEventConfirmedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-case-reopen.json",
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName, applicationId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventConfirmedEnvelope);

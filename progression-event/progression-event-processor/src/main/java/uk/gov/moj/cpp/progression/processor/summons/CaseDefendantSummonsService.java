@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor.summons;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;

@@ -22,7 +22,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
@@ -83,7 +83,7 @@ public class CaseNotesQueryViewTest {
     private JsonEnvelope createJsonEnvelope(final ZonedDateTime createdDateTime) {
         final UUID caseId = randomUUID();
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .build();
 

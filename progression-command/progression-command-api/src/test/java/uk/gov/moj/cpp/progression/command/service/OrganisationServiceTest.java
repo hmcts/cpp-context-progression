@@ -15,7 +15,7 @@ import uk.gov.moj.cpp.progression.command.CommandClientTestBase;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -54,8 +54,8 @@ public class OrganisationServiceTest {
 
     @Test
     public void shouldReturnEmptyOrganisationDetails() {
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
-                .add("association", Json.createObjectBuilder())
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
+                .add("association", JsonObjects.createObjectBuilder())
                 .build();
         final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATION_QUERY, randomUUID().toString());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
@@ -69,8 +69,8 @@ public class OrganisationServiceTest {
     @Test
     public void shouldReturnDefendantIdsWhenDefenceIsAssociatedWithDefendants() {
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
-                .add("defendantIds", Json.createArrayBuilder()
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
+                .add("defendantIds", JsonObjects.createArrayBuilder()
                         .add(randomUUID().toString())
                         .add(randomUUID().toString())
                 ).build();
@@ -87,8 +87,8 @@ public class OrganisationServiceTest {
     @Test
     public void shouldReturnEmptyDefendantIdsWhenDefenceIsNotAssociatedWithDefendants() {
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
-                .add("defendantIds", Json.createArrayBuilder()).build();
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
+                .add("defendantIds", JsonObjects.createArrayBuilder()).build();
         final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATED_DEFENDANTS_QUERY, randomUUID().toString());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
 

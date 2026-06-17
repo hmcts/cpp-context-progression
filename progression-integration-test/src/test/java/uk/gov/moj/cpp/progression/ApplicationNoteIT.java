@@ -21,17 +21,22 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import javax.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class ApplicationNoteIT extends AbstractIT {
 
@@ -79,9 +84,10 @@ public class ApplicationNoteIT extends AbstractIT {
 
     private String verifyApplicationNotesAndGetApplicationNoteId(final String applicationId, final Boolean isPinned) {
         String payload = poll(requestParams(getReadUrl(format("/applications/%s/notes", applicationId)),
-                "application/vnd.progression.query.application-notes+json")
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(30, SECONDS)
+                        "application/vnd.progression.query.application-notes+json").withHeader(USER_ID, randomUUID())
+                        .build(),
+                new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS)),
+                Duration.ofSeconds(TIMEOUT_IN_SECONDS))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(

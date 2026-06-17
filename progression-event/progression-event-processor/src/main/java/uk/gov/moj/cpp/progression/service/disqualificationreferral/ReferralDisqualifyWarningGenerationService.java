@@ -46,7 +46,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -126,7 +126,7 @@ public class ReferralDisqualifyWarningGenerationService {
 
     private void generateCourtDocument(final JsonEnvelope event, final UUID caseId, final ReferredDefendant defendant, final String filename, final UUID materialId) {
         final CourtDocument courtDocument = courtDocument(event, asList(defendant.getId()), materialId, caseId, filename);
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating ReferralDisqualifyWarning court document payload - {}", courtDocumentPayload);
         sender.send(envelop(courtDocumentPayload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(event));
