@@ -173,7 +173,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     private void handleUpdateDefendantCustodialInformationForApplication(JsonEnvelope jsonEnvelope, DefendantUpdate defendant, Optional<JsonObject> prosecutionCaseOptional) {
         prosecutionCaseOptional.ifPresent(prosecutionCaseJson -> {
-            final String caseStatus = prosecutionCaseJson.getJsonObject("prosecutionCase").getString("caseStatus", null);
+            final String caseStatus = prosecutionCaseJson.getJsonObject(PROSECUTION_CASE).getString("caseStatus", null);
             if (prosecutionCaseJson.containsKey("linkedApplicationsSummary") && caseStatus.equalsIgnoreCase(CaseStatusEnum.ACTIVE.name())) {
                 prosecutionCaseJson.getJsonArray("linkedApplicationsSummary").forEach(linkedApplicationSummaryJson -> {
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
