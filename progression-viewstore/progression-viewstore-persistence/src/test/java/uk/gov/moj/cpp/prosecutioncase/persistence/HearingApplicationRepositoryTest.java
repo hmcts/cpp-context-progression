@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
@@ -44,12 +44,12 @@ public class HearingApplicationRepositoryTest {
         APPLICATION_ID = randomUUID();
 
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(RESULT_ID);
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
 

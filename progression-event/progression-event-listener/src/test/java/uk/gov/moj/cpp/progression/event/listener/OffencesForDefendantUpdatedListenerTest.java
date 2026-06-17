@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -152,13 +152,13 @@ public class OffencesForDefendantUpdatedListenerTest {
         final JsonObject pleaJson = createObjectBuilder().add("id", id1.toString()).add("pleaDate","2010-08-01").add("value","GUILTY").build();
         final JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",1).add("count",1).build();
         final JsonObject jsonObject2 = createObjectBuilder().add("id", id2.toString()).add("wording", word2).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",2).add("count",1).build();
-        return EnvelopeFactory.createEnvelope("name", Json.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", Json.createArrayBuilder().add(jsonObject1).add(jsonObject2).build()).build());
+        return EnvelopeFactory.createEnvelope("name", JsonObjects.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", JsonObjects.createArrayBuilder().add(jsonObject1).add(jsonObject2).build()).build());
     }
 
     private JsonEnvelope getJsonEnvelopeForDelete(final UUID defendantId, final UUID id1, final String word1) {
         final JsonObject pleaJson = createObjectBuilder().add("id", id1.toString()).add("pleaDate","2010-08-01").add("value","GUILTY").build();
         final JsonObject jsonObject1 = createObjectBuilder().add("id", id1.toString()).add("startDate", "2010-08-01").add("endDate", "2011-08-01").add("offenceCode", "H8198").add("offencePlea", pleaJson).add("section", "Section 51").add("orderIndex",1).add("count",1).build();
-        return EnvelopeFactory.createEnvelope("name", Json.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", Json.createArrayBuilder().add(jsonObject1)).build());
+        return EnvelopeFactory.createEnvelope("name", JsonObjects.createObjectBuilder().add("caseId", defendantId.toString()).add("defendantId", defendantId.toString()).add("offences", JsonObjects.createArrayBuilder().add(jsonObject1)).build());
     }
 
 }

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -376,7 +378,7 @@ public class HearingUnallocatedCourtroomRemovedEventProcessorTest {
     }
 
     private JsonObject createJsonObjectWithHearingId() {
-        return javax.json.Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("hearingId", HEARING_ID.toString())
                 .build();
     }

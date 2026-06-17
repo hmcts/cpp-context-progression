@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -70,7 +70,7 @@ public class ReferCasesToCourtCommandApi {
     }
 
     private JsonArray getUpdatedProsecutionCases(final JsonArray originProsecutionCases, final JsonEnvelope envelope) {
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        final JsonArrayBuilder builder = JsonObjects.createArrayBuilder();
         originProsecutionCases.forEach(jsonValue -> {
             final JsonObject jsonObject = (JsonObject) jsonValue;
             builder.add(addProperty(jsonObject, PROSECUTION_CASE_IDENTIFIER, getUpdatedCaseIdentifier(jsonObject.getJsonObject(PROSECUTION_CASE_IDENTIFIER), envelope)));
@@ -91,7 +91,7 @@ public class ReferCasesToCourtCommandApi {
     }
 
     private static JsonObjectBuilder createObjectBuilder(final JsonObject origin) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
             builder.add(entry.getKey(), entry.getValue());
         }

@@ -4,7 +4,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.query.CourtRegisterDocumentRequestQueryView;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class CourtRegisterRequestApiTest {
 
     @Test
     public void getCourtRegisterDocumentRequest() {
-        final JsonObjectBuilder courtDocumentPayload = Json.createObjectBuilder();
+        final JsonObjectBuilder courtDocumentPayload = JsonObjects.createObjectBuilder();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.court-register-document-request"),
                 courtDocumentPayload);
@@ -34,7 +34,7 @@ public class CourtRegisterRequestApiTest {
 
     @Test
     public void getCourtRegisterDocumentRequestByMaterial() {
-        final JsonObjectBuilder courtDocumentPayload = Json.createObjectBuilder();
+        final JsonObjectBuilder courtDocumentPayload = JsonObjects.createObjectBuilder();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.court-register-document-by-material"),
                 courtDocumentPayload);
@@ -45,7 +45,7 @@ public class CourtRegisterRequestApiTest {
 
     @Test
     public void getCourtRegisterDocumentRequestByDate() {
-        final JsonObjectBuilder courtDocumentPayload = Json.createObjectBuilder();
+        final JsonObjectBuilder courtDocumentPayload = JsonObjects.createObjectBuilder();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.court-register-document-by-request-date"),
                 courtDocumentPayload);

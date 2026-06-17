@@ -4,8 +4,8 @@ import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -157,7 +157,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, randomUUID().toString())
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -212,7 +212,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(objectToJsonObjectConverter.convert(Mockito.any(DefendantCustodialInformationUpdateRequested.class))).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -266,7 +266,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -315,7 +315,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
