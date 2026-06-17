@@ -140,8 +140,18 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
             final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
             final boolean isCivil = isCivilCase(prosecutionCaseOptional);
-            final boolean isCpsProsecutorByRefData = !isCivil && prosecutorDetails.isPresent() && prosecutorDetails.get().getBoolean(CPS_FLAG, false);
+            final boolean isCpsProsecutorByRefData = isCpsProsecutorByRefData(isCivil, prosecutionCaseOptional, prosecutorDetails);
             final boolean isCpsProsecutorByCpsOrgId = isCivil && isCpsProsecutorByCpsOrganisationId(prosecutionCaseOptional);
+            if (prosecutionCaseOptional.isPresent()) {
+                final String prosecutionCaseJson = Optional.ofNullable(prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE))
+                        .map(JsonObject::toString)
+                        .orElse("not present");
+                LOGGER.info("CPS notification check: caseId={}, isCivil={}, isCpsByRefData={}, isCpsByOrgId={}, caseJson={}",
+                        defendant.getProsecutionCaseId(), isCivil, isCpsProsecutorByRefData, isCpsProsecutorByCpsOrgId,
+                        prosecutionCaseJson.length() > 200 ? prosecutionCaseJson.substring(0, 200) : prosecutionCaseJson);
+            } else {
+                LOGGER.info("CPS notification check: caseId={}, prosecutionCaseOptional is EMPTY", defendant.getProsecutionCaseId());
+            }
             if (isCpsProsecutorByRefData || isCpsProsecutorByCpsOrgId) {
                 sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
             }
@@ -375,6 +385,13 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             return false;
         }
         return prosecutionCaseJson.getBoolean("isCivil", false);
+    }
+
+    private boolean isCpsProsecutorByRefData(final boolean isCivil, final Optional<JsonObject> prosecutionCaseOptional, final Optional<JsonObject> prosecutorDetails) {
+        return !isCivil
+                && prosecutionCaseOptional.isPresent()
+                && prosecutorDetails.isPresent()
+                && prosecutorDetails.get().getBoolean(CPS_FLAG, false);
     }
 
     private boolean isCpsProsecutorByCpsOrganisationId(final Optional<JsonObject> prosecutionCaseOptional) {

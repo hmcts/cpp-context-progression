@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.notMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.resetAllRequests;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
@@ -90,6 +91,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyNoEmailNotificationIsRaised() {
+        resetAllRequests();
         await().pollDelay(10, SECONDS).atMost(11, SECONDS).until(() -> {
             try {
                 verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
