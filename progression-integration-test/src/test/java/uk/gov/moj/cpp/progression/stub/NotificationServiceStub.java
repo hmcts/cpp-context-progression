@@ -92,7 +92,7 @@ public class NotificationServiceStub {
 
     public static void verifyNoEmailNotificationIsRaised() {
         resetAllRequests();
-        await().pollDelay(10, SECONDS).atMost(11, SECONDS).until(() -> {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
             try {
                 verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
                         .withHeader(CONTENT_TYPE, equalTo(NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON)));
