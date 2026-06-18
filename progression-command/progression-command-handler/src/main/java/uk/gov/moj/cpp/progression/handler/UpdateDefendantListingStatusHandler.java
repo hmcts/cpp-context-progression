@@ -27,6 +27,7 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMet
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static java.util.Objects.nonNull;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,23 @@ public class UpdateDefendantListingStatusHandler {
         } else {
             events = hearingAggregate.updateDefendantListingStatus(updateDefendantListingStatus.getHearing(), updateDefendantListingStatus.getHearingListingStatus(), updateDefendantListingStatus.getNotifyNCES(), updateDefendantListingStatus.getListHearingRequests());
         }
+
+        updateCase(updateDefendantListingStatusEnvelope, updateDefendantListingStatus.getHearing());
+
         appendEventsToStream(updateDefendantListingStatusEnvelope, eventStream, events);
+    }
+
+    private void updateCase(final Envelope<?> envelope, final Hearing hearing) throws EventStreamException {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
+            for (ProsecutionCase pc : hearing.getProsecutionCases()) {
+                final EventStream eventStream = eventSource.getStreamById(pc.getId());
+                final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+
+                final Stream<Object> caseEvents = caseAggregate.updateDefendantListingStatus(hearing.getId(), hearing.getCourtCentre().getId(), hearing.getHearingDays());
+
+                appendEventsToStream(envelope, eventStream, caseEvents);
+            }
+        }
     }
 
     private UpdateDefendantListingStatusV2 getUpdateDefendantListingStatusWithMemberCases(final ProsecutionCase groupMasterProsecutionCase, final UpdateDefendantListingStatusV2 updateDefendantListingStatus) {
