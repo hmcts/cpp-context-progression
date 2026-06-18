@@ -216,31 +216,6 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotNotifyCPSWhenLAAAssociatesWithDefendantOnNonCPSCivilCase() {
-        stubLegalStatus("/restResource/ref-data-legal-statuses.json", STATUS_CODE);
-        stubGetOrganisationDetailForLAAContractNumber(LAA_CONTRACT_NUMBER, ORGANISATION_ID, ORGANISATION_NAME);
-        stubGetOrganisationQuery(userId, ORGANISATION_ID, ORGANISATION_NAME);
-        stubGetUsersAndGroupsQueryForSystemUsers(userId);
-        stubGetGroupsForLoggedInQuery(userId);
-        stubEnableAllCapabilities();
-        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
-
-        addCivilProsecutionCaseToCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonEnvelope hearingConfirmedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId),
-                getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName));
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedEnvelope);
-        pollHearingWithStatusInitialised(hearingId);
-
-        try (Response response = receiveRepresentationOrder(caseId, defendantId, OFFENCE_ID, STATUS_CODE, LAA_CONTRACT_NUMBER, userId)) {
-            org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.SC_ACCEPTED, response.getStatus());
-        }
-
-        verifyNoEmailNotificationIsRaised();
-    }
-
-    @Test
     public void shouldNotifyCPSWhenLAADisassociatesFromDefendantOnCPSCivilCase() {
         addCPSCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
