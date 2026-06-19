@@ -2641,10 +2641,10 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void isActiveCaseByOffenceStatusShouldReturnFalseWhenNoOffencesAndCaseStatusNull() {
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenNoOffencesAndCaseStatusNull() {
         final CourtApplicationCase courtApplicationCase = courtApplicationCase().build();
 
-        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
     }
 
     private MetadataBuilder getMetadata(final String eventName) {
