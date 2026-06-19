@@ -834,6 +834,38 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
+    public void buildDefendantFromCourtApplication_shouldSurfacePncIdForLegalEntitySubject() throws Exception {
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation().withName("Acme Ltd").build())
+                        .build())
+                .withPncId("PNC-SUBJ-ORG-001")
+                .build();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .withMasterDefendant(masterDefendant)
+                        .build())
+                .withDefendantASN("SUBJ-ASN-001")
+                .build();
+        final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
+        final JsonObject hearingFromListing = Json.createObjectBuilder()
+                .add("defendants", Json.createArrayBuilder().build())
+                .build();
+
+        final JsonObject result = invokePrivateMethod("buildDefendantFromCourtApplication",
+                new Class<?>[]{JsonObject.class, CourtApplication.class, Hearing.class, List.class},
+                hearingFromListing, courtApplication, hearing, emptyList());
+
+        // Legal-entity subject has no personDefendant, so the person block is skipped; pncId must still surface.
+        assertThat(result.getString("pncId"), is("PNC-SUBJ-ORG-001"));
+        assertThat(result.getString("asn"), is("SUBJ-ASN-001"));
+        assertThat(result.containsKey("id"), is(false));
+    }
+
+    @Test
     public void enrichHearingFromCourtApplication_shouldEnrichHearingWithCourtApplicationBlock() throws Exception {
         final JsonObject hearingFromListing = getJsonPayload("listing-hearing-with-court-application.json")
                 .getJsonArray("hearingDates").getJsonObject(0)
