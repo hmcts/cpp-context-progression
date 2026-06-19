@@ -21,9 +21,12 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -127,6 +130,8 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
+import uk.gov.justice.core.courts.MigrationCaseStatus;
+import uk.gov.justice.core.courts.MigrationSourceSystem;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.Organisation;
@@ -236,11 +241,13 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -256,6 +263,9 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -1290,6 +1300,70 @@ class CaseAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object, instanceOf(ProsecutionCaseCreated.class));
+    }
+
+
+    private static Stream<Arguments> migrationSourceSystemValues() {
+        return Stream.of(
+                Arguments.of(MigrationSourceSystem.migrationSourceSystem()
+                        .withMigrationSourceSystemName("XHIBIT")
+                        .withMigrationSourceSystemCaseIdentifier("1234567890")
+                        .withMigrationCaseStatus(MigrationCaseStatus.INACTIVE)
+                        .build(), "INACTIVE", TRUE),
+                Arguments.of(MigrationSourceSystem.migrationSourceSystem()
+                        .withMigrationSourceSystemName("XHIBIT")
+                        .withMigrationSourceSystemCaseIdentifier("1234567890")
+                        .withMigrationCaseStatus(MigrationCaseStatus.ACTIVE)
+                        .build(), "caseStatus", null),
+                Arguments.of(MigrationSourceSystem.migrationSourceSystem()
+                        .withMigrationSourceSystemName("XHIBIT")
+                        .withMigrationSourceSystemCaseIdentifier("1234567890")
+//                        .withMigrationCaseStatus(MigrationCaseStatus.ACTIVE)
+                        .build(), "caseStatus", null),
+                Arguments.of(null, "caseStatus", null)
+        );
+
+    }
+    @ParameterizedTest
+    @MethodSource("migrationSourceSystemValues")
+    public void shouldReturnProsecutionCaseCreatedForInactiveCase(MigrationSourceSystem migrationSourceSystem, String expectedCaseStatus, Boolean isConcluded) {
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCase(prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                        .withDefendants(defendants.stream().map(e-> Defendant.defendant().withValuesFrom(e).withProsecutionCaseId(prosecutionCase.getId()).build()).toList())
+                .withMigrationSourceSystem(migrationSourceSystem)
+                .build(), emptyList()).toList();
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object, instanceOf(ProsecutionCaseCreated.class));
+        ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) eventStream.get(0);
+         assertEquals(expectedCaseStatus,prosecutionCaseCreated.getProsecutionCase().getCaseStatus());
+         assertEquals(expectedCaseStatus,caseAggregate.getProsecutionCase().getCaseStatus());
+        final Optional<List<Defendant>> optionalListOfDefendants =
+                Optional.ofNullable(prosecutionCaseCreated.getProsecutionCase().getDefendants());
+
+        optionalListOfDefendants.ifPresent(defendants -> {
+
+            assertTrue(
+                    defendants.stream()
+                            .allMatch(d -> Objects.equals(isConcluded, d.getProceedingsConcluded())),
+                    "All defendants should have proceedingsConcluded = " + isConcluded
+            );
+
+            assertTrue(
+                    defendants.stream()
+                            .flatMap(d -> d.getOffences().stream())
+                            .allMatch(o -> Objects.equals(isConcluded, o.getProceedingsConcluded())),
+                    "All offences should have proceedingsConcluded = " + isConcluded
+            );
+
+        });
+
+        assertTrue(Objects.nonNull(caseAggregate.getDefendantProceedingConcluded().get(prosecutionCaseCreated.getProsecutionCase().getId())));
+//       assertTrue(caseAggregate.getDefendantProceedingConcluded().get(prosecutionCaseCreated.getProsecutionCase().getId()).values().stream().allMatch(e-> e));
+
+
     }
 
     @Test
@@ -7260,7 +7334,6 @@ class CaseAggregateTest {
         assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(applicationReference));
         assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(1).getLaaApplnReference().getApplicationReference(), is(applicationReference));
     }
-
     @Test
     public void shouldNotAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReferenceAndNewOffenceWithoutCount() {
         final UUID caseId = randomUUID();

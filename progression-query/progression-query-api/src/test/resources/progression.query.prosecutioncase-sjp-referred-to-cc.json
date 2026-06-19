@@ -1,0 +1,942 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "SJP_REFERRAL",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-02-07T13:46:26.382Z",
+        "id": "DEFENDANT_ID",
+        "masterDefendantId": "DEFENDANT_ID",
+        "numberOfPreviousConvictionsCited": 0,
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-02-07",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+              "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+              "sequenceNumber": 90
+            },
+            "chargeDate": "2025-02-05",
+            "convictingCourt": {
+              "address": {
+                "address1": "176A Lavender Hill",
+                "address2": "London",
+                "postcode": "SW11 1JU"
+              },
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "Lavender Hill Magistrates' Court",
+                "welshLjaName": "Llys Ynadon Lavender Hill"
+              },
+              "name": "Lavender Hill Magistrates' Court"
+            },
+            "convictionDate": "2025-02-07",
+            "count": 1,
+            "dvlaOffenceCode": "",
+            "endorsableFlag": false,
+            "id": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+            "isDisposed": false,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "category": "INTERMEDIARY",
+                "cjsCode": "4506",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "9d2bd8f7-8ff2-4861-9402-9daeecb467d1",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "promptReference": "b4dd2e1e-bcab-400b-8f40-6a96ed939fa3",
+                    "promptSequence": 0,
+                    "usergroups": [],
+                    "value": "Date of hearing:07/02/2025\nTime of hearing:10:00\nCourthouse organisation name:Westminster Magistrates' Court\nCourthouse address line 1:181 Marylebone Road\nCourthouse address line 2:London\nCourthouse post code:NW1 5BR\nCourtroom:Courtroom 05\nHearing type:Trial\nEstimated duration:20 MINUTES\nBooking reference:2fdfcbc1-df30-4492-8a74-757396fb4511",
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                    "label": "Defendant to attend the next hearing",
+                    "promptReference": "defendantToAttendTheNextHearing",
+                    "promptSequence": 100,
+                    "type": "BOOLEAN",
+                    "usergroups": [],
+                    "value": "true",
+                    "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                    "welshValue": "true"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "promptReference": "1a9ef6c9-4f98-47e1-b1cf-25412490906f",
+                    "promptSequence": 200,
+                    "qualifier": "GE",
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "label": "Adjournment reasons",
+                    "promptReference": "74c48079-4680-468a-8594-55caaa3c8dc5",
+                    "promptSequence": 300,
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Rheswm dros ohirio:"
+                  }
+                ],
+                "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "label": "Adjournment",
+                "lastSharedDateTime": "2025-02-07",
+                "level": "O",
+                "lifeDuration": false,
+                "nextHearing": {
+                  "adjournmentReason": "To attend or a warrant to issue",
+                  "bookingReference": "2fdfcbc1-df30-4492-8a74-757396fb4511",
+                  "courtCentre": {
+                    "address": {
+                      "address1": "181 Marylebone Road",
+                      "address2": "London",
+                      "postcode": "NW1 5BR"
+                    },
+                    "code": "B01IX00",
+                    "courtHearingLocation": "B01IX05",
+                    "id": "67aa82ba-67bb-4699-8176-5f572048352b",
+                    "name": "Westminster Magistrates' Court",
+                    "psaCode": 2570,
+                    "roomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+                    "roomName": "Courtroom 05",
+                    "welshName": "Llys Ynadon Westminster"
+                  },
+                  "estimatedDuration": "20 MINUTES",
+                  "estimatedMinutes": 20,
+                  "jurisdictionType": "MAGISTRATES",
+                  "listedStartDateTime": "2025-02-07T10:00:00.000Z",
+                  "type": {
+                    "description": "Trial",
+                    "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                  }
+                },
+                "orderedDate": "2025-02-07",
+                "orderedHearingId": "2b35024d-9d8a-4b45-b17e-9857e057981b",
+                "policeSubjectLineTitle": "Adjourned",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "qualifier": "GE",
+                "rank": 194200,
+                "resultText": "A - Adjournment\nAdjourned for hearing on 07/02/2025 at 10:00 in Courtroom 05, Westminster Magistrates' Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "9d2bd8f7-8ff2-4861-9402-9daeecb467d1",
+                "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Gohiriad"
+              }
+            ],
+            "lastAdjournDate": "2025-02-07",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 3,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2025-02-07",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b"
+            },
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Use a television set without a licence",
+            "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+              "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+              "pleaDate": "2025-02-07",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": false,
+            "startDate": "2025-02-05",
+            "verdict": {
+              "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+              "verdictDate": "2025-02-07",
+              "verdictType": {
+                "category": "Guilty",
+                "categoryType": "GUILTY",
+                "cjsVerdictCode": "G",
+                "description": "Proved SJP",
+                "id": "83a10a5f-5d26-32d3-9eb5-4463d0a2c89c",
+                "sequence": 170,
+                "verdictCode": "PSJ"
+              }
+            },
+            "wording": "Wording:Use a television set without a licence"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "ASN1820099",
+          "bailConditions": "",
+          "personDetails": {
+            "address": {
+              "address1": "0679 Hollis Fields",
+              "address3": "Croydon",
+              "postcode": "CR0 1XG"
+            },
+            "contact": {
+              "primaryEmail": "ShayneWilkinson@email.com"
+            },
+            "dateOfBirth": "1967-02-05",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Shayne",
+            "gender": "NOT_SPECIFIED",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Wilkinson",
+            "nationalInsuranceNumber": "BX863263D",
+            "occupation": "TA",
+            "occupationCode": "1"
+          }
+        },
+        "proceedingsConcluded": false,
+        "prosecutionCaseId": "910ce69b-b4c0-4cca-adab-540c0e8b1d41"
+      }
+    ],
+    "id": "910ce69b-b4c0-4cca-adab-540c0e8b1d41",
+    "initiationCode": "J",
+    "originatingOrganisation": "GAEAA01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "prosecutionAuthorityReference": "SJ267039768"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "DEFENDANT_ID",
+        "defendantName": "Shayne Wilkinson",
+        "hearingIds": [
+          "2b35024d-9d8a-4b45-b17e-9857e057981b",
+          "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+          "dc50698d-f7f1-45a8-9ed9-9ea25d355881"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-02-07"
+              }
+            ],
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "0679 Hollis Fields",
+              "address3": "Croydon",
+              "postcode": "CR0 1XG"
+            },
+            "age": "58",
+            "courtApplications": [],
+            "dateOfBirth": "1967-02-05",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Shayne Wilkinson",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-02-07",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                  "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-02-07",
+                "count": 1,
+                "id": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "9d2bd8f7-8ff2-4861-9402-9daeecb467d1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "b4dd2e1e-bcab-400b-8f40-6a96ed939fa3",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Date of hearing:07/02/2025\nTime of hearing:10:00\nCourthouse organisation name:Westminster Magistrates' Court\nCourthouse address line 1:181 Marylebone Road\nCourthouse address line 2:London\nCourthouse post code:NW1 5BR\nCourtroom:Courtroom 05\nHearing type:Trial\nEstimated duration:20 MINUTES\nBooking reference:2fdfcbc1-df30-4492-8a74-757396fb4511",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "1a9ef6c9-4f98-47e1-b1cf-25412490906f",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "74c48079-4680-468a-8594-55caaa3c8dc5",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-02-07",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "bookingReference": "2fdfcbc1-df30-4492-8a74-757396fb4511",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "181 Marylebone Road",
+                          "address2": "London",
+                          "postcode": "NW1 5BR"
+                        },
+                        "code": "B01IX00",
+                        "courtHearingLocation": "B01IX05",
+                        "id": "67aa82ba-67bb-4699-8176-5f572048352b",
+                        "name": "Westminster Magistrates' Court",
+                        "psaCode": 2570,
+                        "roomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+                        "roomName": "Courtroom 05",
+                        "welshName": "Llys Ynadon Westminster"
+                      },
+                      "estimatedDuration": "20 MINUTES",
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2025-02-07T10:00:00.000Z",
+                      "type": {
+                        "description": "Trial",
+                        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                      }
+                    },
+                    "orderedDate": "2025-02-07",
+                    "orderedHearingId": "2b35024d-9d8a-4b45-b17e-9857e057981b",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 07/02/2025 at 10:00 in Courtroom 05, Westminster Magistrates' Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "9d2bd8f7-8ff2-4861-9402-9daeecb467d1",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2025-02-07",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b"
+                },
+                "offenceCode": "CA03010",
+                "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Use a television set without a licence",
+                "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                    "pleaDate": "2025-02-07",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2025-02-05",
+                "verdicts": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "verdictDate": "2025-02-07",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Proved SJP",
+                      "id": "83a10a5f-5d26-32d3-9eb5-4463d0a2c89c",
+                      "sequence": 170,
+                      "verdictCode": "PSJ"
+                    }
+                  }
+                ],
+                "wording": "Wording:Use a television set without a licence"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-02-07T10:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "2b35024d-9d8a-4b45-b17e-9857e057981b",
+        "judiciary": [
+          {
+            "firstName": "Alison Jane",
+            "isBenchChairman": false,
+            "isDeputy": true,
+            "judicialId": "d6dee97a-f591-34b2-93a1-86e03d8ebdf0",
+            "judicialRoleType": {
+              "judicialRoleTypeId": "d6dee97a-f591-34b2-93a1-86e03d8ebdf0",
+              "judiciaryType": "Magistrate"
+            },
+            "lastName": "Dixon",
+            "title": "Mrs"
+          },
+          {
+            "firstName": "Alison Rachel",
+            "isBenchChairman": false,
+            "isDeputy": true,
+            "judicialId": "46673f36-9a1a-332f-b79f-f378b18663bf",
+            "judicialRoleType": {
+              "judicialRoleTypeId": "46673f36-9a1a-332f-b79f-f378b18663bf",
+              "judiciaryType": "Magistrate"
+            },
+            "lastName": "Peeters",
+            "title": "Mrs"
+          },
+          {
+            "firstName": "Alice",
+            "isBenchChairman": true,
+            "isDeputy": false,
+            "judicialId": "588a1b50-779d-4a87-ac04-99b34f418e88",
+            "judicialRoleType": {
+              "judicialRoleTypeId": "588a1b50-779d-4a87-ac04-99b34f418e88",
+              "judiciaryType": "Magistrate"
+            },
+            "lastName": "Gladman",
+            "title": "Mrs"
+          }
+        ],
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Plea",
+          "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "1 Queen Victoria Street",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "EC4N 4XY"
+          },
+          "code": "B01DU00",
+          "courtHearingLocation": "B01DU01",
+          "id": "c133d0de-c989-48b9-bd20-0431943e347e",
+          "lja": {
+            "ljaCode": "2570",
+            "ljaName": "Central London Magistrates' Court"
+          },
+          "name": "City of London Magistrates' Court",
+          "roomId": "4294a92c-8827-3296-be53-c74b7e9e31d8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-02-07"
+              }
+            ],
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendantReferralReasons": [
+          {
+            "defendantId": "DEFENDANT_ID",
+            "description": "For disqualification (Defendant to attend - special reasons)",
+            "id": "471316ba-38ed-3450-a504-35822cc38654"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "0679 Hollis Fields",
+              "address3": "Croydon",
+              "postcode": "CR0 1XG"
+            },
+            "age": "58",
+            "courtApplications": [],
+            "dateOfBirth": "1967-02-05",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Shayne Wilkinson",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-02-07",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                  "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-02-07",
+                "count": 1,
+                "id": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7a6f6a24-708f-4485-8260-97d44cf0d03c",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "20ee3e90-eafe-43d8-9dbe-c4f60b4fee9d",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Date of hearing:07/02/2025\nTime of hearing:10:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 01\nHearing type:Plea\nEstimated duration:20 MINUTES\nBooking reference:ec7ce43a-3ed0-4cab-ada8-b91a25c1ecf3",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "3829470a-872f-444a-af9c-b29b4db8c13f",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "b4d66833-2b32-43c9-9e71-b4eca154c0d5",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-02-07",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "bookingReference": "ec7ce43a-3ed0-4cab-ada8-b91a25c1ecf3",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "176A Lavender Hill",
+                          "address2": "London",
+                          "postcode": "SW11 1JU"
+                        },
+                        "code": "B01LY00",
+                        "courtHearingLocation": "B01LY01",
+                        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                        "name": "Lavender Hill Magistrates' Court",
+                        "psaCode": 2577,
+                        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Ynadon Lavender Hill"
+                      },
+                      "estimatedDuration": "20 MINUTES",
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2025-02-07T10:00:00.000Z",
+                      "type": {
+                        "description": "Plea",
+                        "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                      }
+                    },
+                    "orderedDate": "2025-02-07",
+                    "orderedHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 07/02/2025 at 10:00 in Courtroom 01, Lavender Hill Magistrates' Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "7a6f6a24-708f-4485-8260-97d44cf0d03c",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2025-02-07",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b"
+                },
+                "offenceCode": "CA03010",
+                "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Use a television set without a licence",
+                "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                    "pleaDate": "2025-02-07",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2025-02-05",
+                "verdicts": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "verdictDate": "2025-02-07",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Proved SJP",
+                      "id": "83a10a5f-5d26-32d3-9eb5-4463d0a2c89c",
+                      "sequence": 170,
+                      "verdictCode": "PSJ"
+                    }
+                  }
+                ],
+                "wording": "Wording:Use a television set without a licence"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "c133d0de-c989-48b9-bd20-0431943e347e",
+            "courtRoomId": "4294a92c-8827-3296-be53-c74b7e9e31d8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 30,
+            "listingSequence": 0,
+            "sittingDay": "2025-02-07T10:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Sentence",
+          "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "181 Marylebone Road",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "NW1 5BR"
+          },
+          "code": "B01IX00",
+          "courtHearingLocation": "B01IX05",
+          "id": "67aa82ba-67bb-4699-8176-5f572048352b",
+          "lja": {
+            "ljaCode": "2570",
+            "ljaName": "Central London Magistrates' Court"
+          },
+          "name": "Westminster Magistrates' Court",
+          "roomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+          "roomName": "Courtroom 05"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "0679 Hollis Fields",
+              "address3": "Croydon",
+              "postcode": "CR0 1XG"
+            },
+            "age": "58",
+            "courtApplications": [],
+            "dateOfBirth": "1967-02-05",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Shayne Wilkinson",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-02-07",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                  "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-02-07",
+                "count": 1,
+                "id": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                "judicialResults": [],
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2025-02-07",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b"
+                },
+                "offenceCode": "CA03010",
+                "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Use a television set without a licence",
+                "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "originatingHearingId": "fd4b8d18-ff25-4b93-afa1-f35ad2ea3b20",
+                    "pleaDate": "2025-02-07",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2025-02-05",
+                "verdicts": [
+                  {
+                    "offenceId": "31a426b0-f3c5-4005-8413-1b4922c8834b",
+                    "verdictDate": "2025-02-07",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Proved SJP",
+                      "id": "83a10a5f-5d26-32d3-9eb5-4463d0a2c89c",
+                      "sequence": 170,
+                      "verdictCode": "PSJ"
+                    }
+                  }
+                ],
+                "wording": "Wording:Use a television set without a licence"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "67aa82ba-67bb-4699-8176-5f572048352b",
+            "courtRoomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 6,
+            "sittingDay": "2025-02-07T10:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "dc50698d-f7f1-45a8-9ed9-9ea25d355881",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Trial",
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        }
+      }
+    ],
+    "id": "910ce69b-b4c0-4cca-adab-540c0e8b1d41",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "prosecutionAuthorityReference": "SJ267039768"
+    }
+  }
+}
