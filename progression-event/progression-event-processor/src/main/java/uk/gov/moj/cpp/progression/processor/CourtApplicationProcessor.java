@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -100,7 +101,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -121,7 +121,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String OLD_APPLICATION_ID = "oldApplicationId";
@@ -298,7 +296,7 @@ public class CourtApplicationProcessor {
     public void processCourtApplicationInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
 
-        if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
+        if (TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationProceedingsInitiated.getOldApplicationId());
@@ -968,7 +966,7 @@ public class CourtApplicationProcessor {
 
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
-        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+        return t -> map.putIfAbsent(keyExtractor.apply(t), TRUE) == null;
     }
 
     private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
@@ -976,6 +974,25 @@ public class CourtApplicationProcessor {
                 .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
                         && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
                         && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+    }
+
+    /**
+     * Determines whether every court application case is active, based on its offences' proceedings
+     * status. A case with offences is INACTIVE only when all its offences have
+     * {@code proceedingsConcluded == true}, otherwise it is ACTIVE. A case with no offences falls
+     * back to the {@code caseStatus} check.
+     */
+    private boolean isAllActiveCasesByOffenceStatus(final Stream<CourtApplicationCase> courtApplicationCases) {
+        return courtApplicationCases.allMatch(this::isActiveCaseByOffenceStatus);
+    }
+
+    // package-private for unit testing
+    boolean isActiveCaseByOffenceStatus(final CourtApplicationCase courtApplicationCase) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase.getOffences().stream()
+                    .anyMatch(offence -> !TRUE.equals(offence.getProceedingsConcluded()));
+        }
+        return !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()) && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
     }
 
     private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {
@@ -1045,7 +1062,7 @@ public class CourtApplicationProcessor {
 
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
 
-        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
             final List<CourtApplicationCase> courtApplicationCasesForWhichWeNeedToCreateHearing = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .filter(courtApplicationCase -> hearing.getProsecutionCases().stream().noneMatch(prosecutionCase -> courtApplicationCase.getProsecutionCaseId().equals(prosecutionCase.getId())))
                     .collect(toList());

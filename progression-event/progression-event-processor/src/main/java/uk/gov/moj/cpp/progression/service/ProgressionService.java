@@ -102,6 +102,7 @@ import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
@@ -113,6 +114,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -1346,7 +1348,7 @@ public class ProgressionService {
 
         final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
-        return Hearing.hearing()
+        final Hearing hearing = Hearing.hearing()
                 .withHearingDays(confirmedHearing.getHearingDays())
                 .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
                 .withJurisdictionType(confirmedHearing.getJurisdictionType())
@@ -1362,6 +1364,49 @@ public class ProgressionService {
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
                 .build();
+
+        // Shape application/case offences once, at the source, so the persisted hearing matches the
+        // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
+        // concluded ones stay with the application.
+        return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    }
+
+    /**
+     * Builds an offence-owner resolver that fetches each prosecution case from the view store at most once
+     * per call (memoised by prosecutionCaseId), so multiple offences belonging to the same case do not
+     * trigger repeated API lookups. Used as a fallback when an active application offence is not already
+     * present under the prosecutionCases.
+     */
+    HearingOffenceFilter.OffenceOwnerResolver offenceOwnerResolver(final JsonEnvelope jsonEnvelope) {
+        final Map<UUID, Optional<ProsecutionCase>> caseCache = new HashMap<>();
+        return (prosecutionCaseId, offenceId) -> {
+            if (isNull(prosecutionCaseId)) {
+                return Optional.empty();
+            }
+            return caseCache.computeIfAbsent(prosecutionCaseId, id -> fetchProsecutionCase(jsonEnvelope, id))
+                    .flatMap(prosecutionCase -> findOwningDefendantId(prosecutionCase, offenceId));
+        };
+    }
+
+    private Optional<ProsecutionCase> fetchProsecutionCase(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId) {
+        try {
+            final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, prosecutionCaseId.toString());
+            return Optional.ofNullable(jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class));
+        } catch (final RuntimeException e) {
+            LOGGER.warn("Unable to fetch prosecution case {}: {}", prosecutionCaseId, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<UUID> findOwningDefendantId(final ProsecutionCase prosecutionCase, final UUID offenceId) {
+        if (isNull(prosecutionCase.getDefendants())) {
+            return Optional.empty();
+        }
+        return prosecutionCase.getDefendants().stream()
+                .filter(defendant -> nonNull(defendant.getOffences()))
+                .filter(defendant -> defendant.getOffences().stream().anyMatch(offence -> offenceId.equals(offence.getId())))
+                .map(Defendant::getId)
+                .findFirst();
     }
 
     public Hearing updateHearingForHearingUpdated(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final Hearing hearing) {

@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -123,6 +124,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -1479,6 +1481,145 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
         assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
+    }
+
+    @Test
+    public void transformConfirmedHearingShouldDropProsecutionCasesForApplicationHearing() {
+        final UUID courtCentreId = randomUUID();
+        final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
+        final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
+        final UUID matchedOffenceId = fromString("ca438f25-e9a4-4a6b-a26d-467674755171");
+        final UUID applicationId = randomUUID();
+        final UUID concludedApplicationOffenceId = randomUUID();
+
+        mockCourtCentre(courtCentreId);
+        mockProsecutionCaseLookup();
+        mockCourtApplicationLookup(courtApplication().withId(applicationId)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(Offence.offence().withId(concludedApplicationOffenceId).withProceedingsConcluded(true).build()))
+                        .build()))
+                .build());
+
+        final ConfirmedHearing confirmedHearing = confirmedHearingWith(courtCentreId, caseId, defendantId, matchedOffenceId, applicationId);
+
+        final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
+
+        // all application offences concluded -> application hearing: prosecution cases dropped, application offences kept
+        assertThat(hearing.getProsecutionCases(), is(nullValue()));
+        assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().size(), is(1));
+        assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(concludedApplicationOffenceId));
+    }
+
+    @Test
+    public void transformConfirmedHearingShouldMoveActiveApplicationOffenceToProsecutionAndClearItFromApplication() {
+        final UUID courtCentreId = randomUUID();
+        final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
+        final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
+        final UUID sharedOffenceId = fromString("ca438f25-e9a4-4a6b-a26d-467674755171");
+        final UUID applicationId = randomUUID();
+
+        mockCourtCentre(courtCentreId);
+        mockProsecutionCaseLookup();
+        mockCourtApplicationLookup(courtApplication().withId(applicationId)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(Offence.offence().withId(sharedOffenceId).withProceedingsConcluded(false).build()))
+                        .build()))
+                .build());
+
+        final ConfirmedHearing confirmedHearing = confirmedHearingWith(courtCentreId, caseId, defendantId, sharedOffenceId, applicationId);
+
+        final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
+
+        // active application offence kept once under prosecution and removed from the application case
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(sharedOffenceId));
+        assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
+    }
+
+    @Test
+    public void offenceOwnerResolverShouldFetchEachProsecutionCaseOnlyOncePerCall() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offence1 = randomUUID();
+        final UUID offence2 = randomUUID();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                        .withOffences(asList(
+                                Offence.offence().withId(offence1).build(),
+                                Offence.offence().withId(offence2).build()))
+                        .build()))
+                .build();
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
+                .build();
+
+        final Function<Object, JsonEnvelope> prosecutionCaseFn = mock(Function.class);
+        final JsonEnvelope prosecutionCaseRequest = mock(JsonEnvelope.class);
+        final JsonEnvelope prosecutionCaseResponse = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(finalEnvelope, "progression.query.prosecutioncase-v2")).thenReturn(prosecutionCaseFn);
+        when(prosecutionCaseFn.apply(any())).thenReturn(prosecutionCaseRequest);
+        when(prosecutionCaseResponse.payloadAsJsonObject()).thenReturn(responsePayload);
+        when(requester.requestAsAdmin(prosecutionCaseRequest)).thenReturn(prosecutionCaseResponse);
+
+        final HearingOffenceFilter.OffenceOwnerResolver resolver = progressionService.offenceOwnerResolver(finalEnvelope);
+
+        // two offences belonging to the same case are both resolved to the owning defendant...
+        assertThat(resolver.resolveDefendantIdByOffenceId(caseId, offence1).orElse(null), is(defendantId));
+        assertThat(resolver.resolveDefendantIdByOffenceId(caseId, offence2).orElse(null), is(defendantId));
+
+        // ...but the prosecution case is fetched from the API only once
+        verify(requester, times(1)).requestAsAdmin(prosecutionCaseRequest);
+    }
+
+    private void mockCourtCentre(final UUID courtCentreId) {
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", "ADDRESS1").add("oucode", "OU").add("lja", "ljaCode").build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode").withLjaName("name").withWelshLjaName("welshName").build());
+    }
+
+    private void mockProsecutionCaseLookup() {
+        final Function<Object, JsonEnvelope> prosecutionCaseFn = mock(Function.class);
+        final JsonEnvelope prosecutionCaseRequest = mock(JsonEnvelope.class);
+        final JsonEnvelope prosecutionCaseResponse = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(finalEnvelope, "progression.query.prosecutioncase-v2")).thenReturn(prosecutionCaseFn);
+        when(prosecutionCaseFn.apply(any())).thenReturn(prosecutionCaseRequest);
+        when(prosecutionCaseResponse.payloadAsJsonObject()).thenReturn(getPayload("caseQueryApiWithCourtOrdersExpectedResponse.json"));
+        when(requester.requestAsAdmin(prosecutionCaseRequest)).thenReturn(prosecutionCaseResponse);
+    }
+
+    private void mockCourtApplicationLookup(final CourtApplication application) {
+        // Build the payload up front: invoking the spy converter inside a when(...).thenReturn(...)
+        // argument would trip Mockito's UnfinishedStubbingException.
+        final JsonObject applicationPayload = createObjectBuilder()
+                .add("courtApplication", objectToJsonObjectConverter.convert(application))
+                .build();
+        final Function<Object, JsonEnvelope> applicationFn = mock(Function.class);
+        final JsonEnvelope applicationRequest = mock(JsonEnvelope.class);
+        final JsonEnvelope applicationResponse = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(finalEnvelope, "progression.query.application-only")).thenReturn(applicationFn);
+        when(applicationFn.apply(any())).thenReturn(applicationRequest);
+        when(applicationResponse.payloadAsJsonObject()).thenReturn(applicationPayload);
+        when(requester.requestAsAdmin(applicationRequest)).thenReturn(applicationResponse);
+    }
+
+    private ConfirmedHearing confirmedHearingWith(final UUID courtCentreId, final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID applicationId) {
+        return ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build())
+                .withCourtApplicationIds(singletonList(applicationId))
+                .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                        .withId(caseId)
+                        .withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(ConfirmedOffence.confirmedOffence().withId(offenceId).build()))
+                                .build()))
+                        .build()))
+                .build();
     }
 
     @Test
