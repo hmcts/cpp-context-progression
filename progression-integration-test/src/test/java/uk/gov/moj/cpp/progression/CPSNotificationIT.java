@@ -46,7 +46,7 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAnd
 import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 
-public class CPSNotificationIT extends AbstractIT {
+class CPSNotificationIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED = "public.defence.event.record-instruction-details";
     private static final String PUBLIC_DEFENCE_ORGANISATION_DISASSOCIATED = "public.defence.defence-organisation-disassociated";
     private static final String PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE = "public.defence.event.record-instruction-details.json";
@@ -81,7 +81,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenDefenceAssociatedWithCPSCriminalCase() throws JSONException {
+    void shouldNotifyCPSWhenDefenceAssociatedWithCPSCriminalCase() throws JSONException {
         addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -102,7 +102,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenDefenceAssociatedWithCPSCivilCase() {
+    void shouldNotifyCPSWhenDefenceAssociatedWithCPSCivilCase() {
         addCPSCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -121,7 +121,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceAssociatedWithCivilCase() {
+    void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceAssociatedWithCivilCase() {
         addCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -140,7 +140,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCriminalCase() throws JSONException {
+    void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCriminalCase() throws JSONException {
         addCPSProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -157,7 +157,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCivilCase() {
+    void shouldNotifyCPSWhenDefenceDisassociatedFromCPSCivilCase() {
         addCPSCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -174,7 +174,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceDisassociatedFromCivilCase() {
+    void shouldNotNotifyCPSWhenProsecutorIsNotCPSAndDefenceDisassociatedFromCivilCase() {
         addCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -191,7 +191,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenLAAAssociatesWithDefendantOnCPSCivilCase() {
+    void shouldNotifyCPSWhenLAAAssociatesWithDefendantOnCPSCivilCase() {
         stubLegalStatus("/restResource/ref-data-legal-statuses.json", STATUS_CODE);
         stubGetOrganisationDetailForLAAContractNumber(LAA_CONTRACT_NUMBER, ORGANISATION_ID, ORGANISATION_NAME);
         stubGetOrganisationQuery(userId, ORGANISATION_ID, ORGANISATION_NAME);
@@ -216,7 +216,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotifyCPSWhenLAADisassociatesFromDefendantOnCPSCivilCase() {
+    void shouldNotifyCPSWhenLAADisassociatesFromDefendantOnCPSCivilCase() {
         addCPSCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -232,7 +232,7 @@ public class CPSNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotNotifyCPSWhenLAADisassociatesFromDefendantOnNonCPSCivilCase() {
+    void shouldNotNotifyCPSWhenLAADisassociatesFromDefendantOnNonCPSCivilCase() {
         addCivilProsecutionCaseToCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
