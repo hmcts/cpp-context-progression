@@ -72,9 +72,15 @@ public class AddCasesToHearingBdfHandler {
     public void handleInsertCase(final Envelope<InsertCaseBdf> insertCaseBdfEnvelope) throws EventStreamException {
         final EventStream eventStream = eventSource.getStreamById(insertCaseBdfEnvelope.payload().getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.insertCase(insertCaseBdfEnvelope.payload().getProsecutionCase());
-        appendEventsToStream(insertCaseBdfEnvelope, eventStream, events);
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(insertCaseBdfEnvelope.metadata(), JsonValue.NULL);
 
+        if (prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope, insertCaseBdfEnvelope.payload().getProsecutionCaseId().toString()).isPresent()) {
+            final Stream<Object> events = caseAggregate.insertCaseV2(insertCaseBdfEnvelope.payload().getProsecutionCase());
+            appendEventsToStream(insertCaseBdfEnvelope, eventStream, events);
+        } else {
+            final Stream<Object> events = caseAggregate.insertCase(insertCaseBdfEnvelope.payload().getProsecutionCase());
+            appendEventsToStream(insertCaseBdfEnvelope, eventStream, events);
+        }
     }
 
     @Handles("progression.command.handler.remove-duplicate-application-bdf")

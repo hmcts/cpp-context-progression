@@ -1,4 +1,27 @@
 {
+  "hearingDateTime": "2015-01-12T05:27:17.210Z",
+  "hearingId": "00000000-0000-0000-0000-000000000000",
+  "courtCentre": {
+    "address": {
+      "address1": "The Law Courts",
+      "address2": "Altyre Road",
+      "address3": "Croydon",
+      "address4": "",
+      "address5": "",
+      "postcode": "CR9 5AB"
+    },
+    "code": "C01CY00",
+    "courtHearingLocation": "C01CY00",
+    "courtLocationCode": "0418",
+    "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+    "lja": {
+      "ljaCode": "2576",
+      "ljaName": "South London Magistrates' Court"
+    },
+    "name": "Croydon Crown Court",
+    "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+    "roomName": "Courtroom 01"
+  },
   "prosecutionCase": {
     "id": "779d4540-d0ae-11e9-bb65-2a2ae2dbcce4",
     "prosecutionCaseIdentifier": {

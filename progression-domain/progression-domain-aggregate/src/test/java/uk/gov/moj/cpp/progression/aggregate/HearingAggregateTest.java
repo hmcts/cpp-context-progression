@@ -5,10 +5,10 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,8 +42,8 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
-import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
+import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -1041,12 +1041,61 @@ public class HearingAggregateTest {
 
         final List<Object> events = hearingAggregate.processHearingResults(prosecutionCasesResultedV2.getHearing(),ZonedDateTime.now(),null, LocalDate.now(), referenceResultIds).collect(toList());
 
-        assertTrue(events.stream().noneMatch(event -> event.getClass().equals(ProsecutionCasesResultedV2.class)));
-        assertThat(events.size(), is(3));
+        assertThat(events.size(), is(4));
         assertThat(events.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
         assertThat(events.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
-        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
+        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+        assertThat(events.get(3).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
+    }
 
+    @Test
+    public void shouldUseSameUpdatedCaseStatusForHearingResultedAndApplicationsResulted() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("ACTIVE")
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.FINAL)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build()))
+                .build();
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now(), referenceResultIds).collect(toList());
+
+        final HearingResulted hearingResulted = (HearingResulted) events.stream()
+                .filter(HearingResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        final ApplicationsResulted applicationsResulted = (ApplicationsResulted) events.stream()
+                .filter(ApplicationsResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        assertEquals("INACTIVE", hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getCaseStatus());
     }
 
     @Test

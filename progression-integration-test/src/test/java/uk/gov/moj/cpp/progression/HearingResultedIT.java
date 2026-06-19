@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import javax.json.JsonObject;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -68,6 +70,7 @@ public class HearingResultedIT extends AbstractIT {
     private String newCourtCentreId;
     private String newCourtCentreName;
     private String applicationId;
+    final String sittingDay = "2050-05-18T09:01:01.001Z";
 
     @BeforeEach
     public void setUp() {
@@ -125,12 +128,13 @@ public class HearingResultedIT extends AbstractIT {
 
         hearingId3 = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, List.of(hearingId));
 
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId3, defendantId, courtCentreId, courtCentreName);
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed-add-defendant.json", caseId, hearingId3, defendantId, courtCentreId, courtCentreName, sittingDay);
 
         final JsonEnvelope publicEventEnvelopeForConfirm = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelopeForConfirm);
 
         verifyInMessagingQueueForCasesReferredToCourts();
+        pollHearingWithStatusInitialised(hearingId3);
 
         final JsonObject hearingAddDefenceCounselJson = getDefenceCounselPublicEventPayload(hearingId3, "a");
         final JsonEnvelope publicEventAddedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED,  randomUUID().toString()), hearingAddDefenceCounselJson);
@@ -210,11 +214,20 @@ public class HearingResultedIT extends AbstractIT {
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId, final String courtCentreName) {
-        return getHearingJsonObjectWithExistingHearingId(path, caseId, hearingId, defendantId, courtCentreId, courtCentreName, "");
+        return getHearingJsonObjectWithExistingHearingId(path, caseId, hearingId, defendantId, courtCentreId, courtCentreName, "",EMPTY);
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId, final String courtCentreName, final String sittingDay) {
+        return getHearingJsonObjectWithExistingHearingId(path, caseId, hearingId, defendantId, courtCentreId, courtCentreName, "", sittingDay);
     }
 
     private JsonObject getHearingJsonObjectWithExistingHearingId(final String path, final String caseId, final String hearingId,
                                                                  final String defendantId, final String courtCentreId, final String courtCentreName, final String existingHearingId) {
+        return getHearingJsonObjectWithExistingHearingId(path, caseId, hearingId, defendantId, courtCentreId, courtCentreName, existingHearingId, EMPTY);
+    }
+    private JsonObject getHearingJsonObjectWithExistingHearingId(final String path, final String caseId, final String hearingId,
+                                                                 final String defendantId, final String courtCentreId, final String courtCentreName, final String existingHearingId, final String sittingDay) {
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
@@ -223,6 +236,7 @@ public class HearingResultedIT extends AbstractIT {
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                         .replaceAll("EXISTING_H_ID", existingHearingId)
+                        .replaceAll("SITTING_DAY", sittingDay)
         );
     }
 
