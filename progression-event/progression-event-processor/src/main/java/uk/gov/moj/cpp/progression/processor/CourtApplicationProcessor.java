@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -127,7 +128,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String OLD_APPLICATION_ID = "oldApplicationId";
@@ -296,7 +296,7 @@ public class CourtApplicationProcessor {
     public void processCourtApplicationInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
 
-        if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
+        if (TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationProceedingsInitiated.getOldApplicationId());
@@ -966,7 +966,7 @@ public class CourtApplicationProcessor {
 
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
-        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+        return t -> map.putIfAbsent(keyExtractor.apply(t), TRUE) == null;
     }
 
     private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
@@ -977,9 +977,10 @@ public class CourtApplicationProcessor {
     }
 
     /**
-     * Determines whether every court application case is active, based on its offences' proceedings status.
-     * A case with offences is INACTIVE only when all its offences have {@code proceedingsConcluded == true},
-     * otherwise it is ACTIVE. A case with no offences falls back to the {@code caseStatus} check.
+     * Determines whether every court application case is active, based on its offences' proceedings
+     * status. A case with offences is INACTIVE only when all its offences have
+     * {@code proceedingsConcluded == true}, otherwise it is ACTIVE. A case with no offences falls
+     * back to the {@code caseStatus} check.
      */
     private boolean isAllActiveCasesByOffenceStatus(final Stream<CourtApplicationCase> courtApplicationCases) {
         return courtApplicationCases.allMatch(this::isActiveCaseByOffenceStatus);
@@ -989,11 +990,9 @@ public class CourtApplicationProcessor {
     boolean isActiveCaseByOffenceStatus(final CourtApplicationCase courtApplicationCase) {
         if (isNotEmpty(courtApplicationCase.getOffences())) {
             return courtApplicationCase.getOffences().stream()
-                    .anyMatch(offence -> !Boolean.TRUE.equals(offence.getProceedingsConcluded()));
+                    .anyMatch(offence -> !TRUE.equals(offence.getProceedingsConcluded()));
         }
-        return nonNull(courtApplicationCase.getCaseStatus())
-                && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
-                && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
+        return !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()) && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
     }
 
     private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {

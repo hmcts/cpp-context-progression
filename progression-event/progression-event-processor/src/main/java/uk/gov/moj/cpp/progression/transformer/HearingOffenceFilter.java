@@ -27,26 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Shapes the offences carried by a hearing payload before it is sent on as
- * {@code hearing.initiate}, so the persisted hearing (in the hearing context's {@code ha_hearing})
- * holds the same data the manage-hearing query produces today (CHD-2556), but computed once at the
- * source.
+ * Filter the case level and application level offences carried by a hearing before it is sent to hearing context.
  *
- * <p>Rules (applied to the hearing payload only — the application held in progression's store is a
- * separate, untouched copy; this class never mutates its input and always returns fresh objects):
- * <ul>
- *   <li>An offence is <b>concluded</b> when {@code proceedingsConcluded == TRUE}; {@code FALSE}/{@code null}
- *       means <b>active</b>. A concluded offence belongs under {@code courtApplicationCases}; an active
- *       offence must never sit there and is moved to the {@code prosecutionCases} side.</li>
- *   <li><b>Application hearing</b> — when every {@code courtApplicationCases} offence is concluded, the
- *       application copy is left untouched and {@code prosecutionCases} is dropped entirely.</li>
- *   <li><b>Active offences present under the application</b> — each active application offence is moved to
- *       the prosecution side (kept once if already present there, otherwise attached to its owning
- *       defendant via the supplied resolver) and removed from the application case; an application case
- *       whose offences all move has its offence list set to {@code null}. Prosecution offences not
- *       referenced by the application are then removed, and defendants/cases left empty are dropped.</li>
- *   <li>Court order offences are left untouched.</li>
- * </ul>
+ *  Filtration applied to the hearing payload only — the application held in progression viewstore is a separate, untouched copy.
+ *  A concluded offence belongs under courtApplicationCases; an active offence must never sit there and is moved to the prosecutionCases side.
+ *  When all offences under courtApplicationCases are concluded (inactive), they are left under courtApplicationCases and prosecutionCases is dropped entirely.
  */
 public final class HearingOffenceFilter {
 
@@ -62,7 +47,7 @@ public final class HearingOffenceFilter {
      */
     @FunctionalInterface
     public interface OffenceOwnerResolver {
-        Optional<UUID> resolveDefendantId(UUID prosecutionCaseId, UUID offenceId);
+        Optional<UUID> resolveDefendantIdByOffenceId(UUID prosecutionCaseId, UUID offenceId);
     }
 
     public static Hearing filterOffences(final Hearing hearing, final OffenceOwnerResolver ownerResolver) {
@@ -167,7 +152,7 @@ public final class HearingOffenceFilter {
                                                  final List<ProsecutionCase> workingProsecutionCases,
                                                  final OffenceOwnerResolver ownerResolver) {
         final Optional<UUID> defendantId = isNull(ownerResolver) ? Optional.empty()
-                : ownerResolver.resolveDefendantId(prosecutionCaseId, offence.getId());
+                : ownerResolver.resolveDefendantIdByOffenceId(prosecutionCaseId, offence.getId());
 
         if (defendantId.isEmpty()) {
             LOGGER.warn("Could not resolve owning defendant for active application offence {} in prosecution case {}; leaving it on the application side",

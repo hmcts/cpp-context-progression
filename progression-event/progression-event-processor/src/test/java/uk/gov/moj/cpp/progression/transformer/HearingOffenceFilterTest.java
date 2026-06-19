@@ -295,6 +295,192 @@ class HearingOffenceFilterTest {
         assertThat(inputDefendant.getOffences(), hasSize(2));
     }
 
+    // ---- Multiple cases / multiple offences ---------------------------------
+
+    @Test
+    void shouldFilterOffencesIndependentlyAcrossMultipleProsecutionCases() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID activeId1 = randomUUID();
+        final UUID activeId2 = randomUUID();
+        final UUID unreferencedId1 = randomUUID();
+        final UUID unreferencedId2 = randomUUID();
+
+        // Two applications, each referencing a different case with one active offence.
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(asList(
+                        application(caseId1, activeOffence(activeId1)),
+                        application(caseId2, activeOffence(activeId2))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(defendantId1, activeOffence(activeId1), activeOffence(unreferencedId1))),
+                        prosecutionCase(caseId2, defendant(defendantId2, activeOffence(activeId2), activeOffence(unreferencedId2)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        // Each case keeps only the offence its application references.
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()), contains(activeId1));
+        assertThat(offenceIds(result.getProsecutionCases().get(1).getDefendants().get(0).getOffences()), contains(activeId2));
+    }
+
+    @Test
+    void shouldKeepBothCasesWhenEachHasAtLeastOneReferencedOffence() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID activeId1 = randomUUID();
+        final UUID activeId2 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(asList(
+                        application(caseId1, activeOffence(activeId1)),
+                        application(caseId2, activeOffence(activeId2))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(randomUUID(), activeOffence(activeId1))),
+                        prosecutionCase(caseId2, defendant(randomUUID(), activeOffence(activeId2)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        assertThat(result.getProsecutionCases(), hasSize(2));
+    }
+
+    @Test
+    void shouldDropOnlyTheCaseWhoseDefendantsAreLeftEmptyAfterCleanup() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID activeId1 = randomUUID();
+        final UUID unreferencedId = randomUUID();
+
+        // Application references caseId1 only; caseId2's offence is unreferenced and will be dropped.
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId1, activeOffence(activeId1))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(randomUUID(), activeOffence(activeId1))),
+                        prosecutionCase(caseId2, defendant(randomUUID(), activeOffence(unreferencedId)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        assertThat(result.getProsecutionCases(), hasSize(1));
+        assertThat(result.getProsecutionCases().get(0).getId(), is(caseId1));
+    }
+
+    @Test
+    void shouldHandleMultipleActiveOffencesAcrossMultipleDefendantsInTheSameCase() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID activeId1 = randomUUID();
+        final UUID activeId2 = randomUUID();
+        final UUID unreferencedId = randomUUID();
+
+        // Single application with two active offences; each offence belongs to a different defendant.
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, activeOffence(activeId1), activeOffence(activeId2))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(defendantId1, activeOffence(activeId1), activeOffence(unreferencedId)),
+                        defendant(defendantId2, activeOffence(activeId2)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        final List<Defendant> resultDefendants = result.getProsecutionCases().get(0).getDefendants();
+        assertThat(resultDefendants, hasSize(2));
+        assertThat(offenceIds(resultDefendants.get(0).getOffences()), contains(activeId1));
+        assertThat(offenceIds(resultDefendants.get(1).getOffences()), contains(activeId2));
+    }
+
+    @Test
+    void shouldDropAllProsecutionCasesWhenAllApplicationOffencesConcludedAcrossMultipleCases() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+
+        // Two applications, both fully concluded — prosecution cases must be dropped entirely.
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(asList(
+                        application(caseId1, concludedOffence(randomUUID())),
+                        application(caseId2, concludedOffence(randomUUID()))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(randomUUID(), activeOffence(randomUUID()))),
+                        prosecutionCase(caseId2, defendant(randomUUID(), activeOffence(randomUUID())))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        assertThat(result.getProsecutionCases(), is(nullValue()));
+    }
+
+    @Test
+    void shouldKeepOffenceInEveryProsecutionCaseWhoseIdIsInTheGlobalReferenceSet() {
+        // The reference set is global (not per-case scoped), so if an offence UUID appears in a prosecution
+        // case that was not referenced by any application it is still kept because the ID matched.
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID sharedOffenceId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId1, activeOffence(sharedOffenceId))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(defendantId1, activeOffence(sharedOffenceId))),
+                        prosecutionCase(caseId2, defendant(defendantId2, activeOffence(sharedOffenceId)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, NO_OWNER);
+
+        // Both cases survive because the shared offence ID is in the global reference set.
+        assertThat(result.getProsecutionCases(), hasSize(2));
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()), contains(sharedOffenceId));
+        assertThat(offenceIds(result.getProsecutionCases().get(1).getDefendants().get(0).getOffences()), contains(sharedOffenceId));
+        // The active offence was moved off the application.
+        assertThat(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
+    }
+
+    @Test
+    void shouldApplyResolverPerCaseWhenActiveOffenceMissingFromMultipleCases() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID existingInCase1 = randomUUID();
+        final UUID existingInCase2 = randomUUID();
+        final UUID missingInCase1 = randomUUID();
+        final UUID missingInCase2 = randomUUID();
+
+        // Each case has one prosecution offence already; the application offence is absent and must be added via resolver.
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(asList(
+                        application(caseId1, activeOffence(missingInCase1)),
+                        application(caseId2, activeOffence(missingInCase2))))
+                .withProsecutionCases(asList(
+                        prosecutionCase(caseId1, defendant(defendantId1, activeOffence(existingInCase1))),
+                        prosecutionCase(caseId2, defendant(defendantId2, activeOffence(existingInCase2)))))
+                .build();
+
+        final OffenceOwnerResolver resolver = (caseId, offenceId) -> {
+            if (missingInCase1.equals(offenceId)) return Optional.of(defendantId1);
+            if (missingInCase2.equals(offenceId)) return Optional.of(defendantId2);
+            return Optional.empty();
+        };
+
+        final Hearing result = HearingOffenceFilter.filterOffences(hearing, resolver);
+
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()),
+                containsInAnyOrder(existingInCase1, missingInCase1));
+        assertThat(offenceIds(result.getProsecutionCases().get(1).getDefendants().get(0).getOffences()),
+                containsInAnyOrder(existingInCase2, missingInCase2));
+    }
+
     // ---- Fixture helpers ----------------------------------------------------
 
     private static Offence activeOffence(final UUID id) {

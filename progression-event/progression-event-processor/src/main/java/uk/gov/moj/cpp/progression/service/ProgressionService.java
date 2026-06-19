@@ -1372,10 +1372,8 @@ public class ProgressionService {
     }
 
     /**
-     * Fallback used by {@link HearingOffenceFilter} when an active application offence is not already
-     * present under the hearing's prosecution cases: looks the offence's owning defendant up from the
-     * prosecution case held in the store. Returns empty (and the offence is left on the application side)
-     * if the case/offence cannot be resolved.
+     * Fallback -- when an active application offence is not already
+     * present under the prosecutionCases: fetch the caseDetails from the viewStore.
      */
     private Optional<UUID> resolveOffenceOwningDefendant(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final UUID offenceId) {
         if (isNull(prosecutionCaseId)) {
