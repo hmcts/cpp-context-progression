@@ -456,12 +456,13 @@ class HearingOffenceFilterTest {
         final UUID missingInCase1 = randomUUID();
         final UUID missingInCase2 = randomUUID();
 
-        // Each case has one prosecution offence already; the application offence is absent and must be added via resolver.
+        // Each application references both the existing prosecution offence and a second active offence
+        // that is absent from prosecution. The resolver must place the absent one onto the right defendant.
         final Hearing hearing = Hearing.hearing()
                 .withId(randomUUID())
                 .withCourtApplications(asList(
-                        application(caseId1, activeOffence(missingInCase1)),
-                        application(caseId2, activeOffence(missingInCase2))))
+                        application(caseId1, activeOffence(existingInCase1), activeOffence(missingInCase1)),
+                        application(caseId2, activeOffence(existingInCase2), activeOffence(missingInCase2))))
                 .withProsecutionCases(asList(
                         prosecutionCase(caseId1, defendant(defendantId1, activeOffence(existingInCase1))),
                         prosecutionCase(caseId2, defendant(defendantId2, activeOffence(existingInCase2)))))

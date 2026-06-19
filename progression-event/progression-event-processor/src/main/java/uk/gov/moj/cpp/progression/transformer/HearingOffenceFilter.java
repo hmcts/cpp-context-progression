@@ -27,11 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter the case level and application level offences carried by a hearing before it is sent to hearing context.
- *
- *  Filtration applied to the hearing payload only — the application held in progression viewstore is a separate, untouched copy.
- *  A concluded offence belongs under courtApplicationCases; an active offence must never sit there and is moved to the prosecutionCases side.
- *  When all offences under courtApplicationCases are concluded (inactive), they are left under courtApplicationCases and prosecutionCases is dropped entirely.
+ * Filter the case level and application level offences carried by a hearing before it is sent to
+ * hearing context.
+ * <p>
+ * Filtration applied to the hearing payload only — the application held in progression viewstore is
+ * a separate, untouched copy. A concluded offence belongs under courtApplicationCases; an active
+ * offence must never sit there and is moved to the prosecutionCases side. When all offences under
+ * courtApplicationCases are concluded (inactive), they are left under courtApplicationCases and
+ * prosecutionCases is dropped entirely.
  */
 public final class HearingOffenceFilter {
 
@@ -142,7 +145,7 @@ public final class HearingOffenceFilter {
                 .filter(applicationCase -> nonNull(applicationCase.getOffences()))
                 .forEach(applicationCase -> applicationCase.getOffences().stream()
                         .filter(HearingOffenceFilter::isActive)
-                        .filter(offence -> !movedOffenceIds.contains(offence.getId()))
+                        .filter(offence -> !movedOffenceIds.contains(offence.getId()))//the offences not already in prosecutionCases
                         .forEach(offence -> moveOffenceToProsecution(applicationCase.getProsecutionCaseId(), offence, movedOffenceIds, workingProsecutionCases, ownerResolver)));
     }
 

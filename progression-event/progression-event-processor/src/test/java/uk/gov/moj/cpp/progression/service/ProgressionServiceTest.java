@@ -124,6 +124,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -1535,6 +1536,43 @@ public class ProgressionServiceTest {
         assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(sharedOffenceId));
         assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
+    }
+
+    @Test
+    public void offenceOwnerResolverShouldFetchEachProsecutionCaseOnlyOncePerCall() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offence1 = randomUUID();
+        final UUID offence2 = randomUUID();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                        .withOffences(asList(
+                                Offence.offence().withId(offence1).build(),
+                                Offence.offence().withId(offence2).build()))
+                        .build()))
+                .build();
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
+                .build();
+
+        final Function<Object, JsonEnvelope> prosecutionCaseFn = mock(Function.class);
+        final JsonEnvelope prosecutionCaseRequest = mock(JsonEnvelope.class);
+        final JsonEnvelope prosecutionCaseResponse = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(finalEnvelope, "progression.query.prosecutioncase-v2")).thenReturn(prosecutionCaseFn);
+        when(prosecutionCaseFn.apply(any())).thenReturn(prosecutionCaseRequest);
+        when(prosecutionCaseResponse.payloadAsJsonObject()).thenReturn(responsePayload);
+        when(requester.requestAsAdmin(prosecutionCaseRequest)).thenReturn(prosecutionCaseResponse);
+
+        final HearingOffenceFilter.OffenceOwnerResolver resolver = progressionService.offenceOwnerResolver(finalEnvelope);
+
+        // two offences belonging to the same case are both resolved to the owning defendant...
+        assertThat(resolver.resolveDefendantIdByOffenceId(caseId, offence1).orElse(null), is(defendantId));
+        assertThat(resolver.resolveDefendantIdByOffenceId(caseId, offence2).orElse(null), is(defendantId));
+
+        // ...but the prosecution case is fetched from the API only once
+        verify(requester, times(1)).requestAsAdmin(prosecutionCaseRequest);
     }
 
     private void mockCourtCentre(final UUID courtCentreId) {
