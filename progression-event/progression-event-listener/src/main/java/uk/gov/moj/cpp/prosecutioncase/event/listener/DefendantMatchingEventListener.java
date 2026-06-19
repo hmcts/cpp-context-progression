@@ -191,9 +191,9 @@ public class DefendantMatchingEventListener {
     }
 
     private void updateMatchDefendantCaseHearing (final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
-        final MatchDefendantCaseHearingEntity defendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+        final List<MatchDefendantCaseHearingEntity> defendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
 
-        final List<MatchDefendantCaseHearingEntity> defendantCaseHearings = nonNull(defendantCaseHearingEntity) ? List.of(defendantCaseHearingEntity) : matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
+        final List<MatchDefendantCaseHearingEntity> defendantCaseHearings = nonNull(defendantCaseHearingEntity) && !defendantCaseHearingEntity.isEmpty() ? defendantCaseHearingEntity : matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
 
         if (nonNull(defendantCaseHearings) && !defendantCaseHearings.isEmpty()) {
             for (MatchDefendantCaseHearingEntity defendantCaseHearing : defendantCaseHearings) {
