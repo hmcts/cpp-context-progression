@@ -105,6 +105,7 @@ public class ListCourtHearingTransformerTest {
     final private String expectedDate = "2018-03-01";
     final private ZonedDateTime listedStartDateTime = ZonedDateTime.parse("2019-06-30T18:32:04.238Z");
     final private ZonedDateTime earliestStartDateTime = ZonedDateTime.parse("2019-05-30T18:32:04.238Z");
+    final private ZonedDateTime listedEndDateTime = ZonedDateTime.parse("2050-02-04T10:05:01.001Z");
     private static final String AUTOMATIC_ANONYMITY = "Automatic anonymity";
     private static final UUID MARKER_TYPE_ID = UUID.randomUUID();
     private static final String MARKER_TYPE_CODE = "MarkerTypeCode";
@@ -544,6 +545,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getEstimatedMinutes(), is(estimateMinutes));
         assertThat(listCourtHearing.getHearings().get(0).getReportingRestrictionReason(), is(AUTOMATIC_ANONYMITY));
         assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toString(), is(earliestStartDateTime.toString()));
+        assertThat(listCourtHearing.getHearings().get(0).getEndDate(), is(listedEndDateTime.toLocalDate()));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCpsOrganisation(), is(cpsOrganisation));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendantId));
@@ -1156,6 +1158,7 @@ public class ListCourtHearingTransformerTest {
                         .withDefendantId(defendantId)
                         .build()))
                 .withListedStartDateTime(isListedStartDateTimePresent ? listedStartDateTime : null)
+                .withListedEndDateTime(listedEndDateTime)
                 .withListingDirections("wheelchair access required")
                 .withProsecutorDatesToAvoid("Thursdays")
                 .withReportingRestrictionReason(AUTOMATIC_ANONYMITY)

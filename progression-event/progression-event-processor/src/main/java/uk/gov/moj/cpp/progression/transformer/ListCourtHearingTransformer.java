@@ -293,6 +293,7 @@ public class ListCourtHearingTransformer {
         return HearingListingNeeds.hearingListingNeeds()
                 .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
                 .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
+                .withEndDate(listHearingRequest.getListedEndDateTime() != null ? listHearingRequest.getListedEndDateTime().toLocalDate() : null)
                 .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
                 .withEstimatedDuration(listHearingRequest.getEstimatedDuration())
                 .withId(hearingId)
