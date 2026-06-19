@@ -2569,6 +2569,84 @@ public class CourtApplicationProcessorTest {
         );
     }
 
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnFalseWhenAllOffencesConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(true).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenAnyOffenceNotConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(false).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldTreatNullProceedingsConcludedAsActive() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(singletonList(Offence.offence().build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToActiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToInactiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToClosedCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("CLOSED")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToCaseStatusWhenOffencesEmpty() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.<Offence>of())
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnFalseWhenNoOffencesAndCaseStatusNull() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase().build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
     private MetadataBuilder getMetadata(final String eventName) {
         return metadataBuilder()
                 .withId(randomUUID())

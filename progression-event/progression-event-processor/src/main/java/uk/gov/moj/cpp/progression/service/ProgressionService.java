@@ -102,6 +102,7 @@ import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
@@ -1346,7 +1347,7 @@ public class ProgressionService {
 
         final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
-        return Hearing.hearing()
+        final Hearing hearing = Hearing.hearing()
                 .withHearingDays(confirmedHearing.getHearingDays())
                 .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
                 .withJurisdictionType(confirmedHearing.getJurisdictionType())
@@ -1362,6 +1363,39 @@ public class ProgressionService {
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
                 .build();
+
+        // Shape application/case offences once, at the source, so the persisted hearing matches the
+        // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
+        // concluded ones stay with the application.
+        return HearingOffenceFilter.filterOffences(hearing,
+                (prosecutionCaseId, offenceId) -> resolveOffenceOwningDefendant(jsonEnvelope, prosecutionCaseId, offenceId));
+    }
+
+    /**
+     * Fallback used by {@link HearingOffenceFilter} when an active application offence is not already
+     * present under the hearing's prosecution cases: looks the offence's owning defendant up from the
+     * prosecution case held in the store. Returns empty (and the offence is left on the application side)
+     * if the case/offence cannot be resolved.
+     */
+    private Optional<UUID> resolveOffenceOwningDefendant(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final UUID offenceId) {
+        if (isNull(prosecutionCaseId)) {
+            return Optional.empty();
+        }
+        try {
+            final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, prosecutionCaseId.toString());
+            final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            if (isNull(prosecutionCase.getDefendants())) {
+                return Optional.empty();
+            }
+            return prosecutionCase.getDefendants().stream()
+                    .filter(defendant -> nonNull(defendant.getOffences()))
+                    .filter(defendant -> defendant.getOffences().stream().anyMatch(offence -> offenceId.equals(offence.getId())))
+                    .map(Defendant::getId)
+                    .findFirst();
+        } catch (final RuntimeException e) {
+            LOGGER.warn("Unable to resolve owning defendant for offence {} in prosecution case {}: {}", offenceId, prosecutionCaseId, e.getMessage());
+            return Optional.empty();
+        }
     }
 
     public Hearing updateHearingForHearingUpdated(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final Hearing hearing) {

@@ -100,7 +100,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -121,7 +120,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -978,6 +976,26 @@ public class CourtApplicationProcessor {
                         && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
     }
 
+    /**
+     * Determines whether every court application case is active, based on its offences' proceedings status.
+     * A case with offences is INACTIVE only when all its offences have {@code proceedingsConcluded == true},
+     * otherwise it is ACTIVE. A case with no offences falls back to the {@code caseStatus} check.
+     */
+    private boolean isAllActiveCasesByOffenceStatus(final Stream<CourtApplicationCase> courtApplicationCases) {
+        return courtApplicationCases.allMatch(this::isActiveCaseByOffenceStatus);
+    }
+
+    // package-private for unit testing
+    boolean isActiveCaseByOffenceStatus(final CourtApplicationCase courtApplicationCase) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase.getOffences().stream()
+                    .anyMatch(offence -> !Boolean.TRUE.equals(offence.getProceedingsConcluded()));
+        }
+        return nonNull(courtApplicationCase.getCaseStatus())
+                && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
+                && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
+    }
+
     private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {
 
         return hearing.getProsecutionCases().stream()
@@ -1045,7 +1063,7 @@ public class CourtApplicationProcessor {
 
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
 
-        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
             final List<CourtApplicationCase> courtApplicationCasesForWhichWeNeedToCreateHearing = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .filter(courtApplicationCase -> hearing.getProsecutionCases().stream().noneMatch(prosecutionCase -> courtApplicationCase.getProsecutionCaseId().equals(prosecutionCase.getId())))
                     .collect(toList());
