@@ -437,6 +437,7 @@
           "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
           "masterDefendant": {
             "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "pncId": "PNC-APP-001",
             "personDefendant": {
               "arrestSummonsNumber": "TFL",
               "bailStatus": {
@@ -758,6 +759,7 @@
           "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
           "masterDefendant": {
             "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "pncId": "PNC-APP-001",
             "personDefendant": {
               "arrestSummonsNumber": "TFL",
               "bailStatus": {

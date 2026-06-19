@@ -120,6 +120,7 @@ public class CourtlistQueryView {
     private static final String GENDER = "gender";
     private static final String DEFENCE_ORGANIZATION = "defenceOrganization";
     private static final String ASN = "asn";
+    private static final String PNC_ID = "pncId";
     private static final String OFFENCE_CODE = "offenceCode";
     private static final String OFFENCE_TITLE = "offenceTitle";
     private static final String OFFENCE_WORDING = "offenceWording";
@@ -412,6 +413,7 @@ public class CourtlistQueryView {
     }
 
     private void addMasterDefendantToPartyBuilder(final MasterDefendant masterDefendant, final JsonObjectBuilder partyBuilder) {
+        ofNullable(masterDefendant.getPncId()).ifPresent(pncId -> partyBuilder.add(PNC_ID, pncId));
         if (masterDefendant.getPersonDefendant() != null
             && masterDefendant.getPersonDefendant().getPersonDetails() != null) {
             final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
@@ -430,6 +432,7 @@ public class CourtlistQueryView {
 
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
+            ofNullable(masterDefendant.getPncId()).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
                 final PersonDefendant pd = masterDefendant.getPersonDefendant();
                 final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
@@ -623,6 +626,7 @@ public class CourtlistQueryView {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
         }
+        ofNullable(masterDefendant).map(MasterDefendant::getPncId).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
         ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add(ASN, asn));
         //TODO not sure about defenceOrganization
         defendantBuilder.add(DEFENCE_ORGANIZATION, "-");
@@ -639,6 +643,8 @@ public class CourtlistQueryView {
     private JsonObject enrichDefendant(final JsonObject defendantFromListing, final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
         final JsonObjectBuilder defendantJsonBuilder = createObjectBuilder();
         defendantFromListing.forEach((name, value) -> defendantJsonBuilder.add(name, value));
+
+        ofNullable(defendant.getPncId()).ifPresent(pncId -> defendantJsonBuilder.add(PNC_ID, pncId));
 
         final PersonDefendant personDefendant = defendant.getPersonDefendant();
         if (nonNull(personDefendant)) {
