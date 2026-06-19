@@ -294,10 +294,15 @@ public class CourtProceedingsInitiatedProcessor {
     }
 
     private boolean isNewCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase) {
+        if (pCase.getMigrationSourceSystem() != null
+                && pCase.getMigrationSourceSystem().getMigrationSourceSystemName() != null) {
+            return true;
+        }
+
         String prosecutionAuthorityReference = pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
         String caseURN = pCase.getProsecutionCaseIdentifier().getCaseURN();
 
-        return getCaseByReference(jsonEnvelope, pCase,prosecutionAuthorityReference) &&  getCaseByReference(jsonEnvelope, pCase,caseURN) ;
+        return getCaseByReference(jsonEnvelope, pCase, prosecutionAuthorityReference) && getCaseByReference(jsonEnvelope, pCase, caseURN);
     }
 
     private boolean getCaseByReference(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase, final String reference) {
