@@ -23,7 +23,7 @@ public interface MatchDefendantCaseHearingRepository extends EntityRepository<Ma
     List<MatchDefendantCaseHearingEntity> findByDefendantId(UUID defendantId);
 
     @Query(singleResult = SingleResultType.OPTIONAL)
-    MatchDefendantCaseHearingEntity findByHearingIdAndProsecutionCaseIdAndDefendantId(UUID hearingId, UUID prosecutionCaseId, UUID defendantId);
+    List<MatchDefendantCaseHearingEntity> findByHearingIdAndProsecutionCaseIdAndDefendantId(UUID hearingId, UUID prosecutionCaseId, UUID defendantId);
 
     @Query(value = "from MatchDefendantCaseHearingEntity m where m.masterDefendantId IN  (?1) ")
     List<MatchDefendantCaseHearingEntity> findByMasterDefendantId(List<UUID> masterDefendantId);
