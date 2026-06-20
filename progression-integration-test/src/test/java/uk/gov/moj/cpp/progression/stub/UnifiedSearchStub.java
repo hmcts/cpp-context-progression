@@ -12,6 +12,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+
 
 public class UnifiedSearchStub {
 
@@ -21,6 +24,30 @@ public class UnifiedSearchStub {
         listAllStubMappings()
                 .getMappings()
                 .removeIf(m -> m.getRequest().getUrlPath() != null && m.getRequest().getUrlPath().equals(SEARCH_QUERY));
+    }
+
+    /**
+     * Registers an unconditional, highest-priority unified-search stub that always returns an empty
+     * result set, independent of the shared stateful {@code EXACT_IS_EMPTY_PARTIAL_HAS_RECORD}
+     * scenario installed once-per-JVM by {@code AbstractIT.defaultStubs()} (which alternates
+     * empty/match on successive calls across the whole VM). Use in tests that must deterministically
+     * see "no matched defendant" regardless of how many unified-search calls earlier test classes
+     * made. Always pair with {@link #removeStubMapping(StubMapping)} in teardown so the high-priority
+     * stub does not leak into later test classes that rely on the alternating scenario.
+     */
+    public static StubMapping stubUnifiedSearchQueryAlwaysEmpty() {
+        return stubFor(get(urlPathMatching(SEARCH_QUERY))
+                .atPriority(1)
+                .willReturn(aResponse()
+                        .withStatus(OK.getStatusCode())
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(getUnifiedSearchEmptyResult())
+                ));
+    }
+
+    public static void removeStubMapping(final StubMapping stubMapping) {
+        WireMock.removeStub(stubMapping);
     }
 
     public static void stubUnifiedSearchQueryExactMatchWithEmptyResults() {
