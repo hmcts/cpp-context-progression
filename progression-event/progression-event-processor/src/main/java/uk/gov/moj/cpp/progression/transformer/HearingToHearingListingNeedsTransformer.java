@@ -84,7 +84,7 @@ public class HearingToHearingListingNeedsTransformer {
                         )
                 );
 
-        transformForApplications(hearing, bookingReferenceCourtScheduleIdMap, hearingListingNeedsMap);
+        transformForApplications(hearing, bookingReferenceCourtScheduleIdMap, hearingListingNeedsMap, hearing.getSeedingHearing());
 
         return new ArrayList<>(hearingListingNeedsMap.values());
     }
@@ -114,7 +114,7 @@ public class HearingToHearingListingNeedsTransformer {
                         )
                 );
 
-        transformForApplications(hearing, bookingReferenceCourtScheduleIds, hearingListingNeedsMap);
+        transformForApplications(hearing, bookingReferenceCourtScheduleIds, hearingListingNeedsMap, seedingHearing);
         setSeedingHearingForApplicationsOffences(hearing.getCourtApplications(), seedingHearing);
 
         return new ArrayList<>(hearingListingNeedsMap.values());
@@ -213,7 +213,7 @@ public class HearingToHearingListingNeedsTransformer {
         addProsecutionCase(hearingListingNeeds, prosecutionCase, defendant, offence, hearing, shouldPopulateCommittingCourt, committingCourt);
     }
 
-    private void transformForApplications(final Hearing hearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, final Map<String, HearingListingNeeds> hearingListingNeedsMap) {
+    private void transformForApplications(final Hearing hearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, final Map<String, HearingListingNeeds> hearingListingNeedsMap, final SeedingHearing seedingHearing) {
         ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                 .forEach(courtApplication -> {
                     final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
@@ -222,7 +222,8 @@ public class HearingToHearingListingNeedsTransformer {
                             hearingListingNeedsMap,
                             bookingReferenceCourtScheduleIdMap,
                             hearing.getJudiciary(),
-                            hearing.getProsecutionCases()));
+                            hearing.getProsecutionCases(),
+                            seedingHearing));
                 });
     }
 
@@ -230,7 +231,8 @@ public class HearingToHearingListingNeedsTransformer {
                            final JudicialResult judicialResult,
                            final Map<String, HearingListingNeeds> hearingListingNeedsMap,
                            final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap,
-                           final List<JudicialRole> judiciaries, List<ProsecutionCase> prosecutionCases) {
+                           final List<JudicialRole> judiciaries, List<ProsecutionCase> prosecutionCases,
+                           final SeedingHearing seedingHearing) {
 
         if (validateNextHearing(judicialResult)) {
             return;
@@ -247,7 +249,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         final String key = getKey(bookingReferenceCourtScheduleIdMap, nextHearing, bookingReference);
 
-        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries, false), courtApplication, prosecutionCases);
+        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries, false), courtApplication, prosecutionCases, seedingHearing);
 
         if (hearingListingNeedsMap.containsKey(key)) {
             if (isNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
@@ -293,8 +295,18 @@ public class HearingToHearingListingNeedsTransformer {
         return isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId()) || nonNull(judicialResult.getNextHearing().getDateToBeFixed());
     }
 
-    private HearingListingNeeds addCourtApplication(final HearingListingNeeds hearingListingNeeds, final CourtApplication courtApplication, List<ProsecutionCase> prosecutionCases) {
-        final HearingListingNeeds.Builder builder = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds).withProsecutionCases(prosecutionCases);
+    private HearingListingNeeds addCourtApplication(final HearingListingNeeds hearingListingNeeds, final CourtApplication courtApplication, List<ProsecutionCase> prosecutionCases, final SeedingHearing seedingHearing) {
+        final List<ProsecutionCase> prosecutionCasesWithSeedingHearings = ofNullable(prosecutionCases).stream().flatMap(Collection::stream)
+                .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                        .withDefendants(ofNullable(prosecutionCase.getDefendants()).stream().flatMap(Collection::stream).map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(ofNullable(defendant.getOffences()).stream().flatMap(Collection::stream).map(offence -> Offence.offence().withValuesFrom(offence)
+                                        .withSeedingHearing(seedingHearing)
+                                        .build()).toList())
+                                .build()).toList())
+                        .build())
+                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
+
+        final HearingListingNeeds.Builder builder = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds).withProsecutionCases(prosecutionCasesWithSeedingHearings);
         if (isEmpty(hearingListingNeeds.getCourtApplications())) {
             final List<CourtApplication> courtApplications = new ArrayList<>();
             courtApplications.add(courtApplication);

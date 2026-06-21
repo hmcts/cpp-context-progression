@@ -413,6 +413,9 @@ subscriptions_descriptor:
         - name: progression.event-hearing-remove-duplicate-application-bdf
           schema_uri: http://moj.gov.uk/cpp/progression/court/progression.event-hearing-remove-duplicate-application-bdf.json
 
+        - name: progression.event.case-inserted-bdf-v2
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-inserted-bdf-v2.json
+
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
