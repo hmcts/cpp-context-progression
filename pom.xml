@@ -11,7 +11,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.258-CCSPH2-SNAPSHOT</version>
+    <version>17.0.260-CCSPH2DLRM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -70,12 +70,12 @@
         <listing.version>17.103.163</listing.version>
         <hearing.version>17.104.173</hearing.version>
         <usersgroups.version>17.104.50</usersgroups.version>
-        <defence.version>17.0.99</defence.version>
+        <defence.version>17.104.101</defence.version>
         <referencedata.offence.version>17.103.43</referencedata.offence.version>
         <coredomain.version>17.103.13</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>17.103.107</results.version>
+        <results.version>17.104.110</results.version>
         <notification.notify.version>17.104.44</notification.notify.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.104.114</systemdocgenerator.version>

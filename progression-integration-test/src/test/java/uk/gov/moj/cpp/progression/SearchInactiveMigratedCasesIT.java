@@ -9,6 +9,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.genera
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollInactiveProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStubMapping;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryAlwaysEmpty;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -17,8 +19,11 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import java.time.LocalDate;
 import java.util.List;
 
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +40,27 @@ public class SearchInactiveMigratedCasesIT extends AbstractIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
+
+    private static StubMapping unifiedSearchEmptyStub;
+
+    @BeforeAll
+    public static void forceEmptyUnifiedSearch() {
+        // This test asserts the migrated inactive case keeps its own defendantId as masterDefendantId,
+        // i.e. the defendant is NOT matched in unified search. AbstractIT.defaultStubs() installs a
+        // single, stateful unified-search scenario (shared across the whole JVM, reset only once) that
+        // alternates empty <-> match (masterDefendantId=0a5372c5...) on successive calls. Whether this
+        // test lands on "empty" or "match" therefore depends on the parity of every unified-search call
+        // made by every earlier test class — a non-deterministic, order-dependent flake. Pin an
+        // unconditional, always-empty response so this test is deterministic regardless of ordering.
+        unifiedSearchEmptyStub = stubUnifiedSearchQueryAlwaysEmpty();
+    }
+
+    @AfterAll
+    public static void removeEmptyUnifiedSearchStub() {
+        if (unifiedSearchEmptyStub != null) {
+            removeStubMapping(unifiedSearchEmptyStub);
+        }
+    }
 
     @BeforeEach
     public void setUp() {
