@@ -292,8 +292,8 @@ public class DefendantHelper {
     }
 
     public static boolean isConcludedForLaa(final Offence offence) {
-        return hasFinalJudicialResult(offence.getJudicialResults())
-                && offence.getProceedingsConcluded() != null ? offence.getProceedingsConcluded(): false;
+        return Boolean.TRUE.equals(offence.getProceedingsConcluded())
+                && hasFinalJudicialResult(offence.getJudicialResults());
     }
 
     public static boolean isConcluded(final Offence offence) {
