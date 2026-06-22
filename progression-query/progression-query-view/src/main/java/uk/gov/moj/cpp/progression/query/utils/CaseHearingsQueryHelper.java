@@ -4,8 +4,8 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;

@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssocia
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ public class DefendantLAAAssociatedListenerTest {
     }
 
     private static JsonObject createPayloadForDefendantLAAAssociation() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(DEFENDANT_ID, defendantId.toString())
                 .add(LAA_CONTRACT_NUMBER, laaContractNumber)
                 .add(IS_ASSOCIATED_BY_LAA, isAssociatedByLAA)

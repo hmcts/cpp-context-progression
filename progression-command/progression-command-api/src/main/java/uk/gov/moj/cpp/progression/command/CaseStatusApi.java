@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
@@ -25,7 +25,7 @@ public class CaseStatusApi {
     @Handles("progression.inactive-case-bdf")
     public void handleCaseInactiveViaBdf(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("prosecutionCaseId", payload.getString("prosecutionCaseId"))
                 .add("caseStatus", CaseStatusEnum.INACTIVE.name())
                 .build();

@@ -5,8 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -369,7 +368,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private void processConfirmHearingRequestsSentForListing(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final List<HearingRequestDetail> hearingRequestDetailList) {
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         hearingRequestDetailList.stream().map(objectToJsonObjectConverter::convert).forEach(arrayBuilder::add);
 
         publishEvent(metadataFrom(jsonEnvelope.metadata()).withName("progression.command.confirm-hearing-request"),

@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +95,7 @@ public class MergeCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 validatePayload);
 
-        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(JsonObjects.createObjectBuilder().build()));
         processor.handleMergeCasesValidations(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
@@ -122,7 +122,7 @@ public class MergeCasesEventProcessorTest {
                 validatePayload);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
+                JsonObjects.createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
         ));
         processor.handleMergeCasesValidations(requestMessage);
 
@@ -150,13 +150,13 @@ public class MergeCasesEventProcessorTest {
                 casesUnlinkedPayload);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+                JsonObjects.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MERGED_CASES, Json.createArrayBuilder().build()).build()
+                JsonObjects.createObjectBuilder().add(MERGED_CASES, JsonObjects.createArrayBuilder().build()).build()
         ));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().add("id", leadCaseId.toString()).add("prosecutionCaseIdentifier", Json.createObjectBuilder().add("caseURN", leadCaseUrn)
+                JsonObjects.createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().add("id", leadCaseId.toString()).add("prosecutionCaseIdentifier", JsonObjects.createObjectBuilder().add("caseURN", leadCaseUrn)
                 ).build()).build()
         ));
         processor.handleMergeCasesValidations(requestMessage);

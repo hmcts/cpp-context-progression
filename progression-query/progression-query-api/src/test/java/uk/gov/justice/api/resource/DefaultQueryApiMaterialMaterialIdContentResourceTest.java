@@ -2,7 +2,7 @@ package uk.gov.justice.api.resource;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
@@ -49,7 +49,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -127,7 +127,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = Json.createObjectBuilder()
+        final JsonObject json = JsonObjects.createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 
@@ -214,7 +214,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = Json.createObjectBuilder()
+        final JsonObject json = JsonObjects.createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 
@@ -313,7 +313,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = Json.createObjectBuilder()
+        final JsonObject json = JsonObjects.createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 

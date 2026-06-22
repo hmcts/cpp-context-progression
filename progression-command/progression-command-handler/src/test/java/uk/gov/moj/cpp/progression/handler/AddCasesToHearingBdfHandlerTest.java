@@ -1,15 +1,15 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 
 import uk.gov.justice.core.courts.CourtApplication;

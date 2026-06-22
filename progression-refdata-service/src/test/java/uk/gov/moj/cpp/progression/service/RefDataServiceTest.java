@@ -4,9 +4,9 @@ import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -160,7 +160,7 @@ public class RefDataServiceTest {
     public void shouldReturnPublicHolidays() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referencedata.public-holidays.json"), Charset.defaultCharset());
 
-        final JsonObject payload = Json.createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
+        final JsonObject payload = JsonObjects.createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
 
         final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
                         .withId(randomUUID())
@@ -180,7 +180,7 @@ public class RefDataServiceTest {
 
     @Test
     public void shouldReturnEmptyListWhenPublicHolidaysServiceReturnsEmptyList() {
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().build();
 
         final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
                         .withId(randomUUID())
@@ -601,7 +601,7 @@ public class RefDataServiceTest {
     private JsonEnvelope getEnvelope(final String name) {
         return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
-                Json.createObjectBuilder().build());
+                JsonObjects.createObjectBuilder().build());
     }
 
     private JsonEnvelope getEnvelope(final String name, final JsonObject jsonObject) {
@@ -611,9 +611,9 @@ public class RefDataServiceTest {
     }
 
     private JsonObject getPayloadForOrgUnits(final String id) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("organisationunits", createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("id", id)
                                 .add("oucodeL3Name", "South Western (Lavender Hill)")
                                 .add("oucodeL3WelshName", "welshName_Test")
@@ -623,17 +623,17 @@ public class RefDataServiceTest {
     }
 
     private JsonObject getPayloadForCourts() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("courts", createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                        .add(JsonObjects.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                         .build())
                 .build();
     }
 
     private JsonObject getReferralReasonsPayload() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("referralReasons", createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("id", "7e2f843e-d639-40b3-8611-8015f3a18957")
                                 .add("seqId", 1)
                                 .add("reason", "Sections 135")

@@ -21,12 +21,12 @@ resources:
       type: github
       name: hmcts/cpp-azure-devops-templates
       endpoint: 'hmcts'
-      ref: 'main'
+      ref: 'dev/enforcer-disabled'
 
 pool:
   name: "MDV-ADO-AGENT-AKS-01"
   demands:
-    - identifier -equals centos8-j17
+    - identifier -equals ubuntu-j17
 
 
 variables:
@@ -50,3 +50,4 @@ stages:
           sonarQubeType: 'sonarQubeAKS'
           serviceName: ${{ variables['service_Name'] }}
           itTestFolder: ${{ variables['itTest_Folder'] }}
+          aksDeployBranch: "dev/PEG-2744-proactive-processing"

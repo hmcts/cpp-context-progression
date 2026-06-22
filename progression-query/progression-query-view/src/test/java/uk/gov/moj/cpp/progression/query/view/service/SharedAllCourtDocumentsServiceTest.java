@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +48,7 @@ class SharedAllCourtDocumentsServiceTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(Envelope.metadataBuilder().
                 withId(UUID.randomUUID()).
                 withUserId(userId.toString())
-                .withName("test"), Json.createObjectBuilder().build());
+                .withName("test"), JsonObjects.createObjectBuilder().build());
         final UUID caseId = UUID.randomUUID();
         final UUID hearingId = UUID.randomUUID();
         final String caseUrn = string(8).next();

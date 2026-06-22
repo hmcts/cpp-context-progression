@@ -175,7 +175,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         addRemoveCourtDocument(courtDocumentId, materialIdActive, true, supportUserGroup);
 
         //read document
-        assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
+        getCourtDocumentsByCase(randomUUID().toString(), caseId, new Matcher[]{withJsonPath("$.documentIndices.length()", is(0))});
     }
 
 
