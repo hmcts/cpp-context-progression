@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+
+    <!-- Dropped unique constraint on case_id and application_id (if exists) to allow duplicate
+    court application mappings where required. -->
+
+    <changeSet id="drop-uk-court-application-case-if-exists" author="cpp.context.progression">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="court_application_case"/>
+                <uniqueConstraintExists tableName="court_application_case" constraintName="court_application_case_unique_key"/>
+            </and>
+        </preConditions>
+        <dropUniqueConstraint tableName="court_application_case"
+                               constraintName="court_application_case_unique_key"/>
+    </changeSet>
+
+
+    <!-- Added unique constraint (if not exists) on case_id and application_id to enforce data integrity and
+     prevent duplicate court application mappings. -->
+
+    <changeSet id="add-uk-court-application-case-caseid-first-if-not-exists" author="cpp.context.progression">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="court_application_case"/>
+                <not>
+                    <uniqueConstraintExists tableName="court_application_case" constraintName="court_application_case_unique_key"/>
+                </not>
+            </and>
+        </preConditions>
+        <addUniqueConstraint tableName="court_application_case"
+                             columnNames="case_id, application_id"
+                             constraintName="court_application_case_unique_key"/>
+    </changeSet>
+
+
+    <!-- Added index on prosecution_case_id (if not exists) to optimize ProgressionViewStore
+    query filtering and improve performance by reducing full table scans. -->
+    <changeSet id="add-index-match-defendant-case-hearing-prosecution-case-id-if-not-exists" author="cpp.context.progression">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="match_defendant_case_hearing"/>
+                <not>
+                    <indexExists indexName="match_defendant_case_hearing_prosecution_case_id_idx"/>
+                </not>
+            </and>
+        </preConditions>
+        <createIndex tableName="match_defendant_case_hearing"
+                     indexName="match_defendant_case_hearing_prosecution_case_id_idx">
+            <column name="prosecution_case_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
