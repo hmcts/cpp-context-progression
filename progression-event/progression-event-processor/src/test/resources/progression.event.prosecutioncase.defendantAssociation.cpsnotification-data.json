@@ -56,7 +56,9 @@
     "id": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b",
     "initiationCode": "J",
     "isCivil": true,
-    "cpsOrganisationId": "42880989-5d09-332e-a711-8797af06ecea",
+    "prosecutor": {
+      "isCps": true
+    },
     "prosecutionCaseIdentifier": {
       "prosecutionAuthorityCode": "TFL",
       "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
