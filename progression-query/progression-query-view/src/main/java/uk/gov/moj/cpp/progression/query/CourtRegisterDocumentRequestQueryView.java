@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -46,8 +46,8 @@ public class CourtRegisterDocumentRequestQueryView {
 
     @Handles("progression.query.court-register-document-request")
     public JsonEnvelope getCourtRegisterRequests(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         final String requestStatus = envelope.payloadAsJsonObject().getString(FIELD_REQUEST_STATUS);
         if (isNotBlank(requestStatus)) {
             if(RegisterStatus.RECORDED.toString().equalsIgnoreCase(requestStatus)) {
@@ -66,8 +66,8 @@ public class CourtRegisterDocumentRequestQueryView {
     @Handles("progression.query.court-register-document-by-material")
     public JsonEnvelope getCourtRegisterByMaterial(final JsonEnvelope envelope) {
         final UUID materialId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_MATERIAL_ID));
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         final List<CourtRegisterRequestEntity> courtRegisterRequestEntity = courtRegisterRequestRepository.findBySystemDocGeneratorId(materialId);
         courtRegisterRequestEntity.forEach(i -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(i)));
         return envelopeFrom(envelope.metadata(),
@@ -77,8 +77,8 @@ public class CourtRegisterDocumentRequestQueryView {
     @Handles("progression.query.court-register-document-by-request-date")
     public JsonEnvelope getCourtRegistersByRequestDate(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
 
         final Optional<LocalDate> registerDate = JsonObjects.getString(payload, FIELD_REGISTER_DATE).map(LocalDate::parse);
 

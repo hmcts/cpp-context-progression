@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.query.view;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -23,7 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -53,7 +53,7 @@ public class UserDetailsLoader {
     private Requester requester;
 
     public boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final String applicationTypeCode) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder()
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder()
                 .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
                 .add(OBJECT, applicationTypeCode)
                 .build();
@@ -108,7 +108,7 @@ public class UserDetailsLoader {
     }
 
     public List<Permission> getPermissions(final Metadata metadata, final Requester requester, final UUID defendantId) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "View").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId.toString()).build();
+        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(ACTION, "View").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId.toString()).build();
         final MetadataBuilder metadataWithActionName = metadataFrom(metadata).withName("usersgroups.permissions");
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);

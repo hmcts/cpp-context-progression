@@ -1,15 +1,21 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
@@ -46,21 +52,19 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+import uk.gov.justice.services.messaging.JsonObjects;
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterEventProcessorTest {
@@ -152,9 +156,9 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
-        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(Json.createObjectBuilder().build());
+        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(JsonObjects.createObjectBuilder().build());
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+                JsonObjects.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 

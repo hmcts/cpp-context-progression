@@ -10,8 +10,8 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import static java.util.Optional.empty;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import org.slf4j.Logger;

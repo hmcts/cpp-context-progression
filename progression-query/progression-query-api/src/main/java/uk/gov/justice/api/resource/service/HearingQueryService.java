@@ -4,7 +4,7 @@ import static java.time.LocalDate.parse;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.json.JsonValue.EMPTY_JSON_OBJECT;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue.ValueType;
 
@@ -84,7 +84,7 @@ public class HearingQueryService {
 
     private JsonObject getDraftResults(final JsonEnvelope jsonEnvelope, final UUID hearingId, final LocalDate hearingDay) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), HEARING_GET_DRAFT_RESULT_V2);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("hearingDay", hearingDay.toString())
                 .build();

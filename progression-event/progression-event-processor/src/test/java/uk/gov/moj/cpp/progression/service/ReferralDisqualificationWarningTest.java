@@ -7,8 +7,8 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -70,7 +70,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -150,14 +150,14 @@ public class ReferralDisqualificationWarningTest {
             .withPostcode("AS1 1DF").build()).build();
 
     private static Optional<JsonObject> buildDocumentTypeDataWithRBAC(final String documentCategory) {
-        return Optional.ofNullable(Json.createObjectBuilder().add("section", "orders & notices")
+        return Optional.ofNullable(JsonObjects.createObjectBuilder().add("section", "orders & notices")
                 .add("documentCategory", "documentCategory")
                 .add("documentTypeDescription", "Applications")
                 .add("documentTypeId", documentCategory)
                 .add("", "")
                 .add("mimeType", "application/pdf")
                 .add("courtDocumentTypeRBAC",
-                        Json.createObjectBuilder()
+                        JsonObjects.createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
@@ -166,7 +166,7 @@ public class ReferralDisqualificationWarningTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     @Test

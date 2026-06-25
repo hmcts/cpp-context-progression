@@ -30,11 +30,16 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
 import org.json.JSONException;
 import org.json.JSONObject;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
+
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INITIAL_INTERVAL_IN_MILLISECONDS;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.INTERVAL_IN_MILLISECONDS;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class ListingStub {
 
+    private static final String LISTING_ANY_ALLOCATION_PATH = "/listing-service/query/api/rest/listing/hearings/any-allocation";
     private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
     private static final String LISTING_HEARING_COMMAND_V2 = "/listing-service/command/api/rest/listing/hearings/.*";
     private static final String LISTING_DELETE_HEARING_COMMAND = "/listing-command-api/command/api/rest/listing/delete-hearing/";
@@ -102,7 +107,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId) {
         try {
-            waitAtMost(ofMinutes(1)).until(() ->
+            waitAtMost(Duration.ofSeconds(20)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -129,7 +134,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
-            waitAtMost(ofMinutes(1)).until(() ->
+            waitAtMost(Duration.ofSeconds(20)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -165,7 +170,7 @@ public class ListingStub {
 
     public static String verifyPostListCourtHearingForGroupCase(final String containsText) {
         try {
-            return waitAtMost(Duration.ofMinutes(1)).until(() -> {
+            return waitAtMost(Duration.ofSeconds(20)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
                         final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                         return listCourtHearingRequestsAsStream
                                 .filter(payload -> {
@@ -190,7 +195,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final boolean isYouth) {
         try {
-            waitAtMost(ofMinutes(1)).pollInterval(500, MILLISECONDS).until(() ->
+            waitAtMost(ofMinutes(1)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -221,7 +226,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String applicationId) {
         try {
-            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
+            waitAtMost(ofSeconds(10)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -251,7 +256,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingV2ForHmiSlots() {
         try {
-            waitAtMost(ofSeconds(30)).until(() ->
+            waitAtMost(ofSeconds(10)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStreamV2()
                             .anyMatch(payload -> payload.toString().contains("bookedSlots")));
         } catch (
@@ -262,7 +267,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingV2() {
         try {
-            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
+            waitAtMost(ofSeconds(10)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     getListCourtHearingRequestsAsStreamV2()
                             .anyMatch(
                                     payload -> payload.has("hearings")
@@ -275,7 +280,7 @@ public class ListingStub {
     }
 
     public static void verifyListNextHearingRequestsAsStreamV2(final String hearingId, final String estimatedDuration) {
-        waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> {
+        waitAtMost(ofSeconds(10)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
@@ -299,7 +304,7 @@ public class ListingStub {
 
     public static String getPostListCourtHearing(final String applicationId) {
         try {
-            return waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() ->
+            return waitAtMost(Duration.ofSeconds(20)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() ->
                     {
                         final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                         return listCourtHearingRequestsAsStream
@@ -329,8 +334,8 @@ public class ListingStub {
 
     public static void verifyListUnscheduledHearingRequestsAsStreamV2(final String hearingId,
                                                                       final String estimatedDuration) {
-        waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> {
-                    final Stream<JSONObject> listCourtHearingRequestsAsStream = getListUnscheduledHearingRequestsAsStreamV2();
+        waitAtMost(Duration.ofSeconds(20)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> {
+        final Stream<JSONObject> listCourtHearingRequestsAsStream = getListUnscheduledHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
                                 try {
@@ -409,8 +414,6 @@ public class ListingStub {
                 });
     }
 
-    private static final String LISTING_ANY_ALLOCATION_PATH = "/listing-service/query/api/rest/listing/hearings/any-allocation";
-
     public static void setupListingAnyAllocationQuery(final String caseUrn, final String startDate, final String resource) {
         stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
@@ -429,7 +432,9 @@ public class ListingStub {
 
     public static void stubListingSearchHearingsQuery(final String resource,
                                                       final String hearingId) {
-        stubFor(get(urlPathEqualTo(LISTING_ANY_ALLOCATION_PATH))
+
+        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
+        stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -448,7 +453,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
-            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> getListCourtHearingRequestsAsStream()
+            waitAtMost(ofSeconds(30)).pollInterval(new FibonacciPollWithStartAndMax(Duration.ofMillis(INITIAL_INTERVAL_IN_MILLISECONDS), Duration.ofMillis(INTERVAL_IN_MILLISECONDS))).until(() -> getListCourtHearingRequestsAsStream()
                     .anyMatch(
                             payload -> {
                                 try {
