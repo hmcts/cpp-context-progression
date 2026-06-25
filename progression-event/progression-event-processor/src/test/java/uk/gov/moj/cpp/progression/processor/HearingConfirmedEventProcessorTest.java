@@ -1068,7 +1068,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, HearingConfirmedEventProcessor.PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT))
                 .thenReturn(enveloperFunction);
-
+        when(progressionService.shapeHearingForListing(any(), any())).thenReturn(arbitraryInitiateObj.getHearing());
         eventProcessor.processHearingInitiatedEnrichedEvent(envelope);
 
         //Then
@@ -1549,6 +1549,7 @@ public class HearingConfirmedEventProcessorTest {
         //When
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), Initiate.class))
                 .thenReturn(arbitraryInitiateObj);
+        when(progressionService.shapeHearingForListing(any(), any())).thenReturn(arbitraryInitiateObj.getHearing());
 
 
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);

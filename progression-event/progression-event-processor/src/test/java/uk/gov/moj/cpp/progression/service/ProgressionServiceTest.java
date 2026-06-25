@@ -1575,6 +1575,92 @@ public class ProgressionServiceTest {
         verify(requester, times(1)).requestAsAdmin(prosecutionCaseRequest);
     }
 
+    @Test
+    public void shapeHearingForListingShouldDropProsecutionCasesForApplicationHearing() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID activeCaseOffenceId = randomUUID();
+        final UUID concludedApplicationOffenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                                .withOffences(singletonList(Offence.offence().withId(activeCaseOffenceId).build()))
+                                .build()))
+                        .build()))
+                .withCourtApplications(singletonList(courtApplication()
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withOffences(singletonList(Offence.offence().withId(concludedApplicationOffenceId).withProceedingsConcluded(true).build()))
+                                .build()))
+                        .build()))
+                .build();
+
+        final Hearing shaped = progressionService.shapeHearingForListing(hearing, finalEnvelope);
+
+        // all application offences concluded -> application hearing: prosecution side dropped, application offence kept
+        assertThat(shaped.getProsecutionCases(), is(nullValue()));
+        assertThat(shaped.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(concludedApplicationOffenceId));
+    }
+
+    @Test
+    public void shapeHearingForListingShouldLeaveCaseOnlyHearingUnchanged() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                                .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .build()))
+                .build();
+
+        final Hearing shaped = progressionService.shapeHearingForListing(hearing, finalEnvelope);
+
+        // no court applications -> not an application hearing: prosecution cases untouched
+        assertThat(shaped.getProsecutionCases().size(), is(1));
+        assertThat(shaped.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+    }
+
+    @Test
+    public void updateHearingListingStatusToHearingInitiatedShouldSendHearingInitialisedCommand() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                                .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .build()))
+                .build();
+
+        final Function<Object, JsonEnvelope> commandFn = mock(Function.class);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND)).thenReturn(commandFn);
+        when(commandFn.apply(any())).thenReturn(mock(JsonEnvelope.class));
+
+        progressionService.updateHearingListingStatusToHearingInitiated(finalEnvelope, Initiate.initiate().withHearing(hearing).build());
+
+        final ArgumentCaptor<JsonObject> commandCaptor = ArgumentCaptor.forClass(JsonObject.class);
+        verify(commandFn).apply(commandCaptor.capture());
+        final JsonObject command = commandCaptor.getValue();
+        assertThat(command.getString("hearingListingStatus"), is("HEARING_INITIALISED"));
+
+        // the method serialises the hearing as-is; shaping happens upstream now, not here
+        final Hearing sentHearing = jsonObjectConverter.convert(command.getJsonObject("hearing"), Hearing.class);
+        assertThat(sentHearing.getProsecutionCases().size(), is(1));
+        assertThat(sentHearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+    }
+
     private void mockCourtCentre(final UUID courtCentreId) {
         final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", "ADDRESS1").add("oucode", "OU").add("lja", "ljaCode").build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));

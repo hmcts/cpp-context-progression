@@ -23,6 +23,7 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
@@ -142,6 +143,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -219,6 +221,15 @@ public class CourtApplicationProcessorTest {
                 Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH),
                 Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION)
         );
+    }
+
+    @BeforeEach
+    public void stubHearingShapingPassThrough() {
+        // progressionService is mocked here; the application flows now call shapeHearingForListing before
+        // building the hearing commands. These tests verify processor wiring (not the shaping itself, which
+        // is covered by ProgressionServiceTest + HearingOffenceFilterTest), so pass the hearing through unchanged.
+        lenient().when(progressionService.shapeHearingForListing(any(), any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -1338,8 +1349,6 @@ public class CourtApplicationProcessorTest {
                                                 .add(createObjectBuilder().add("id", OFFENCE_ID_1))
                                                 .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
                                 ))).build()));
-
-
 
         //When
         courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
