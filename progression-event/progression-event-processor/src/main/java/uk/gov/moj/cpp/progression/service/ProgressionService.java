@@ -974,7 +974,8 @@ public class ProgressionService {
         });
     }
 
-    private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing hearing) {
+    private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing rawHearing) {
+        final Hearing hearing = shapeHearingForListing(rawHearing, jsonEnvelope);
         if (isNotEmpty(hearing.getProsecutionCases())) {
             final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
@@ -1368,6 +1369,16 @@ public class ProgressionService {
         // Shape application/case offences once, at the source, so the persisted hearing matches the
         // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
         // concluded ones stay with the application.
+        return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    }
+
+    /**
+     * Shapes a hearing for the listing-status projection so progression's persisted hearing and the
+     * {@code case_defendant_hearing} join match the manage-hearing view: an application hearing (all
+     * application offences concluded) drops its prosecutionCases; active application offences move to the
+     * prosecution side. Case-only hearings (no court applications) are returned unchanged.
+     */
+    public Hearing shapeHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
         return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
     }
 

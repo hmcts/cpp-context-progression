@@ -574,12 +574,17 @@ public class HearingConfirmedEventProcessor {
 
         LOGGER.info(" hearing initiate with payload {}", jsonEnvelope.toObfuscatedDebugString());
 
-        final Initiate hearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
+        final Initiate incomingHearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
 
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(hearingInitiate)));
-        if (isNotEmpty(hearingInitiate.getHearing().getProsecutionCases())) {
+        final Initiate filteredHearingInitiate = Initiate.initiate()
+                .withValuesFrom(incomingHearingInitiate)
+                .withHearing(progressionService.shapeHearingForListing(incomingHearingInitiate.getHearing(), jsonEnvelope))
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(filteredHearingInitiate)));
+        if (isNotEmpty(filteredHearingInitiate.getHearing().getProsecutionCases())) {
             final List<ProsecutionCasesReferredToCourt> prosecutionCasesReferredToCourts = ProsecutionCasesReferredToCourtTransformer
-                    .transform(hearingInitiate, null);
+                    .transform(filteredHearingInitiate, null);
 
             prosecutionCasesReferredToCourts.forEach(prosecutionCasesReferredToCourt -> {
                 final JsonObject prosecutionCasesReferredToCourtJson = objectToJsonObjectConverter.convert(prosecutionCasesReferredToCourt);
@@ -591,10 +596,10 @@ public class HearingConfirmedEventProcessor {
 
                 sender.send(caseReferToCourt);
             });
-            progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, hearingInitiate);
+            progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, filteredHearingInitiate);
         } else {
-            LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", hearingInitiate.getHearing().getId());
-            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
+            LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", filteredHearingInitiate.getHearing().getId());
+            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, filteredHearingInitiate.getHearing().getId());
         }
     }
 

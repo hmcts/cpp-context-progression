@@ -545,7 +545,9 @@ public class CourtApplicationProcessor {
             hearingBuilder.withIsVirtualBoxHearing(true);
         }
 
-        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearingBuilder.build()).build();
+        final Hearing hearing = progressionService.shapeHearingForListing(hearingBuilder.build(), jsonEnvelope);
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
         progressionService.linkApplicationToHearing(jsonEnvelope, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
@@ -580,7 +582,7 @@ public class CourtApplicationProcessor {
 
         final List<ProsecutionCase> prosecutionCases = getProsecutionCases(event, application);
 
-        final Hearing hearing = hearing()
+        final Hearing rawHearing = hearing()
                 .withProsecutionCases(prosecutionCases)
                 .withId(courtHearing.getId())
                 .withHearingDays(singletonList(hearingDay()
@@ -595,6 +597,8 @@ public class CourtApplicationProcessor {
                 .withPriority(courtHearing.getPriority())
                 .withSpecialRequirements(courtHearing.getSpecialRequirements())
                 .build();
+
+        final Hearing hearing = progressionService.shapeHearingForListing(rawHearing, event);
 
         final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
