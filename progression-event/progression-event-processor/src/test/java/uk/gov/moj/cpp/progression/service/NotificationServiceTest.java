@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -459,6 +460,44 @@ public class NotificationServiceTest {
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(0), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("informant@test.com"))))));
+    }
+
+    @Test
+    public void shouldNotResolveProsecutingAuthorityWhenApplicationIsNotAppeal() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withAppealFlag(false)
+                        .withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withCourtApplicationCases(getCourtApplicationCases(UUID.randomUUID()))
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())
+                        .withPersonDetails(
+                                Person.person()
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .build())
+                        .build())
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // Non-appeal application must never enter the informant path that resolves the prosecuting-authority email.
+        verify(courtApplicationService, never()).getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class));
     }
 
     private CourtApplicationParty buildCourtApplicationParty(final UUID prosecutionAuthorityId, String email) {
