@@ -15,6 +15,7 @@
   },
   "cpsFlag": true,
   "contactEmailAddress": "test@test.com",
+  "informantEmailAddress": "test@test.com",
   "cpsEmailAddress": "test@test.com",
   "cpsMcEmailAddress": "test@test.com",
   "cpsCcEmailAddress": "test@test.com"
