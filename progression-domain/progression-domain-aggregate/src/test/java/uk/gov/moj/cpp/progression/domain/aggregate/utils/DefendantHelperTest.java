@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -13,21 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.ContactNumber;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.Ethnicity;
-import uk.gov.justice.core.courts.Gender;
-import uk.gov.justice.core.courts.HearingLanguage;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.OffenceFacts;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.ReportingRestriction;
+import liquibase.pro.packaged.D;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 
 import java.time.LocalDate;
@@ -600,6 +588,101 @@ public class DefendantHelperTest {
 
         assertFalse(DefendantHelper.isConcluded(offence, emptyList(), emptyList()));
     }
+
+    @Test
+    public void shouldAllDefendantsProceedingsConcludedBeTrueWhenEmptyDefendants() {
+
+        final List<Defendant> defendantList = new ArrayList<>();
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
+
+        assertTrue(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, defendantList)); //??
+    }
+
+    @Test
+    public void shouldAllDefendantsProceedingsConcludedBeFalseWhenOneDefendantWithFinalJudicialResultAndOffenceProceedingsNotConcluded() {
+        final JudicialResult judicialResult = JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build();
+        final List<JudicialResult> judicialResults = List.of(judicialResult);
+
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).withJudicialResults(judicialResults).withProceedingsConcluded(FALSE).build();
+        final List<Offence> offences = List.of(offence);
+
+        final UUID defendantId = randomUUID();
+        final Defendant defendant = Defendant.defendant().withId(defendantId).withOffences(offences).build();
+
+        final List<Defendant> defendantList = List.of(defendant);
+        final List<Defendant> mutableDefendantList = new ArrayList<>();
+
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
+
+        assertTrue(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
+    }
+
+    @Test
+    public void shouldAllDefendantsProceedingsConcludedBeTrueWhenOneDefendantWithFinalJudicialResultAndOffenceProceedingsConcluded() {
+        final JudicialResult judicialResult = JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build();
+        final List<JudicialResult> judicialResults = List.of(judicialResult);
+
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).withJudicialResults(judicialResults).withProceedingsConcluded(TRUE).build();
+        final List<Offence> offences = List.of(offence);
+
+        final UUID defendantId = randomUUID();
+        final Defendant defendant = Defendant.defendant().withId(defendantId).withOffences(offences).build();
+
+        final List<Defendant> defendantList = List.of(defendant);
+        final List<Defendant> mutableDefendantList = new ArrayList<>();
+
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
+
+        assertTrue(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
+    }
+
+    @Test
+    public void shouldAllDefendantsProceedingsConcludedBeFalseWhenOneDefendantWithAncillaryJudicialResultAndOffenceProceedingsConcluded() {
+        final JudicialResult judicialResult = JudicialResult.judicialResult().withCategory(JudicialResultCategory.ANCILLARY).build();
+        final List<JudicialResult> judicialResults = List.of(judicialResult);
+
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).withJudicialResults(judicialResults).withProceedingsConcluded(TRUE).build();
+        final List<Offence> offences = List.of(offence);
+
+        final UUID defendantId = randomUUID();
+        final Defendant defendant = Defendant.defendant().withId(defendantId).withOffences(offences).build();
+
+        final List<Defendant> defendantList = List.of(defendant);
+        final List<Defendant> mutableDefendantList = new ArrayList<>();
+
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
+
+        assertFalse(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
+    }
+
+    @Test
+    public void shouldAllDefendantsProceedingsConcludedBeFalseWhenOneDefendantWithIntermediaryJudicialResultOffenceAndProceedingsConcluded() {
+        final JudicialResult judicialResult = JudicialResult.judicialResult().withCategory(JudicialResultCategory.INTERMEDIARY).build();
+        final List<JudicialResult> judicialResults = List.of(judicialResult);
+
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).withJudicialResults(judicialResults).withProceedingsConcluded(TRUE).build();
+        final List<Offence> offences = List.of(offence);
+
+        final UUID defendantId = randomUUID();
+        final Defendant defendant = Defendant.defendant().withId(defendantId).withOffences(offences).build();
+
+        final List<Defendant> defendantList = List.of(defendant);
+        final List<Defendant> mutableDefendantList = new ArrayList<>();
+
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(defendantList).withId(caseId).build();
+
+        assertFalse(DefendantHelper.isAllDefendantProceedingConcluded(prosecutionCase, mutableDefendantList));
+    }
+
 
     private Offence.Builder createOffenceWithMultipleReportingRestriction(final ReportingRestriction reportingRestriction1,
                                                                           final ReportingRestriction reportingRestriction2,
