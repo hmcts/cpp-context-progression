@@ -610,7 +610,12 @@ public class CourtApplicationProcessor {
         // then update application status - hearing initiated in the Listing hence applicationStatus == UN_ALLOCATED
         progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
 
-        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
+        // build the listing needs from the filtered hearing so the application/prosecutionCases sent to
+        // listing match the shaped hearing (e.g. an application hearing carries no prosecution case)
+        final List<CourtApplication> filteredCourtApplications = hearingInitiate.getHearing().getCourtApplications();
+        final CourtApplication listingApplication = isNotEmpty(filteredCourtApplications) ? filteredCourtApplications.get(0) : application;
+        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(),
+                listingApplication, hearingInitiate.getHearing().getProsecutionCases());
         // then list hearing
         listingService.listCourtHearing(event, listCourtHearing);
     }
@@ -878,7 +883,7 @@ public class CourtApplicationProcessor {
     private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
-        if (isAllActiveCases(courtApplicationCases)) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases)) {
             ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(courtApplicationCase -> {
                 final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
                 if (prosecutionCaseDetailById.isPresent()) {
@@ -971,13 +976,6 @@ public class CourtApplicationProcessor {
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
         return t -> map.putIfAbsent(keyExtractor.apply(t), TRUE) == null;
-    }
-
-    private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
-        return courtApplicationCases
-                .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
-                        && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
-                        && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
     }
 
     /**

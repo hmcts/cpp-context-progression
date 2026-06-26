@@ -1380,6 +1380,38 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
+    public void shouldNotListProsecutionCaseWhenApplicationReferredToCourtHearingHasOnlyConcludedOffences() throws IOException {
+        final UUID applicationId = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        // flip the application offence to concluded -> application hearing: the active case must NOT be listed
+        final String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset())
+                .replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                .replace("\"proceedingsConcluded\": false", "\"proceedingsConcluded\": true");
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, stringToJsonObjectConverter.convert(inputPayload));
+
+        //When
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        //Then - no prosecution case is attached to the hearing, and none leaks into the listing payload
+        final ArgumentCaptor<Hearing> hearingCaptor = forClass(Hearing.class);
+        verify(progressionService).linkApplicationToHearing(any(JsonEnvelope.class), hearingCaptor.capture(), eq(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingCaptor.getValue().getProsecutionCases(), Matchers.nullValue());
+
+        final ArgumentCaptor<ListCourtHearing> listCaptor = forClass(ListCourtHearing.class);
+        verify(listingService).listCourtHearing(any(), listCaptor.capture());
+        // the listing payload carries no prosecution case to list (the application's courtApplicationCase
+        // reference may still hold the caseId, but the case must not appear under hearings[].prosecutionCases)
+        assertThat(objectToJsonObjectConverter.convert(listCaptor.getValue()).toString(), isJson(withoutJsonPath("$.hearings[0].prosecutionCases")));
+    }
+
+    @Test
     public void shouldProcessEventWhenApplicationReferredToExistingHearing() {
         final Function<Object, JsonEnvelope> enveloperFunction = mock(Function.class);
         final JsonEnvelope finalEnvelope = mock(JsonEnvelope.class);
