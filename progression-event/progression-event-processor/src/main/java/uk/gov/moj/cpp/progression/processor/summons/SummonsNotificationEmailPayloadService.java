@@ -88,7 +88,7 @@ public class SummonsNotificationEmailPayloadService {
             }
         } else {
             if (isExparte) {
-               return Optional.of(buildEmailNotificationForExParteTrue(summonsDataPrepared, emailAddress, summonsDocumentContent, defendantDetails));
+               return Optional.of(buildEmailNotificationForExParteTrue(summonsDataPrepared, emailAddress, summonsDocumentContent, defendant, notificationForParentOrGuardian));
             }
             return Optional.of(buildEmailNotificationForCaseSummonsSuppressed(summonsDataPrepared, emailAddress, summonsDocumentContent, defendant, addresseeIsYouth,
                     materialId, notificationForParentOrGuardian));
@@ -201,15 +201,16 @@ public class SummonsNotificationEmailPayloadService {
     }
 
     private EmailChannel buildEmailNotificationForExParteTrue(final SummonsDataPrepared summonsDataPrepared,
-                                                                       final String emailAddress,
-                                                                       final SummonsDocumentContent summonsDocumentContent,
-                                                                       final List<String> defendantDetails) {
+                                                              final String emailAddress,
+                                                              final SummonsDocumentContent summonsDocumentContent,
+                                                              final Defendant defendant,
+                                                              final boolean notificationForParentOrGuardian) {
         return emailChannel()
                 .withSendToAddress(emailAddress)
                 .withTemplateId(fromString(applicationParameters.getSummonsApprovedExParteTrueTemplateId()))
                 .withPersonalisation(personalisation()
                         .withAdditionalProperty(PROPERTY_CASE_REFERENCE, summonsDocumentContent.getCaseReference())
-                        .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, defendantDetails.stream().collect(joining(lineSeparator())))
+                        .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, getCaseDefendantDetails(summonsDocumentContent, defendant, notificationForParentOrGuardian))
                         .withAdditionalProperty(PROPERTY_COURT_LOCATION, summonsDocumentContent.getHearingCourtDetails().getCourtName())
                         .withAdditionalProperty(PROPERTY_HEARING_DATE, getHearingDateForEmailNotification(summonsDataPrepared.getSummonsData().getHearingDateTime()))
                         .withAdditionalProperty(PROPERTY_HEARING_TIME, summonsDocumentContent.getHearingCourtDetails().getHearingTime())
