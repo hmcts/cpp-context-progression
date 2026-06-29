@@ -142,7 +142,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         if (defendantHearing.isPresent()) {
             hearingId = ((JsonObject) defendantHearing.get()).getJsonArray("hearingIds").get(0).toString().replaceAll("\"", "");
-            final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(caseId, hearingId, defendantId, courtCentreId);
+            final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(caseId, hearingId, defendantId, courtCentreId, startDateTime);
 
             final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
             messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
@@ -281,13 +281,14 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
 
-    private JsonObject getHearingConfirmedJsonObject(final String caseId, final String hearingId, final String defendantId, final String courtCentreId) {
+    private JsonObject getHearingConfirmedJsonObject(final String caseId, final String hearingId, final String defendantId, final String courtCentreId, final String sittingDay) {
         return new StringToJsonObjectConverter().convert(
-                getPayload("public.listing.hearing-confirmed.json")
+                getPayload("public.listing.hearing-confirmed-add-defendant.json")
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("SITTING_DAY", sittingDay)
         );
     }
 

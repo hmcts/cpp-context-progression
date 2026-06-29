@@ -56,6 +56,16 @@
         "PRESS_LIST",
         "RESULT_LIST"
       ]
+    },
+    "hearingRequestStatus": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/hearing-request-status.json",
+      "type": "string",
+      "enum": [
+        "NEW",
+        "SENT",
+        "CONFIRMED",
+        "RESULTED"
+      ]
     }
   }
 }
