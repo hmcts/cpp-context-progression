@@ -474,10 +474,10 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                                 .build();
                     } else {
                         return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
+                        .withValuesFrom(courtApplicationCase)
                                 .withOffences(ofNullable(courtApplicationCase.getOffences()).stream().flatMap(Collection::stream)
-                                        .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
-                                        .collect(collectingAndThen(toList(), getListOrNull())))
+                                .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
+                                .collect(collectingAndThen(toList(), getListOrNull())))
                                 .build();
                     }
                 }).collect(toList());
