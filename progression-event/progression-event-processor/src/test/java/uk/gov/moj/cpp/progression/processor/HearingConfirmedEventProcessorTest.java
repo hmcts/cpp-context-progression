@@ -123,7 +123,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
-class HearingConfirmedEventProcessorTest {
+public class HearingConfirmedEventProcessorTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -210,7 +210,7 @@ class HearingConfirmedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleHearingConfirmedWithCasesEventMessage() throws Exception {
+    public void shouldHandleHearingConfirmedWithCasesEventMessage() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
