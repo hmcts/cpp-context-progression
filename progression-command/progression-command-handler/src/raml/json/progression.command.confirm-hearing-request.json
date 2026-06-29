@@ -1,0 +1,11 @@
+{
+  "prosecutionCaseId": "f1c7ab7e-22db-4d18-a865-23cb495ec435",
+  "hearingRequestDetails": [
+    {
+      "hearingId":"f1c7ab7e-22db-4d18-a865-23cb495ec435",
+      "courtCentreId": "f1c7ab7e-22db-4d18-a865-23cb495ec435",
+      "hearingDateTime": "0000-01-01",
+      "hearingRequestStatus": "NEW"
+    }
+  ]
+}

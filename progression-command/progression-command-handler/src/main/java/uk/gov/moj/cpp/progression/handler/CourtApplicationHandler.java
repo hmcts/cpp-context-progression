@@ -7,7 +7,6 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
@@ -74,7 +73,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -463,28 +461,15 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final String resentencingActivationCode = courtApplication.getType().getResentencingActivationCode();
 
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
-                .map(courtApplicationCase -> {
-                    if (activeCase(courtApplicationCase.getCaseStatus())) {
-                        return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
-                                .withOffences(null)
-                                .build();
-                    } else {
-                        return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
-                                .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
-                                        .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
-                                        .collect(collectingAndThen(toList(), getListOrNull())))
-                                .build();
-                    }
-                })
+                .map(courtApplicationCase -> courtApplicationCase()
+                        .withValuesFrom(courtApplicationCase)
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
+                                .collect(collectingAndThen(toList(), getListOrNull())))
+                        .build())
                 .collect(toList());
 
         courtApplicationBuilder.withCourtApplicationCases(courtApplicationCases);
-    }
-
-    private boolean activeCase(final String caseStatus) {
-        return nonNull(caseStatus) && !"INACTIVE".equalsIgnoreCase(caseStatus) && !"CLOSED".equalsIgnoreCase(caseStatus);
     }
 
     private <T> UnaryOperator<List<T>> getListOrNull() {
