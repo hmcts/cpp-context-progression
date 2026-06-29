@@ -123,7 +123,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
-public class HearingConfirmedEventProcessorTest {
+class HearingConfirmedEventProcessorTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
