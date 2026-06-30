@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
 import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthority;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -26,6 +27,8 @@ public class CourtApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationService.class);
 
     private static final String PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY = "contactEmailAddress";
+    private static final String PROSECUTOR_CPS_FLAG_KEY = "cpsFlag";
+    private static final String PROSECUTOR_CPS_CC_EMAIL_ADDRESS_KEY = "cpsCcEmailAddress";
     private static final String PROSECUTOR_OUCODE_KEY = "oucode";
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE_KEY = "majorCreditorCode";
 
@@ -53,13 +56,34 @@ public class CourtApplicationService {
                     .withWelshName(jsonObject.getString("nameWelsh", null))
                     .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
 
-            if (jsonObject.containsKey(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY)) {
+            final String emailAddress = resolveProsecutorEmailAddress(jsonObject);
+            if (nonNull(emailAddress)) {
                 prosecutingAuthorityBuilder.withContact(contactNumber()
-                        .withPrimaryEmail(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY))
+                        .withPrimaryEmail(emailAddress)
                         .build());
             }
         }
         return prosecutingAuthorityBuilder.build();
+    }
+
+    /**
+     * Resolves the email address used for prosecutor/informant appeal notifications.
+     * For CPS prosecutors (cpsFlag == true) the CPS Crown Court email (cpsCcEmailAddress) is used when present;
+     * otherwise it falls back to the standard contactEmailAddress.
+     */
+    private String resolveProsecutorEmailAddress(final JsonObject jsonObject) {
+        final boolean isCps = jsonObject.containsKey(PROSECUTOR_CPS_FLAG_KEY)
+                && jsonObject.getBoolean(PROSECUTOR_CPS_FLAG_KEY);
+
+        if (isCps) {
+            final String cpsCcEmailAddress = jsonObject.getString(PROSECUTOR_CPS_CC_EMAIL_ADDRESS_KEY, null);
+            if (nonNull(cpsCcEmailAddress) && !cpsCcEmailAddress.isBlank()) {
+                return cpsCcEmailAddress;
+            }
+        }
+
+        final String contactEmailAddress = jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null);
+        return (nonNull(contactEmailAddress) && !contactEmailAddress.isBlank()) ? contactEmailAddress : null;
     }
 
 }
