@@ -102,7 +102,6 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     private static final String WORDING_RE_SENTENCED_CLONED_OFFENCE = "Original CaseURN: %1$s, Re-sentenced Original code : %2$s, Original details: %3$s";
     private static final String WORDING_SUSPENDED_RE_SENTENCED_CLONED_OFFENCE = "Activation of a suspended sentence order. Original CaseURN: %1$s, Original code : %2$s, Original details: %3$s";
 
-    private static final String PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY = "contactEmailAddress";
     private static final String PROSECUTOR_OUCODE_KEY = "oucode";
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE_KEY = "majorCreditorCode";
 
@@ -604,7 +603,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                             .map(email -> contactNumber().withPrimaryEmail(email).build())
                             .ifPresent(prosecutingAuthorityBuilder::withContact);
                 } else if (nameEmpty) {
-                    ofNullable(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
+                    ofNullable(jsonObject.getString(ProsecutorEmailResolver.PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
                             .map(email -> contactNumber().withPrimaryEmail(email).build())
                             .ifPresent(prosecutingAuthorityBuilder::withContact);
                 }
