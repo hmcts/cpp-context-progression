@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>17.0.271-PDE-977-liquibase-SNAPSHOT</version>
+        <version>17.0.272-PDE-977-liquibase-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event</artifactId>
     <packaging>pom</packaging>
