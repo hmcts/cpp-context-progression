@@ -65,6 +65,7 @@ import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
+import uk.gov.moj.cpp.progression.service.ProsecutorEmailResolver;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.service.ProgressionService;
 
@@ -509,7 +510,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
         ofNullable(courtApplication.getRespondents())
                 .ifPresent(courtApplicationParties -> courtApplicationBuilder.withRespondents(courtApplicationParties.stream()
-                        .map(respondent -> enrichCourtApplicationParty(respondent, jsonEnvelope))
+                        .map(respondent -> enrichCourtApplicationParty(respondent, jsonEnvelope, true))
                         .collect(toList())));
 
 
@@ -556,33 +557,57 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     }
 
     private CourtApplicationParty enrichCourtApplicationParty(final CourtApplicationParty courtApplicationParty, final JsonEnvelope jsonEnvelope) {
+        return enrichCourtApplicationParty(courtApplicationParty, jsonEnvelope, false);
+    }
+
+    private CourtApplicationParty enrichCourtApplicationParty(final CourtApplicationParty courtApplicationParty, final JsonEnvelope jsonEnvelope, final boolean applyCpsEmailOverride) {
         final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty().withValuesFrom(courtApplicationParty);
-        builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope));
+        builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope, applyCpsEmailOverride));
         return builder.build();
     }
 
-    @SuppressWarnings("pmd:NullAssignment")
     private ProsecutingAuthority fetchProsecutingAuthorityInformation(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope jsonEnvelope) {
+        return fetchProsecutingAuthorityInformation(prosecutingAuthority, jsonEnvelope, false);
+    }
+
+    @SuppressWarnings("pmd:NullAssignment")
+    private ProsecutingAuthority fetchProsecutingAuthorityInformation(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope jsonEnvelope, final boolean applyCpsEmailOverride) {
 
         if (isNull(prosecutingAuthority)) {
             return null;
         }
 
         final Builder prosecutingAuthorityBuilder = prosecutingAuthority().withValuesFrom(prosecutingAuthority);
-        if (isNameInformationEmpty(prosecutingAuthority)) {
+
+        final boolean nameEmpty = isNameInformationEmpty(prosecutingAuthority);
+
+        // A reference-data lookup is required either to fill missing name information, or (for respondents)
+        // to detect CPS parties and resolve the CPS Crown Court email, which are only available from reference data.
+        if (nameEmpty || applyCpsEmailOverride) {
             final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutingAuthority.getProsecutionAuthorityId(), requester);
             if (optionalProsecutorJson.isPresent()) {
                 final JsonObject jsonObject = optionalProsecutorJson.get();
-                prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
-                        .withWelshName(jsonObject.getString("nameWelsh", null))
-                        .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
 
-                ofNullable(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
-                        .map(email -> contactNumber().withPrimaryEmail(email).build())
-                        .ifPresent(prosecutingAuthorityBuilder::withContact);
+                if (nameEmpty) {
+                    prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
+                            .withWelshName(jsonObject.getString("nameWelsh", null))
+                            .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
 
-                ofNullable(jsonObject.getString(PROSECUTOR_OUCODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withProsecutionAuthorityOUCode);
-                ofNullable(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withMajorCreditorCode);
+                    ofNullable(jsonObject.getString(PROSECUTOR_OUCODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withProsecutionAuthorityOUCode);
+                    ofNullable(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withMajorCreditorCode);
+                }
+
+                if (applyCpsEmailOverride && ProsecutorEmailResolver.isCps(jsonObject)) {
+                    // CPS respondents are notified at the CPS Crown Court email (cpsCcEmailAddress),
+                    // overriding any contact carried on the inbound request.
+                    ofNullable(ProsecutorEmailResolver.resolveEmailAddress(jsonObject))
+                            .map(email -> contactNumber().withPrimaryEmail(email).build())
+                            .ifPresent(prosecutingAuthorityBuilder::withContact);
+                } else if (nameEmpty) {
+                    ofNullable(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
+                            .map(email -> contactNumber().withPrimaryEmail(email).build())
+                            .ifPresent(prosecutingAuthorityBuilder::withContact);
+                }
             }
         }
         return prosecutingAuthorityBuilder.build();
