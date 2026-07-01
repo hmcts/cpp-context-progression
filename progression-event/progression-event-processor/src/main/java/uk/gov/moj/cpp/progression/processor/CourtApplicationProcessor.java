@@ -71,6 +71,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested;
@@ -765,7 +766,10 @@ public class CourtApplicationProcessor {
     @Handles("progression.event.send-notification-for-application-initiated")
     public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
         final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
-        final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
+        // The application snapshot embedded in this event is captured at appeal-initiation time and is not
+        // updated when the case prosecutor changes (e.g. progression.event.case-cps-prosecutor-updated). Refresh
+        // the prosecuting authority from the current prosecution case so notifications use the latest prosecutor.
+        final CourtApplication courtApplication = refreshCaseProsecutors(jsonEnvelope, sendNotificationForApplication.getCourtApplication());
         if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
             final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant()) && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
             final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
@@ -782,6 +786,55 @@ public class CourtApplicationProcessor {
         if (nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
             notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType(), false);
         }
+    }
+
+    private CourtApplication refreshCaseProsecutors(final JsonEnvelope event, final CourtApplication courtApplication) {
+        if (isNull(courtApplication) || isEmpty(courtApplication.getCourtApplicationCases())) {
+            return courtApplication;
+        }
+        final List<CourtApplicationCase> refreshedCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> refreshCaseProsecutor(event, courtApplicationCase))
+                .collect(toList());
+        return CourtApplication.courtApplication()
+                .withValuesFrom(courtApplication)
+                .withCourtApplicationCases(refreshedCases)
+                .build();
+    }
+
+    private CourtApplicationCase refreshCaseProsecutor(final JsonEnvelope event, final CourtApplicationCase courtApplicationCase) {
+        final ProsecutionCaseIdentifier identifier = courtApplicationCase.getProsecutionCaseIdentifier();
+        if (isNull(courtApplicationCase.getProsecutionCaseId()) || isNull(identifier)) {
+            return courtApplicationCase;
+        }
+
+        final Optional<Prosecutor> currentProsecutor = progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString())
+                .map(caseJson -> caseJson.getJsonObject(PROSECUTION_CASE))
+                .filter(Objects::nonNull)
+                .map(caseJson -> jsonObjectToObjectConverter.convert(caseJson, ProsecutionCase.class))
+                .map(ProsecutionCase::getProsecutor);
+
+        if (currentProsecutor.isEmpty()
+                || isNull(currentProsecutor.get().getProsecutorId())
+                || currentProsecutor.get().getProsecutorId().equals(identifier.getProsecutionAuthorityId())) {
+            return courtApplicationCase;
+        }
+
+        final Prosecutor prosecutor = currentProsecutor.get();
+        LOGGER.info("Refreshing appeal prosecutor for case {} from {} to {}", courtApplicationCase.getProsecutionCaseId(),
+                identifier.getProsecutionAuthorityId(), prosecutor.getProsecutorId());
+
+        final ProsecutionCaseIdentifier refreshedIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                .withValuesFrom(identifier)
+                .withProsecutionAuthorityId(prosecutor.getProsecutorId())
+                .withProsecutionAuthorityCode(prosecutor.getProsecutorCode())
+                .withProsecutionAuthorityName(prosecutor.getProsecutorName())
+                .withAddress(nonNull(prosecutor.getAddress()) ? prosecutor.getAddress() : identifier.getAddress())
+                .build();
+
+        return CourtApplicationCase.courtApplicationCase()
+                .withValuesFrom(courtApplicationCase)
+                .withProsecutionCaseIdentifier(refreshedIdentifier)
+                .build();
     }
 
     @Handles("progression.event.breach-application-creation-requested")

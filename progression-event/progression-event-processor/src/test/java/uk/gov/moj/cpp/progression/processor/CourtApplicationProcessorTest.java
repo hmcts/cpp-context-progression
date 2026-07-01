@@ -97,6 +97,8 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
@@ -514,6 +516,70 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.sendNotificationForApplication(event);
         verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
+    }
+
+    @Test
+    public void processSendNotificationForApplicationShouldRefreshProsecutorFromCurrentCase() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID oldAuthorityId = randomUUID();
+        final UUID newAuthorityId = randomUUID();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicationReference(STRING.next())
+                .withId(randomUUID())
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityId(oldAuthorityId)
+                                .withProsecutionAuthorityCode("CITYPF")
+                                .withCaseURN("20NX3604023")
+                                .build())
+                        .build()))
+                .build();
+
+        final SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication)
+                .withIsWelshTranslationRequired(false)
+                .withCourtHearing(courtHearingRequest()
+                        .withCourtCentre(CourtCentre.courtCentre().build())
+                        .withEarliestStartDateTime(ZonedDateTime.now())
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+        // The current prosecution case carries an updated CPS prosecutor
+        final ProsecutionCase currentCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withProsecutor(Prosecutor.prosecutor()
+                        .withProsecutorId(newAuthorityId)
+                        .withProsecutorCode("CPS-LN")
+                        .withProsecutorName("CPS London North")
+                        .withIsCps(true)
+                        .build())
+                .build();
+        final JsonObject caseQueryResult = createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(currentCase))
+                .build();
+        when(progressionService.getProsecutionCase(any(), eq(prosecutionCaseId.toString()))).thenReturn(Optional.of(caseQueryResult));
+
+        //When
+        courtApplicationProcessor.sendNotificationForApplication(event);
+
+        //Then the notification uses the refreshed prosecuting authority
+        final ArgumentCaptor<CourtApplication> captor = forClass(CourtApplication.class);
+        verify(notificationService).sendNotification(any(), captor.capture(), anyBoolean(), any(), any(), any(), any());
+
+        final ProsecutionCaseIdentifier refreshed = captor.getValue().getCourtApplicationCases().get(0).getProsecutionCaseIdentifier();
+        assertThat(refreshed.getProsecutionAuthorityId(), is(newAuthorityId));
+        assertThat(refreshed.getProsecutionAuthorityCode(), is("CPS-LN"));
+        assertThat(refreshed.getProsecutionAuthorityName(), is("CPS London North"));
+        assertThat(refreshed.getCaseURN(), is("20NX3604023"));
     }
 
     @Test
