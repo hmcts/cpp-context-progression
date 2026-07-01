@@ -264,5 +264,4 @@ public class SummonsNotificationEmailPayloadService {
     private <T> boolean lastItemInList(final T item, final List<T> list) {
         return list.indexOf(item) == list.size() - 1;
     }
-
 }
