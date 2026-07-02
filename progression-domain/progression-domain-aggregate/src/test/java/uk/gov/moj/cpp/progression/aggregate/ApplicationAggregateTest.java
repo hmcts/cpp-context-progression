@@ -88,6 +88,12 @@ import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
+import uk.gov.justice.core.courts.FinancialDataAdded;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DefendantDocument;
+import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -1983,24 +1989,6 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldApproveSummonsWithIsSummonsAmendedFalseOnFirstApproval() {
-        final UUID courtApplicationId = randomUUID();
-        final UUID offenceId = randomUUID();
-
-        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
-        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication)
-                .withSummonsApprovalRequired(false).build();
-        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
-
-        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
-
-        assertThat(events.size(), is(1));
-        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
-        assertThat(approved.getIsSummonsAmended(), is(false));
-    }
-
-    @Test
     public void shouldApproveSummonsWithIsSummonsAmendedTrueWhenPreviouslyApproved() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -2064,4 +2052,59 @@ public class ApplicationAggregateTest {
         final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
         assertThat(approved.getIsSummonsAmended(), is(true));
     }
+
+    @Test
+    public void shouldApproveSummonsWithIsSummonsAmendedFalseOnFirstApproval() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
+        assertThat(approved.getIsSummonsAmended(), is(false));
+    }
+
+    @Test
+    public void shouldReturnFinancialDataAddedEventWhenApplicationUploadsMC100Form() {
+
+        final CourtDocument courtDocument = getCourtDocumentWithApplicationDocumentCategory();
+        final List<Object> eventStream = aggregate.addFinancialMeansData(courtDocument.getDocumentCategory().getApplicationDocument().getProsecutionCaseId(),
+                null, courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId(), courtDocument.getMaterials().get(0)).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(FinancialDataAdded.class)));
+    }
+
+    private CourtDocument getCourtDocumentWithApplicationDocumentCategory() {
+        UUID caseId = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a77");
+        UUID applicationId = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a88");
+        UUID materialId = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a99");
+
+        List<UUID> defendantlist = new ArrayList<>();
+        defendantlist.add(applicationId);
+        List<Material> materials = new ArrayList<>();
+        Material material = Material.material().withId(materialId).withName("MC100").build();
+        materials.add(material);
+
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withContainsFinancialMeans(true)
+                .withMaterials(materials)
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withApplicationDocument(ApplicationDocument.applicationDocument().withApplicationId(applicationId).withProsecutionCaseId(caseId).build())
+                        .withDefendantDocument(DefendantDocument.defendantDocument().withDefendants(defendantlist).withProsecutionCaseId(caseId).build())
+                        .build()
+                ).build();
+
+        return courtDocument;
+    }
+
 }

@@ -115,6 +115,8 @@ import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
+import uk.gov.justice.core.courts.FinancialDataAdded;
+import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
@@ -170,6 +172,7 @@ public class ApplicationAggregate implements Aggregate {
     private final Map<UUID, LaaReference> offenceLaaReference = new HashMap<>();
     private LaaReference laaReference;//cloned by child applications. This has to be overridden each time LaaReference updated for application or any offence.
     private final Map<UUID, Boolean> applicationOrganisationAsscociatedByRepOrder = new HashMap<>();
+    private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
 
     @Override
     public Object apply(final Object event) {
@@ -254,6 +257,7 @@ public class ApplicationAggregate implements Aggregate {
                                 .build();
                     }
                 }),
+                when(FinancialDataAdded.class).apply(this::populateFinancialData),
                 otherwiseDoNothing());
     }
 
@@ -1558,6 +1562,24 @@ public class ApplicationAggregate implements Aggregate {
 
     private void setLaaReference(final LaaReference laaReference) {
         this.laaReference = laaReference;
+    }
+
+    public Stream<Object> addFinancialMeansData(final UUID prosecutionCaseId, final UUID defendantId, final UUID applicationId, final Material material) {
+        final List<UUID> materialIds = new ArrayList<>();
+        materialIds.add(material.getId());
+        return apply(Stream.of(FinancialDataAdded.financialDataAdded()
+                .withCaseId(prosecutionCaseId)
+                .withApplicationId(applicationId)
+                .withDefendantId(defendantId)
+                .withMaterialIds(materialIds)
+                .build())
+        );
+    }
+
+    private void populateFinancialData(final FinancialDataAdded financialDataAdded) {
+        if (financialDataAdded.getApplicationId() != null) {
+            this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
+        }
     }
 
 }
