@@ -30,7 +30,7 @@ pool:
 
 
 variables:
-  sonarqubeProject: "uk.gov.moj.cpp.progression:progression-parent" # update eg: uk.gov.moj.cpp.listing:listing-parent testing
+  sonarqubeProject: "uk.gov.moj.cpp.progression:progression-parent" # update eg: uk.gov.moj.cpp.listing:listing-parent testing123
   service_Name: 'progression' # this should be service name. Image repository will be <serviceName>-service and should be in sysnc with aks-deploy repo.. eg : stagingbulkscan, hearing, systemidmapper
   itTest_Folder: 'progression-integration-test' # integration test folder name system-id-mapper-integration-test
   LANG: 'en_GB.UTF-8'
