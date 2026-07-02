@@ -1981,7 +1981,7 @@ public class CourtApplicationHandlerTest {
     }
 
     @Test
-    public void shouldUseCpsCcEmailAddressForCpsRespondentWhenNamePresent() throws EventStreamException {
+   void shouldUseCpsCcEmailAddressForCpsRespondentWhenNamePresent() throws EventStreamException {
 
         final UUID prosecutor1 = randomUUID();
         final UUID subject = randomUUID();

@@ -583,33 +583,34 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         // A reference-data lookup is required either to fill missing name information, or (for respondents)
         // to detect CPS parties and resolve the CPS Crown Court email, which are only available from reference data.
         if (nameEmpty || applyCpsEmailOverride) {
-            final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutingAuthority.getProsecutionAuthorityId(), requester);
-            if (optionalProsecutorJson.isPresent()) {
-                final JsonObject jsonObject = optionalProsecutorJson.get();
-
-                if (nameEmpty) {
-                    prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
-                            .withWelshName(jsonObject.getString("nameWelsh", null))
-                            .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
-
-                    ofNullable(jsonObject.getString(PROSECUTOR_OUCODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withProsecutionAuthorityOUCode);
-                    ofNullable(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withMajorCreditorCode);
-                }
-
-                if (applyCpsEmailOverride && ProsecutorEmailResolver.isCps(jsonObject)) {
-                    // CPS respondents are notified at the CPS Crown Court email (cpsCcEmailAddress),
-                    // overriding any contact carried on the inbound request.
-                    ofNullable(ProsecutorEmailResolver.resolveEmailAddress(jsonObject))
-                            .map(email -> contactNumber().withPrimaryEmail(email).build())
-                            .ifPresent(prosecutingAuthorityBuilder::withContact);
-                } else if (nameEmpty) {
-                    ofNullable(jsonObject.getString(ProsecutorEmailResolver.PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
-                            .map(email -> contactNumber().withPrimaryEmail(email).build())
-                            .ifPresent(prosecutingAuthorityBuilder::withContact);
-                }
-            }
+            referenceDataService.getProsecutor(jsonEnvelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)
+                    .ifPresent(jsonObject -> enrichFromProsecutorReferenceData(prosecutingAuthorityBuilder, jsonObject, nameEmpty, applyCpsEmailOverride));
         }
         return prosecutingAuthorityBuilder.build();
+    }
+
+    @SuppressWarnings("pmd:NullAssignment")
+    private void enrichFromProsecutorReferenceData(final Builder prosecutingAuthorityBuilder, final JsonObject jsonObject, final boolean nameEmpty, final boolean applyCpsEmailOverride) {
+        if (nameEmpty) {
+            prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
+                    .withWelshName(jsonObject.getString("nameWelsh", null))
+                    .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
+
+            ofNullable(jsonObject.getString(PROSECUTOR_OUCODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withProsecutionAuthorityOUCode);
+            ofNullable(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY, null)).ifPresent(prosecutingAuthorityBuilder::withMajorCreditorCode);
+        }
+
+        if (applyCpsEmailOverride && ProsecutorEmailResolver.isCps(jsonObject)) {
+            // CPS respondents are notified at the CPS Crown Court email (cpsCcEmailAddress),
+            // overriding any contact carried on the inbound request.
+            ofNullable(ProsecutorEmailResolver.resolveEmailAddress(jsonObject))
+                    .map(email -> contactNumber().withPrimaryEmail(email).build())
+                    .ifPresent(prosecutingAuthorityBuilder::withContact);
+        } else if (nameEmpty) {
+            ofNullable(jsonObject.getString(ProsecutorEmailResolver.PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY, null))
+                    .map(email -> contactNumber().withPrimaryEmail(email).build())
+                    .ifPresent(prosecutingAuthorityBuilder::withContact);
+        }
     }
 
     private boolean isNameInformationEmpty(final ProsecutingAuthority prosecutingAuthority) {
