@@ -37,6 +37,9 @@
     },
     "parentGuardian": {
       "$ref": "#/definitions/parentGuardian"
+    },
+    "isCivil": {
+      "type": "boolean"
     }
   },
   "required": [
