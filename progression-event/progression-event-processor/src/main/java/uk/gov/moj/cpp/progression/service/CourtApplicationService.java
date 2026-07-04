@@ -26,6 +26,7 @@ public class CourtApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationService.class);
 
     private static final String PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY = "contactEmailAddress";
+    private static final String PROSECUTOR_CPS_CC_EMAIL_ADDRESS_KEY = "cpsCcEmailAddress";
     private static final String PROSECUTOR_OUCODE_KEY = "oucode";
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE_KEY = "majorCreditorCode";
 
@@ -41,8 +42,12 @@ public class CourtApplicationService {
 
 
 
+    public ProsecutingAuthority getProsecutingAuthority(final UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
+        return getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope, false);
+    }
+
     @SuppressWarnings("pmd:NullAssignment")
-    public ProsecutingAuthority getProsecutingAuthority(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
+    public ProsecutingAuthority getProsecutingAuthority(final UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope, final boolean isCps) {
 
         final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = prosecutingAuthority().withProsecutionAuthorityId(prosecutionAuthorityId);
 
@@ -53,9 +58,11 @@ public class CourtApplicationService {
                     .withWelshName(jsonObject.getString("nameWelsh", null))
                     .withAddress(isNull(jsonObject.getJsonObject("address")) ? null : jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("address"), Address.class));
 
-            if (jsonObject.containsKey(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY)) {
+            // CPS prosecutors are notified on their CPS CC email address rather than the contact email address
+            final String emailAddressKey = isCps ? PROSECUTOR_CPS_CC_EMAIL_ADDRESS_KEY : PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY;
+            if (jsonObject.containsKey(emailAddressKey) && !jsonObject.isNull(emailAddressKey)) {
                 prosecutingAuthorityBuilder.withContact(contactNumber()
-                        .withPrimaryEmail(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY))
+                        .withPrimaryEmail(jsonObject.getString(emailAddressKey))
                         .build());
             }
         }

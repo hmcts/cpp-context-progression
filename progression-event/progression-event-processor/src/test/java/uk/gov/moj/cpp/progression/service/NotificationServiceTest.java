@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -1301,6 +1302,155 @@ public class NotificationServiceTest {
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("informant@test.com"))))));
     }
+
+    @Test
+    public void shouldNotSendDuplicateEmailWhenCurrentProsecutorIsTheInformant() {
+
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID caseId = randomUUID();
+        final UUID informantAuthorityId = randomUUID();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withAppealFlag(true)
+                        .withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withCourtApplicationCases(getCourtApplicationCasesWithCaseId(caseId, informantAuthorityId))
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build()).build()).build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build()).build())
+                        .build())
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
+        // the current prosecutor on the case is the same authority that was notified as the informant
+        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(prosecutionCaseEnvelope(informantAuthorityId, false));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // prosecutor notification is skipped, so the CPS-aware getProsecutingAuthority is never called ...
+        verify(courtApplicationService, never()).getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class), anyBoolean());
+        // ... and only the applicant (email + doc) and informant (email + doc) notifications are sent
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldSendPostalNotificationWhenCpsProsecutorHasNoEmail() {
+
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID caseId = randomUUID();
+        final UUID informantAuthorityId = randomUUID();
+        final UUID prosecutorId = randomUUID();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withAppealFlag(true)
+                        .withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withCourtApplicationCases(getCourtApplicationCasesWithCaseId(caseId, informantAuthorityId))
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build()).build()).build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build()).build())
+                        .build())
+                .build();
+
+        // A CPS prosecutor with an address but no CPS CC email address
+        final ProsecutingAuthority cpsProsecutorWithoutEmail = ProsecutingAuthority.prosecutingAuthority()
+                .withProsecutionAuthorityId(prosecutorId)
+                .withProsecutionAuthorityCode("CPS")
+                .withName("CPS West Midlands")
+                .withAddress(Address.address().withAddress1("Colmore Gate").withPostcode("B3 2QA").build())
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class), anyBoolean())).thenReturn(cpsProsecutorWithoutEmail);
+        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(prosecutionCaseEnvelope(prosecutorId, true));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // No email for the CPS prosecutor, so a postal notification is sent instead
+        verify(postalService).sendPostalNotification(eq(envelope), eq(applicationId), eq(postalNotification), any(), any());
+    }
+
+    @Test
+    public void shouldEmailCpsProsecutorOnCpsCcEmailAddress() {
+
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID caseId = randomUUID();
+        final UUID informantAuthorityId = randomUUID();
+        final UUID prosecutorId = randomUUID();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("URN")
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withAppealFlag(true)
+                        .withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withCourtApplicationCases(getCourtApplicationCasesWithCaseId(caseId, informantAuthorityId))
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build()).build()).build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build()).build())
+                        .build())
+                .build();
+
+        // A CPS prosecutor whose resolved email is the CPS CC email address
+        final ProsecutingAuthority cpsProsecutor = ProsecutingAuthority.prosecutingAuthority()
+                .withProsecutionAuthorityId(prosecutorId)
+                .withProsecutionAuthorityCode("CPS")
+                .withName("CPS West Midlands")
+                .withAddress(Address.address().withAddress1("Colmore Gate").withPostcode("B3 2QA").build())
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("cc@cps.gov.uk").build())
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class), anyBoolean())).thenReturn(cpsProsecutor);
+        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(prosecutionCaseEnvelope(prosecutorId, true));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // applicant (email + doc), informant (email + doc), CPS prosecutor (email + doc)
+        verify(this.sender, times(6)).send(this.envelopeArgumentCaptor.capture());
+
+        // the CPS prosecutor is emailed on the CPS CC email address
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(4), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("cc@cps.gov.uk"))))));
+    }
+
+    private JsonEnvelope prosecutionCaseEnvelope(final UUID prosecutorId, final boolean isCps) {
+        final JsonObject payload = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("prosecutor", createObjectBuilder()
+                                .add("prosecutorId", prosecutorId.toString())
+                                .add("isCps", isCps)))
+                .build();
+        return envelopeFrom(metadataWithRandomUUIDAndName(), payload);
+    }
+
+    private static List<CourtApplicationCase> getCourtApplicationCasesWithCaseId(final UUID caseId, final UUID prosecutionAuthorityId) {
+        return singletonList(courtApplicationCase()
+                .withProsecutionCaseId(caseId)
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(prosecutionAuthorityId)
+                        .withProsecutionAuthorityCode("ouCode")
+                        .build())
+                .withIsSJP(true)
+                .withCaseStatus("ACTIVE")
+                .build());
+    }
+
     private static CourtDocument getCourtDocument() {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(randomUUID())

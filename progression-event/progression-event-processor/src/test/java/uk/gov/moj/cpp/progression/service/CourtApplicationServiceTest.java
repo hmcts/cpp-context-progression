@@ -91,6 +91,69 @@ public class CourtApplicationServiceTest {
     }
 
     @Test
+    public void shouldUseCpsCcEmailAddressWhenProsecutorIsCps() {
+        JsonObject prosecutorJson = Json.createObjectBuilder()
+                .add("fullName", "CPS West Midlands")
+                .add("contactEmailAddress", "contact@cps.gov.uk")
+                .add("cpsCcEmailAddress", "cc@cps.gov.uk")
+                .add("cpsFlag", true)
+                .add("address", Json.createObjectBuilder()
+                        .add("line1", "123 Main St")
+                        .add("postcode", "SW1A 1AA")
+                        .build())
+                .build();
+
+        var address = Address.address()
+                .withAddress1("123 Main St")
+                .withPostcode("SW1A 1AA").build();
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
+                .thenReturn(Optional.of(prosecutorJson));
+        when(jsonObjectToObjectConverter.convert(prosecutorJson.getJsonObject("address"), Address.class))
+                .thenReturn(address);
+
+        ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope, true);
+
+        // For a CPS prosecutor the CPS CC email address is used instead of the contact email address
+        assertThat(result.getContact().getPrimaryEmail(), is("cc@cps.gov.uk"));
+        // The reference data is only queried once (no second getProsecutorV2 call)
+        verify(referenceDataService, times(1)).getProsecutor(jsonEnvelope, prosecutionAuthorityId, requester);
+    }
+
+    @Test
+    public void shouldUseContactEmailAddressWhenProsecutorIsNotCps() {
+        JsonObject prosecutorJson = Json.createObjectBuilder()
+                .add("fullName", "Transport for London")
+                .add("contactEmailAddress", "contact@tfl.gov.uk")
+                .add("cpsCcEmailAddress", "cc@cps.gov.uk")
+                .build();
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
+                .thenReturn(Optional.of(prosecutorJson));
+
+        ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope, false);
+
+        assertThat(result.getContact().getPrimaryEmail(), is("contact@tfl.gov.uk"));
+    }
+
+    @Test
+    public void shouldNotSetContactWhenCpsProsecutorHasNoCpsCcEmailAddress() {
+        JsonObject prosecutorJson = Json.createObjectBuilder()
+                .add("fullName", "CPS West Midlands")
+                .add("contactEmailAddress", "contact@cps.gov.uk")
+                .add("cpsFlag", true)
+                .build();
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
+                .thenReturn(Optional.of(prosecutorJson));
+
+        ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope, true);
+
+        // No CPS CC email address means no contact - a postal notification will be sent downstream
+        assertThat(result.getContact(), is(nullValue()));
+    }
+
+    @Test
     public void shouldReturnEmptyCourtApplicationPartyWhenNoProsecutingAuthorityDataExists() {
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
                 .thenReturn(Optional.empty());
