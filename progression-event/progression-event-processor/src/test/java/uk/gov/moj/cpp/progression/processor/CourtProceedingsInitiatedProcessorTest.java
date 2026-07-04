@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -128,6 +129,7 @@ public class CourtProceedingsInitiatedProcessorTest {
     private ProgressionService progressionService;
 
     private static final String PCF_CASE_URN = "PCF_CASE_URN";
+    private static final String PRO_AUTH_REF = "PRO_AUTH_REF";
 
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
@@ -523,7 +525,16 @@ public class CourtProceedingsInitiatedProcessorTest {
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
         String existingCaseId = UUID.randomUUID().toString();
-        final JsonObject searchResult = createObjectBuilder().add("caseId", existingCaseId).build();
+        final JsonObject searchResult = createObjectBuilder()
+                .add("searchResults", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("caseId", existingCaseId)
+                                .add("reference", PCF_CASE_URN)
+                                .add("isStandaloneApplication", false)
+                                .build())
+                        .build())
+                .build();
+        final JsonObject searchProsecutionCaseResult = createObjectBuilder().add("prosecutionCase",createObjectBuilder().add("caseStatus", "NOT_EJECTED").build()).build();
 
 
         final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, true,
@@ -543,7 +554,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(emptyList()));
 
 
-        doReturn(Optional.of(searchResult)).when(progressionService).caseExistsByCaseUrn(requestMessage, PCF_CASE_URN);
+        doReturn(Optional.of(searchResult)).when(progressionService).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         hearingsList.add(HearingListingNeeds.hearingListingNeeds()
@@ -593,6 +604,194 @@ public class CourtProceedingsInitiatedProcessorTest {
                 metadataNames.contains("progression.command.create-prosecution-case"),
                 "Expected 'progression.command.create-prosecution-case' to not be present in the metadata names."
         );
+    }
+
+    @Test
+    public void shouldCreateCaseWhenSearchReturnsEmptyResults() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
+    }
+
+    @Test
+    public void shouldCreateCaseWhenOnlyStandaloneApplicationExists() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
+    }
+
+    @Test
+    public void shouldCreateCaseWhenSearchResponseHasNoSearchResultsKey() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
+    }
+
+    @Test
+    public void shouldCreateCaseWhenSearchResponseIsEmpty() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
+    }
+
+    @Test
+    public void shouldNotCreateCaseWhenNonStandaloneExistsWithoutMigrationSourceSystem() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+        final String existingCaseId = UUID.randomUUID().toString();
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(
+                caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(),
+                false);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        doReturn(Optional.of(buildSearchCaseDetailByUrnResponse(
+                searchResultEntry(existingCaseId, PCF_CASE_URN, false))))
+                .when(progressionService).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(false);
+        verify(progressionService, never()).prosecutionCaseByCaseId(any(), anyString());
+    }
+
+    @Test
+    public void shouldNotCreateCaseWhenMultipleResultsIncludeNonStandaloneNotEjected() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+        final String standaloneCaseId = UUID.randomUUID().toString();
+        final String existingCaseId = UUID.randomUUID().toString();
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(), false);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        doReturn(Optional.of(buildSearchCaseDetailByUrnResponse(
+                searchResultEntry(standaloneCaseId, PCF_CASE_URN, true),
+                searchResultEntry(existingCaseId, PCF_CASE_URN, false))))
+                .when(progressionService).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(false);
+    }
+
+    @Test
+    public void shouldCreateCaseWhenMultipleResultsAreAllStandaloneApplications() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
+    }
+
+    @Test
+    public void shouldNotCreateCaseWhenProsecutionAuthorityReferenceFindsNonStandaloneCase() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+        final String existingCaseId = UUID.randomUUID().toString();
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(
+                caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withCaseURN(PCF_CASE_URN)
+                        .withProsecutionAuthorityReference(PRO_AUTH_REF)
+                        .build(),
+                false);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        doReturn(Optional.of(buildSearchCaseDetailByUrnResponse(
+                searchResultEntry(existingCaseId, PRO_AUTH_REF, false))))
+                .when(progressionService).searchCaseDetailByURN(requestMessage, PRO_AUTH_REF);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(false);
+        verify(progressionService).searchCaseDetailByURN(requestMessage, PRO_AUTH_REF);
+        verify(progressionService, never()).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
+    }
+
+    @Test
+    public void shouldNotCreateCaseWhenNonStandaloneExistsAndProsecutionCaseQueryReturnsEmpty() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+        final String existingCaseId = UUID.randomUUID().toString();
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, true,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(), false);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        doReturn(Optional.of(buildSearchCaseDetailByUrnResponse(
+                searchResultEntry(existingCaseId, PCF_CASE_URN, false))))
+                .when(progressionService).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(false);
+    }
+
+    @Test
+    public void shouldCreateCaseWhenNonStandaloneExistsButCaseIsEjected() throws IOException {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseWithCaseURN(caseId, List.of(defendantId), offenceId, offenceCode, true);
+        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
+
+        when(azureFunctionService.relayCaseOnCPP(anyString())).thenReturn(1);
+
+        eventProcessor.handle(requestMessage);
+
+        assertCreateProsecutionCaseCommandSent(true);
     }
 
     @Test
@@ -1333,5 +1532,71 @@ public class CourtProceedingsInitiatedProcessorTest {
                                 .build())
                         .build())
                 .build();
+    }
+
+    private JsonEnvelope setupCourtProceedingsInitiatedEvent(final ProsecutionCase prosecutionCase,
+                                                               final UUID caseId,
+                                                               final UUID defendantId,
+                                                               final UUID offenceId) {
+        final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
+        when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
+                .thenReturn(Optional.of(emptyList()));
+
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+        hearingsList.add(HearingListingNeeds.hearingListingNeeds()
+                .withProsecutionCases(List.of(ProsecutionCase.prosecutionCase()
+                        .withDefendants(List.of(Defendant.defendant()
+                                .withOffences(List.of(Offence.offence().withId(UUID.randomUUID()).build()))
+                                .build()))
+                        .withId(caseId)
+                        .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
+                        .build()))
+                .build());
+        when(listCourtHearingTransformer.transform(any(), any(), anyList(), any()))
+                .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
+
+        return requestMessage;
+    }
+
+    private JsonObject buildSearchCaseDetailByUrnResponse(final JsonObject... searchResults) {
+        final JsonArrayBuilder searchResultsBuilder = createArrayBuilder();
+        for (final JsonObject searchResult : searchResults) {
+            searchResultsBuilder.add(searchResult);
+        }
+        return createObjectBuilder().add("searchResults", searchResultsBuilder.build()).build();
+    }
+
+    private JsonObject searchResultEntry(final String caseId, final String reference, final boolean isStandaloneApplication) {
+        return createObjectBuilder()
+                .add("caseId", caseId)
+                .add("reference", reference)
+                .add("isStandaloneApplication", isStandaloneApplication)
+                .build();
+    }
+
+    private void assertCreateProsecutionCaseCommandSent(final boolean expectedSent) {
+        verify(sender, times(expectedSent ? 3 : 2)).send(envelopeCaptor.capture());
+
+        final List<String> metadataNames = envelopeCaptor.getAllValues().stream()
+                .map(value -> value.metadata().name())
+                .toList();
+
+        if (expectedSent) {
+            assertThat(metadataNames.contains("progression.command.create-prosecution-case"), is(true));
+        } else {
+            assertFalse(
+                    metadataNames.contains("progression.command.create-prosecution-case"),
+                    "Expected 'progression.command.create-prosecution-case' to not be present in the metadata names."
+            );
+        }
     }
 }
