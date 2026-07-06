@@ -1,0 +1,19 @@
+{
+  "id": "[PROSECUTION_AUTHORITY_ID]",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "CPS2",
+  "oucode": "[OU_CODE]",
+  "shortName": "CPS",
+  "fullName": "CPS West Midlands",
+  "nameWelsh": "CPS West Midlands",
+  "cpsFlag": true,
+  "address": {
+    "address1": "Colmore Gate",
+    "address2": "2 Colmore Row",
+    "address3": "Birmingham",
+    "postcode": "B3 2QA"
+  },
+  "contactEmailAddress": "cps-contact@cps.gov.uk",
+  "cpsCcEmailAddress": "cps-cc@cps.gov.uk",
+  "informantEmailAddress": "cps-informant@cps.gov.uk"
+}
