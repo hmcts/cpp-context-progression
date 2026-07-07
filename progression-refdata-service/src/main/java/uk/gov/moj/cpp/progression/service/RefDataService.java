@@ -716,10 +716,14 @@ public class RefDataService {
                 .build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelopeFrom(metadata, payload), JsonObject.class);
-        if (isNull(response.payload()) || response.payload().getJsonArray("prosecutors").isEmpty()) {
+        if (isNull(response) || isNull(response.payload())) {
             return Optional.empty();
         }
-        return ofNullable(response.payload().getJsonArray("prosecutors").getJsonObject(0));
+        final JsonArray prosecutors = response.payload().getJsonArray("prosecutors");
+        if (isNull(prosecutors) || prosecutors.isEmpty()) {
+            return Optional.empty();
+        }
+        return ofNullable(prosecutors.getJsonObject(0));
     }
 
     public String getCountryByPostcode(final JsonEnvelope envelope, final String postCode, final Requester requester) {

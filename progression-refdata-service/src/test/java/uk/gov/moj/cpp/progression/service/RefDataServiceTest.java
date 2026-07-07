@@ -541,6 +541,18 @@ public class RefDataServiceTest {
     }
 
     @Test
+    public void shouldReturnEmptyWhenProsecutorsArrayIsMissingFromRefDataResponse() {
+        final Envelope envelope = envelopeFrom(
+                Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(),
+                createObjectBuilder().build());
+
+        when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
+
+        assertThat(refDataService.getProsecutorByProsecutionAuthority("TFL", requester).isPresent(), is(false));
+        assertThat(refDataService.getPoliceFlag(null, "TFL", requester), is(false));
+    }
+
+    @Test
     public void shouldGetPetFormData() {
 
         final JsonObject payload = createReader(
