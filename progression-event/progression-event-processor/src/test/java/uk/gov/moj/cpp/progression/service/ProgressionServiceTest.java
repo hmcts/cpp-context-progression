@@ -1484,7 +1484,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void transformConfirmedHearingShouldDropProsecutionCasesForApplicationHearing() {
+    public void transformConfirmedHearingShouldKeepConfirmedCaseOffencesWhenAllApplicationOffencesConcluded() {
         final UUID courtCentreId = randomUUID();
         final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
         final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
@@ -1505,8 +1505,14 @@ public class ProgressionServiceTest {
 
         final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
 
-        // all application offences concluded -> application hearing: prosecution cases dropped, application offences kept
-        assertThat(hearing.getProsecutionCases(), is(nullValue()));
+        // the confirmed hearing pre-exists and its listed case offence is unrelated to the application, so
+        // even though all application offences are concluded the prosecution side must be preserved
+        // (adjourn/next-hearing regression: previously wiped, losing the adjourned offences)
+        assertThat(hearing.getProsecutionCases().size(), is(1));
+        assertThat(hearing.getProsecutionCases().get(0).getId(), is(caseId));
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(matchedOffenceId));
+        // the concluded offence stays under the application
         assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().size(), is(1));
         assertThat(hearing.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(concludedApplicationOffenceId));
     }
