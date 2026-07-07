@@ -482,6 +482,185 @@ class HearingOffenceFilterTest {
                 containsInAnyOrder(existingInCase2, missingInCase2));
     }
 
+    // ---- Preserving variant (merged/existing hearings) -----------------------
+    // filterOffencesPreservingHearingCaseOffences: the hearing pre-exists (confirmed/adjourn/next/extend),
+    // so its case offences are legitimately listed and must never be dropped.
+
+    @Test
+    void preservingShouldReturnSameHearingOnGuards() {
+        assertThat(HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(null, NO_OWNER), is(nullValue()));
+
+        final Hearing noApplications = Hearing.hearing()
+                .withId(randomUUID())
+                .withProsecutionCases(singletonList(prosecutionCase(randomUUID(), defendant(randomUUID(), activeOffence(randomUUID())))))
+                .build();
+        assertThat(HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(noApplications, NO_OWNER), is(sameInstance(noApplications)));
+    }
+
+    @Test
+    void preservingShouldKeepCaseOffencesWhenAllApplicationOffencesConcluded() {
+        // ste18 regression: case hearing (off2, off3 active) extended with an application whose only
+        // offence (off1) is concluded; adjourned to a next hearing - the case offences must survive.
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID concludedAppOffenceId = randomUUID();
+        final UUID caseOffenceId2 = randomUUID();
+        final UUID caseOffenceId3 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, concludedOffence(concludedAppOffenceId))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(defendantId, activeOffence(caseOffenceId2), activeOffence(caseOffenceId3)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, NO_OWNER);
+
+        // the hearing's own case offences are preserved
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()),
+                containsInAnyOrder(caseOffenceId2, caseOffenceId3));
+        // the concluded offence stays under the application
+        assertThat(offenceIds(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences()),
+                contains(concludedAppOffenceId));
+    }
+
+    @Test
+    void preservingShouldKeepCaseOffencesAndMoveActiveApplicationOffence() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID activeAppOffenceId = randomUUID();
+        final UUID caseOffenceId2 = randomUUID();
+        final UUID caseOffenceId3 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, activeOffence(activeAppOffenceId))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(defendantId, activeOffence(caseOffenceId2), activeOffence(caseOffenceId3)))))
+                .build();
+
+        final OffenceOwnerResolver resolver = (resolveCaseId, offenceId) ->
+                activeAppOffenceId.equals(offenceId) ? Optional.of(defendantId) : Optional.empty();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, resolver);
+
+        // unrelated case offences preserved AND the active application offence moved across
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()),
+                containsInAnyOrder(caseOffenceId2, caseOffenceId3, activeAppOffenceId));
+        // active offence stripped from the application (only offence -> list nulled)
+        assertThat(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
+    }
+
+    @Test
+    void preservingShouldKeepActiveApplicationOffenceAlreadyPresentUnderProsecution() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID sharedActiveId = randomUUID();
+        final UUID caseOffenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, activeOffence(sharedActiveId))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(defendantId, activeOffence(sharedActiveId), activeOffence(caseOffenceId)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, NO_OWNER);
+
+        // shared offence kept once under prosecution alongside the unrelated case offence
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()),
+                containsInAnyOrder(sharedActiveId, caseOffenceId));
+        // and stripped from the application side
+        assertThat(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
+    }
+
+    @Test
+    void preservingShouldDedupConcludedApplicationOffenceOffTheProsecutionSide() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID concludedAppOffenceId = randomUUID();
+        final UUID caseOffenceId = randomUUID();
+
+        // the concluded application offence also (wrongly) sits under prosecution -> deduped off it
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, concludedOffence(concludedAppOffenceId))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(defendantId, concludedOffence(concludedAppOffenceId), activeOffence(caseOffenceId)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, NO_OWNER);
+
+        assertThat(offenceIds(result.getProsecutionCases().get(0).getDefendants().get(0).getOffences()), contains(caseOffenceId));
+        assertThat(offenceIds(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences()),
+                contains(concludedAppOffenceId));
+    }
+
+    @Test
+    void preservingShouldNullProsecutionCasesWhenOnlyApplicationDuplicatesRemain() {
+        final UUID caseId = randomUUID();
+        final UUID concludedAppOffenceId = randomUUID();
+
+        // pure application hearing: prosecution side only mirrors the concluded application offence
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, concludedOffence(concludedAppOffenceId))))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId,
+                        defendant(randomUUID(), concludedOffence(concludedAppOffenceId)))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, NO_OWNER);
+
+        // schema-safe: null, never an empty array
+        assertThat(result.getProsecutionCases(), is(nullValue()));
+        assertThat(offenceIds(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences()),
+                contains(concludedAppOffenceId));
+    }
+
+    @Test
+    void preservingShouldLeaveNullProsecutionCasesNullForPureApplicationHearing() {
+        final UUID caseId = randomUUID();
+        final UUID concludedAppOffenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(application(caseId, concludedOffence(concludedAppOffenceId))))
+                .build();
+
+        final Hearing result = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, NO_OWNER);
+
+        assertThat(result.getProsecutionCases(), is(nullValue()));
+        assertThat(offenceIds(result.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences()),
+                contains(concludedAppOffenceId));
+    }
+
+    @Test
+    void preservingShouldNotMutateInputHearing() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID activeAppOffenceId = randomUUID();
+        final UUID caseOffenceId = randomUUID();
+
+        final CourtApplicationCase applicationCase = CourtApplicationCase.courtApplicationCase()
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(activeOffence(activeAppOffenceId)))
+                .build();
+        final Defendant inputDefendant = defendant(defendantId, activeOffence(caseOffenceId));
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(CourtApplication.courtApplication().withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(applicationCase)).build()))
+                .withProsecutionCases(singletonList(prosecutionCase(caseId, inputDefendant)))
+                .build();
+
+        final OffenceOwnerResolver resolver = (resolveCaseId, offenceId) -> Optional.of(defendantId);
+
+        HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, resolver);
+
+        assertThat(applicationCase.getOffences(), hasSize(1));
+        assertThat(inputDefendant.getOffences(), hasSize(1));
+    }
+
     // ---- Fixture helpers ----------------------------------------------------
 
     private static Offence activeOffence(final UUID id) {

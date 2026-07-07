@@ -576,9 +576,11 @@ public class HearingConfirmedEventProcessor {
 
         final Initiate incomingHearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
 
+        // Preserving variant: the enriched hearing comes from a confirmed (possibly next/adjourned)
+        // hearing whose case offences pre-exist independently of the application and must not be dropped.
         final Initiate filteredHearingInitiate = Initiate.initiate()
                 .withValuesFrom(incomingHearingInitiate)
-                .withHearing(progressionService.shapeHearingForListing(incomingHearingInitiate.getHearing(), jsonEnvelope))
+                .withHearing(progressionService.shapeExistingHearingForListing(incomingHearingInitiate.getHearing(), jsonEnvelope))
                 .build();
 
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(filteredHearingInitiate)));

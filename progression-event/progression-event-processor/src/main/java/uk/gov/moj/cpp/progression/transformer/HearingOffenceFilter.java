@@ -32,9 +32,19 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Filtration applied to the hearing payload only — the application held in progression viewstore is
  * a separate, untouched copy. A concluded offence belongs under courtApplicationCases; an active
- * offence must never sit there and is moved to the prosecutionCases side. When all offences under
- * courtApplicationCases are concluded (inactive), they are left under courtApplicationCases and
- * prosecutionCases is dropped entirely.
+ * offence must never sit there and is moved to the prosecutionCases side.
+ * <p>
+ * Two variants, chosen by the caller based on the hearing's provenance:
+ * <ul>
+ * <li>{@link #filterOffences} — strict, for a hearing just <b>derived from the application</b>
+ * (referral/boxwork creation flows): its prosecution side can only contain the application's own
+ * case, so unreferenced offences are dropped and, when all application offences are concluded,
+ * prosecutionCases is dropped entirely.</li>
+ * <li>{@link #filterOffencesPreservingHearingCaseOffences} — for a <b>merged/existing</b> hearing
+ * (confirmed by listing, adjourn/next-hearing, extend): its prosecution side carries legitimately
+ * listed case offences that must never be lost; only the application's own offences are
+ * deduped/moved.</li>
+ * </ul>
  */
 public final class HearingOffenceFilter {
 
@@ -92,6 +102,46 @@ public final class HearingOffenceFilter {
                 .build();
     }
 
+    /**
+     * Variant for merged/existing hearings (confirmed by listing, adjourn/next-hearing, extend).
+     * Unlike filterOffences, the prosecution side is preserved as-is — its case offences
+     * are listed on the hearing and are never dropped. Only the application's own
+     * offences are shaped: concluded application offences stay under the application (and are
+     * deduped off the prosecution side); active application offences move to the prosecution side
+     * under their owning defendant.
+     */
+    public static Hearing filterOffencesPreservingHearingCaseOffences(final Hearing hearing, final OffenceOwnerResolver ownerResolver) {
+        if (isNull(hearing) || isEmpty(hearing.getCourtApplications()) || !hasApplicationOffences(hearing.getCourtApplications())) {
+            return hearing;
+        }
+
+        // A concluded application offence lives under the application only -> dedup it off the prosecution side.
+        final Set<UUID> concludedApplicationOffenceIds = collectConcludedApplicationOffenceIds(hearing.getCourtApplications());
+
+        // Working copy keeping every case offence the hearing already carries, minus the concluded
+        // application offences (dedup) - never rebuild the prosecution side from the application.
+        final List<ProsecutionCase> workingProsecutionCases = copyRemovingOffences(hearing.getProsecutionCases(), concludedApplicationOffenceIds);
+
+        // Offence ids present under the prosecution side.
+        final Set<UUID> prosecutionOffenceIds = collectOffenceIds(workingProsecutionCases);
+
+        // Any active application offence not yet present under prosecution -> move it across.
+        addMissingActiveOffences(hearing.getCourtApplications(), prosecutionOffenceIds, workingProsecutionCases, ownerResolver);
+
+        // Strip from the application side the offences now present under prosecution: that covers the
+        // active application offences (moved or already there); concluded ones were deduped off the
+        // working copy above, so they stay with the application. Unrelated case offence ids are not on
+        // the application, so they are a no-op here.
+        final List<CourtApplication> filteredApplications = removeMovedOffencesFromApplications(hearing.getCourtApplications(), prosecutionOffenceIds);
+        final List<ProsecutionCase> filteredProsecutionCases = dropEmptyDefendantsAndCases(workingProsecutionCases);
+
+        return Hearing.hearing()
+                .withValuesFrom(hearing)
+                .withCourtApplications(filteredApplications)
+                .withProsecutionCases(isEmpty(filteredProsecutionCases) ? null : filteredProsecutionCases)
+                .build();
+    }
+
     private static boolean hasApplicationOffences(final List<CourtApplication> applications) {
         return applications.stream()
                 .filter(application -> nonNull(application.getCourtApplicationCases()))
@@ -129,6 +179,44 @@ public final class HearingOffenceFilter {
                     final List<Offence> keptOffences = isNull(defendant.getOffences()) ? new ArrayList<>()
                             : defendant.getOffences().stream()
                             .filter(offence -> referencedOffenceIds.contains(offence.getId()))
+                            .collect(toList());
+                    return Defendant.defendant().withValuesFrom(defendant).withOffences(keptOffences).build();
+                })
+                .collect(toList());
+    }
+
+    private static Set<UUID> collectConcludedApplicationOffenceIds(final List<CourtApplication> applications) {
+        return applications.stream()
+                .filter(application -> nonNull(application.getCourtApplicationCases()))
+                .flatMap(application -> application.getCourtApplicationCases().stream())
+                .filter(applicationCase -> nonNull(applicationCase.getOffences()))
+                .flatMap(applicationCase -> applicationCase.getOffences().stream())
+                .filter(HearingOffenceFilter::isConcluded)
+                .map(Offence::getId)
+                .collect(toSet());
+    }
+
+    private static List<ProsecutionCase> copyRemovingOffences(final List<ProsecutionCase> prosecutionCases, final Set<UUID> offenceIdsToRemove) {
+        if (isEmpty(prosecutionCases)) {
+            return new ArrayList<>();
+        }
+        return prosecutionCases.stream()
+                .map(prosecutionCase -> ProsecutionCase.prosecutionCase()
+                        .withValuesFrom(prosecutionCase)
+                        .withDefendants(copyDefendantsRemovingOffences(prosecutionCase.getDefendants(), offenceIdsToRemove))
+                        .build())
+                .collect(toList());
+    }
+
+    private static List<Defendant> copyDefendantsRemovingOffences(final List<Defendant> defendants, final Set<UUID> offenceIdsToRemove) {
+        if (isEmpty(defendants)) {
+            return new ArrayList<>();
+        }
+        return defendants.stream()
+                .map(defendant -> {
+                    final List<Offence> keptOffences = isNull(defendant.getOffences()) ? new ArrayList<>()
+                            : defendant.getOffences().stream()
+                            .filter(offence -> !offenceIdsToRemove.contains(offence.getId()))
                             .collect(toList());
                     return Defendant.defendant().withValuesFrom(defendant).withOffences(keptOffences).build();
                 })

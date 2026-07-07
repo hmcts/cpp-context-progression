@@ -975,7 +975,10 @@ public class ProgressionService {
     }
 
     private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing rawHearing) {
-        final Hearing hearing = shapeHearingForListing(rawHearing, jsonEnvelope);
+        // Preserving variant: the request may be a next/adjourned hearing carrying case offences that
+        // pre-exist independently of the application - they must stay so the projection routes it as a
+        // case hearing (SENT_FOR_LISTING) and not down the application-hearing branch below.
+        final Hearing hearing = shapeExistingHearingForListing(rawHearing, jsonEnvelope);
         if (isNotEmpty(hearing.getProsecutionCases())) {
             final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
@@ -1368,18 +1371,32 @@ public class ProgressionService {
 
         // Shape application/case offences once, at the source, so the persisted hearing matches the
         // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
-        // concluded ones stay with the application.
+        // concluded ones stay with the application. A confirmed hearing may pre-exist and carry its own
+        // listed case offences (adjourn/next-hearing), so use the preserving variant — those case offences must never be dropped.
+        return HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    }
+
+    /**
+     * Shapes an application-derived hearing (referral/boxwork creation flows) for listing: the
+     * hearing was just built from the application, so its prosecution side can only contain the
+     * application's own case — an application hearing (all application offences concluded) drops its
+     * prosecutionCases; active application offences move to the prosecution side and unreferenced
+     * case offences are dropped. Case-only hearings (no court applications) are returned unchanged.
+     * For hearings that already exist / were confirmed by listing use
+     * {@link #shapeExistingHearingForListing} instead.
+     */
+    public Hearing shapeHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
         return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
     }
 
     /**
-     * Shapes a hearing for the listing-status projection so progression's persisted hearing and the
-     * {@code case_defendant_hearing} join match the manage-hearing view: an application hearing (all
-     * application offences concluded) drops its prosecutionCases; active application offences move to the
-     * prosecution side. Case-only hearings (no court applications) are returned unchanged.
+     * Shapes a merged/existing hearing (confirmed by listing, adjourn/next-hearing, extend) whose
+     * prosecution side carries legitimately listed case offences: those are preserved; only the
+     * application's own offences are shaped (concluded ones stay under the application and are
+     * deduped off the prosecution side, active ones move to the prosecution side).
      */
-    public Hearing shapeHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
-        return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    public Hearing shapeExistingHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
+        return HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
     }
 
     /**
