@@ -36,6 +36,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
@@ -62,39 +67,23 @@
             <artifactId>json-smart</artifactId>
         </dependency>
 
-    </dependencies>
+        <!-- MI schema contract: resources-only jar published by mi. Provides sample event
+             payloads and JSON Schemas under uk/gov/moj/cpp/mi/reportdata/progression/{samples,schemas}/.
+             Replaces the old mireportdata-progression-event-listener:listener-tests classifier
+             unpack, which coupled progression to mi's compiled test bytecode (and framework version). -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
+            <artifactId>mireportdata-progression-schemas</artifactId>
+            <version>17.0.110-PEG-3347-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>1.0.83</version>
+            <scope>test</scope>
+        </dependency>
 
-    <build>
-        <plugins>
-            <!-- MI schema contract validation tests jar dependency-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <artifactId>mireportdata-progression-event-listener</artifactId>
-                                    <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
-                                    <version>RELEASE</version>
-                                    <classifier>listener-tests</classifier>
-                                    <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/test-classes
-                                    </outputDirectory>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    </dependencies>
 
 </project>
