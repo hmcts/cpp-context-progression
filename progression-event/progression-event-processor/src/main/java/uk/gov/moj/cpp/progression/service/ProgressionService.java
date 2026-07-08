@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparingInt;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -1349,6 +1350,24 @@ public class ProgressionService {
      * @return
      */
     public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final SeedingHearing seedingHearing) {
+        return transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing, null);
+    }
+
+    /**
+     * Transform ConfirmedHearing to Hearing, ordering the prosecution cases against the hearing as
+     * progression already knows it: cases that were on the hearing before this confirmation keep
+     * their stored relative order and come first; newly arriving cases (e.g. adjourned onto an
+     * existing hearing) are appended. The manage-hearing display follows the payload order, so
+     * without the anchor an existing hearing's own case would render after the incoming one.
+     *
+     * @param confirmedHearing
+     * @param jsonEnvelope
+     * @param seedingHearing
+     * @param hearingInProgression progression's stored copy of the hearing (order anchor); null for
+     *                             hearings progression does not know yet
+     * @return
+     */
+    public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final SeedingHearing seedingHearing, final Hearing hearingInProgression) {
 
         final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
@@ -1373,7 +1392,47 @@ public class ProgressionService {
         // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
         // concluded ones stay with the application. A confirmed hearing may pre-exist and carry its own
         // listed case offences (adjourn/next-hearing), so use the preserving variant — those case offences must never be dropped.
-        return HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+        final Hearing shapedHearing = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+
+        return reorderProsecutionCasesByExistingHearing(shapedHearing, hearingInProgression);
+    }
+
+    /**
+     * Stable partition of the shaped hearing's prosecution cases against the hearing progression
+     * already holds: anchored cases first in the stored copy's relative order, the rest appended in
+     * their incoming order. Pure reordering — case content is never touched.
+     */
+    // package-private for unit testing
+    Hearing reorderProsecutionCasesByExistingHearing(final Hearing hearing, final Hearing hearingInProgression) {
+        if (isNull(hearingInProgression) || isEmpty(hearingInProgression.getProsecutionCases())
+                || isNull(hearing) || isEmpty(hearing.getProsecutionCases())) {
+            return hearing;
+        }
+
+        final List<UUID> anchorOrder = hearingInProgression.getProsecutionCases().stream()
+                .map(ProsecutionCase::getId)
+                .collect(toList());
+
+        final List<ProsecutionCase> anchored = new ArrayList<>();
+        final List<ProsecutionCase> arriving = new ArrayList<>();
+        hearing.getProsecutionCases().forEach(prosecutionCase -> {
+            if (anchorOrder.contains(prosecutionCase.getId())) {
+                anchored.add(prosecutionCase);
+            } else {
+                arriving.add(prosecutionCase);
+            }
+        });
+
+        if (anchored.isEmpty()) {
+            return hearing;
+        }
+
+        anchored.sort(comparingInt(prosecutionCase -> anchorOrder.indexOf(prosecutionCase.getId())));
+
+        final List<ProsecutionCase> reordered = new ArrayList<>(anchored);
+        reordered.addAll(arriving);
+
+        return Hearing.hearing().withValuesFrom(hearing).withProsecutionCases(reordered).build();
     }
 
     /**

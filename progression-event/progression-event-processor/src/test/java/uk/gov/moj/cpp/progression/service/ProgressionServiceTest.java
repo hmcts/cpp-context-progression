@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -1632,6 +1633,66 @@ public class ProgressionServiceTest {
         // no court applications -> not an application hearing: prosecution cases untouched
         assertThat(shaped.getProsecutionCases().size(), is(1));
         assertThat(shaped.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+    }
+
+    // ---- CHD-2687: prosecution-case order anchored on progression's stored hearing ------------
+
+    @Test
+    public void reorderShouldPutExistingHearingCasesFirstKeepingStoredRelativeOrder() {
+        final UUID case1 = randomUUID();
+        final UUID case2 = randomUUID();
+        final UUID case3 = randomUUID();
+
+        // progression already knows the hearing as [case2, case3]; the confirmed payload arrives
+        // with the incoming case first (adjournment onto an existing hearing)
+        final Hearing anchor = hearingWithCases(case2, case3);
+        final Hearing shaped = hearingWithCases(case3, case1, case2);
+
+        final Hearing reordered = progressionService.reorderProsecutionCasesByExistingHearing(shaped, anchor);
+
+        assertThat(reordered.getProsecutionCases().get(0).getId(), is(case2));
+        assertThat(reordered.getProsecutionCases().get(1).getId(), is(case3));
+        assertThat(reordered.getProsecutionCases().get(2).getId(), is(case1));
+    }
+
+    @Test
+    public void reorderShouldHandleTheAdjournOntoExistingLinkedCaseHearingShape() {
+        // CHD-2687 AC3: hearing of case2 extended by adjourning case1 + application; payload came
+        // in as [case1, case2] and displayed in that order - existing case must stay first
+        final UUID case1 = randomUUID();
+        final UUID case2 = randomUUID();
+
+        final Hearing reordered = progressionService.reorderProsecutionCasesByExistingHearing(
+                hearingWithCases(case1, case2), hearingWithCases(case2));
+
+        assertThat(reordered.getProsecutionCases().get(0).getId(), is(case2));
+        assertThat(reordered.getProsecutionCases().get(1).getId(), is(case1));
+    }
+
+    @Test
+    public void reorderShouldReturnHearingUnchangedWithoutAnchor() {
+        final Hearing shaped = hearingWithCases(randomUUID(), randomUUID());
+
+        assertThat(progressionService.reorderProsecutionCasesByExistingHearing(shaped, null), sameInstance(shaped));
+        assertThat(progressionService.reorderProsecutionCasesByExistingHearing(shaped, Hearing.hearing().withId(randomUUID()).build()), sameInstance(shaped));
+    }
+
+    @Test
+    public void reorderShouldReturnHearingUnchangedWhenNoAnchoredCasePresent() {
+        // fresh content only (e.g. hearing just created): nothing to anchor, order untouched
+        final Hearing shaped = hearingWithCases(randomUUID());
+        final Hearing anchor = hearingWithCases(randomUUID());
+
+        assertThat(progressionService.reorderProsecutionCasesByExistingHearing(shaped, anchor), sameInstance(shaped));
+    }
+
+    private static Hearing hearingWithCases(final UUID... caseIds) {
+        return Hearing.hearing()
+                .withId(randomUUID())
+                .withProsecutionCases(java.util.Arrays.stream(caseIds)
+                        .map(id -> ProsecutionCase.prosecutionCase().withId(id).build())
+                        .collect(java.util.stream.Collectors.toList()))
+                .build();
     }
 
     @Test
