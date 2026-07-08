@@ -6,4 +6,6 @@ public class FeatureGuardNames {
     }
 
     public static final String FEATURE_HEARINGNOWS = "HearingNows";
+    public static final String FEATURE_HEARING_RESULTS_DOCUMENT_SUBSCRIPTION_ENABLED = "hearingResultsDocumentSubscriptionEnabled";
+
 }

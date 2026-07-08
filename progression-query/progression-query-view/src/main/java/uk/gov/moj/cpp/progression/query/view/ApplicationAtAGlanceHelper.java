@@ -152,7 +152,7 @@ public class ApplicationAtAGlanceHelper {
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
-    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication, final JsonEnvelope envelope) {
+    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication, final JsonEnvelope envelope, final boolean applyAddressConfidentialityCheck) {
         final ApplicantDetails.Builder applicantDetailsBuilder = applicantDetails();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
         ofNullable(applicant.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(applicantDetailsBuilder::withName);
@@ -160,7 +160,8 @@ public class ApplicationAtAGlanceHelper {
         final Organisation organisation = applicant.getOrganisation();
         if (nonNull(person)) {
             applicantDetailsBuilder.withName(getName(person));
-            applicantDetailsBuilder.withAddress(person.getAddress());
+            populateAddressIfNotConfidential(applyAddressConfidentialityCheck, person, applicantDetailsBuilder);
+            applicantDetailsBuilder.withIsAddressConfidential(person.getIsAddressConfidential());
             applicantDetailsBuilder.withInterpreterLanguageNeeds(person.getInterpreterLanguageNeeds());
 
             final Optional<String> representationName = getRepresentationName(applicant);
@@ -204,6 +205,12 @@ public class ApplicationAtAGlanceHelper {
         ofNullable(applicant.getUpdatedOn()).ifPresent(applicantDetailsBuilder::withUpdatedOn);
 
         return applicantDetailsBuilder.build();
+    }
+
+    private static void populateAddressIfNotConfidential(final boolean applyAddressConfidentialityCheck, final Person person, final ApplicantDetails.Builder applicantDetailsBuilder) {
+        if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(person.getIsAddressConfidential())) {
+            applicantDetailsBuilder.withAddress(person.getAddress());
+        }
     }
 
     private String prepareRepresentationForApplicant(final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty subject) {
@@ -302,12 +309,12 @@ public class ApplicationAtAGlanceHelper {
         return aagResultBuilder.build();
     }
 
-    public List<RespondentDetails> getRespondentDetails(final CourtApplication courtApplication) {
+    public List<RespondentDetails> getRespondentDetails(final CourtApplication courtApplication, final boolean applyAddressConfidentialityCheck) {
         return ofNullable(courtApplication
                 .getRespondents())
                 .map(Collection::stream)
                 .orElseGet(Stream::empty)
-                .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject()))
+                .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject(), applyAddressConfidentialityCheck))
                 .collect(toList());
     }
 
@@ -339,7 +346,7 @@ public class ApplicationAtAGlanceHelper {
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
-    private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject) {
+    private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject, final boolean applyAddressConfidentialityCheck) {
         final RespondentDetails.Builder respondentDetailsBuilder = respondentDetails();
         ofNullable(respondent.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(respondentDetailsBuilder::withName);
         respondentDetailsBuilder.withId(respondent.getId());
@@ -348,7 +355,7 @@ public class ApplicationAtAGlanceHelper {
         if (nonNull(organisation)) {
             updateOrganisationDetails(respondent, respondentDetailsBuilder, organisation);
         } else if (nonNull(personDetails)) {
-            updatePersonDetails(respondent, respondentDetailsBuilder, personDetails);
+            updatePersonDetails(respondent, respondentDetailsBuilder, personDetails,applyAddressConfidentialityCheck);
         } else if (nonNull(respondent.getMasterDefendant())) {
             updateRespondentDetails(respondent, respondentDetailsBuilder);
         } else if (nonNull(respondent.getProsecutingAuthority())) {
@@ -379,9 +386,12 @@ public class ApplicationAtAGlanceHelper {
         }
     }
 
-    private void updatePersonDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Person personDetails) {
+    private void updatePersonDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Person personDetails, final boolean applyAddressConfidentialityCheck) {
         respondentDetailsBuilder.withName(getName(personDetails));
-        respondentDetailsBuilder.withAddress(personDetails.getAddress());
+        if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(personDetails.getIsAddressConfidential())) {
+            respondentDetailsBuilder.withAddress(personDetails.getAddress());
+        }
+        respondentDetailsBuilder.withIsAddressConfidential(personDetails.getIsAddressConfidential());
         if(nonNull(personDetails.getDateOfBirth())){
             respondentDetailsBuilder.withDateOfBirth(personDetails.getDateOfBirth());
         }
@@ -486,16 +496,16 @@ public class ApplicationAtAGlanceHelper {
                 .map(Organisation::getName);
     }
 
-    public List<ThirdParties> getThirdPartyDetails(final CourtApplication courtApplication) {
+    public List<ThirdParties> getThirdPartyDetails(final CourtApplication courtApplication, final boolean applyAddressConfidentialityCheck) {
         return ofNullable(courtApplication
                 .getThirdParties())
                 .map(Collection::stream)
                 .orElseGet(Stream::empty)
-                .map(this::getThirdPartyDetails)
+                .map(courtApplicationParty -> getThirdPartyDetails(courtApplicationParty, applyAddressConfidentialityCheck))
                 .collect(toList());
     }
 
-    private ThirdParties getThirdPartyDetails(final CourtApplicationParty courtApplicationParty) {
+    private ThirdParties getThirdPartyDetails(final CourtApplicationParty courtApplicationParty, final boolean applyAddressConfidentialityCheck) {
         final ThirdParties.Builder thirdPartiesDetailsBuilder = thirdParties();
         thirdPartiesDetailsBuilder.withId(courtApplicationParty.getId());
 
@@ -510,7 +520,10 @@ public class ApplicationAtAGlanceHelper {
 
         ofNullable(courtApplicationParty.getPersonDetails()).ifPresent(personDetails -> {
             thirdPartiesDetailsBuilder.withName(getName(personDetails));
-            thirdPartiesDetailsBuilder.withAddress(personDetails.getAddress());
+            if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(personDetails.getIsAddressConfidential())) {
+                thirdPartiesDetailsBuilder.withAddress(personDetails.getAddress());
+            }
+            thirdPartiesDetailsBuilder.withIsAddressConfidential(personDetails.getIsAddressConfidential());
             final Organisation representationOrganisation = courtApplicationParty.getRepresentationOrganisation();
             if (nonNull(representationOrganisation)) {
                 thirdPartiesDetailsBuilder.withThirdPartyRepresentatives(getThirdPartyRepresentatives(representationOrganisation));

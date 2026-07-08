@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,7 +18,6 @@ import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -42,7 +43,6 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,9 +53,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
+class CourtFeeForCivilApplicationUpdatedEventListenerTest {
 
-    final static private UUID APPLICATION_ID = UUID.randomUUID();
+    final static private UUID APPLICATION_ID = randomUUID();
     final static private String APPLICATION_ARN = new StringGenerator().next();
     final static private String APPLICANT_FIRST_NAME = new StringGenerator().next();
     final static private String APPLICANT_LAST_NAME = new StringGenerator().next();
@@ -84,13 +84,13 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
     private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
-    public void shouldEditCivilApplicationFees() {
+    void shouldEditCivilApplicationFees() {
         final CourtFeeForCivilApplicationUpdated courtFeeForCivilApplicationUpdated = CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
                 .withApplicationId(APPLICATION_ID)
                 .withCourtApplicationPayment(courtApplicationPayment()
@@ -103,7 +103,7 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
 
         final CourtApplication courtApplication = getCourtApplication();
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
+        courtApplicationEntity.setAssignedUserId(randomUUID());
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         final JsonObject courtApplicationJson = createObjectBuilder().build();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtFeeForCivilApplicationUpdated).toString());
@@ -149,7 +149,7 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
 
 
     @Test
-    public void shouldEditOlderStructureCivilApplicationFees() {
+    void shouldEditOlderStructureCivilApplicationFees() {
         final CourtFeeForCivilApplicationUpdated courtFeeForCivilApplicationUpdated = CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
                 .withApplicationId(APPLICATION_ID)
                 .withCourtApplicationPayment(courtApplicationPayment()
@@ -169,7 +169,7 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
                         .build())
                 .build();
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
+        courtApplicationEntity.setAssignedUserId(randomUUID());
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         final JsonObject courtApplicationJson = createObjectBuilder().build();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtFeeForCivilApplicationUpdated).toString());
@@ -211,6 +211,76 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
         final JsonObject courtApplicationPayment1 = courtApplicationObj.getJsonObject(COURT_APPLICATION_PAYMENT);
         assertTrue(courtApplicationPayment1.containsKey("feeStatus"));
         assertTrue(courtApplicationPayment1.containsKey("contestedFeeStatus"));
+    }
+
+
+    @Test
+    void shouldProcessOlderStructureCivilApplicationFeesDuringCatchUp() {
+        final CourtFeeForCivilApplicationUpdated courtFeeForCivilApplicationUpdated = CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
+                .withApplicationId(APPLICATION_ID)
+                .withCourtApplicationPayment(courtApplicationPayment()
+                        .withIsFeeExempt(true)
+                        .withIsFeePaid(true)
+                        .withIsFeeUndertakingAttached(true)
+                        .withPaymentReference("Updated Contested fee status")
+                        .build())
+                .build();
+
+        final CourtApplication courtApplicationWithOldFeeStructure = courtApplication()
+                .withValuesFrom(getCourtApplication())
+                .withCourtApplicationPayment(courtApplicationPayment()
+                        .withIsFeeExempt(true)
+                        .withIsFeePaid(true)
+                        .withIsFeeUndertakingAttached(true)
+                        .build())
+                .build();
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setAssignedUserId(randomUUID());
+        courtApplicationEntity.setApplicationId(APPLICATION_ID);
+        final JsonObject courtApplicationJson = createObjectBuilder().build();
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtFeeForCivilApplicationUpdated).toString());
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = getInitiateCourtApplicationProceedings(courtApplicationWithOldFeeStructure);
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(APPLICATION_ID);
+        final JsonObject initiateCourtApplicationJson = objectToJsonObjectConverter.convert(initiateCourtApplicationProceedings);
+        createObjectBuilder().build();
+        initiateCourtApplicationEntity.setPayload("{}");
+
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(courtApplicationJson);
+        when(courtApplicationRepository.findByApplicationId(any())).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(initiateCourtApplicationJson);
+        when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
+
+        listener.processEvent(envelopeFrom(metadataWithRandomUUID("progression.event.court-fee-for-civil-application-updated"),
+                objectToJsonObjectConverter.convert(courtFeeForCivilApplicationUpdated)));
+
+        final ArgumentCaptor<CourtApplicationEntity> argumentCaptor = ArgumentCaptor.forClass(CourtApplicationEntity.class);
+        verify(this.courtApplicationRepository).save(argumentCaptor.capture());
+        final CourtApplicationEntity savedEntity = argumentCaptor.getValue();
+
+        assertThat(savedEntity.getApplicationId(), is(APPLICATION_ID));
+        JsonObject courtApplicationResponse = stringToJsonObjectConverter.convert(savedEntity.getPayload());
+        assertTrue(courtApplicationResponse.containsKey(COURT_APPLICATION_PAYMENT));
+        final JsonObject courtApplicationPayment = courtApplicationResponse.getJsonObject(COURT_APPLICATION_PAYMENT);
+        assertFalse(courtApplicationPayment.containsKey("feeStatus"));
+        assertFalse(courtApplicationPayment.containsKey("contestedFeeStatus"));
+
+        final ArgumentCaptor<InitiateCourtApplicationEntity> argCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
+        verify(this.initiateCourtApplicationRepository).save(argCaptor.capture());
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity1 = argCaptor.getValue();
+
+        assertThat(initiateCourtApplicationEntity1.getApplicationId(), is(APPLICATION_ID));
+        JsonObject initiateCourtApplicationResponse = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity1.getPayload());
+        JsonObject courtApplicationObj = initiateCourtApplicationResponse.getJsonObject("courtApplication");
+        assertTrue(courtApplicationObj.containsKey(COURT_APPLICATION_PAYMENT));
+        final JsonObject courtApplicationPayment1 = courtApplicationObj.getJsonObject(COURT_APPLICATION_PAYMENT);
+        assertFalse(courtApplicationPayment1.containsKey("feeStatus"));
+        assertFalse(courtApplicationPayment1.containsKey("contestedFeeStatus"));
+        assertTrue(courtApplicationPayment1.containsKey("paymentReference"));
+        assertTrue(courtApplicationPayment1.containsKey("isFeeExempt"));
+        assertTrue(courtApplicationPayment1.containsKey("isFeePaid"));
+        assertTrue(courtApplicationPayment1.containsKey("isFeeUndertakingAttached"));
     }
 
     private static CourtApplication getCourtApplication() {

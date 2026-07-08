@@ -132,7 +132,7 @@ public class UpdateCourtDocumentHandlerTest {
                 .withMaterials(new ArrayList<>())
                 .withSendToCps(false)
                 .build();
-        courtDocumentAggregate.createCourtDocument(courtDocument, true);
+        courtDocumentAggregate.createCourtDocument(courtDocument, true, null);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Defendant level")));
 
@@ -162,7 +162,7 @@ public class UpdateCourtDocumentHandlerTest {
                 .withMaterials(new ArrayList<>())
                 .withSendToCps(false)
                 .build();
-        courtDocumentAggregate.createCourtDocument(courtDocument, true);
+        courtDocumentAggregate.createCourtDocument(courtDocument, true, null);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Case level")));
 
@@ -206,7 +206,7 @@ public class UpdateCourtDocumentHandlerTest {
                 .withMaterials(new ArrayList<>())
                 .withSendToCps(false)
                 .build();
-        courtDocumentAggregate.createCourtDocument(courtDocument, true);
+        courtDocumentAggregate.createCourtDocument(courtDocument, true, null);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Applications")));
 

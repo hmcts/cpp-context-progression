@@ -9,6 +9,8 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 
 import java.time.LocalDate;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 public class MockCourtApplication {
 
     private String userId;
@@ -83,7 +85,7 @@ public class MockCourtApplication {
         applicantAddress4 = STRING.next();
         applicantAddress5 = STRING.next();
         applicantPostCode = POST_CODE.next();
-        applicationReference = STRING.next();
+        applicationReference = RandomStringUtils.randomAlphanumeric(4).toUpperCase() + RandomStringUtils.randomNumeric(7);
         respondentDefendantId = randomUUID().toString();
         respondentOrganisationName = STRING.next();
         respondentOrganisationAddress1 = STRING.next();

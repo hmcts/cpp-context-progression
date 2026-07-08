@@ -6,6 +6,9 @@
     "courtDocument": {
       "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
     },
+    "courtDocumentMetadata": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/court-document-metadata.json#"
+    },
     "isUnbundledDocument": {
       "type": "boolean",
       "default": false

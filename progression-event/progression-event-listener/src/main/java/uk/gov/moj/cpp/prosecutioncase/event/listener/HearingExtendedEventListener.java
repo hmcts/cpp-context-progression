@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper.filterDuplicateOffencesByIdForCases;
@@ -29,8 +28,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -41,6 +43,7 @@ import javax.persistence.NoResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("java:S1168")
 @ServiceComponent(EVENT_LISTENER)
 public class HearingExtendedEventListener {
 
@@ -78,12 +81,10 @@ public class HearingExtendedEventListener {
             final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
 
             final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
-            Set<ProsecutionCase> resultCases = new HashSet<>();
-            final Set<Defendant> resultDefendants = new HashSet<>();
 
-            resultCases = getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases, resultDefendants, dbHearing);
+            final List<ProsecutionCase> resultCases = getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, dbHearing);
 
-            final Hearing resultHearing = Hearing.hearing().withValuesFrom(dbHearing).withProsecutionCases(new ArrayList<>(resultCases)).build();
+            final Hearing resultHearing = Hearing.hearing().withValuesFrom(dbHearing).withProsecutionCases(resultCases).build();
 
             final JsonObject updatedJsonObject = objectToJsonObjectConverter.convert(resultHearing);
             dbHearingEntity.setPayload(updatedJsonObject.toString());
@@ -136,56 +137,87 @@ public class HearingExtendedEventListener {
      * Since the case can be splitted at case, defendant and offence levels when we are merging here we need to compare at every level and merge it back.
      *
      * @param hearingListingNeeds HearingListingNeeds which is passed in payload
-     * @param resultCases         Result cases
-     * @param resultDefendants    Result Defendants
-     * @return set of new case with merged cases, defendant or offence based on which level spilt has happened.
+     * @return list of new case with merged cases, defendant or offence based on which level spilt has happened.
      */
 
-    private Set<ProsecutionCase> getProsecutionCasesAfterMergeAtDifferentLevel(final HearingListingNeeds hearingListingNeeds, Set<ProsecutionCase> resultCases, final Set<Defendant> resultDefendants, final Hearing dbHearing) {
+    private List<ProsecutionCase> getProsecutionCasesAfterMergeAtDifferentLevel(final HearingListingNeeds hearingListingNeeds, final Hearing dbHearing) {
         if (nonNull(dbHearing.getProsecutionCases()) && nonNull(hearingListingNeeds.getProsecutionCases())) {
-            final List<ProsecutionCase> newHearingCases = new ArrayList<>();
+            final List<ProsecutionCase> resultCases = new ArrayList<>(hearingListingNeeds.getProsecutionCases().stream().map(prosecutionCaseFromRequest -> {
 
-            resultCases = hearingListingNeeds.getProsecutionCases().stream().map(prosecutionCase -> {
-
-                final Optional<ProsecutionCase> matchingCaseOptional = dbHearing.getProsecutionCases().stream().filter(hearingCase -> hearingCase.getId().equals(prosecutionCase.getId())).findFirst();
-                if (matchingCaseOptional.isPresent()) {
-
+                final Optional<ProsecutionCase> prosecutionCaseFromDb = dbHearing.getProsecutionCases().stream().filter(hearingCase -> hearingCase.getId().equals(prosecutionCaseFromRequest.getId())).findFirst();
+                if (prosecutionCaseFromDb.isPresent()) {
                     final Set<Defendant> newDefendantList = new HashSet<>();
-                    for (final Defendant defendant : prosecutionCase.getDefendants()) {
-                        final Defendant resultDefendant = getResultDefendant(resultDefendants, dbHearing, matchingCaseOptional.get(), defendant);
+                    for (final Defendant defendantFromRequest : prosecutionCaseFromRequest.getDefendants()) {
+                        final Defendant resultDefendant = getResultDefendant( prosecutionCaseFromDb.get(), defendantFromRequest);
                         newDefendantList.add(resultDefendant);
                     }
-                    resultDefendants.addAll(newDefendantList);
-                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(new ArrayList<>(resultDefendants)).build();
-
+                    prosecutionCaseFromDb.get().getDefendants().stream().filter(defFromDb -> newDefendantList.stream().noneMatch(defFromRequest -> defFromRequest.getId().equals(defFromDb.getId())))
+                            .forEach(newDefendantList::add);
+                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCaseFromRequest).withDefendants(new ArrayList<>(newDefendantList)).build();
                 } else {
-                    newHearingCases.addAll(dbHearing.getProsecutionCases());
-                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).build();
+                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCaseFromRequest).build();
                 }
-
-
-            }).collect(toSet());
-            resultCases.addAll(newHearingCases);
+            }).toList());
+            dbHearing.getProsecutionCases().stream()
+                    .filter(caseFromDb -> resultCases.stream().noneMatch(caseFromRequest -> caseFromRequest.getId().equals(caseFromDb.getId())))
+                    .forEach(resultCases::add);
+            return simplifyCases(resultCases);
         }
-        return resultCases;
+        return null;
     }
 
-    private Defendant getResultDefendant(Set<Defendant> resultDefendants, Hearing dbHearing, ProsecutionCase matchingCase, Defendant defendant) {
+    private List<ProsecutionCase> simplifyCases(final List<ProsecutionCase> resultCases) {
 
-        final Set<Offence> offenceList = new HashSet<>(defendant.getOffences());
+        final Map<UUID, List<ProsecutionCase>> duplicatesMap  = resultCases.stream().collect(Collectors.groupingBy(ProsecutionCase::getId));
 
-        final Optional<Defendant> matchingDefendantOptional = dbHearing.getProsecutionCases().stream()
-                .flatMap(hearingCase -> hearingCase.getDefendants().stream())
-                .filter(hearingCaseDefendant -> hearingCaseDefendant.getId().equals(defendant.getId()))
+        final List<ProsecutionCase> result = new ArrayList<>(duplicatesMap.keySet().stream()
+                .filter(key -> duplicatesMap.get(key).size()== 1)
+                .map(key -> duplicatesMap.get(key).get(0))
+                .toList());
+
+        duplicatesMap.keySet().stream()
+                .filter(key -> duplicatesMap.get(key).size()> 1)
+                .map(key -> mergeCases(duplicatesMap.get(key)))
+                .forEach(result::add);
+
+        return result;
+    }
+
+    private ProsecutionCase mergeCases(final List<ProsecutionCase> prosecutionCases) {
+        final ProsecutionCase firstCase = prosecutionCases.get(0);
+        prosecutionCases.stream().skip(1).forEach(nextCase ->{
+            firstCase.getDefendants()
+                    .forEach(defFromFirstCase -> nextCase.getDefendants().stream().filter(def -> def.getId().equals(defFromFirstCase.getId())).findAny()
+                            .ifPresent(defFromNextCase -> mergeOffences(defFromFirstCase,defFromNextCase)));
+
+            nextCase.getDefendants().stream()
+                    .filter(def -> firstCase.getDefendants().stream().noneMatch(defFromFirstCase -> defFromFirstCase.getId().equals(def.getId())))
+                    .forEach(def -> firstCase.getDefendants().add(def));
+
+        } );
+        return firstCase;
+    }
+
+    private void mergeOffences(final Defendant defFromFirstCase, final Defendant defFromNextCase) {
+        defFromNextCase.getOffences().stream().filter(offence -> defFromFirstCase.getOffences().stream().noneMatch(offenceFromFirstCase -> offenceFromFirstCase.getId().equals(offence.getId()) ))
+                .forEach(offence -> defFromFirstCase.getOffences().add(offence));
+
+    }
+
+    private Defendant getResultDefendant(ProsecutionCase prosecutionCaseFromDb, Defendant defendantFromRequest) {
+
+        final Set<Offence> offenceList = new HashSet<>(defendantFromRequest.getOffences());
+
+        final Optional<Defendant> defendantFromDb =prosecutionCaseFromDb.getDefendants().stream()
+                .filter(hearingCaseDefendant -> hearingCaseDefendant.getId().equals(defendantFromRequest.getId()))
                 .findFirst();
 
-        if (matchingDefendantOptional.isPresent()) {
-            offenceList.addAll(matchingDefendantOptional.get().getOffences());
-            return Defendant.defendant().withValuesFrom(defendant).withOffences(new ArrayList<>(offenceList)).build();
+        if (defendantFromDb.isPresent()) {
+            offenceList.addAll(defendantFromDb.get().getOffences());
+            return Defendant.defendant().withValuesFrom(defendantFromRequest).withOffences(new ArrayList<>(offenceList)).build();
 
         } else {
-            resultDefendants.addAll(new HashSet<>(matchingCase.getDefendants()));
-            return Defendant.defendant().withValuesFrom(defendant).build();
+            return Defendant.defendant().withValuesFrom(defendantFromRequest).build();
         }
 
     }

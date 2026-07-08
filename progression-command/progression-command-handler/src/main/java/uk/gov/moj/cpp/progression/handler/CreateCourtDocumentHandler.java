@@ -22,6 +22,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
@@ -74,11 +75,12 @@ public class CreateCourtDocumentHandler {
     public void handle(final Envelope<CreateCourtDocument> createCourtDocumentEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.create-court-document {}", createCourtDocumentEnvelope);
         final CourtDocument courtDocument = setDefaults(createCourtDocumentEnvelope.payload().getCourtDocument());
+        final CourtDocumentMetadata courtDocumentMetadata = createCourtDocumentEnvelope.payload().getCourtDocumentMetadata();
         final EventStream eventStream = eventSource.getStreamById(courtDocument.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
         final Boolean isCpsCase = createCourtDocumentEnvelope.payload().getIsCpsCase();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(createCourtDocumentEnvelope.metadata(), JsonValue.NULL);
-        final Stream<Object> events = courtDocumentAggregate.createCourtDocument(enrichCourtDocument(courtDocument, jsonEnvelope), isCpsCase);
+        final Stream<Object> events = courtDocumentAggregate.createCourtDocument(enrichCourtDocument(courtDocument, jsonEnvelope), isCpsCase, courtDocumentMetadata);
 
         appendEventsToStream(createCourtDocumentEnvelope, eventStream, events);
     }

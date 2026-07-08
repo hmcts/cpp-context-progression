@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
+import uk.gov.moj.cpp.progression.exception.HearingResultsDocumentSubscriptionPCRException;
 import uk.gov.moj.cpp.progression.processor.utils.RetryHelper;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class RetryHelperTest {
                 .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
+                .withApimUrl("url")
                 .withPredicate(statusCode -> statusCode > 429);
 
         RetryHelper retryHelper = builder.build();
@@ -57,6 +59,7 @@ public class RetryHelperTest {
 
         assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
                 .withSupplier(() -> supplier.getAsInt())
+                .withApimUrl("url")
                 .withRetryTimes(3)
                 .withRetryInterval(200)
                 .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))
@@ -64,6 +67,50 @@ public class RetryHelperTest {
                 .build()
                 .postWithRetry());
         ;
+        verify(supplier, times(3)).getAsInt();
+    }
+
+    @Test
+    public void shouldInvokeAMPPcrNotificationURL() throws Exception{
+
+        when(supplier.getAsInt()).thenReturn(420);
+
+        String hearingResultsDocumentNotificationsUrl = "http://localhost:8080/hrds/notifications";
+        String payload = "test-payload";
+
+        RetryHelper.Builder builder = retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withHearingResultsDocumentSubscriptionUrl(hearingResultsDocumentNotificationsUrl)
+                .withPayload(payload)
+                .withPredicate(statusCode -> statusCode > 429);
+
+        RetryHelper retryHelper = builder.build();
+        retryHelper.postWithRetry();
+
+        verify(supplier).getAsInt();
+    }
+
+    @Test
+    public void shouldThrowExceptionAfterExceedingRetryCountForAMPPcrNotificationURL() {
+
+        when(supplier.getAsInt()).thenReturn(500);
+
+        UUID fileId = UUID.randomUUID();
+        UUID materialId = UUID.randomUUID();
+        String prisonCourtRegisterId = "test-prison-court-register-id";
+        String hearingResultsDocumentNotificationsUrl = "http://localhost:8080/hrds/notifications";
+
+        assertThrows(HearingResultsDocumentSubscriptionPCRException.class, () -> retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
+                .withHearingResultsDocumentSubscriptionUrl(hearingResultsDocumentNotificationsUrl)
+                .withRetryTimes(3)
+                .withRetryInterval(200)
+                .withExceptionSupplier(() -> new HearingResultsDocumentSubscriptionPCRException(fileId, materialId, prisonCourtRegisterId, hearingResultsDocumentNotificationsUrl))
+                .withPredicate(statusCode -> statusCode > 429)
+                .build()
+                .postWithRetry());
         verify(supplier, times(3)).getAsInt();
     }
 

@@ -1,8 +1,6 @@
 package uk.gov.justice.api.resource;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -10,31 +8,32 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static java.util.Optional.of;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.COURT_LIST_QUERY_NAME;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PDF_DISPOSITION;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PRISON_COURT_LIST;
+import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PRISON_COURT_LIST_QUERY_NAME;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.WORD_DISPOSITION;
+import static org.mockito.Mockito.never;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
-import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
+import uk.gov.moj.cpp.progression.query.api.service.CourtlistQueryService;
 import uk.gov.justice.api.resource.service.StagingPubHubService;
 import uk.gov.justice.api.resource.utils.FileUtil;
-import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
-import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
@@ -81,13 +80,13 @@ public class DefaultQueryApiCourtlistResourceTest {
     private final String endDate = STRING.next();
 
     @Mock
+    private CourtlistQueryService courtlistQueryService;
+
+    @Mock
     private InterceptorChainProcessor interceptorChainProcessor;
 
     @Mock
     private StagingPubHubService stagingPubHubService;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
 
     @Mock
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
@@ -97,9 +96,6 @@ public class DefaultQueryApiCourtlistResourceTest {
 
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;
-
-    @Captor
-    private ArgumentCaptor<InterceptorContext> interceptorContextCaptor;
 
     @InjectMocks
     private DefaultQueryApiCourtlistResource defaultQueryApiCourtlistResource;
@@ -130,14 +126,15 @@ public class DefaultQueryApiCourtlistResourceTest {
 
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(ofNullable(interceptorResponse));
+        when(courtlistQueryService.buildCourtlistQueryEnvelope(any(), any(), any(), any(), any(), anyBoolean(), any(), any()))
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(COURT_LIST_QUERY_NAME), FileUtil.jsonFromPath("stub-data/progression.search.court.list.json")));
+        when(interceptorChainProcessor.process(any())).thenReturn(of(interceptorResponse));
+        when(courtlistQueryService.buildEnrichedPayload(interceptorResponse))
+                .thenReturn(FileUtil.jsonFromPath("stub-data/stagingpubhub.command.publish-standard-list.json"));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         assert interceptorResponse != null;
         when(documentGeneratorClient.generatePdfDocument(eq(interceptorResponse.payloadAsJsonObject()), anyString(), eq(systemUserId)))
                 .thenReturn(documentGeneratorClientResponse);
-        when(referenceDataService.getCourtCenterDataByCourtName(argThat(any(JsonEnvelope.class)), anyString()))
-                .thenReturn(of(FileUtil.jsonFromPath("stub-data/referencedata.query.ou.courtrooms.ou-courtroom-name.json")));
-
 
         final Response actual = defaultQueryApiCourtlistResource
                 .getCourtlist(courtCentreId.toString(), courtRoomId.toString(), listId.toString(),
@@ -147,11 +144,7 @@ public class DefaultQueryApiCourtlistResourceTest {
         assertThat(actual.getStatus(), is(SC_OK));
         assertThat(actual.getHeaders(), is(headers));
         assertThat(pdfContent.getBytes(), is(IOUtils.toByteArray(inputStream)));
-        verifyInterceptorChainExecution();
-
-        verify(referenceDataService).getCourtCenterDataByCourtName(envelopeArgumentCaptor.capture(), stringArgumentCaptor.capture());
-        assertEquals("Lavender Hill Magistrates' Court", stringArgumentCaptor.getValue());
-        assertEquals(interceptorResponse.payloadAsJsonObject(), envelopeArgumentCaptor.getValue().payloadAsJsonObject());
+        verifyCourtlistQueryServiceExecution();
 
         verify(stagingPubHubService).publishStandardList(jsonObjectArgumentCaptor.capture(), uuidArgumentCaptor.capture());
 
@@ -170,14 +163,15 @@ public class DefaultQueryApiCourtlistResourceTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>(ImmutableMap.of(CONTENT_TYPE, WORD_CONTENT_TYPE, CONTENT_DISPOSITION, WORD_DISPOSITION));
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(ofNullable(interceptorResponse));
+        when(courtlistQueryService.buildCourtlistQueryEnvelope(any(), any(), any(), any(), any(), anyBoolean(), any(), any()))
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(COURT_LIST_QUERY_NAME), FileUtil.jsonFromPath("stub-data/progression.search.usher.list.json")));
+        when(interceptorChainProcessor.process(any())).thenReturn(of(interceptorResponse));
+        when(courtlistQueryService.buildEnrichedPayload(interceptorResponse))
+                .thenReturn(FileUtil.jsonFromPath("stub-data/stagingpubhub.command.ushers-standard-list.json"));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         assert interceptorResponse != null;
         when(documentGeneratorClient.generateWordDocument(eq(interceptorResponse.payloadAsJsonObject()), anyString(), eq(systemUserId)))
                 .thenReturn(documentGeneratorClientResponse);
-        when(referenceDataService.getCourtCenterDataByCourtName(argThat(any(JsonEnvelope.class)), anyString()))
-                .thenReturn(of(FileUtil.jsonFromPath("stub-data/referencedata.query.ou.courtrooms.ou-courtroom-name.json")));
-
 
         final Response actual = defaultQueryApiCourtlistResource
                 .getCourtlist(courtCentreId.toString(), courtRoomId.toString(), listId.toString(),
@@ -187,11 +181,7 @@ public class DefaultQueryApiCourtlistResourceTest {
         assertThat(actual.getStatus(), is(SC_OK));
         assertThat(actual.getHeaders(), is(headers));
         assertThat(wordContent.getBytes(), is(IOUtils.toByteArray(inputStream)));
-        verifyInterceptorChainExecution();
-
-        verify(referenceDataService).getCourtCenterDataByCourtName(envelopeArgumentCaptor.capture(), stringArgumentCaptor.capture());
-        assertEquals("Lavender Hill Magistrates' Court", stringArgumentCaptor.getValue());
-        assertEquals(interceptorResponse.payloadAsJsonObject(), envelopeArgumentCaptor.getValue().payloadAsJsonObject());
+        verifyCourtlistQueryServiceExecution();
 
         verify(stagingPubHubService).publishStandardList(jsonObjectArgumentCaptor.capture(), uuidArgumentCaptor.capture());
 
@@ -214,21 +204,40 @@ public class DefaultQueryApiCourtlistResourceTest {
         assertThat(courtlistResponse.getStatus(), is(FORBIDDEN.getStatusCode()));
     }
 
-    private void verifyInterceptorChainExecution() {
-        verify(interceptorChainProcessor).process(interceptorContextCaptor.capture());
+    @Test
+    public void shouldReturnDocumentWhenGetPrisonCourtlist() throws IOException {
+        final String pdfContent = "Prison List PDF";
+        final JsonEnvelope interceptorResponse = envelopeFrom(metadataWithRandomUUID(PRISON_COURT_LIST_QUERY_NAME),
+                FileUtil.jsonFromPath("stub-data/progression.search.court.list.json"));
+        final byte[] documentGeneratorClientResponse = pdfContent.getBytes();
 
-        assertThat(interceptorContextCaptor.getValue().inputEnvelope(), jsonEnvelope(metadata()
-                        .withName(COURT_LIST_QUERY_NAME)
-                        .withUserId(userId.toString()),
-                payload().isJson(allOf(
-                        withJsonPath("$.courtCentreId", equalTo(courtCentreId.toString())),
-                        withJsonPath("$.listId", equalTo(listId.toString())),
-                        withJsonPath("$.courtRoomId", equalTo(courtRoomId.toString())),
-                        withJsonPath("$.startDate", equalTo(startDate)),
-                        withJsonPath("$.endDate", equalTo(endDate)),
-                        withJsonPath("$.restricted", equalTo(false))
-                ))
-        ));
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(courtlistQueryService.buildCourtlistQueryEnvelope(any(), any(), any(), any(), any(), anyBoolean(), any(), any()))
+                .thenReturn(envelopeFrom(metadataWithRandomUUID(PRISON_COURT_LIST_QUERY_NAME), FileUtil.jsonFromPath("stub-data/progression.search.court.list.json")));
+        when(interceptorChainProcessor.process(any())).thenReturn(of(interceptorResponse));
+        when(courtlistQueryService.buildEnrichedPayload(interceptorResponse))
+                .thenReturn(FileUtil.jsonFromPath("stub-data/stagingpubhub.command.publish-standard-list.json"));
+        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+        when(documentGeneratorClient.generatePdfDocument(any(), anyString(), eq(systemUserId)))
+                .thenReturn(documentGeneratorClientResponse);
+
+        final Response actual = defaultQueryApiCourtlistResource.getPrisonCourtlist(
+                courtCentreId.toString(), courtRoomId.toString(), startDate, endDate, userId);
+
+        assertThat(actual.getStatus(), is(SC_OK));
+        assertThat(IOUtils.toByteArray((InputStream) actual.getEntity()), is(pdfContent.getBytes()));
+        verify(courtlistQueryService).buildCourtlistQueryEnvelope(
+                eq(courtCentreId.toString()), eq(courtRoomId.toString()), eq(PRISON_COURT_LIST), eq(startDate), eq(endDate),
+                eq(false), eq(userId), eq(PRISON_COURT_LIST_QUERY_NAME));
+        verify(stagingPubHubService, never()).publishStandardList(any(), any());
+    }
+
+    private void verifyCourtlistQueryServiceExecution() {
+        verify(courtlistQueryService).buildCourtlistQueryEnvelope(
+                eq(courtCentreId.toString()), eq(courtRoomId.toString()), eq(listId.toString()),
+                eq(startDate), eq(endDate), eq(false), eq(userId), eq(COURT_LIST_QUERY_NAME));
+        verify(interceptorChainProcessor).process(org.mockito.ArgumentMatchers.any());
+        verify(courtlistQueryService).buildEnrichedPayload(org.mockito.ArgumentMatchers.any(JsonEnvelope.class));
     }
 
 }

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import lombok.Getter;
 import uk.gov.justice.services.common.configuration.Value;
 
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+@Getter
 public class ApplicationParameters {
 
     @Inject
@@ -163,6 +165,33 @@ public class ApplicationParameters {
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
 
+    /**
+     * URL for Hearing Results Document Subscription service PCR notification endpoint.
+     * Local Development: Default value: http://localhost:8080/hrds/notifications
+     * For Higher environments
+     *  Kubernetes Deployment Options: Services are in different namespaces and in the same network
+     *  Ingress URL or Kubernetes Discovery URL
+     */
+    @Inject
+    @Value(key = "hearingResultsDocument.subscription.url", defaultValue ="http://localhost:8080/hrds/notifications")
+    private String hearingResultsDocumentSubscriptionUrl;
+
+    @Inject
+    @Value(key = "hearingResultsDocument.subscription.retryTimes", defaultValue = "3")
+    private String hearingResultsDocumentSubscriptionRetryTimes;
+
+    @Inject
+    @Value(key = "hearingResultsDocument.subscription.retryInterval", defaultValue = "1000")
+    public String hearingResultsDocumentSubscriptionRetryInterval;
+
+    @Inject
+    @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")
+    public String addDefendantRetryIntervals;
+
+    public String getAddDefendantRetryIntervals() {
+        return addDefendantRetryIntervals;
+    }
+
     public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
         return onlineGuiltyPleaCourtHearingEnglishTemplateId;
     }
@@ -277,18 +306,6 @@ public class ApplicationParameters {
 
     public String getOnlinePleaProsecutorTemplateId() {
         return onlinePleaProsecutorTemplateId;
-    }
-
-    public String getNotifyHearingTemplateId() {
-        return notifyHearingTemplateId;
-    }
-
-    public String getRetryTimes() {
-        return retryTimes;
-    }
-
-    public String getRetryInterval() {
-        return retryInterval;
     }
 
     public String getEmailTemplateId(final String templateName) {

@@ -54,6 +54,28 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.material-content-for-defence+json:
           application/vnd.progression.query.material-content-for-prosecution+json:
 
+/materials/cases:
+  description: Bulk resolve material_ids to cases
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-bulk+json
+          name: progression.query.material-content-bulk
+      ...
+    queryParameters:
+        materialIds:
+          description: List of materialIds separated by comma(,)
+          type: string
+          example: 55a0ed4b-6719-490b-b5b9-f480a6e0ecde, abc8357f-2325-46f2-b8f7-ded2ede2c103
+          required : false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-bulk+json:
+            schema: !include json/schema/progression.query.material-bulk.json
+            example: !include json/progression.query.material-bulk.json
+
 /prosecutioncases/{caseId}/defendants/{defendantId}/extract/{template}:
   description: get court extract content as pdf
   uriParameters:
@@ -179,6 +201,10 @@ protocols: [ HTTP, HTTPS ]
         orderDate:
           description: Order Date
           type: string
+        isAllRelatedCases:
+          description: When true, returns all related cases regardless of their status. When false or omitted, only related cases whose status matches the primary case are returned.
+          type: boolean
+          required: false
       responses:
             200:
                 description: OK
@@ -1467,6 +1493,62 @@ protocols: [ HTTP, HTTPS ]
         body:
           application/vnd.progression.search.court.list+json:
 
+
+/courtlistdata:
+  description: get court list data as JSON (same parameters as /courtlist, no document generation or pubhub)
+  get:
+    description: |
+      Returns the court list payload as JSON. Same query parameters and access control as /courtlist.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.search.court.list.data+json
+          name: progression.search.court.list.data
+      (mapping):
+          responseType: application/vnd.progression.search.prison.court.list.data+json
+          name: progression.search.prison.court.list.data
+      ...
+    queryParameters:
+      courtCentreId:
+        description: reference data id for the court centre
+        type: string
+        required: true
+      courtRoomId:
+        description: reference data id for the court room
+        type: string
+        required: false
+      listId:
+        description: court list name ( e.g. PUBLIC, STANDARD, ALPHABETICAL, USHERS_CROWN, USHERS_MAGISTRATE, ONLINE_PUBLIC)
+        type: string
+        required: true
+      startDate:
+        description: hearing start date in format 'YYYY-MM-DD'.
+        type: date
+        required: true
+      endDate:
+        description: hearing end date in format 'YYYY-MM-DD'
+        type: date
+        required: true
+      restricted:
+        description: only applicable for standard courtlist. Set true to get restricted standard court list
+        type: boolean
+        required: false
+        default: false
+      includeApplications:
+        description: when true, listing returns court list with court applications; when false, applications are excluded
+        type: boolean
+        required: false
+        default: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.search.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+          application/vnd.progression.search.prison.court.list.data+json:
+            example: !include json/progression.search.court.list.data.json
+            schema: !include json/schema/progression.search.court.list.data.json
+
+
 /prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
   uriParameters:
     prosecutionCaseId:
@@ -1603,3 +1685,26 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.civil-fee-details+json:
             example: !include json/progression.query.civil-fee-details.json
             schema: !include json/schema/progression.query.civil-fee-details.json
+
+/search-inactive-migratedcases:
+  get:
+      description: |
+        Search for cases
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.search-inactive-migrated-cases+json
+            name: progression.query.search-inactive-migrated-cases
+        ...
+      queryParameters:
+        caseIds:
+          description: caseId(s) - comma separated to be searched
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: true
+      responses:
+         200:
+           description: OK
+           body:
+             application/vnd.progression.query.search-inactive-migrated-cases+json:
+               example: !include json/progression.query.inactive.migration.case.summary.json
+               schema: !include json/schema/progression.query.inactive.migration.case.summary.json

@@ -58,6 +58,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
@@ -162,7 +163,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -221,7 +222,7 @@ public class PostalServiceTest {
 
         assertThat(postalNotification.getIssueDate(), is(LocalDate.now()));
 
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -274,7 +275,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotificationAaag(envelope, courtApplication.getId(), null, materialId);
+        postalService.sendPostalNotificationAaag(envelope, courtApplication.getId(), null, materialId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -332,7 +333,7 @@ public class PostalServiceTest {
 
         assertThat(postalNotification.getAmendmentDate(), notNullValue());
 
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -386,7 +387,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -875,7 +876,7 @@ public class PostalServiceTest {
 
         assertThat(postalNotification.getIsWelsh(), is(false));
         assertThat(postalNotification.getIssueDate(), is(orderedDate));
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -954,7 +955,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1037,7 +1038,7 @@ public class PostalServiceTest {
         assertThat(postalNotification.getIsWelsh(), is(true));
         assertThat(postalNotification.getIssueDate(), is(orderedDate));
 
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender, times(1)).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1116,7 +1117,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1195,7 +1196,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1273,7 +1274,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1351,7 +1352,7 @@ public class PostalServiceTest {
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
                 false, false, orderedDate);
-        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId, null);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
@@ -1471,7 +1472,7 @@ public class PostalServiceTest {
         postalNotificationDetails.setJurisdictionType(JurisdictionType.MAGISTRATES);
         postalNotificationDetails.setCourtCentre(CourtCentre.courtCentre().withId(UUID.randomUUID()).build());
 
-        final PostalAddressee postalAddressee = new PostalAddressee("name", new PostalAddress("line1", "line2", "line3", "line4","line5", "postcode"));
+        final PostalAddressee postalAddressee = new PostalAddressee(UUID.randomUUID(), "name", new PostalAddress("line1", "line2", "line3", "line4","line5", "postcode"), CourtApplicationPartyType.PROSECUTING_AUTHORITY, null);
 
         when(referenceDataService.getCourtCentreWithCourtRoomsById(any(), any(), any())).thenReturn(Optional.of(createObjectBuilder().build()));
 

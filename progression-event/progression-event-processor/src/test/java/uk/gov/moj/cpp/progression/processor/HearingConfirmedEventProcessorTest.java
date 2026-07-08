@@ -54,6 +54,7 @@ import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -706,6 +707,127 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
 
         assertThrows(CourtApplicationAndCaseNotFoundException.class, () -> eventProcessor.processEvent(envelope));
+    }
+
+    @Test
+    void shouldNotReplayApplicationHearing(){
+            final UUID offenceId = randomUUID();
+            final UUID defendantId = randomUUID();
+            final UUID caseId = randomUUID();
+
+            final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+            final UUID hearingId = randomUUID();
+            final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                    .withId(hearingId)
+                    .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                    .withExistingHearingId(randomUUID())
+                    .withFullExtension(Boolean.TRUE)
+                    .withCourtApplicationIds(singletonList(randomUUID()))
+                    .build();
+
+            final Hearing hearing = Hearing.hearing()
+                    .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).build();
+
+            hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                    .withId(randomUUID())
+                    .build();
+
+            when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+            when(envelope.payloadAsJsonObject()).thenReturn(payload);
+            when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
+
+            assertThrows(NullPointerException.class, () -> eventProcessor.processEvent(envelope));
+
+    }
+
+    @Test
+    void shouldReplayNonApplicationHearing(){
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
+
+        ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withType(HearingType.hearingType()
+                        .withId(randomUUID())
+                        .withDescription("Trial")
+                        .build())
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .build();
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("public.listing.hearing-confirmed").build());
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = buildUpdateHearingForPartialAllocation(hearingId);
+        final ListCourtHearing listCourtHearing = buildListCourtHearing(randomUUID());
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(null);
+
+        eventProcessor.processEvent(envelope);
+
+        verify(progressionService, never()).updateHearingForPartialAllocation(envelope, updateHearingForPartialAllocation);
+        verify(listingService, never()).listCourtHearing(envelope, listCourtHearing);
+        verify(this.sender).send(this.envelopeCaptor.capture());
+
+        final Envelope<JsonObject>  commandEvent = this.envelopeCaptor.getValue();
+
+        assertThat(commandEvent.metadata().name(), is("progression.command.replay-hearing-confirmed"));
+    }
+
+    @Test
+    void shouldProcessHearingConfirmedReplayedAndConfirmHearing() {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(hearingId)
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId).build()))
+                .build();
+
+        final HearingConfirmedReplayed hearingConfirmedReplayed = HearingConfirmedReplayed.hearingConfirmedReplayed()
+                .withConfirmedHearing(confirmedHearing)
+                .withHearingInProgression(hearingInProgression)
+                .withSendNotificationToParties(false)
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingConfirmedReplayed.class)).thenReturn(hearingConfirmedReplayed);
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+
+        eventProcessor.processHearingConfirmedReplayed(envelope);
+
+        verify(jsonObjectToObjectConverter).convert(payload, HearingConfirmedReplayed.class);
+        verify(progressionService).transformConfirmedHearing(any(), eq(envelope), any());
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(sender, times(2)).send(any());
     }
 
     @Test

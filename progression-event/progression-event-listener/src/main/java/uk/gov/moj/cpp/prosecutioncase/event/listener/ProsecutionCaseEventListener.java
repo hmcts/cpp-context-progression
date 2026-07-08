@@ -25,6 +25,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
+import uk.gov.justice.progression.courts.CaseInsertedBdfV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -114,6 +115,13 @@ public class ProsecutionCaseEventListener {
 
         repository.save(getProsecutionCaseEntity(caseInsertedBdf.getProsecutionCase()));
 
+    }
+
+    @Handles("progression.event.case-inserted-bdf-v2")
+    public void prosecutionCaseInsertedBdfV2(final JsonEnvelope event){
+        final CaseInsertedBdfV2 caseInsertedBdfV2 = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseInsertedBdfV2.class);
+
+        repository.save(getProsecutionCaseEntity(caseInsertedBdfV2.getProsecutionCase()));
     }
 
     private void filterDuplicateOffencesById(List<Offence> offences) {

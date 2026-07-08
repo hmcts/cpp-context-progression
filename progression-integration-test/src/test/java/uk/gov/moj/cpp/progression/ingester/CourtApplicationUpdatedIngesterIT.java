@@ -51,7 +51,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         applicantDefendantId = randomUUID().toString();
         respondentId = randomUUID().toString();
         respondentDefendantId = randomUUID().toString();
-        applicationReference = randomAlphanumeric(10).toUpperCase();
+        applicationReference = randomAlphanumeric(11).toUpperCase();
         applicationStatus = ApplicationStatus.DRAFT.toString();
         deleteAndCreateIndex();
 

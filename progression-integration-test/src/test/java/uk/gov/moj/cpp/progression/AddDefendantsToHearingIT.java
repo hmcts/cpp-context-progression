@@ -72,14 +72,15 @@ public class AddDefendantsToHearingIT extends AbstractIT {
         final String offenceId = randomUUID().toString();
         final String courtCentreId = "f8254db1-1683-483e-afb3-b87fde5a0a26";
         final String urn = generateUrn();
+        final String sittingDay = "2050-05-18T09:01:01.001Z";
 
         // add prosecution case
         addProsecutionCaseToCrownCourt(prosecutionCaseId, defendantId, urn);
         final String hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId, defendantId);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
-                prosecutionCaseId, hearingId, defendantId, courtCentreId));
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-add-defendant.json",
+                prosecutionCaseId, hearingId, defendantId, courtCentreId, sittingDay));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
         Matcher[] caseUpdatedMatchers = {
@@ -158,12 +159,15 @@ public class AddDefendantsToHearingIT extends AbstractIT {
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
+                                            final String defendantId, final String courtCentreId, final String sittingDay) {
         final String strPayload = getPayload(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("SITTING_DAY", sittingDay);
+
+
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/common/court-document-metadata.json",
+  "type": "object",
+  "properties": {
+    "postalAddressee": {
+      "$ref": "#/definitions/postalAddressee"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "postalAddressee": {
+      "id": "http://moj.gov.uk/cpp/progression/common/postalAddressee",
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "courtApplicationPartyId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "courtApplicationPartyType": {
+          "id": "http://moj.gov.uk/cpp/progression/common/courtApplicationPartyType",
+          "type": "string",
+          "enum": [
+            "PERSON",
+            "ORGANISATION",
+            "PROSECUTING_AUTHORITY",
+            "PERSON_DEFENDANT"
+          ]
+        },
+        "prosecutionAuthorityId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+
