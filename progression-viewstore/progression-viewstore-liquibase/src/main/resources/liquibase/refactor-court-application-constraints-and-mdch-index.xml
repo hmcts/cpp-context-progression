@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <!-- Drop unique constraint on court_application_case if it exists -->
+    <changeSet id="drop-uk-court-application-case-if-exists" author="cpp.context.progression">
+        <sql>
+            ALTER TABLE court_application_case
+            DROP CONSTRAINT IF EXISTS court_application_case_unique_key;
+        </sql>
+    </changeSet>
+
+    <!-- Add unique constraint on (case_id, application_id) if it does not already exist -->
+    <changeSet id="add-uk-court-application-case-caseid-first-if-not-exists" author="cpp.context.progression">
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM information_schema.table_constraints tc
+                    WHERE tc.constraint_name = 'court_application_case_unique_key'
+                      AND tc.table_name = 'court_application_case'
+                      AND tc.constraint_type = 'UNIQUE'
+                ) THEN
+                    ALTER TABLE court_application_case
+                    ADD CONSTRAINT court_application_case_unique_key UNIQUE (case_id, application_id);
+                END IF;
+            END
+            $$;
+        </sql>
+    </changeSet>
+
+    <!-- Create index on match_defendant_case_hearing.prosecution_case_id if it does not exist -->
+    <changeSet id="add-index-match-defendant-case-hearing-prosecution-case-id-if-not-exists" author="cpp.context.progression">
+        <sql>
+            CREATE INDEX IF NOT EXISTS match_defendant_case_hearing_prosecution_case_id_idx
+            ON match_defendant_case_hearing (prosecution_case_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
