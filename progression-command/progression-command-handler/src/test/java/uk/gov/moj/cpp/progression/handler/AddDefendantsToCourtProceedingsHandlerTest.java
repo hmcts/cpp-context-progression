@@ -26,6 +26,8 @@ import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.HearingRequestDetail;
+import uk.gov.justice.core.courts.HearingRequestStatusUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -37,11 +39,16 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.ReplayDefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
+import uk.gov.justice.progression.courts.ConfirmHearingRequest;
+import uk.gov.moj.cpp.progression.enums.HearingRequestStatus;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -93,7 +100,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
     private Requester requester;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedings.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedings.class, ReplayedDefendantsAddedToCourtProceedings.class, HearingRequestStatusUpdated.class);
 
     @InjectMocks
     private AddDefendantsToCourtProceedingsHandler addDefendantsToCourtProceedingsHandler;
@@ -196,6 +203,99 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
         ));
 
         verify(matchedDefendantLoadService).aggregateDefendantsSearchResultForAProsecutionCase(any(),any());
+    }
+
+    @Test
+    void shouldHandleReplay() throws EventStreamException {
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final ReplayDefendantsAddedToCourtProceedings replayDefendantsAddedToCourtProceedings = ReplayDefendantsAddedToCourtProceedings.replayDefendantsAddedToCourtProceedings()
+                .withDefendants(singletonList(Defendant.defendant().withId(UUID.randomUUID()).withProsecutionCaseId(UUID.randomUUID()).build()))
+                .withListHearingRequests(singletonList(ListHearingRequest.listHearingRequest().build()))
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.add-defendants-to-court-proceedings")
+                .withId(UUID.randomUUID())
+                .build();
+
+        final Envelope<ReplayDefendantsAddedToCourtProceedings> envelope = envelopeFrom(metadata, replayDefendantsAddedToCourtProceedings);
+
+        addDefendantsToCourtProceedingsHandler.handleReplay(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.replayed-defendants-added-to-court-proceedings"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendants", notNullValue()))
+                        ).isJson(allOf(
+                                withJsonPath("$.listHearingRequests", notNullValue())))
+                )
+        ));
+
+    }
+
+    @Test
+    void shouldHandleConfirmHearingRequest() throws EventStreamException {
+
+        final UUID caseId = UUID.randomUUID();
+        final UUID hearingId = UUID.randomUUID();
+        final UUID courtCentreId = UUID.randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now().plusWeeks(2);
+
+        final HearingRequestDetail detail = HearingRequestDetail.hearingRequestDetail()
+                .withHearingId(hearingId)
+                .withCourtCentreId(courtCentreId)
+                .withHearingDateTime(hearingDateTime)
+                .withHearingRequestStatus(HearingRequestStatus.CONFIRMED)
+                .build();
+
+        final ConfirmHearingRequest confirmHearingRequest = ConfirmHearingRequest.confirmHearingRequest()
+                .withProsecutionCaseId(caseId)
+                .withHearingRequestDetails(singletonList(detail))
+                .build();
+
+        final Metadata metadata = Envelope.metadataBuilder()
+                .withName("progression.command.confirm-hearing-request")
+                .withId(UUID.randomUUID())
+                .build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        caseAggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
+
+        final Envelope<ConfirmHearingRequest> envelope = envelopeFrom(metadata, confirmHearingRequest);
+        addDefendantsToCourtProceedingsHandler.handleHearingStatusUpdate(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.hearing-request-status-updated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearingId", equalTo(hearingId.toString())),
+                                withJsonPath("$.courtCentreId", equalTo(courtCentreId.toString()))
+                        ))
+                )
+        ));
+    }
+
+    @Test
+    public void shouldHandleCommandAnnotation() {
+        assertThat(new AddDefendantsToCourtProceedingsHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("handleHearingStatusUpdate")
+                        .thatHandles("progression.command.confirm-hearing-request")
+                ));
     }
 
     private ProsecutionCase getProsecutionCase() {

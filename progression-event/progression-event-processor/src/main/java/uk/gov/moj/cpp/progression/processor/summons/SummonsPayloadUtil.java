@@ -5,7 +5,9 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.summons.SummonsAddress.summonsAddress;
 import static uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails.summonsHearingCourtDetails;
@@ -42,6 +44,9 @@ public class SummonsPayloadUtil {
     private static final String COURT_ROOM_NAME = "courtroomName";
     private static final String COURT_ROOM_NAME_WELSH = "welshCourtroomName";
     private static final String SINGLE_SPACE_DELIMITER = " ";
+    public static final String POUND_SIGN = "£";
+    public static final String UNSPECIFIED = "Unspecified";
+    public static final String UNSPECIFIED_IN_WELSH = "Heb ei bennu";
 
     private SummonsPayloadUtil() {
     }
@@ -129,5 +134,23 @@ public class SummonsPayloadUtil {
                 .build();
     }
 
+    public static String getProsecutorCosts(final String eventProsecutorCostValue, boolean isWelsh) {
+        if (isEmpty(eventProsecutorCostValue)) {
+            return EMPTY;
+        }
+        String prosecutorCost = eventProsecutorCostValue;
+        String costValue = eventProsecutorCostValue.replace(POUND_SIGN, EMPTY).trim();
+        if (isNotEmpty(costValue)) {
+            Double value = Double.parseDouble(costValue);
+            if (value == 0) {
+                if (isWelsh) {
+                    prosecutorCost = UNSPECIFIED_IN_WELSH;
+                } else {
+                    prosecutorCost = UNSPECIFIED;
+                }
+            }
+        }
+        return prosecutorCost;
+    }
 
 }

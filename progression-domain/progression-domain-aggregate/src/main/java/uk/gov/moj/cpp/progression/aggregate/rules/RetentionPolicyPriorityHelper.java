@@ -22,21 +22,28 @@ public class RetentionPolicyPriorityHelper {
 
     public static RetentionPolicy getRetentionPolicyByPriority(final Collection<RetentionPolicy> retentionPolicyCollection) {
         final List<RetentionPolicy> retentionPolicies = new ArrayList<>(retentionPolicyCollection);
-        retentionPolicies.sort((retentionPolicy1, retentionPolicy2) -> {
-            if (retentionPolicy1.getPolicyType().getPriority() > retentionPolicy2.getPolicyType().getPriority()) {
-                return 1;
-            } else if (retentionPolicy1.getPolicyType().getPriority() == retentionPolicy2.getPolicyType().getPriority()
-                    && ((retentionPolicy1.getPolicyType() == CUSTODIAL && retentionPolicy2.getPolicyType() == CUSTODIAL)
-                    || (retentionPolicy1.getPolicyType() == REMITTAL && retentionPolicy2.getPolicyType() == REMITTAL))) {
 
-                return retentionPolicy1.getPeriodDays() > retentionPolicy2.getPeriodDays()
-                        ? 1 : 0;
-            } else {
-                return -1;
+        retentionPolicies.sort((retentionPolicy1, retentionPolicy2) -> {
+            int priorityCompare = Integer.compare(
+                    retentionPolicy1.getPolicyType().getPriority(),
+                    retentionPolicy2.getPolicyType().getPriority());
+
+            if (priorityCompare != 0) {
+                return -priorityCompare;
             }
+
+            if ((retentionPolicy1.getPolicyType() == CUSTODIAL && retentionPolicy2.getPolicyType() == CUSTODIAL) ||
+                    (retentionPolicy1.getPolicyType() == REMITTAL && retentionPolicy2.getPolicyType() == REMITTAL)) {
+
+                return Integer.compare(
+                        retentionPolicy1.getPeriodDays(),
+                        retentionPolicy2.getPeriodDays());
+            }
+
+            return 0;
         });
 
-        return retentionPolicies.get(0);
+        return retentionPolicies.get(retentionPolicies.size()-1);
     }
 
     public static int periodToDays(final String periodStr) {

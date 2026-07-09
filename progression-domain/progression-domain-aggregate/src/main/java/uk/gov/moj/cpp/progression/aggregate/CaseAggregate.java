@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -32,6 +33,7 @@ import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpd
 import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
 import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
 import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
+import static uk.gov.justice.core.courts.HearingRequestDetail.hearingRequestDetail;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
@@ -74,6 +76,10 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_V
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.CONFIRMED;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.RESULTED;
+import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.SENT;
 import static uk.gov.moj.cpp.progression.events.CivilCaseExists.civilCaseExists;
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved.defendantCustodialEstablishmentRemoved;
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
@@ -120,6 +126,7 @@ import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DeferredDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
@@ -134,6 +141,9 @@ import uk.gov.justice.core.courts.FormFinalised;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.FundingType;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingRequestDetail;
+import uk.gov.justice.core.courts.HearingRequestStatusUpdated;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
@@ -146,6 +156,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.MigrationCaseStatus;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
@@ -178,11 +189,13 @@ import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
+import uk.gov.justice.core.courts.ReplayedDefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
+import uk.gov.justice.progression.courts.CaseInsertedBdfV2;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CaseStatusUpdatedBdf;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
@@ -222,6 +235,7 @@ import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
+import uk.gov.moj.cpp.progression.enums.HearingRequestStatus;
 import uk.gov.moj.cpp.progression.events.CaseNotFound;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
@@ -270,6 +284,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -293,13 +308,15 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S2384", "pmd:NullAssignment", "squid:S134", "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -2092381865833271661L;
+    private static final long serialVersionUID = -2092381865833271662L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -308,6 +325,8 @@ public class CaseAggregate implements Aggregate {
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private static final String LAA_WITHDRAW_STATUS_CODE = "WD";
     public static final String EMAIL_NOT_FOUND = "Email for the prosecutor not found!";
+    private final HashMap<String, Pair<UUID, HearingRequestStatus>> hearingStatusByKey = new HashMap<>();
+    private final List<DeferredDefendantsAddedToCourtProceedings> deferredDefendantsAddedToCourtProceedings = new ArrayList<>();
     private final Map<UUID, List<UUID>> defendantFinancialDocs = new HashMap<>();
     private final Map<UUID, List<Cases>> partialMatchedDefendants = new HashMap<>();
     private final Map<UUID, List<Cases>> exactMatchedDefendants = new HashMap<>();
@@ -417,7 +436,7 @@ public class CaseAggregate implements Aggregate {
                                             addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             this.defendantLegalAidStatus.put(defendant.getId(), NO_VALUE.getDescription());
-                                            updateDefendantProceedingConcluded(defendant, false);
+                                            updateDefendantProceedingConcluded(defendant, isMigratedCaseInActive(e.getProsecutionCase()));
                                         });
                                     }
                                     e.getProsecutionCase().getDefendants().forEach(d -> defendantsMap.put(d.getId(), d));
@@ -436,20 +455,13 @@ public class CaseAggregate implements Aggregate {
                             }
                         }
                 ),
-                when(DefendantsAddedToCourtProceedings.class).apply(
-                        e ->
-                        {
-                            if (!e.getDefendants().isEmpty()) {
-                                e.getDefendants().forEach(
-                                        defendant -> {
-                                            addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
-                                            this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
-                                            updateDefendantProceedingConcluded(defendant, false);
-                                            this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
-                                        });
-                            }
-                            this.prosecutionCase.getDefendants().addAll(e.getDefendants());
-                        }
+                when(DefendantsAddedToCourtProceedings.class).apply(this::onDefendantsAddedToCourtProceedings),
+                when(DeferredDefendantsAddedToCourtProceedings.class).apply(this.deferredDefendantsAddedToCourtProceedings::add),
+                when(HearingRequestStatusUpdated.class).apply(e ->
+                        this.hearingStatusByKey.put(
+                                buildHearingKey(e.getCourtCentreId(), e.getHearingDateTime()),
+                                ImmutablePair.of(e.getHearingId(), e.getHearingRequestStatus())
+                        )
                 ),
                 when(CaseLinkedToHearing.class).apply(this::caseLinkedToHearing),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
@@ -552,7 +564,56 @@ public class CaseAggregate implements Aggregate {
                         this.defendantCustodialEstablishmentMap.remove(e.getDefendantId())
                 ),
                 otherwiseDoNothing());
+    }
 
+    private void onDefendantsAddedToCourtProceedings(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
+        if (!defendantsAddedToCourtProceedings.getDefendants().isEmpty()) {
+            defendantsAddedToCourtProceedings.getDefendants().forEach(
+                    defendant -> {
+                        addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
+                        this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
+                        updateDefendantProceedingConcluded(defendant, false);
+                        this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
+                    });
+        }
+
+        this.prosecutionCase.getDefendants().addAll(defendantsAddedToCourtProceedings.getDefendants());
+
+        cleanDeferredDefendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings);
+
+        updateHearingRequestStatus(defendantsAddedToCourtProceedings);
+    }
+
+    private void cleanDeferredDefendantsAddedToCourtProceedings(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
+        deferredDefendantsAddedToCourtProceedings.removeIf(e -> e.getRequestId().equals(defendantsAddedToCourtProceedings.getRequestId()));
+    }
+
+    private void updateHearingRequestStatus(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
+        if (isEmpty(defendantsAddedToCourtProceedings.getHearingRequestDetails())) {
+            applyLegacyHearingRequestStatus(defendantsAddedToCourtProceedings.getListHearingRequests());
+        } else {
+            applyHearingRequestStatus(defendantsAddedToCourtProceedings.getHearingRequestDetails());
+        }
+    }
+
+    private void applyLegacyHearingRequestStatus(final List<ListHearingRequest> listHearingRequests) {
+        for (final ListHearingRequest request : listHearingRequests) {
+            this.hearingStatusByKey.putIfAbsent(buildHearingKey(request.getCourtCentre().getId(), getHearingDateTime(request)), ImmutablePair.of(null, CONFIRMED));
+        }
+    }
+
+    private void applyHearingRequestStatus(final List<HearingRequestDetail> hearingRequestDetails) {
+        for (final HearingRequestDetail request : hearingRequestDetails) {
+            this.hearingStatusByKey.putIfAbsent(buildHearingKey(request.getCourtCentreId(), request.getHearingDateTime()), ImmutablePair.of(request.getHearingId(), SENT));
+        }
+    }
+
+    private String buildHearingKey(final UUID courtCentreId, final ZonedDateTime hearingDateTime) {
+        return courtCentreId + "|" + hearingDateTime.truncatedTo(ChronoUnit.MINUTES).toLocalDateTime().toString();
+    }
+
+    private ZonedDateTime getHearingDateTime(final ListHearingRequest request) {
+        return nonNull(request.getListedStartDateTime()) ? request.getListedStartDateTime() : request.getEarliestStartDateTime();
     }
 
     private void caseLinkedToHearing(final CaseLinkedToHearing caseLinkedToHearing) {
@@ -1049,9 +1110,53 @@ public class CaseAggregate implements Aggregate {
         if(nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil() && isNotEmpty(effectiveCivilFeesForTheCase)) {
             return updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(prosecutionCase, effectiveCivilFeesForTheCase);
         } else {
-            return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
+            return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(markMigratedCaseInActive(prosecutionCase))
+                    .build()));
         }
 
+    }
+
+    private ProsecutionCase markMigratedCaseInActive(final ProsecutionCase prosecutionCase) {
+
+        if (!isMigratedCaseInActive(prosecutionCase)) {
+            return prosecutionCase;
+        }
+
+        final List<Defendant> updatedDefendants = prosecutionCase.getDefendants().stream()
+                .map(this::concludeDefendant)
+                .toList();
+
+        return ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withCaseStatus(INACTIVE.getDescription())
+                .withDefendants(updatedDefendants)
+                .build();
+    }
+
+
+    private boolean isMigratedCaseInActive(final ProsecutionCase prosecutionCase) {
+        return Optional.ofNullable(prosecutionCase.getMigrationSourceSystem()).
+                filter(e -> nonNull(e.getMigrationCaseStatus()) && e.getMigrationCaseStatus() == MigrationCaseStatus.INACTIVE).isPresent();
+    }
+
+    private Defendant concludeDefendant(final Defendant defendant) {
+        final List<Offence> updatedOffences = defendant.getOffences().stream()
+                .map(this::concludedOffence)
+                .toList();
+
+        return Defendant.defendant()
+                .withValuesFrom(defendant)
+                .withProceedingsConcluded(true)
+                .withOffences(updatedOffences)
+                .build();
+    }
+
+    private Offence concludedOffence(final Offence offence) {
+        return Offence.offence()
+                .withValuesFrom(offence)
+                .withProceedingsConcluded(true)
+                .build();
     }
 
     private Stream<Object> updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(final ProsecutionCase prosecutionCase, final List<CivilFees> effectiveCivilFeesForTheCase) {
@@ -1090,22 +1195,151 @@ public class CaseAggregate implements Aggregate {
                     .build())
             );
         }
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
+        final List<Defendant> defendantList = getDefendants(listHearingRequests, offencesJsonObjectOptional, newDefendantsList);
+        final List<HearingRequestDetail> hearingRequestDetails = buildHearingRequestDetails(listHearingRequests);
+        final boolean hasUnconfirmedHearings = hearingRequestDetails.stream().anyMatch(e -> e.getHearingRequestStatus().equals(SENT));
 
-        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+        if (hasUnconfirmedHearings) {
+            return apply(Stream.of(DeferredDefendantsAddedToCourtProceedings.deferredDefendantsAddedToCourtProceedings()
+                    .withRequestId(randomUUID())
+                    .withDefendants(defendantList)
+                    .withListHearingRequests(listHearingRequests)
+                    .withHearingRequestDetails(hearingRequestDetails)
+                    .build()));
+        } else
+            return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                    .withRequestId(randomUUID())
+                    .withDefendants(defendantList)
+                    .withListHearingRequests(listHearingRequests)
+                    .withHearingRequestDetails(hearingRequestDetails)
+                    .build()));
+    }
 
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
-                uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
+    private List<HearingRequestDetail> buildHearingRequestDetails(final List<ListHearingRequest> listHearingRequests) {
+        final List<HearingRequestDetail> hearingRequests = new ArrayList<>();
+
+        for (final ListHearingRequest listHearingRequest : listHearingRequests) {
+            final ZonedDateTime hearingDateTime = getHearingDateTime(listHearingRequest);
+
+            if (isNull(hearingDateTime) || hearingDateTime.toLocalDate().isBefore(LocalDate.now())) {
+                LOGGER.warn("Ignoring ListHearingRequest with courtScheduleId {} and hearingdate {}, due to nonvalid hearing date", listHearingRequest.getCourtScheduleId(), hearingDateTime);
+                continue;
+            }
+
+            final UUID courtCentreId = listHearingRequest.getCourtCentre().getId();
+            final String key = buildHearingKey(courtCentreId, hearingDateTime);
+            final Pair<UUID, HearingRequestStatus> hearingRequestStatus = hearingStatusByKey.get(key);
+
+            if (nonNull(hearingRequestStatus)) {
+                if (RESULTED.equals(hearingRequestStatus.getValue())) {
+                    LOGGER.warn("Ignoring ListHearingRequest with courtScheduleId {} and hearingdate {}, since this hearing already resulted",
+                            listHearingRequest.getCourtScheduleId(), hearingDateTime);
+                } else if (CONFIRMED.equals(hearingRequestStatus.getValue())) {
+                    hearingRequests.add(hearingRequestDetail()
+                            .withHearingId(hearingRequestStatus.getKey())
+                            .withHearingRequestStatus(CONFIRMED)
+                            .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
+                            .withHearingDateTime(hearingDateTime)
+                            .build());
+                } else {
+                    hearingRequests.add(hearingRequestDetail()
+                            .withHearingId(hearingRequestStatus.getKey())
+                            .withHearingRequestStatus(SENT)
+                            .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
+                            .withHearingDateTime(hearingDateTime)
+                            .build());
+                }
+            } else {
+                hearingRequests.add(hearingRequestDetail()
+                        .withHearingId(randomUUID())
+                        .withHearingRequestStatus(NEW)
+                        .withCourtCentreId(listHearingRequest.getCourtCentre().getId())
+                        .withHearingDateTime(hearingDateTime)
+                        .build());
+            }
+        }
+
+        return hearingRequests;
+    }
+
+    public Stream<Object> confirmHearingRequestSentForListing(final List<HearingRequestDetail> hearingRequestDetails) {
+        final Stream.Builder<Object> streamBuilder = builder();
+        final Set<String> confirmedHearings = new HashSet<>(hearingStatusByKey.entrySet().stream().filter(e -> CONFIRMED.equals(e.getValue().getValue())).map(Map.Entry::getKey).collect(Collectors.toSet()));
+
+        hearingRequestDetails.forEach(e -> {
+                    streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                            .withHearingId(e.getHearingId())
+                            .withHearingDateTime(e.getHearingDateTime())
+                            .withCourtCentreId(e.getCourtCentreId())
+                            .withHearingRequestStatus(CONFIRMED).build());
+                    confirmedHearings.add(buildHearingKey(e.getCourtCentreId(), e.getHearingDateTime()));
+                }
+        );
+
+        deferredDefendantsAddedToCourtProceedings.forEach(deferredEvent -> {
+                    final List<String> unConfirmedHearings = deferredEvent.getHearingRequestDetails().stream()
+                            .filter(detail -> SENT.equals(detail.getHearingRequestStatus()))
+                            .map(detail -> buildHearingKey(detail.getCourtCentreId(), detail.getHearingDateTime())).toList();
+
+                    if (confirmedHearings.containsAll(unConfirmedHearings)) {
+                        final List<HearingRequestDetail> hearingRequestDetailList = deferredEvent.getHearingRequestDetails().stream().map(hrd -> hearingRequestDetail().withValuesFrom(hrd).withHearingRequestStatus(SENT.equals(hrd.getHearingRequestStatus()) ? CONFIRMED : NEW).build()).toList();
+
+                        streamBuilder.add(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
+                                .withRequestId(deferredEvent.getRequestId())
+                                .withDefendants(deferredEvent.getDefendants())
+                                .withListHearingRequests(deferredEvent.getListHearingRequests())
+                                .withHearingRequestDetails(hearingRequestDetailList)
+                                .build());
+                    }
+                }
+        );
+
+        return streamBuilder.build();
+    }
+
+    private List<Defendant> getDefendants(final List<ListHearingRequest> listHearingRequests, final Optional<List<JsonObject>> offencesJsonObjectOptional, final List<Defendant> newDefendantsList) {
+        final List<Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
+
+        final List<Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+
+        final List<Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
+                Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
                 ).build()).collect(toList());
         final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
         updatedDefendantsWithYouthFlag.removeIf(x -> updatedDefendantIds.contains(x.getId()));
         updatedDefendantsWithYouthFlag.addAll(updatedDefendantsWitMasterDefendantIdsSet);
         updatedDefendantsWithYouthFlag.forEach(defendantWithYouthFlag -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendantWithYouthFlag, listHearingRequests));
-        return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
-                .withDefendants(updatedDefendantsWithYouthFlag)
-                .withListHearingRequests(listHearingRequests)
-                .build())
-        );
+
+        return updatedDefendantsWithYouthFlag;
+    }
+
+    public Stream<Object> updateDefendantListingStatus(final UUID hearingId, final UUID courtCentreId, final List<HearingDay> hearingDays) {
+        final Stream.Builder<Object> streamBuilder = builder();
+
+        if (isNotEmpty(hearingDays)) {
+            hearingDays.stream().filter(hd -> hd.getSittingDay().isAfter(ZonedDateTime.now())).forEach(hd -> {
+                final HearingRequestStatusUpdated hearingRequestStatusUpdated = HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                        .withHearingId(hearingId)
+                        .withHearingDateTime(hd.getSittingDay())
+                        .withCourtCentreId(courtCentreId)
+                        .withHearingRequestStatus(CONFIRMED).build();
+                streamBuilder.add(hearingRequestStatusUpdated);
+            });
+        }
+
+        return streamBuilder.build();
+    }
+
+    public Stream<Object> replayDefendantsAddedToCourtProceedings(final List<Defendant> defendants, final List<ListHearingRequest> listHearingRequests, final List<HearingRequestDetail> hearingRequestDetails, final Integer interval) {
+
+        final ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = ReplayedDefendantsAddedToCourtProceedings.replayedDefendantsAddedToCourtProceedings()
+                    .withDefendants(defendants)
+                    .withListHearingRequests(listHearingRequests)
+                    .withHearingRequestDetails(hearingRequestDetails)
+                    .withInterval(interval)
+                    .build();
+
+        return apply(Stream.of(replayedDefendantsAddedToCourtProceedings));
     }
 
     /**
@@ -1203,7 +1437,7 @@ public class CaseAggregate implements Aggregate {
 
         final List<UUID> filteredApplicationHearingIds = allHearingIdsForCase.stream()
                 .filter(id -> !hearingIds.contains(id))
-                .collect(Collectors.toList());
+                .toList();
         if (isNotEmpty(filteredApplicationHearingIds)) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("filteredApplicationHearingIds for which event raised : {}", filteredApplicationHearingIds);
@@ -1359,7 +1593,7 @@ public class CaseAggregate implements Aggregate {
                     LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails case {} defendant {} condition failed [defendantsMap.containsKey()]", caseId, defendantId);
                 }
 
-                if (nonNull(defendantProceedingConcluded.get(caseId)) && defendantProceedingConcluded.get(caseId).get(defendantId)) {
+                if (nonNull(defendantProceedingConcluded.get(caseId)) && TRUE.equals(defendantProceedingConcluded.get(caseId).get(defendantId))) {
                     LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails defendant {} : defendantProceedingConcluded.get(caseId).get(defendantId) is true", defendantId);
                 }
                 continue;
@@ -1424,7 +1658,7 @@ public class CaseAggregate implements Aggregate {
 
             final List<UUID> filteredApplicationHearingIds = allHearingIdsForCase.stream()
                     .filter(id -> !hearingIds.contains(id))
-                    .collect(Collectors.toList());
+                    .toList();
             if (isNotEmpty(filteredApplicationHearingIds)) {
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("filteredApplicationHearingIds for which event raised : {}", filteredApplicationHearingIds);
@@ -1489,7 +1723,7 @@ public class CaseAggregate implements Aggregate {
      * @return Stream<Object>
      */
     public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults,
-                                     final CourtCentre courtCentre, final UUID hearingId, final String hearingType,
+                                     final CourtCentre courtCentre, final UUID hearingId, final List<HearingDay> hearingDays, final String hearingType,
                                      final JurisdictionType jurisdictionType, final Boolean isBoxHearing, final List<String> remitResultIds) {
 
         LOGGER.debug(" ProsecutionCase is being updated ");
@@ -1525,6 +1759,18 @@ public class CaseAggregate implements Aggregate {
             streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated()
                     .withProsecutionCase(updatedProsecutionCase)
                     .build());
+
+            if (isNotEmpty(hearingDays)) {
+                hearingDays.stream().filter(hd -> hd.getSittingDay().isAfter(ZonedDateTime.now()))
+                        .forEach(hd ->
+                                streamBuilder.add(HearingRequestStatusUpdated.hearingRequestStatusUpdated()
+                                        .withHearingId(hearingId)
+                                        .withHearingDateTime(hd.getSittingDay())
+                                        .withCourtCentreId(courtCentre.getId())
+                                        .withHearingRequestStatus(RESULTED)
+                                        .build()));
+
+            }
 
             //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
             if (nonNull(updatedProsecutionCase) && nonNull(updatedProsecutionCase.getDefendants())) {
@@ -1699,7 +1945,7 @@ public class CaseAggregate implements Aggregate {
 
         final List<UUID> caseDefendantsFromCurrentHearing = prosecutionCase.getDefendants().stream()
                 .map(uk.gov.justice.core.courts.Defendant::getId)
-                .collect(Collectors.toList());
+                .toList();
 
         final Map<UUID, Boolean> otherCaseDefendantsNotRepresentedOnCurrentHearing = getOtherCaseDefendantsNotRepresentedOnCurrentHearing(caseDefendantsFromDefendantProceedingsConcluded, caseDefendantsFromCurrentHearing);
 
@@ -1798,7 +2044,7 @@ public class CaseAggregate implements Aggregate {
                 newOffences.add(offence);
             }
             return offence;
-        }).collect(toList());
+        }).toList();
 
         final DefendantCaseOffences newDefendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
                 .withOffences(allOffences)
@@ -1814,7 +2060,7 @@ public class CaseAggregate implements Aggregate {
             final AllHearingOffencesUpdatedV2.Builder allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2();
             allHearingOffencesUpdatedV2.withHearingIds(new ArrayList<>(hearingIds)).
                     withDefendantId(defendantId).build();
-            final List<uk.gov.justice.core.courts.Offence> updatedOffences = allOffences.stream().filter(offence -> !newOffences.contains(offence)).collect(toList());
+            final List<uk.gov.justice.core.courts.Offence> updatedOffences = allOffences.stream().filter(offence -> !newOffences.contains(offence)).toList();
             if (!updatedOffences.isEmpty()) {
                 allHearingOffencesUpdatedV2.withUpdatedOffences(updatedOffences);
             }
@@ -2467,7 +2713,7 @@ public class CaseAggregate implements Aggregate {
                 streamBuilder.add(MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
                         .withDefendant(defendantsMap.get(defendantId))
                         .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
-                        .withHearingIds(this.hearingIds.stream().collect(toList()))
+                        .withHearingIds(this.hearingIds.stream().toList())
                         .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .build());
             } else {
@@ -2587,7 +2833,7 @@ public class CaseAggregate implements Aggregate {
                                         .withCaseUrn(ctu.getCaseUrn())
                                         .withLinkGroupId(ctu.getLinkGroupId())
                                         .build())
-                                .collect(Collectors.toList())
+                                .toList()
                 )
                 .build();
 
@@ -2595,6 +2841,7 @@ public class CaseAggregate implements Aggregate {
                 .add(casesUnlinked)
                 .build());
     }
+
     public Stream<Object> updateHearingForPartialAllocation(final UUID hearingId, final List<ProsecutionCasesToRemove> prosecutionCasesToRemove) {
         LOGGER.debug("hearing has been updated for partial allocation");
         return apply(Stream.of(HearingUpdatedForPartialAllocation.hearingUpdatedForPartialAllocation()
@@ -2623,7 +2870,7 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withHearingId(hearingId)
-                .withDefendantIds(prosecutionCase.getDefendants().stream().map(uk.gov.justice.core.courts.Defendant::getId).collect(toList()))
+                .withDefendantIds(prosecutionCase.getDefendants().stream().map(uk.gov.justice.core.courts.Defendant::getId).toList())
                 .build()));
     }
 
@@ -2687,7 +2934,7 @@ public class CaseAggregate implements Aggregate {
                             .withListingNumber(ofNullable(offence.getListingNumber()).orElse(0) + 1)
                             .withOffenceId(offence.getId())
                             .build())
-                    .collect(toList());
+                    .toList();
 
             return apply(Stream.builder()
                     .add(ProsecutionCaseListingNumberIncreased.prosecutionCaseListingNumberIncreased()
@@ -2776,7 +3023,7 @@ public class CaseAggregate implements Aggregate {
                         .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
                         .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
                         .build())
-                .collect(toList());
+                .toList();
     }
 
     private List<MatchedDefendants> transformToExactMatchedDefendants(final List<Cases> casesList) {
@@ -2822,7 +3069,7 @@ public class CaseAggregate implements Aggregate {
                         .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
                         .build());
             } else {
-                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false))) {                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || FALSE.equals(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false))) {                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
                             .withLaaContractNumber(laaContractNumber)
@@ -2838,7 +3085,7 @@ public class CaseAggregate implements Aggregate {
         } else {
             if (organisationId != null) {
                 // Associate the one which is linked with one from payload
-                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false))) {
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || (FALSE.equals(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false)))) {
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
                             .withLaaContractNumber(laaContractNumber)
@@ -2864,7 +3111,7 @@ public class CaseAggregate implements Aggregate {
     private String getDefendantLevelLegalStatus(final List<uk.gov.justice.core.courts.Offence> offencesList) {
         final List<String> defendantLevelStatusList = offencesList.stream().filter(offence -> nonNull(offence.getLaaApplnReference()))
                 .map(uk.gov.justice.core.courts.Offence::getLaaApplnReference)
-                .map(LaaReference::getOffenceLevelStatus).collect(toList());
+                .map(LaaReference::getOffenceLevelStatus).toList();
         if (defendantLevelStatusList.stream().anyMatch
                 (defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(GRANTED.getDescription()))) {
             return GRANTED.getDescription();
@@ -2918,7 +3165,9 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
+        removeHearingRequestStatus(hearingMarkedAsDuplicateForCase.getHearingId());
         this.deletedHearingIds.add(hearingMarkedAsDuplicateForCase.getHearingId());
+
         if (nonNull(this.latestHearingId) && this.latestHearingId.equals(hearingMarkedAsDuplicateForCase.getHearingId())) {
             this.latestHearingId = null;
         }
@@ -2926,7 +3175,9 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
         this.hearingIds.remove(hearingDeletedForProsecutionCase.getHearingId());
+        removeHearingRequestStatus(hearingDeletedForProsecutionCase.getHearingId());
         this.deletedHearingIds.add(hearingDeletedForProsecutionCase.getHearingId());
+
         if (hearingDeletedForProsecutionCase.getHearingId().equals(latestHearingId)) {
             latestHearingId = null;
         }
@@ -2934,9 +3185,17 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {
         this.hearingIds.remove(hearingRemovedForProsecutionCase.getHearingId());
+        removeHearingRequestStatus(hearingRemovedForProsecutionCase.getHearingId());
+
         if (hearingRemovedForProsecutionCase.getHearingId().equals(latestHearingId)) {
             latestHearingId = null;
         }
+    }
+
+    private void removeHearingRequestStatus(final UUID hearingId) {
+        final Optional<Map.Entry<String, Pair<UUID, HearingRequestStatus>>> hearingStatus = hearingStatusByKey.entrySet().stream().filter(entry -> hearingId.equals(entry.getValue().getKey())).findFirst();
+
+        hearingStatus.ifPresent(status -> hearingStatusByKey.remove(status.getKey()));
     }
 
     private void onCustodyTimeLimitExtended(final CustodyTimeLimitExtended custodyTimeLimitExtended) {
@@ -2976,7 +3235,7 @@ public class CaseAggregate implements Aggregate {
 
     private void updateProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
         Prosecutor prosecutor = null;
-        if (isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) || !caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) {
+        if (isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) || FALSE.equals(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError())) {
             prosecutor = Prosecutor.prosecutor()
                     .withAddress(caseCpsProsecutorUpdated.getAddress())
                     .withProsecutorCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
@@ -3028,7 +3287,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> extendCustodyTimeLimit(final UUID hearingId, final UUID offenceId, final LocalDate extendedTimeLimit) {
         final List<UUID> extendHearingIds = this.hearingIds.stream()
                 .filter(id -> !id.equals(hearingId))
-                .collect(toList());
+                .toList();
 
         if (extendHearingIds.isEmpty()) {
             return empty();
@@ -3045,7 +3304,7 @@ public class CaseAggregate implements Aggregate {
     private List<uk.gov.justice.core.courts.Defendant> updateDefendantWithProceedingsConcludedStatusAndOriginalListingNumbers(final ProsecutionCase prosecutionCaseFromCommand) {
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = prosecutionCaseFromCommand.getDefendants().stream()
                 .map(defendant -> getUpdatedDefendant(defendant))
-                .collect(Collectors.toList());
+                .toList();
 
         final Map<UUID, Integer> listingMap = this.prosecutionCase.getDefendants().stream()
                 .flatMap(defendant -> defendant.getOffences().stream())
@@ -3057,8 +3316,8 @@ public class CaseAggregate implements Aggregate {
                 .withOffences(defendant.getOffences().stream().map(offence -> uk.gov.justice.core.courts.Offence.offence()
                         .withValuesFrom(offence)
                         .withListingNumber(listingMap.get(offence.getId()))
-                        .build()).collect(toList()))
-                .build()).collect(toList());
+                        .build()).toList())
+                .build()).toList();
     }
 
     private uk.gov.justice.core.courts.Defendant getUpdatedDefendant(final uk.gov.justice.core.courts.Defendant defendant) {
@@ -3080,7 +3339,12 @@ public class CaseAggregate implements Aggregate {
                 if (hasNewAmendment(offence)) {
                     isOffenceConcluded = isConcluded(offence);
                 } else {
-                    isOffenceConcluded = isOffencePreviouslyConcluded(defendantId, offence.getId());
+                    final boolean isOffencePreviouslyConcluded = isOffencePreviouslyConcluded(defendantId, offence.getId());
+                    if(isOffencePreviouslyConcluded && isEmpty(offence.getJudicialResults())){ //result is removed from offence
+                        isOffenceConcluded = false;
+                    } else {
+                        isOffenceConcluded = isOffencePreviouslyConcluded || isConcluded(offence);
+                    }
                 }
                 getUpdatedOffence(updatedOffences, offence, isOffenceConcluded);
             });
@@ -3103,17 +3367,11 @@ public class CaseAggregate implements Aggregate {
         if (nonNull(defendantAllOffences)) {
             defendantAllOffences.forEach(previousOffence -> {
                 final uk.gov.justice.core.courts.Offence currentOffence = getOffenceById(previousOffence.getId(), currentUpdatedOffences);
-
-                if (hasNewAmendment(currentOffence)) {
-                    offenceProceedingsConcludedMap.put(previousOffence.getId(), isConcluded(currentOffence));
+                if (nonNull(currentOffence)) {
+                    offenceProceedingsConcludedMap.put(previousOffence.getId(), currentOffence.getProceedingsConcluded());
                 } else {
-                    //previously resulted but not in current hearing / payload
-                    if (isOffencePreviouslyConcluded(defendantId, previousOffence.getId())) {
-                        offenceProceedingsConcludedMap.put(previousOffence.getId(), TRUE);
-                    } else {
-                        //not yet resulted - concluded is false
-                        offenceProceedingsConcludedMap.put(previousOffence.getId(), isConcluded(previousOffence));
-                    }
+                    // Offence not in current hearing — preserve previously known concluded state
+                    offenceProceedingsConcludedMap.put(previousOffence.getId(), isOffencePreviouslyConcluded(defendantId, previousOffence.getId()));
                 }
             });
         }
@@ -3196,7 +3454,7 @@ public class CaseAggregate implements Aggregate {
     private List<PetDefendants> buildPetDefendants(final List<UUID> defendantIds) {
         return defendantIds.stream().map(entry -> PetDefendants.petDefendants()
                 .withDefendantId(entry)
-                .build()).collect(toList());
+                .build()).toList();
     }
 
     public Stream<Object> updatePetForm(final UUID caseId, final String petFormData,
@@ -3324,7 +3582,7 @@ public class CaseAggregate implements Aggregate {
                 .map(this::buildDefendantForPet)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(toList());
+                .toList();
     }
 
     public Stream<Object> recordOnlinePlea(final PleadOnline pleadOnline) {
@@ -3553,7 +3811,7 @@ public class CaseAggregate implements Aggregate {
                         .withMaterialId(UUID.randomUUID())
                         .withHearingDateTime(hearingDateTime)
                         .build())
-                .collect(toList());
+                .toList();
 
         return apply(formFinalisedList.stream().map(formFinalised -> formFinalised));
     }
@@ -3616,7 +3874,7 @@ public class CaseAggregate implements Aggregate {
     private List<FormDefendants> buildDefendants(final List<UUID> defendantIds) {
         return defendantIds.stream().map(entry -> formDefendants()
                 .withDefendantId(entry)
-                .build()).collect(toList());
+                .build()).toList();
     }
 
     private void updateFormOnFormUpdate(final FormUpdated formUpdated) {
@@ -3662,7 +3920,7 @@ public class CaseAggregate implements Aggregate {
         final Form form = formMap.get(editFormRequested.getCourtFormId());
         final FormLockStatus lockStatus = form.getFormLockStatus();
 
-        if (nonNull(editFormRequested.getLockStatus().getIsLockAcquirable()) && editFormRequested.getLockStatus().getIsLockAcquirable()) {
+        if (nonNull(editFormRequested.getLockStatus().getIsLockAcquirable()) && TRUE.equals(editFormRequested.getLockStatus().getIsLockAcquirable())) {
             lockStatus.setLockedBy(editFormRequested.getLockStatus().getLockRequestedBy());
             lockStatus.setLockExpiryTime(editFormRequested.getLockStatus().getExpiryTime());
             form.setFormLockStatus(lockStatus);
@@ -3730,12 +3988,16 @@ public class CaseAggregate implements Aggregate {
         final ProsecutionCase caseForHearing = ProsecutionCase.prosecutionCase().withValuesFrom(this.getProsecutionCase())
                 .withDefendants(this.getProsecutionCase().getDefendants().stream()
                         .filter(def -> defendantsIds.contains(def.getId()))
-                        .map(def -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(def)
-                                .withOffences(ofNullable(this.defendantCaseOffences.get(def.getId())).map(Collection::stream).orElseGet(Stream::empty)
-                                        .filter(off -> offenceIds.contains(off.getId())).toList())
-
-                                .build())
-                        .collect(Collectors.toList()))
+                        .map(def -> {
+                            final uk.gov.justice.core.courts.Defendant latestDefendant = this.defendantsMap.getOrDefault(def.getId(), def);
+                            final uk.gov.justice.core.courts.Defendant.Builder builder = uk.gov.justice.core.courts.Defendant.defendant()
+                                    .withValuesFrom(latestDefendant);
+                            applyDefendantFallbacks(def, latestDefendant, builder);
+                            return builder.withOffences(ofNullable(this.defendantCaseOffences.get(def.getId())).map(Collection::stream).orElseGet(Stream::empty)
+                                            .filter(off -> offenceIds.contains(off.getId())).toList())
+                                    .build();
+                        })
+                        .toList())
                 .build();
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -3938,20 +4200,35 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> insertCase(final ProsecutionCase prosecutionCase) {
-        if (isNull(this.prosecutionCase)) {
+        if (checkProsecutionCase(prosecutionCase)) {
             return apply(Stream.empty());
+        }
+        return apply(Stream.of(CaseInsertedBdf.caseInsertedBdf().withProsecutionCase(prosecutionCase).build()));
+    }
+
+    private boolean checkProsecutionCase(final ProsecutionCase prosecutionCase) {
+        if (isNull(this.prosecutionCase)) {
+            return true;
         }
         if (!this.prosecutionCase.getId().equals(prosecutionCase.getId())) {
-            return apply(Stream.empty());
+            return true;
         }
-
         String newReference = getReference(prosecutionCase);
         if (!this.reference.equals(newReference)) {
+            return true;
+        }
+        return false;
+    }
+
+    public Stream<Object> insertCaseV2(final ProsecutionCase prosecutionCase) {
+        if (checkProsecutionCase(prosecutionCase)) {
             return apply(Stream.empty());
         }
+        return apply(Stream.of(CaseInsertedBdfV2.caseInsertedBdfV2().withProsecutionCase(prosecutionCase).build()));
+    }
 
-        return apply(Stream.of(CaseInsertedBdf.caseInsertedBdf().withProsecutionCase(prosecutionCase).build()));
-
+    public Map<UUID, Map<UUID, Boolean>> getDefendantProceedingConcluded() {
+        return Map.copyOf(defendantProceedingConcluded);
     }
 
     private static String getReference(final ProsecutionCase prosecutionCase) {
@@ -3964,4 +4241,5 @@ public class CaseAggregate implements Aggregate {
         }
         return newReference;
     }
+
 }

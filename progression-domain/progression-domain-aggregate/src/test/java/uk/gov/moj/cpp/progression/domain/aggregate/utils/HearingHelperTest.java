@@ -8,6 +8,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.services.common.util.UtcClock;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,7 @@ public class HearingHelperTest {
 
     @Test
     public void shouldNotBeEligibleForNextHearingsWhenEarliestNextHearingDateIs1HourInFuture() {
-        final ZonedDateTime now = (new UtcClock()).now();
+        final ZonedDateTime now = clock.now().toLocalDate().atStartOfDay(ZoneOffset.UTC);
 
         final Hearing hearing = Hearing.hearing()
                 .withHearingDays(asList(

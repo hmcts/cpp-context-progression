@@ -11,10 +11,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.inject.Inject;
 
 /**
- * The command API is being added only to be called from BDF, to delete the child entries of already deleted hearing entries from the progression view store.
+ * The command API is being added only to be called from BDF, to update / delete hearing related data by BDF.
  */
 @ServiceComponent(COMMAND_API)
-public class RemoveDeletedHearingChildEntriesByBdfCommandApi {
+public class HearingDataFixByBdfCommandApi {
 
     @Inject
     private Sender sender;
@@ -55,6 +55,19 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApi {
         sender.send(Enveloper
                 .envelop(envelope.payloadAsJsonObject())
                 .withName("progression.command.insert-case-bdf")
+                .withMetadataFrom(envelope));
+    }
+
+    @Handles("progression.command.remove-duplicate-application-bdf")
+    public void removeDuplicateApplication(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.hearing.remove.duplicate.application.bdf'
+         * event to remove the duplicate application from the hearing.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.handler.remove-duplicate-application-bdf")
                 .withMetadataFrom(envelope));
     }
 }

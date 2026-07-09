@@ -35,6 +35,9 @@ public class CourtDocumentEntity implements Serializable {
     @Column(name = "payload")
     private String payload;
 
+    @Column(name = "document_metadata")
+    private String documentMetadata;
+
     @Column(name = "document_category")
     private String documentCategory;
 
@@ -79,6 +82,14 @@ public class CourtDocumentEntity implements Serializable {
 
     public void setPayload(final String payload) {
         this.payload = payload;
+    }
+
+    public String getDocumentMetadata() {
+        return documentMetadata;
+    }
+
+    public void setDocumentMetadata(final String documentMetadata) {
+        this.documentMetadata = documentMetadata;
     }
 
     public String getDocumentCategory() {

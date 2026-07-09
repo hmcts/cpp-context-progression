@@ -11,6 +11,8 @@ import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReplayDefendantsAddedToCourtProceedings;
+import uk.gov.justice.progression.courts.ConfirmHearingRequest;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -30,6 +32,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,6 +86,30 @@ public class AddDefendantsToCourtProceedingsHandler {
                 addDefendantsToCourtProceedings.getListHearingRequests(), offencesJsonObjectOptional);
 
         appendEventsToStream(addDefendantEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.replay-defendants-added-to-court-proceedings")
+    public void handleReplay(final Envelope<ReplayDefendantsAddedToCourtProceedings> replayAddDefendantEnvelope) throws EventStreamException {
+        final EventStream eventStream = eventSource.getStreamById(replayAddDefendantEnvelope.payload().getDefendants().get(0).getProsecutionCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.replayDefendantsAddedToCourtProceedings(
+                replayAddDefendantEnvelope.payload().getDefendants(),
+                replayAddDefendantEnvelope.payload().getListHearingRequests(),
+                replayAddDefendantEnvelope.payload().getHearingRequestDetails(),
+                replayAddDefendantEnvelope.payload().getInterval());
+
+        appendEventsToStream(replayAddDefendantEnvelope, eventStream, events);
+    }
+
+
+    @Handles("progression.command.confirm-hearing-request")
+    public void handleHearingStatusUpdate(final Envelope<ConfirmHearingRequest> request) throws EventStreamException {
+        final UUID caseId = request.payload().getProsecutionCaseId();
+        final EventStream eventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.confirmHearingRequestSentForListing(request.payload().getHearingRequestDetails());
+
+        appendEventsToStream(request, eventStream, events);
     }
 
     private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {

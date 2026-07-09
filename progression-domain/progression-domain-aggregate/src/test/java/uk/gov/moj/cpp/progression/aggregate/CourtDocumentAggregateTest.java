@@ -135,7 +135,7 @@ public class CourtDocumentAggregateTest {
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        this.target.createCourtDocument(courtDocument, true);
+        this.target.createCourtDocument(courtDocument, true, null);
     }
 
     private void createCourtDocumentWithDefendant(final UUID caseId, List<UUID> defandants) {
@@ -145,7 +145,7 @@ public class CourtDocumentAggregateTest {
                         .withDefendantDocument(DefendantDocument.defendantDocument().withDefendants(defandants).withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        this.target.createCourtDocument(courtDocument, true);
+        this.target.createCourtDocument(courtDocument, true, null);
     }
 
     private void createCourtDocumentWithApplication(final UUID applicationId) {
@@ -155,7 +155,7 @@ public class CourtDocumentAggregateTest {
                         .build())
                 .withSendToCps(false)
                 .build();
-        this.target.createCourtDocument(courtDocument, true);
+        this.target.createCourtDocument(courtDocument, true, null);
 
     }
 
@@ -244,7 +244,7 @@ public class CourtDocumentAggregateTest {
     @Test
     public void shouldReturnCourtsDocumentCreated() {
 
-        final List<Object> eventStream = target.createCourtDocument(courtDocument, true).collect(toList());
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, true, null).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -280,7 +280,7 @@ public class CourtDocumentAggregateTest {
 
         target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
         target.removeCourtDocument(randomUUID(), randomUUID(), true);
-        final List<Object> returnedEventStream = target.updateCourtDocument(null, null, null,newArrayList(),newArrayList(),newArrayList()).collect(toList());
+        final List<Object> returnedEventStream = target.updateCourtDocument(null, null, null,newArrayList(),newArrayList(),newArrayList(), null).collect(toList());
 
         assertThat(returnedEventStream.size(), is(1));
         final Object returnedObject = returnedEventStream.get(0);
@@ -302,7 +302,7 @@ public class CourtDocumentAggregateTest {
                 .withName("name")
                 .withSendToCps(true)
                 .build();
-        final List<Object> eventStream = target.createCourtDocument(courtDocument, true).collect(toList());
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, true, null).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -322,7 +322,7 @@ public class CourtDocumentAggregateTest {
                 .withName("name")
                 .withSendToCps(true)
                 .build();
-        final List<Object> eventStream = target.createCourtDocument(courtDocument, false).collect(toList());
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, false, null).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -355,7 +355,7 @@ public class CourtDocumentAggregateTest {
                 .withSendToCps(true)
                 .build();
 
-        final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), null, newArrayList(),newArrayList(),newArrayList()).collect(toList());
+        final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), null, newArrayList(),newArrayList(),newArrayList(), null).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -382,7 +382,7 @@ public class CourtDocumentAggregateTest {
 
         final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), DocumentTypeRBAC.documentTypeRBAC()
                 .withReadUserGroups(newArrayList(READ_USER))
-                .build(), newArrayList(materialId),newArrayList(),newArrayList()).collect(toList());
+                .build(), newArrayList(materialId),newArrayList(),newArrayList(), null).collect(toList());
         assertThat(((CourtDocumentSendToCps) eventStream.get(1)).getNotificationType(), is("pet-form-finalised"));
     }
 
@@ -404,7 +404,7 @@ public class CourtDocumentAggregateTest {
 
         final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), DocumentTypeRBAC.documentTypeRBAC()
                 .withReadUserGroups(newArrayList(READ_USER))
-                .build(), newArrayList(), newArrayList(materialId),newArrayList()).collect(toList());
+                .build(), newArrayList(), newArrayList(materialId),newArrayList(), null).collect(toList());
         assertThat(((CourtDocumentSendToCps) eventStream.get(1)).getNotificationType(), is("bcm-form-finalised"));
     }
 
@@ -426,7 +426,7 @@ public class CourtDocumentAggregateTest {
 
         final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), DocumentTypeRBAC.documentTypeRBAC()
                 .withReadUserGroups(newArrayList(READ_USER))
-                .build(), newArrayList(), newArrayList(), newArrayList(materialId)).collect(toList());
+                .build(), newArrayList(), newArrayList(), newArrayList(materialId), null).collect(toList());
         assertThat(((CourtDocumentSendToCps) eventStream.get(1)).getNotificationType(), is("ptph-form-finalised"));
     }
 
@@ -447,7 +447,7 @@ public class CourtDocumentAggregateTest {
                 .withMimeType("pdf")
                 .withName("name")
                 .build();
-        this.target.createCourtDocument(courtDocument, true);
+        this.target.createCourtDocument(courtDocument, true, null);
     }
 
     @Test

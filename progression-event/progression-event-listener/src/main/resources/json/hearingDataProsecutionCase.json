@@ -97,7 +97,11 @@
           ],
           "personDefendant": {
             "arrestSummonsNumber": "arrest123",
-            "bailStatus": "IN_CUSTODY",
+            "bailStatus": {
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+              "code": "C",
+              "description": "Remanded into Custody"
+            },
             "custodyTimeLimit": "2018-01-01",
             "driverNumber": "AACC12345",
             "employerOrganisation": {

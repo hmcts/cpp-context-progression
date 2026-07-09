@@ -44,6 +44,8 @@ Thumbs.db
 
 # Maven
 target/
+.mvn/
+dependency-reduced-pom.xml
 
 # Subversion
 .svn/

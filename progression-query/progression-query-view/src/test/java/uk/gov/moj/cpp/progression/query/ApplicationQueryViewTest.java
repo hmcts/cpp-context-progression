@@ -70,6 +70,7 @@ import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConve
 import uk.gov.moj.cpp.progression.query.utils.converters.laa.LaaApplnReferenceConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.service.DefenceQueryService;
 import uk.gov.moj.cpp.progression.query.view.utils.FileUtil;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -98,7 +99,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -116,6 +116,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
@@ -174,6 +175,8 @@ public class ApplicationQueryViewTest {
     private SystemIdMapperClient systemIdMapperClient;
     @Mock
     private SystemUserProvider systemUserProvider;
+    @Mock
+    private DefenceQueryService defenceQueryService;
 
     @Mock
     private LaaApplnReferenceConverter laaApplnReferenceConverter;
@@ -404,6 +407,7 @@ public class ApplicationQueryViewTest {
         final List<Offence> offences = new ArrayList<>();
         offences.add(Offence.offence()
                 .withId(randomUUID())
+                .withOrderIndex(2)
                 .build());
 
         final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
@@ -440,10 +444,19 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
-        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(false))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
+        final JsonObject linkedCaseJson = Json.createObjectBuilder()
+                .add("offences", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder().add("orderIndex", 2).build())
+                        .build())
+                .build();
+        when(objectToJsonObjectConverter.convert(any()))
+                .thenReturn(mockApplicationDetailsJson)   // applicationDetails
+                .thenReturn(linkedCaseJson)               // linked case (inside getLinkedCases)
+                .thenReturn(Json.createObjectBuilder().build()) // laaApplnReference
+                .thenReturn(mockApplicantDetailsJson);    // applicantDetails (and child summary)
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
         when(applicationAtAGlanceHelper.getProsecutionCase(prosecutionCaseId)).thenReturn(prosecutionCaseMock);
@@ -455,12 +468,159 @@ public class ApplicationQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getInt("orderIndex"), is(2));
         assertThat(response.payloadAsJsonObject().containsKey("laaApplnReference"), is(true));
         verify(prosecutionCaseMock, atMostOnce()).getCaseStatus();
         verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
         verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
         verify(applicationDetailsMock, atMostOnce()).getLinkType();
     }
+
+    @Test
+    void shouldGetApplicationAtAGlanceHideAddressForDefenceQueryAndDefendant() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationId", applicationId.toString())
+                .add("isDefenceQuery", true)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application.aaag").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{\"id\": \"9aec6dcc-564c-11ea-8e2d-0242ac130003\"}");
+
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence()
+                .withId(randomUUID())
+                .build());
+
+        final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withIsSJP(true)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffences(offences)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .build();
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+
+        final CourtApplicationEntity childCourtApplicationEntity = new CourtApplicationEntity();
+        when(courtApplicationRepository.findByParentApplicationId(any())).thenReturn(singletonList(childCourtApplicationEntity));
+
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(applicationJson);
+        CourtApplication courtApplication = mock(CourtApplication.class);
+        CourtApplication childCourtApplication = mock(CourtApplication.class);
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(courtApplication, childCourtApplication);
+        when(courtApplication.getCourtApplicationCases()).thenReturn(singletonList(courtApplicationCase));
+        when(childCourtApplication.getId()).thenReturn(UUID.randomUUID());
+        when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
+
+
+        final ApplicationDetails applicationDetailsMock = mock(ApplicationDetails.class);
+        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
+        final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
+
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(true))).thenReturn(mock(ApplicantDetails.class));
+        final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
+
+        when(objectToJsonObjectConverter.convert(any()))
+                .thenReturn(mockApplicationDetailsJson)
+                .thenReturn(Json.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(mockApplicantDetailsJson);
+
+        final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
+        when(applicationAtAGlanceHelper.getProsecutionCase(eq(prosecutionCaseId))).thenReturn(prosecutionCaseMock);
+        when(defenceQueryService.isUserOnlyDefendingCase(jsonEnvelope, prosecutionCaseId.toString())).thenReturn(true);
+
+        final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicationDetails"), is(mockApplicationDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicantDetails"), is(mockApplicantDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
+        verify(prosecutionCaseMock, atMostOnce()).getCaseStatus();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(applicationDetailsMock, atMostOnce()).getLinkType();
+    }
+
+    @Test
+    void shouldGetApplicationAtAGlanceNotHideAddressForDefenceQueryAndProsecutor() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationId", applicationId.toString())
+                .add("isDefenceQuery", true)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application.aaag").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{\"id\": \"9aec6dcc-564c-11ea-8e2d-0242ac130003\"}");
+
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence()
+                .withId(randomUUID())
+                .build());
+
+        final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withIsSJP(true)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffences(offences)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .build();
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+
+        final CourtApplicationEntity childCourtApplicationEntity = new CourtApplicationEntity();
+        when(courtApplicationRepository.findByParentApplicationId(any())).thenReturn(singletonList(childCourtApplicationEntity));
+
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(applicationJson);
+        CourtApplication courtApplication = mock(CourtApplication.class);
+        CourtApplication childCourtApplication = mock(CourtApplication.class);
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(courtApplication, childCourtApplication);
+        when(courtApplication.getCourtApplicationCases()).thenReturn(singletonList(courtApplicationCase));
+        when(childCourtApplication.getId()).thenReturn(UUID.randomUUID());
+        when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
+
+
+        final ApplicationDetails applicationDetailsMock = mock(ApplicationDetails.class);
+        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
+        final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
+
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(false))).thenReturn(mock(ApplicantDetails.class));
+        final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
+
+        when(objectToJsonObjectConverter.convert(any()))
+                .thenReturn(mockApplicationDetailsJson)
+                .thenReturn(Json.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(mockApplicantDetailsJson);
+
+        final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
+        when(applicationAtAGlanceHelper.getProsecutionCase(eq(prosecutionCaseId))).thenReturn(prosecutionCaseMock);
+        when(defenceQueryService.isUserOnlyDefendingCase(jsonEnvelope, prosecutionCaseId.toString())).thenReturn(false);
+
+        final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicationDetails"), is(mockApplicationDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicantDetails"), is(mockApplicantDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
+        verify(prosecutionCaseMock, atMostOnce()).getCaseStatus();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(applicationDetailsMock, atMostOnce()).getLinkType();
+    }
+
+
 
     @Test
     public void shouldGetApplicationAtAGlanceWithChildApplication() {
@@ -510,7 +670,7 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
-        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(false))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
@@ -576,7 +736,7 @@ public class ApplicationQueryViewTest {
 
         verify(courtApplicationRepository, times(2)).findByApplicationId(APPLICATION_ID);
         verify(hearingApplicationRepository).findByApplicationId(APPLICATION_ID);
-        verify(applicationLaaConverter).convert(any(CourtApplication.class), anyList(), eq(LAA_APPLICATION_SHORTID),anyList());
+        verify(applicationLaaConverter).convert(any(CourtApplication.class), anyList(), eq(LAA_APPLICATION_SHORTID), anyList());
         verify(jsonObjectToObjectConverter, times(2)).convert(courtApplicationJson, CourtApplication.class);
         verify(systemUserProvider).getContextSystemUserId();
         verify(systemIdMapperClient).findBy(APPLICATION_ID, TARGET_TYPE_APPLICATION, SYSTEM_USER_ID);
@@ -935,6 +1095,7 @@ public class ApplicationQueryViewTest {
                 .withStartDate(LocalDate.of(2018, 01, 01))
                 .withEndDate(LocalDate.of(2018, 01, 05))
                 .withCount(5)
+                .withOrderIndex(2)
                 .withConvictionDate(LocalDate.of(2018, 02, 02))
                 .build();
         return Arrays.asList(offence);

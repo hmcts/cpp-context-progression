@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.event.hearing-confirmed-replayed.json",
+  "type": "object",
+  "properties": {
+    "confirmedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    },
+    "hearingInProgression": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    },
+    "sendNotificationToParties": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "confirmedHearing",
+    "hearingInProgression"
+  ],
+  "additionalProperties": false
+}

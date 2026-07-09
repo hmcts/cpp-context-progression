@@ -33,6 +33,7 @@ import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.PROSECUTIO
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.CourtdocumentsWithPagination;
@@ -56,6 +57,9 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
+import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
+import uk.gov.moj.cpp.progression.common.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.progression.domain.pojo.SearchCriteria;
@@ -82,8 +86,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -99,6 +105,8 @@ import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -243,7 +251,7 @@ public class CourtDocumentQueryViewTest {
                 .build();
     }
 
-    private CourtDocument courtDocumentApplicationType(final UUID id, Integer seqNum, DocumentTypeRBAC documentTypeRBAC, final UUID documentTypeId) {
+    private CourtDocument courtDocumentApplicationType(final UUID id, final Integer seqNum, final DocumentTypeRBAC documentTypeRBAC, final UUID documentTypeId) {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(id)
                 .withDocumentCategory(documentCategoryApplicationTemplate())
@@ -259,7 +267,7 @@ public class CourtDocumentQueryViewTest {
                 .build();
     }
 
-    private CourtDocument courtDocumentApplicationType(final UUID id, Integer seqNum, DocumentTypeRBAC documentTypeRBAC, final List<String> userGroups, final UUID documentTypeId) {
+    private CourtDocument courtDocumentApplicationType(final UUID id, final Integer seqNum, final DocumentTypeRBAC documentTypeRBAC, final List<String> userGroups, final UUID documentTypeId) {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(id)
                 .withDocumentCategory(documentCategoryApplicationTemplate())
@@ -272,6 +280,23 @@ public class CourtDocumentQueryViewTest {
                 ))
                 .withSeqNum(seqNum)
                 .withDocumentTypeRBAC(documentTypeRBAC)
+                .build();
+    }
+
+    private CourtDocument courtDocumentApplicationType(final UUID id, final Integer seqNum, final DocumentTypeRBAC documentTypeRBAC, final List<String> userGroups, final UUID documentTypeId, final String name) {
+        return CourtDocument.courtDocument()
+                .withCourtDocumentId(id)
+                .withDocumentCategory(documentCategoryApplicationTemplate())
+                .withDocumentTypeId(documentTypeId)
+                .withMaterials(asList(
+                        Material.material()
+                                .withId(UUID.randomUUID())
+                                .withUserGroups(userGroups)
+                                .build()
+                ))
+                .withSeqNum(seqNum)
+                .withDocumentTypeRBAC(documentTypeRBAC)
+                .withName(name)
                 .build();
     }
 
@@ -302,7 +327,7 @@ public class CourtDocumentQueryViewTest {
                 .build();
     }
 
-    private CourtDocumentEntity courtDocumentEntity(final UUID id, CourtDocument courtDocument) {
+    private CourtDocumentEntity courtDocumentEntity(final UUID id, final CourtDocument courtDocument) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(id);
         courtDocumentEntity.setIsRemoved(false);
@@ -311,7 +336,7 @@ public class CourtDocumentQueryViewTest {
         return courtDocumentEntity;
     }
 
-    private CourtDocumentEntity courtDocumentEntityWithRbac(final UUID id, CourtDocument courtDocument) {
+    private CourtDocumentEntity courtDocumentEntityWithRbac(final UUID id, final CourtDocument courtDocument) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(id);
         courtDocumentEntity.setIsRemoved(false);
@@ -1350,6 +1375,261 @@ public class CourtDocumentQueryViewTest {
         } else {
             assertThat(result.getDocumentIndices().size(), is(0));
         }
+    }
+
+    @Test
+    void shouldHideDocumentWhenApplicationHasConfidentialAddressAndDefenceQuery() throws IOException {
+        final String applicationTypeCode = "PL84501";
+        final String userGroup = "Defence Lawyers";
+
+        final UUID applicationId = UUID.randomUUID();
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .add("isDefenceQuery", true)
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final List<String> userGroups = singletonList(userGroup);
+        final DocumentTypeRBAC documentTypeRBAC = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), null, null);
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 10, documentTypeRBAC, userGroups, DOCUMENT_TYPE_ID_1, "PostalNotification");
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        final CourtDocumentIndexEntity indexEntity= new CourtDocumentIndexEntity();
+        indexEntity.setApplicationId(applicationId);
+        indices.add(indexEntity);
+        courtDocumentEntity.setIndices(indices);
+        final UUID applicantId = randomUUID();
+        final JsonObject courtDocumentMetadata = objectToJsonObjectConverter.convert(new CourtDocumentMetadata(PostalAddressee.postalAddressee()
+                .withCourtApplicationPartyType(CourtApplicationPartyType.PERSON)
+                .withCourtApplicationPartyId(applicantId)
+                .build()));
+        courtDocumentEntity.setDocumentMetadata(courtDocumentMetadata.toString());
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final JsonObject applicationJsonObject = createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
+                .add("applicant", objectToJsonObjectConverter.convert(CourtApplicationParty.courtApplicationParty()
+                                .withId(applicantId)
+                        .withPersonDetails(Person.person().withIsAddressConfidential(true).build())
+                        .build()))
+                .build();
+        courtApplicationEntity.setPayload(applicationJsonObject.toString());
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity));
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(applicationJsonObject.toString())).thenReturn(applicationJsonObject);
+        when(stringToJsonObjectConverter.convert(courtDocumentEntity.getDocumentMetadata())).thenReturn(courtDocumentMetadata);
+        when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .build();
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().isEmpty(), is(true));
+
+    }
+
+    @Test
+    void shouldNotHideDocumentWhenApplicationHasNotConfidentialAddressAndDefenceQuery() throws IOException {
+        final String applicationTypeCode = "PL84501";
+        final String userGroup = "Defence Lawyers";
+        final UUID applicationId = UUID.randomUUID();
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .add("isDefenceQuery", true)
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final List<String> userGroups = singletonList(userGroup);
+        final DocumentTypeRBAC documentTypeRBAC = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), null, null);
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 10, documentTypeRBAC, userGroups, DOCUMENT_TYPE_ID_1, "PostalNotification");
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        final CourtDocumentIndexEntity indexEntity= new CourtDocumentIndexEntity();
+        indexEntity.setApplicationId(applicationId);
+        indices.add(indexEntity);
+        courtDocumentEntity.setIndices(indices);
+        final UUID applicantId = randomUUID();
+        final JsonObject courtDocumentMetadata = objectToJsonObjectConverter.convert(new CourtDocumentMetadata(PostalAddressee.postalAddressee()
+                .withCourtApplicationPartyType(CourtApplicationPartyType.PERSON)
+                .withCourtApplicationPartyId(applicantId)
+                .build()));
+        courtDocumentEntity.setDocumentMetadata(courtDocumentMetadata.toString());
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final JsonObject applicationJsonObject = createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
+                .add("applicant", objectToJsonObjectConverter.convert(CourtApplicationParty.courtApplicationParty()
+                        .withId(applicantId)
+                        .withPersonDetails(Person.person().withIsAddressConfidential(false).build())
+                        .build()))
+                .build();
+        courtApplicationEntity.setPayload(applicationJsonObject.toString());
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity));
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(applicationJsonObject.toString())).thenReturn(applicationJsonObject);
+        when(stringToJsonObjectConverter.convert(courtDocumentEntity.getDocumentMetadata())).thenReturn(courtDocumentMetadata);
+        when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .build();
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(List.of(applicationId))
+                .withCategory("Defendant level")
+                .withDefendantIds(List.of(randomUUID()))
+                .withHearingIds(List.of(randomUUID()))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(1));
+
+    }
+
+    @Test
+    void shouldNotHideDocumentWhenApplicationHasConfidentialAddressAndDefenceQueryButNotPostalNotification() throws IOException {
+        final String applicationTypeCode = "PL84501";
+        final String userGroup = "Defence Lawyers";
+        final UUID applicationId = UUID.randomUUID();
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .add("isDefenceQuery", true)
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final List<String> userGroups = singletonList(userGroup);
+        final DocumentTypeRBAC documentTypeRBAC = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), null, null);
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 10, documentTypeRBAC, userGroups, DOCUMENT_TYPE_ID_1, "test");
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        final CourtDocumentIndexEntity indexEntity= new CourtDocumentIndexEntity();
+        indexEntity.setApplicationId(applicationId);
+        indices.add(indexEntity);
+        courtDocumentEntity.setIndices(indices);
+        final UUID subjectId = randomUUID();
+        final JsonObject courtDocumentMetadata = objectToJsonObjectConverter.convert(new CourtDocumentMetadata(PostalAddressee.postalAddressee()
+                .withCourtApplicationPartyType(CourtApplicationPartyType.PERSON)
+                .withCourtApplicationPartyId(subjectId)
+                .build()));
+        courtDocumentEntity.setDocumentMetadata(courtDocumentMetadata.toString());
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final JsonObject applicationJsonObject = createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
+                .add("subject", objectToJsonObjectConverter.convert(CourtApplicationParty.courtApplicationParty()
+                        .withId(subjectId)
+                        .withPersonDetails(Person.person().withIsAddressConfidential(false).build())
+                        .build()))
+                .build();
+        courtApplicationEntity.setPayload(applicationJsonObject.toString());
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity));
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(applicationJsonObject.toString())).thenReturn(applicationJsonObject);
+        when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .build();
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(List.of(applicationId))
+                .withCategory("Defendant level")
+                .withDefendantIds(List.of(randomUUID()))
+                .withHearingIds(List.of(randomUUID()))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(1));
+
+    }
+
+    @Test
+    void shouldNotHideDocumentWhenApplicationHasConfidentialAddressAndPostalNotificationButNotDefenceQuery() throws IOException {
+        final String applicationTypeCode = "PL84501";
+        final String userGroup = "Court Clerks";
+        final UUID applicationId = UUID.randomUUID();
+        final UUID courtDocumentId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final List<String> userGroups = singletonList(userGroup);
+        final DocumentTypeRBAC documentTypeRBAC = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), null, null);
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 10, documentTypeRBAC, userGroups, DOCUMENT_TYPE_ID_1, "PostalNotification");
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        final CourtDocumentIndexEntity indexEntity= new CourtDocumentIndexEntity();
+        indexEntity.setApplicationId(applicationId);
+        indices.add(indexEntity);
+        courtDocumentEntity.setIndices(indices);
+        final UUID subjectId = randomUUID();
+        final JsonObject courtDocumentMetadata = objectToJsonObjectConverter.convert(new CourtDocumentMetadata(PostalAddressee.postalAddressee()
+                .withCourtApplicationPartyType(CourtApplicationPartyType.PERSON)
+                .withCourtApplicationPartyId(subjectId)
+                .build()));
+        courtDocumentEntity.setDocumentMetadata(courtDocumentMetadata.toString());
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final JsonObject applicationJsonObject = createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
+                .add("subject", objectToJsonObjectConverter.convert(CourtApplicationParty.courtApplicationParty()
+                        .withId(subjectId)
+                        .withPersonDetails(Person.person().withIsAddressConfidential(false).build())
+                        .build()))
+                .build();
+        courtApplicationEntity.setPayload(applicationJsonObject.toString());
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity));
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(applicationJsonObject.toString())).thenReturn(applicationJsonObject);
+        when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .build();
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
+                .withCaseIds(List.of(applicationId))
+                .withCategory("Defendant level")
+                .withDefendantIds(List.of(randomUUID()))
+                .withHearingIds(List.of(randomUUID()))
+                .withType("Defendant profile notes");
+
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(1));
+
     }
 
     @Test

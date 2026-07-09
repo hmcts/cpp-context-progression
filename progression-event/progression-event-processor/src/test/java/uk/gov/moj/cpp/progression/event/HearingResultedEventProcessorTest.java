@@ -72,6 +72,7 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,6 +89,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -173,6 +175,9 @@ public class HearingResultedEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<Hearing> hearingCaptor;
+
+    @Captor
+    private ArgumentCaptor<List<HearingDay>> hearingDaysTimeCaptor;
 
     @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingCaptor;
@@ -269,10 +274,12 @@ public class HearingResultedEventProcessorTest {
         final UUID caseId1 = UUID.randomUUID();
         final UUID caseId2 = UUID.randomUUID();
         final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final ProsecutionCasesResultedV2 hearingResulted = ProsecutionCasesResultedV2.prosecutionCasesResultedV2().withHearing(
                 Hearing.hearing()
                         .withId(hearingId)
                         .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(hearingDateTime).build()))
                         .withProsecutionCases(Arrays.asList(
                                 ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(Collections.singletonList(Defendant.defendant().build())).build(),
                                 ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(Collections.singletonList(Defendant.defendant().build())).build()))
@@ -290,7 +297,7 @@ public class HearingResultedEventProcessorTest {
         verifyNoMoreInteractions(sender);
         verify(progressionService, times(2)).updateCase(eq(event), prosecutionCaseArgumentCaptor.capture(),
                 courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(),
-                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingDaysTimeCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
 
         final List<ProsecutionCase> capturedCases = prosecutionCaseArgumentCaptor.getAllValues();
         assertTrue(capturedCases.stream().anyMatch(c -> caseId1.equals(c.getId())));
@@ -299,6 +306,7 @@ public class HearingResultedEventProcessorTest {
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
         assertThat(hearingIdCaptor.getValue(), is(hearingId));
         assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
+        assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), CoreMatchers.is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test

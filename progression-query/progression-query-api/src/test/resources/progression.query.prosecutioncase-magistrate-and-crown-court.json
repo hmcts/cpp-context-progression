@@ -1,0 +1,833 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2024-10-29T14:06:49.643Z",
+        "id": "DEFENDANT_ID",
+        "isYouth": false,
+        "masterDefendantId": "DEFENDANT_ID",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2024-10-29",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+              "originatingHearingId": "HEARING_ID",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "C05LV00",
+              "courtLocationCode": "0433",
+              "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+              "name": "Liverpool Crown Court",
+              "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39"
+            },
+            "convictionDate": "2024-10-29",
+            "count": 0,
+            "dateHeldInCustodySince": "2024-10-29",
+            "endorsableFlag": false,
+            "id": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "category": "FINAL",
+                "cjsCode": "1015",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": true,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "2daf49fc-d8f8-4cee-8c3e-12c5a8df3e07",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": true,
+                    "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                    "label": "Amount of fine",
+                    "promptReference": "AOF",
+                    "promptSequence": 100,
+                    "type": "CURR",
+                    "usergroups": [],
+                    "value": "£300.00",
+                    "welshLabel": "Swm y ddirwy",
+                    "welshValue": "£300.00"
+                  }
+                ],
+                "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "label": "Fine",
+                "lastSharedDateTime": "2024-10-29",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2024-10-29",
+                "orderedHearingId": "HEARING_ID",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 72100,
+                "resultDefinitionGroup": "Imposition",
+                "resultText": "FO - Fine\nFined £300.00",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "2daf49fc-d8f8-4cee-8c3e-12c5a8df3e07",
+                "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Dirwy"
+              }
+            ],
+            "lastAdjournDate": "2024-10-29",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 2,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03012",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+              "originatingHearingId": "HEARING_ID",
+              "pleaDate": "2024-10-29",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Mohammad Turcotte have set up a TV cable without a valid license."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF012228169",
+          "bailConditions": "",
+          "bailReasons": "Broken bail conditions",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodialEstablishment": {
+            "custody": "Prison",
+            "id": "ff2d990a-b5ab-3c15-a00f-27962b6e6f49",
+            "name": "HMP/YOI Low Newton"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "2001-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Mohammad",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Turcotte",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailConditions": "Proin tincidunt tincidunt ligula, non egestas ante iaculis vitae. Suspendisse at diam vestibulum velit rutrum euismod. Pellentesque nec auctor orci. Duis ut dui euismod, elementum elit vitae, dictum mauris. Mauris efficitur erat eros, vel blandit lectus sodales at. Aliquam erat volutpat. Fusce non convallis enim. Curabitur sed lectus elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur urna ligula, tristique interdum facilisis laoreet, varius id sem. Donec nec vehicula sapien, vestibulum tempor eros. Vestibulum et consequat augue. Praesent accumsan odio nisl, efficitur ultricies neque porttitor eu. Donec mollis sodales orci a tincidunt. Suspendisse congue ipsum sit amet quam elementum, quis aliquet nisl viverra.Mauris efficitur at lectus eget varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam non dapibus erat. Integer ipsum purus, semper vel elit accumsan, laoreet accumsan dolor. Fusce sed erat ut nunc auctor sagittis a non dui. Donec dolor ante, mattis in rhoncus non, dapibus vitae dui. Integer ac bibendum nunc. Phasellus nulla massa, laoreet et velit id, iaculis efficitur massa. Maecenas posuere sollicitudin laoreet. Proin eleifend volutpat elementum. Suspendisse et mi nec neque euismod viverra ac placerat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae laoreet enim. Maecenas accumsan neque vel facilisis ullamcorper. Vestibulum quis dictum ante. Cras dapibus arcu ut purus scelerisque sollicitudin.Nunc tincidunt eros eget convallis aliquet. Aenean egestas posuere aliquet. Proin massa urna, fringilla non interdum quis, interdum eget mi. Sed posuere ac sapien hendrerit venenatis. Cras dapibus diam a consequat ullamcorper. Nunc nec nisl ac odio eleifend sagittis. Donec sed massa enim. Vivamus aliquam venenatis rhoncus. Etiam feugiat tellus sapien, convallis efficitur urna ultricies sit amet. Nulla dapibus tincidunt purus, at eleifend felis aliquet sed. Etiam at dolor eu nisl volutpat blandit.Nunc diam urna, viverra nec commodo non, convallis at risus. Vivamus rhoncus vehicula arcu nec mattis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus fe END",
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF012228169",
+        "prosecutionCaseId": "a8a69a7a-63ad-4479-817a-cf38854ef498"
+      }
+    ],
+    "id": "a8a69a7a-63ad-4479-817a-cf38854ef498",
+    "initiationCode": "C",
+    "originatingOrganisation": "GAEAA01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI2228169"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "DEFENDANT_ID",
+        "defendantName": "Mohammad Turcotte",
+        "hearingIds": [
+          "SEEDING_HR_ID",
+          "HEARING_ID"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "address4": "",
+            "address5": "",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "courtLocationCode": "0433",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "lja": {
+            "ljaCode": "1810",
+            "ljaName": "Merseyside Magistrates' Court"
+          },
+          "name": "Liverpool Crown Court",
+          "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+          "roomName": "Crown Court 3-1"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2024-10-29"
+              }
+            ],
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "category": "FINAL",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "0c581650-b8a9-4b8b-9de5-2f5fc98fb8dc",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "12/12/2024",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "12/12/2024"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2024-10-29",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+              "orderedDate": "2024-10-29",
+              "orderedHearingId": "HEARING_ID",
+              "parentJudicialResultId": "2b9ace3c-7069-4d6b-8389-204d187214ee",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/12/2024.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "2daf49fc-d8f8-4cee-8c3e-12c5a8df3e07",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            },
+            "masterDefendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "23",
+            "courtApplications": [],
+            "dateOfBirth": "2001-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Mohammad Turcotte",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2024-10-29",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+                  "originatingHearingId": "HEARING_ID",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2024-10-29",
+                "count": 0,
+                "id": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "2daf49fc-d8f8-4cee-8c3e-12c5a8df3e07",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£300.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£300.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2024-10-29",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-10-29",
+                    "orderedHearingId": "HEARING_ID",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £300.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "2daf49fc-d8f8-4cee-8c3e-12c5a8df3e07",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+                    "originatingHearingId": "HEARING_ID",
+                    "pleaDate": "2024-10-29",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Mohammad Turcotte have set up a TV cable without a valid license."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+            "courtRoomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 120,
+            "listingSequence": 0,
+            "sittingDay": "2024-10-29T03:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "HEARING_ID",
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial",
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2024-10-29"
+              }
+            ],
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "23",
+            "courtApplications": [],
+            "dateOfBirth": "2001-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Mohammad Turcotte",
+            "offences": [
+              {
+                "count": 0,
+                "id": "f0daf832-8a2e-4083-918a-05fb6da722f4",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4016",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3f96d0cc-ddf4-4ed4-afb2-2639211bcdb1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "bc138694-bf7d-454b-9d60-2f0c855220a9",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:29/10/2024\nTime of hearing:03:00\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 3-1\nHearing type:Trial\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison organisation name",
+                        "promptReference": "prisonOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "HMP/YOI Low Newton",
+                        "welshValue": "HMP/YOI Low Newton"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison email address 1",
+                        "promptReference": "prisonEmailAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "OMU.LowNewton@justice.gov.uk",
+                        "welshValue": "OMU.LowNewton@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison email address 2",
+                        "promptReference": "prisonEmailAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Reception.LowNewton@justice.gov.uk",
+                        "welshValue": "Reception.LowNewton@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name organisation name",
+                        "promptReference": "conveyorcustodiannameOrganisationName",
+                        "promptSequence": 400,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Bexley Magistrates' Court: PECS",
+                        "welshValue": "Bexley Magistrates' Court: PECS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name email address 1",
+                        "promptReference": "conveyorcustodiannameEmailAddress1",
+                        "promptSequence": 400,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "periodicwarrants@geoamey.co.uk",
+                        "welshValue": "periodicwarrants@geoamey.co.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49f9ee68-3dee-4ed1-8020-377818c3697f",
+                        "label": "Remand basis",
+                        "promptReference": "remandBasis",
+                        "promptSequence": 500,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Remanded for a medical report by a single medical practitioner",
+                        "welshLabel": "Sail remand",
+                        "welshValue": "Wedi'i gadw ar gyfer adroddiad meddygol gan un ymarferydd meddygol"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "7b2e6219-ddcb-4afa-8615-8de978e60af1",
+                        "label": "Bail exception",
+                        "promptReference": "bailException",
+                        "promptSequence": 600,
+                        "qualifier": "MP",
+                        "type": "FIXLM",
+                        "usergroups": [],
+                        "value": "Breach of bail",
+                        "welshLabel": "Eithriad rhag caniatáu mechnïaeth",
+                        "welshValue": "Breach of bail"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "53ac8d08-49a9-4495-ab3a-0ef94ca9e560",
+                        "label": "Bail exception reason",
+                        "promptReference": "bailExceptionReason",
+                        "promptSequence": 800,
+                        "type": "FIXLOM",
+                        "usergroups": [],
+                        "value": "Broken bail conditions",
+                        "welshLabel": "Rheswm dros beidio â chaniatáu mechnïaeth",
+                        "welshValue": "Amodau mechnïaeth wedi torri"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "94beb387-04a3-473c-9457-2bd094203bc3",
+                        "promptSequence": 900,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "bc09d4aa-5a82-4e52-a3de-8d6c1facfd26",
+                        "promptSequence": 1000,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "5e9f69e4-299d-41e0-93ef-b7523df86954",
+                        "label": "Committed",
+                        "promptReference": "committed",
+                        "promptSequence": 50,
+                        "qualifier": "XJ",
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "as a dangerous adult offender (Section 3A Powers of Criminal Courts (Sentencing) Act 2000)",
+                        "welshLabel": "Traddodwyd",
+                        "welshValue": "fel troseddwr sy'n oedolyn peryglus (Adran 3A Deddf Pwerau Llysoedd Troseddol (Dedfrydu) 2000)"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 70,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "45",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "45"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "583ea6cb-4251-406e-b07a-445fb0dde914",
+                        "label": "Victim personal statement to be presented to court by prosecutor or other person",
+                        "promptReference": "victimPersonalStatementToBePresentedToCourtByProsecutorOrOtherPerson",
+                        "promptSequence": 300,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Datganiad personol i ddioddefwyr i'w gyflwyno i'r llys gan erlynydd neu unigolyn arall",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+                        "label": "PSR ordered",
+                        "promptReference": "pSROrdered",
+                        "promptSequence": 700,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "false",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+                        "label": "Probation / YOT to be notified organisation name",
+                        "promptReference": "probationyottobenotifiedOrganisationName",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+                        "label": "Probation / YOT to be notified email address 1",
+                        "promptReference": "probationyottobenotifiedEmailAddress1",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "3132bf21-692c-497a-9de1-56c9e137bab8",
+                    "label": "Committed to Crown Court for sentence in custody",
+                    "lastSharedDateTime": "2024-10-29",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                        "roomName": "Crown Court 3-1",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2024-10-29T03:00:00.000Z",
+                      "type": {
+                        "description": "Trial",
+                        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                      }
+                    },
+                    "orderedDate": "2024-10-29",
+                    "orderedHearingId": "SEEDING_HR_ID",
+                    "postHearingCustodyStatus": "C",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "XJ",
+                    "rank": 177100,
+                    "resultDefinitionGroup": "CommittedToCC",
+                    "resultText": "CCSI - Committed to Crown Court for sentence in custody\nCommitted as a dangerous adult offender (Section 3A Powers of Criminal Courts (Sentencing) Act 2000). Remanded in custody until hearing on 29/10/2024 at 03:00 in Crown Court 3-1, Liverpool Crown Court. Basis: Remanded for a medical report by a single medical practitioner. Adjournment reason: To attend or a warrant to issue. Bail exceptions: Breach of bail. Reason for applying: Broken bail conditions.. Bail remand days to count (tagged days): 45. Victim personal statement to be presented to court by prosecutor or other person. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "3f96d0cc-ddf4-4ed4-afb2-2639211bcdb1",
+                    "rootJudicialResultTypeId": "3132bf21-692c-497a-9de1-56c9e137bab8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Traddodwyd chi i Lys y Goron i’ch dedfrydu tra yn y ddalfa"
+                  }
+                ],
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Mohammad Turcotte have set up a TV cable without a valid license."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2024-10-29T22:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "SEEDING_HR_ID",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "a8a69a7a-63ad-4479-817a-cf38854ef498",
+    "latestHearingJurisdictionType": "CROWN",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI2228169"
+    }
+  }
+}

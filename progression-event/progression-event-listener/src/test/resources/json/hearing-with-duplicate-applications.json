@@ -1,0 +1,886 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "c0a1a0eb-6017-4cfe-855e-b42687a52c47",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+              "caseReference": "01MP1244529",
+              "defendantId": "a35200d3-350f-4c74-93de-9142c016c865"
+            }
+          ],
+          "masterDefendantId": "a35200d3-350f-4c74-93de-9142c016c865",
+          "personDefendant": {
+            "arrestSummonsNumber": "2300000000000955529T",
+            "bailReasons": "Nature and seriousness of offence, Previous record and character",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "1388a2b9-bffe-31b5-bf8e-4ecc3bda30bf",
+              "name": "HMP/YOI Thameside"
+            },
+            "driverNumber": "WILSO911107T99YA",
+            "personDetails": {
+              "address": {
+                "address1": "35 Broadway Avenue",
+                "address2": "Croydon",
+                "postcode": "CR0 2LP"
+              },
+              "dateOfBirth": "1997-11-10",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "2",
+                "observedEthnicityDescription": "2",
+                "observedEthnicityId": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "selfDefinedEthnicityCode": "NS",
+                "selfDefinedEthnicityDescription": "Not stated",
+                "selfDefinedEthnicityId": "b8d13cd7-99b1-8888-a3ca-b8974ca9702f"
+              },
+              "firstName": "Chris",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "John",
+              "middleName": "Mullah ",
+              "occupation": "Unemployed",
+              "occupationCode": "6001"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "applicationParticulars": "FURTHER CASE MANAGEMENT HEARING",
+      "applicationReceivedDate": "2023-10-05",
+      "applicationReference": "01MP1244529,31CF1977622",
+      "applicationStatus": "UN_ALLOCATED",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "New Scotland Yard",
+              "address2": "Victoria Embankment",
+              "address3": "London",
+              "postcode": "SW1A 2JL"
+            },
+            "contact": {
+              "primaryEmail": "MO10Mailbox-.CommonPlatform@met.police.uk"
+            },
+            "majorCreditorCode": "PO01",
+            "prosecutionAuthorityCode": "METPF",
+            "prosecutionAuthorityId": "8f8024ca-ff7c-3829-a0d2-35d37492aebb",
+            "prosecutionAuthorityName": "London (Metropolitan) Police",
+            "prosecutionAuthorityOUCode": "0010000",
+            "caseURN": "01MP1244529"
+          }
+        },
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "1b425732-ac42-4223-a604-1c2732c97c67",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "METPF",
+            "prosecutionAuthorityId": "8f8024ca-ff7c-3829-a0d2-35d37492aebb",
+            "caseURN": "31CF1977622"
+          }
+        }
+      ],
+      "id": "6b23286c-68cb-478e-b741-16ccdfad950b",
+      "respondents": [
+        {
+          "id": "86ebcb04-c7b2-4278-8e3f-330c368af6b5",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "CPS",
+              "address2": "2nd Floor",
+              "address3": "102 Petty France",
+              "address4": "London",
+              "postcode": "SW1H 9EA"
+            },
+            "majorCreditorCode": "2070C",
+            "name": "CPS London South",
+            "prosecutionAuthorityCode": "CPS-LS",
+            "prosecutionAuthorityId": "c8e6c4c8-f31f-3e48-b40a-6e7d33fe5652"
+          },
+          "summonsRequired": false
+        }
+      ],
+      "subject": {
+        "id": "c0a1a0eb-6017-4cfe-855e-b42687a52c47",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+              "caseReference": "01MP1244529",
+              "defendantId": "a35200d3-350f-4c74-93de-9142c016c865"
+            }
+          ],
+          "masterDefendantId": "a35200d3-350f-4c74-93de-9142c016c865",
+          "personDefendant": {
+            "arrestSummonsNumber": "2300000000000955529T",
+            "bailReasons": "Nature and seriousness of offence, Previous record and character",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "1388a2b9-bffe-31b5-bf8e-4ecc3bda30bf",
+              "name": "HMP/YOI Thameside"
+            },
+            "driverNumber": "WILSO911107T99YA",
+            "personDetails": {
+              "address": {
+                "address1": "35 Broadway Avenue",
+                "address2": "Croydon",
+                "postcode": "CR0 2LP"
+              },
+              "dateOfBirth": "1997-11-10",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "2",
+                "observedEthnicityDescription": "2",
+                "observedEthnicityId": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "selfDefinedEthnicityCode": "NS",
+                "selfDefinedEthnicityDescription": "Not stated",
+                "selfDefinedEthnicityId": "b8d13cd7-99b1-8888-a3ca-b8974ca9702f"
+              },
+              "firstName": "Chris",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "John",
+              "middleName": "Mullah ",
+              "occupation": "Unemployed",
+              "occupationCode": "6001"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CO",
+        "code": "AP00501",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "APN",
+        "id": "4e281610-96aa-3711-aecf-59df86b6c6bb",
+        "jurisdiction": "EITHER",
+        "legislation": "Refer to nature of application.",
+        "legislationWelsh": "Cyfeiriwch at natur y cais.",
+        "linkType": "LINKED",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Application within criminal proceedings",
+        "typeWelsh": "Cais o fewn achos troseddol"
+      }
+    },
+    {
+      "applicant": {
+        "id": "c0a1a0eb-6017-4cfe-855e-b42687a52c47",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+              "caseReference": "01MP1244529",
+              "defendantId": "a35200d3-350f-4c74-93de-9142c016c865"
+            }
+          ],
+          "masterDefendantId": "a35200d3-350f-4c74-93de-9142c016c865",
+          "personDefendant": {
+            "arrestSummonsNumber": "2300000000000955529T",
+            "bailReasons": "Nature and seriousness of offence, Previous record and character",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "1388a2b9-bffe-31b5-bf8e-4ecc3bda30bf",
+              "name": "HMP/YOI Thameside"
+            },
+            "driverNumber": "WILSO911107T99YA",
+            "personDetails": {
+              "address": {
+                "address1": "35 Broadway Avenue",
+                "address2": "Croydon",
+                "postcode": "CR0 2LP"
+              },
+              "dateOfBirth": "1997-11-10",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "2",
+                "observedEthnicityDescription": "2",
+                "observedEthnicityId": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "selfDefinedEthnicityCode": "NS",
+                "selfDefinedEthnicityDescription": "Not stated",
+                "selfDefinedEthnicityId": "b8d13cd7-99b1-8888-a3ca-b8974ca9702f"
+              },
+              "firstName": "Chris",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "John",
+              "middleName": "Mullah ",
+              "occupation": "Unemployed",
+              "occupationCode": "6001"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "applicationParticulars": "FURTHER CASE MANAGEMENT HEARING",
+      "applicationReceivedDate": "2023-10-05",
+      "applicationReference": "01MP1244529,31CF1977622",
+      "applicationStatus": "UN_ALLOCATED",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "New Scotland Yard",
+              "address2": "Victoria Embankment",
+              "address3": "London",
+              "postcode": "SW1A 2JL"
+            },
+            "contact": {
+              "primaryEmail": "MO10Mailbox-.CommonPlatform@met.police.uk"
+            },
+            "majorCreditorCode": "PO01",
+            "prosecutionAuthorityCode": "METPF",
+            "prosecutionAuthorityId": "8f8024ca-ff7c-3829-a0d2-35d37492aebb",
+            "prosecutionAuthorityName": "London (Metropolitan) Police",
+            "prosecutionAuthorityOUCode": "0010000",
+            "caseURN": "01MP1244529"
+          }
+        },
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "1b425732-ac42-4223-a604-1c2732c97c67",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "METPF",
+            "prosecutionAuthorityId": "8f8024ca-ff7c-3829-a0d2-35d37492aebb",
+            "caseURN": "31CF1977622"
+          }
+        }
+      ],
+      "id": "6b23286c-68cb-478e-b741-16ccdfad950b",
+      "respondents": [
+        {
+          "id": "86ebcb04-c7b2-4278-8e3f-330c368af6b5",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "CPS",
+              "address2": "2nd Floor",
+              "address3": "102 Petty France",
+              "address4": "London",
+              "postcode": "SW1H 9EA"
+            },
+            "majorCreditorCode": "2070C",
+            "name": "CPS London South",
+            "prosecutionAuthorityCode": "CPS-LS",
+            "prosecutionAuthorityId": "c8e6c4c8-f31f-3e48-b40a-6e7d33fe5652"
+          },
+          "summonsRequired": false
+        }
+      ],
+      "subject": {
+        "id": "c0a1a0eb-6017-4cfe-855e-b42687a52c47",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+              "caseReference": "01MP1244529",
+              "defendantId": "a35200d3-350f-4c74-93de-9142c016c865"
+            }
+          ],
+          "masterDefendantId": "a35200d3-350f-4c74-93de-9142c016c865",
+          "personDefendant": {
+            "arrestSummonsNumber": "2300000000000955529T",
+            "bailReasons": "Nature and seriousness of offence, Previous record and character",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "1388a2b9-bffe-31b5-bf8e-4ecc3bda30bf",
+              "name": "HMP/YOI Thameside"
+            },
+            "driverNumber": "WILSO911107T99YA",
+            "personDetails": {
+              "address": {
+                "address1": "35 Broadway Avenue",
+                "address2": "Croydon",
+                "postcode": "CR0 2LP"
+              },
+              "dateOfBirth": "1997-11-10",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "2",
+                "observedEthnicityDescription": "2",
+                "observedEthnicityId": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "selfDefinedEthnicityCode": "NS",
+                "selfDefinedEthnicityDescription": "Not stated",
+                "selfDefinedEthnicityId": "b8d13cd7-99b1-8888-a3ca-b8974ca9702f"
+              },
+              "firstName": "Chris",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "John",
+              "middleName": "Mullah ",
+              "occupation": "Unemployed",
+              "occupationCode": "6001"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CO",
+        "code": "AP00501",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "APN",
+        "id": "4e281610-96aa-3711-aecf-59df86b6c6bb",
+        "jurisdiction": "EITHER",
+        "legislation": "Refer to nature of application.",
+        "legislationWelsh": "Cyfeiriwch at natur y cais.",
+        "linkType": "LINKED",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Application within criminal proceedings",
+        "typeWelsh": "Cais o fewn achos troseddol"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "The Law Courts",
+      "address2": "Altyre Road",
+      "address3": "Croydon",
+      "address4": "",
+      "address5": "",
+      "postcode": "CR9 5AB"
+    },
+    "code": "C01CY00",
+    "courtHearingLocation": "C01CY00",
+    "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+    "lja": {
+      "ljaCode": "2576",
+      "ljaName": "South London Magistrates' Court"
+    },
+    "name": "Croydon Crown Court",
+    "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+    "roomName": "Courtroom 01"
+  },
+  "hasSharedResults": false,
+  "hearingDays": [
+    {
+      "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "isCancelled": false,
+      "listedDurationMinutes": 30,
+      "listingSequence": 0,
+      "sittingDay": "2023-11-11T10:00:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "f9f0efdb-ebea-4633-9350-5ee4be5f9f2c",
+  "jurisdictionType": "CROWN",
+  "prosecutionCases": [
+    {
+      "caseStatus": "INACTIVE",
+      "cpsOrganisation": "A01CX00",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "DWAYNE",
+              "lastName": "MYERS"
+            },
+            {
+              "firstName": "TAY",
+              "lastName": "John"
+            },
+            {
+              "firstName": "TAYMULLA",
+              "lastName": "John"
+            }
+          ],
+          "associatedDefenceOrganisation": {
+            "applicationReference": "7688212",
+            "associationEndDate": "2023-08-29",
+            "associationStartDate": "2023-08-29",
+            "defenceOrganisation": {
+              "laaContractNumber": "2Q501M",
+              "organisation": {
+                "address": {
+                  "address1": "VINTAGE HOUSE",
+                  "address2": "37 ALBERT EMBANKMENT",
+                  "address4": "LONDON",
+                  "postcode": "SE1 7TL"
+                },
+                "contact": {
+                  "secondaryEmail": "zmustafa@imsolicitors.com",
+                  "work": "0783 678 0109"
+                },
+                "name": "LLP"
+              }
+            },
+            "fundingType": "REPRESENTATION_ORDER",
+            "isAssociatedByLAA": true
+          },
+          "courtProceedingsInitiated": "2023-08-17T07:19:49.769Z",
+          "croNumber": "297957/11M",
+          "id": "a35200d3-350f-4c74-93de-9142c016c865",
+          "isYouth": false,
+          "legalAidStatus": "Granted",
+          "masterDefendantId": "a35200d3-350f-4c74-93de-9142c016c865",
+          "offences": [
+            {
+              "custodyTimeLimit": {
+                "isCtlExtended": false,
+                "timeLimit": "2024-02-15"
+              },
+              "dateHeldInCustodySince": "2023-09-14",
+              "dvlaOffenceCode": "",
+              "id": "6d62d067-7fbb-4d26-b6ce-b87549214ff8",
+              "indictmentParticular": "John on the 15th day of August 2023, had in his possession a quantity of 3,4-methylenedioxy methylamphetamine hydrochloride (MDMA), namely, 5 tablets, a controlled drug of Class A, in contravention of section 5(1) of the Misuse of Drugs Act 1971.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 3,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "MD71230",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "c4f17e59-8ce6-3b6e-af9c-6b2a160eafc6",
+              "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+              "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Cocaine",
+              "orderIndex": 10,
+              "proceedingsConcluded": true,
+              "startDate": "2023-08-15",
+              "wording": "On or in 15 August 2023 at England or Wales had in your possession 3,4-methylenedioxy methylamphetamine hydrochloride (MDMA), namely, 5 tablets, a controlled drug of Class A, of Cocaine, a controlled drug of class A with intent to supply it to 5 tablets,3,4-methylenedioxy methylamphetamine hydrochloride in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+            },
+            {
+              "count": 6,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-09-14",
+              "dvlaOffenceCode": "",
+              "id": "afcdb0dc-d275-4031-803e-d42c6a4422c4",
+              "indictmentParticular": "John on the 15th day of August 2023, possessed criminal property namely, £2,730 in cash, knowing or suspecting it to represent in whole or part and whether directly or indirectly, the proceeds of criminal conduct.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 3,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "PC02021",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "3b123bb4-e230-3ed5-afcc-adc56413e3cc",
+              "offenceLegislation": "Contrary to sections 329(1) and 334 of the Proceeds of Crime Act 2002.",
+              "offenceTitle": "Acquire / use / possess criminal property",
+              "orderIndex": 11,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On or in 15 August 2023 at England or Wales acquired, used or had possession of criminal property, namely possessed criminal property namely, £2,730 in cash"
+            },
+            {
+              "count": 2,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-09-14",
+              "dvlaOffenceCode": "",
+              "id": "ca0fb95a-ae1f-438c-b8b1-65e03c6d235f",
+              "indictmentParticular": "TAY MULLAH John on the 15th day of August 2023, had in his possession ammunition, namely, three unfired .32 Rimfire calibre bulleted cartridges, to which section 1 of the Firearms Act 1968 applied, without holding a firearm certificate in force at the time.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 3,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "FI68010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "ed4fd805-8645-3c59-b817-e4f389866477",
+              "offenceLegislation": "Contrary to section 1(1)(b) of and Schedule 6 to the Firearms Act 1968.",
+              "offenceTitle": "Possess ammunition for a firearm without a certificate",
+              "orderIndex": 8,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On or in 15 August 2023 at England and Wales had in your possession ammunition, namely 32 Rimfire calibre bulleted cartridges to which section 1 of the Firearms Act 1968 applied without holding a firearm certificate in force at the time"
+            },
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2023-08-17",
+                "motReasonCode": "02",
+                "motReasonDescription": "Indictable-only offence",
+                "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                "offenceId": "b9ba079c-4f32-4e0d-a88c-97fe342c1b37",
+                "originatingHearingId": "d0dd3c2f-d700-4af7-83e2-8ff9684c5e33",
+                "sequenceNumber": 100
+              },
+              "arrestDate": "2023-08-17",
+              "chargeDate": "2023-08-17",
+              "count": 1,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-08-17",
+              "endorsableFlag": false,
+              "id": "b9ba079c-4f32-4e0d-a88c-97fe342c1b37",
+              "indictmentParticular": "TAY MULLAH John on the 15th day of August 2023, without the authority of the Secretary of State, had in his possession a firearm, namely, rimfire revolver chambered for the obsolete .32 Rimfire calibre cartridge, which had a barrel less than 30 centimetres in length and which was less than 60 centimetres in length overall.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 5,
+              "maxPenalty": "Indictable only",
+              "modeOfTrial": "Indictable",
+              "offenceCode": "FI68421",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "ee7282ac-e94b-312f-9651-31e1ad448d0b",
+              "offenceLegislation": "Contrary to section 5(1)(aba) of and Schedule 6 to the Firearms Act 1968.",
+              "offenceLegislationWelsh": "Yn groes i adran 5(1)(aba) ac Atodlen 6 Deddf Drylliau Tanio 1968.",
+              "offenceTitle": "Possess a firearm of length less than 30cm / 60cm - prohibited weapon",
+              "offenceTitleWelsh": "Bod â meddiant dryll tanio a'i hyd yn llai na 30cm / 60 cm - arf gwaharddedig",
+              "orderIndex": 3,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-16",
+              "wording": "On 15/08/2023 at Croydon in the Borough of Croydon without the authority of the Secretary of State, had in your possession a firearm, namely a Revolver, which  had a barrel less than 30 centimetres (approx 12 inches) in length"
+            },
+            {
+              "arrestDate": "2023-08-17",
+              "chargeDate": "2023-08-17",
+              "count": 4,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-08-17",
+              "endorsableFlag": false,
+              "id": "6bc086b2-5952-4572-8280-51a590a25caf",
+              "indicatedPlea": {
+                "indicatedPleaDate": "2023-08-17",
+                "indicatedPleaValue": "NO_INDICATION",
+                "offenceId": "6bc086b2-5952-4572-8280-51a590a25caf",
+                "originatingHearingId": "d0dd3c2f-d700-4af7-83e2-8ff9684c5e33",
+                "source": "IN_COURT"
+              },
+              "indictmentParticular": "TAY MULLAH John on the 15th day of August 2023, had in his possession a quantity of cocaine hydrochloride, namely, 146 grams (86% purity), a controlled drug of Class A, with intent to supply it to another in contravention of section 4(1) of the Misuse of Drugs Act 1971.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 5,
+              "maxPenalty": "EW:6M &/or Ultd Fine",
+              "modeOfTrial": "Either Way",
+              "offenceCode": "MD71230",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "c4f17e59-8ce6-3b6e-af9c-6b2a160eafc6",
+              "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+              "offenceLegislationWelsh": "Yn groes i Adran 5(3) ac Atodlen 4 Deddf Camddefnydd Cyffuriau 1971.",
+              "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Cocaine",
+              "offenceTitleWelsh": "Bod â meddiant gyda'r bwriad o gyflenwi cocên",
+              "orderIndex": 7,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On 15/08/2023 at Croydon in the Borough of Croydon had in your possession  a quantity of Cocaine, a controlled drug of class A with intent to supply it to another in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+            },
+            {
+              "count": 7,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-09-14",
+              "dvlaOffenceCode": "",
+              "id": "10cb9c21-bf7a-48a1-aa64-5c0b35d0bf27",
+              "indictmentParticular": "TAY MULLAH John on the 15th day of August 2023, with improper intention, had in his possession or under his control, an identity document, namely, a provisional driving licence, that related to someone else.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 3,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "ID10003",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "a733d566-875e-351f-aaa5-4fa63f88b86e",
+              "offenceLegislation": "Contrary to section 6 of the Identity Documents Act 2010.",
+              "offenceTitle": "Possess / control a false / improperly obtained / another persons identity document",
+              "orderIndex": 12,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On or in 15 August 2023 at England or Wales without reasonable excuse had in your possession or under your control an identity document, namely provisional driving licence that was false"
+            },
+            {
+              "count": 3,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dateHeldInCustodySince": "2023-09-14",
+              "dvlaOffenceCode": "",
+              "id": "b192ef26-b3f6-42e2-bebd-95e5381eb346",
+              "indictmentParticular": "on the 15th day of August 2023, being a person who had been sentenced to imprisonment for a term of three months or more but less than three years, had in his possession a firearm, namely, a rimfire revolver chambered for the obsolete .32 Rimfire calibre cartridge, before the expiration of the period of five years from the date of his release.",
+              "isDisposed": false,
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "lastAdjournDate": "2023-09-14",
+              "lastAdjournedHearingType": "For a case management hearing (must attend)",
+              "listingNumber": 3,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "FI68103",
+              "offenceDateCode": 6,
+              "offenceDefinitionId": "9e17892f-0a72-3601-9035-01cfef83bd19",
+              "offenceLegislation": "Contrary to section 21(2) and (4) of and Schedule 6 to the Firearms Act 1968.",
+              "offenceTitle": "Possess a firearm when prohibited for five years",
+              "orderIndex": 13,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On or before 15 August 2023 at SE18 being a person who had been sentenced to imprisonment for a term of three months or more but less than three years, had in your possession a firearm, namely a .32 Rimfire calibre cartridge before the expiration of the period of five years from the date of your release"
+            },
+            {
+              "count": 5,
+              "custodyTimeLimit": {
+                "isCtlExtended": true,
+                "timeLimit": "2024-07-19"
+              },
+              "dvlaOffenceCode": "",
+              "id": "a65483be-cfb1-4d05-ac42-7b2dfb8c7b48",
+              "indictmentParticular": "on the 15th day of August 2023, had in his possession a quantity of 3,4-methylenedioxy methylamphetamine hydrochloride (MDMA), namely, 5 tablets, a controlled drug of Class A, in contravention of section 5(1) of the Misuse of Drugs Act 1971",
+              "laaApplnReference": {
+                "applicationReference": "7688212",
+                "effectiveEndDate": "2023-08-29",
+                "effectiveStartDate": "2023-08-29",
+                "laaContractNumber": "2Q501M",
+                "offenceLevelStatus": "Granted",
+                "statusCode": "GR",
+                "statusDate": "2023-08-29",
+                "statusDescription": "Granted (One Advocate)",
+                "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+              },
+              "modeOfTrial": "Either Way",
+              "offenceCode": "MD71213",
+              "offenceDateCode": 6,
+              "offenceDefinitionId": "d0635fb3-e1ef-32e3-84ab-b74e73a4e0c4",
+              "offenceLegislation": "Contrary to section 5(2) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+              "offenceTitle": "Possess a controlled drug of Class A - MDMA",
+              "orderIndex": 14,
+              "proceedingsConcluded": false,
+              "startDate": "2023-08-15",
+              "wording": "On or before 15 Aug 2023 at london  in the county of london had in your possession a quantity of methylenedioxymethylamphetamine a controlled drug of class A in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "2300000000000955529T",
+            "bailConditions": "",
+            "bailReasons": "Nature and seriousness of offence, Likely to abscond",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "54c38ed4-752b-39c1-bcec-2a579e2c4651",
+              "name": "HMP Brixton"
+            },
+            "driverNumber": "WILSO911107T99YA",
+            "personDetails": {
+              "address": {
+                "address1": "No fixed abode",
+                "postcode": "NF1 1NF"
+              },
+              "dateOfBirth": "1997-11-10",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "2",
+                "observedEthnicityDescription": "2",
+                "observedEthnicityId": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "selfDefinedEthnicityCode": "NS",
+                "selfDefinedEthnicityDescription": "Not stated",
+                "selfDefinedEthnicityId": "b8d13cd7-99b1-8888-a3ca-b8974ca9702f"
+              },
+              "firstName": "Chris",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "John",
+              "middleName": "Mullah ",
+              "nationalityDescription": "Unknown",
+              "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+              "occupation": "Unemployed",
+              "occupationCode": "6001"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          },
+          "pncId": "20110089010R",
+          "proceedingsConcluded": false,
+          "prosecutionAuthorityReference": "2300000000000955529T",
+          "prosecutionCaseId": "4c81072e-3424-49f2-b1c4-fc2ac998bc41"
+        }
+      ],
+      "id": "4c81072e-3424-49f2-b1c4-fc2ac998bc41",
+      "initiationCode": "C",
+      "isCpsOrgVerifyError": false,
+      "originatingOrganisation": "001HQ00",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "New  Yard",
+          "address2": "Embankment",
+          "address3": "Surrey",
+          "postcode": "KT21 2JL"
+        },
+        "contact": {
+          "primaryEmail": "MO10Mailbox-.CommonPlatform@met.police.uk"
+        },
+        "majorCreditorCode": "PO01",
+        "prosecutionAuthorityCode": "METPF",
+        "prosecutionAuthorityId": "8f8024ca-ff7c-3829-a0d2-35d37492aebb",
+        "prosecutionAuthorityName": "London (Metropolitan) Police",
+        "prosecutionAuthorityOUCode": "0010000",
+        "caseURN": "01MP1244529"
+      }
+    }
+  ],
+  "type": {
+    "description": "Further Case Management",
+    "id": "933e7d20-0649-3c65-8108-55a81faac1ec"
+  }
+}
