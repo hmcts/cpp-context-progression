@@ -230,8 +230,10 @@ public class HearingConfirmedEventProcessor {
 
             final SeedingHearing seedingHearing = hearingInProgression.getSeedingHearing();
 
+            // hearingInProgression used for the prosecution-case order: an existing hearing's own
+            // cases must stay first in the payload
             final Initiate hearingInitiate = Initiate.initiate()
-                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing))
+                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing, hearingInProgression))
                     .build();
 
             List<ProsecutionCase> deltaProsecutionCases = Collections.emptyList();
