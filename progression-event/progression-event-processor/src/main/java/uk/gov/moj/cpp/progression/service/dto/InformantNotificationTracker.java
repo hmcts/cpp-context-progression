@@ -8,10 +8,16 @@ public class InformantNotificationTracker {
 
     private ProsecutionCaseIdentifier informant;
 
+    private UUID prosecutionAuthorityId;
+
     private Boolean isNotificationAlreadySent  = false;
 
     public InformantNotificationTracker(final ProsecutionCaseIdentifier informant) {
         this.informant = informant;
+    }
+
+    public InformantNotificationTracker(final UUID prosecutionAuthorityId) {
+        this.prosecutionAuthorityId = prosecutionAuthorityId;
     }
 
     public void setNotificationAlreadySentTrue() {
@@ -24,6 +30,9 @@ public class InformantNotificationTracker {
 
 
     public UUID getProsecutionAuthorityId() {
+        if (prosecutionAuthorityId != null) {
+            return prosecutionAuthorityId;
+        }
         return (informant != null) ? informant.getProsecutionAuthorityId() : null;
     }
 
@@ -32,6 +41,7 @@ public class InformantNotificationTracker {
     public String toString() {
         return "InformantNotificationTracker{" +
                 "informant=" + informant +
+                ", prosecutionAuthorityId=" + prosecutionAuthorityId +
                 ", isNotificationAlreadySent=" + isNotificationAlreadySent +
                 '}';
     }
