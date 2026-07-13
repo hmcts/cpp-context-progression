@@ -178,9 +178,6 @@ public class NotificationService {
     @Inject
     private CourtApplicationService courtApplicationService;
 
-    @Inject
-    private ProgressionService progressionService;
-
     public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
 
         if (nonNull(emailNotifications)) {
@@ -685,14 +682,13 @@ public class NotificationService {
     }
 
     /**
-     * Builds the informant trackers to notify: the case's <em>current</em> prosecutor obtained from
-     * {@code progression.query.prosecutioncase-v2} (via {@code courtApplicationCases[0].prosecutionCaseId})
-     * <em>and</em> the <em>previous</em> prosecutor from the embedded {@code prosecutionCaseIdentifier}.
+     * Builds the informant trackers to notify: the case's <em>original</em> prosecutor from the application's
+     * embedded {@code courtApplicationCases[0].prosecutionCaseIdentifier}.
      * <p>
-     * The authority ids are de-duplicated ({@code distinct}) so that when the previous and current prosecutor
-     * are the same authority only one tracker is produced — preventing a duplicate email. A prosecutor that is
-     * also a party (applicant/respondent/third party) is later flagged as already-notified on its tracker, so it
-     * is never emailed twice either.
+     * The <em>current/updated</em> case prosecutor is deliberately <strong>not</strong> notified via this path —
+     * an updated prosecutor only receives a notification when it is explicitly named as a party (applicant,
+     * respondent or third party). A prosecutor that is also a party is later flagged as already-notified on its
+     * tracker (see {@link #checkAndUpdateInformantNotifications}), so it is never emailed twice either.
      */
     private List<InformantNotificationTracker> buildInformantTrackers(final JsonEnvelope event, final CourtApplication courtApplication) {
         final List<uk.gov.justice.core.courts.CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases();
@@ -701,34 +697,14 @@ public class NotificationService {
         }
         final uk.gov.justice.core.courts.CourtApplicationCase firstCase = courtApplicationCases.get(0);
 
-        final UUID previousProsecutorAuthorityId = nonNull(firstCase.getProsecutionCaseIdentifier())
+        final UUID originalProsecutorAuthorityId = nonNull(firstCase.getProsecutionCaseIdentifier())
                 ? firstCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId() : null;
-        final UUID currentProsecutorAuthorityId = nonNull(firstCase.getProsecutionCaseId())
-                ? getCurrentProsecutorAuthorityId(event, firstCase.getProsecutionCaseId()) : null;
 
-        return Stream.of(currentProsecutorAuthorityId, previousProsecutorAuthorityId)
+        return Stream.of(originalProsecutorAuthorityId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .map(authorityId -> new InformantNotificationTracker(authorityId))
                 .collect(Collectors.toList());
-    }
-
-    private UUID getCurrentProsecutorAuthorityId(final JsonEnvelope event, final UUID prosecutionCaseId) {
-        try {
-            return progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId.toString())
-                    .filter(result -> result.containsKey("prosecutionCase"))
-                    .map(result -> result.getJsonObject("prosecutionCase"))
-                    .filter(prosecutionCase -> prosecutionCase.containsKey("prosecutor")
-                            && prosecutionCase.get("prosecutor").getValueType() == JsonValue.ValueType.OBJECT)
-                    .map(prosecutionCase -> prosecutionCase.getJsonObject("prosecutor"))
-                    .map(prosecutor -> prosecutor.getString("prosecutorId", null))
-                    .filter(Objects::nonNull)
-                    .map(UUID::fromString)
-                    .orElse(null);
-        } catch (final Exception e) {
-            LOGGER.warn("Unable to resolve current prosecutor for case {}", prosecutionCaseId, e);
-            return null;
-        }
     }
 
     private void sendNotification(JsonEnvelope event, CourtApplication courtApplication, Boolean isWelshTranslationRequired, CourtCentre courtCentre, String hearingDate, String hearingTime, JurisdictionType jurisdictionType, CourtApplicationParty courtApplicationParty, Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation, Boolean isAmended, LocalDate issueDate) {
@@ -747,10 +723,30 @@ public class NotificationService {
                                   final Boolean isAmended, final LocalDate issueDate) {
 
         final Optional<Address> addressOptional = getApplicantAddress(courtApplicationParty);
-        final Optional<String> emailAddressOptional = getCourtApplicationPartyEmailAddress(courtApplicationParty);
+        Optional<String> emailAddressOptional = getCourtApplicationPartyEmailAddress(courtApplicationParty);
+        if (!emailAddressOptional.isPresent()) {
+            // The party carries no email in the payload; for a prosecuting-authority party fall back to
+            // reference data (mirrors the informant path) so we email rather than defaulting to postal.
+            emailAddressOptional = getProsecutingAuthorityEmailFromReferenceData(event, courtApplicationParty);
+        }
 
         final PostalNotificationDetails postalNotificationDetails = buildPostalNotificationDetails(courtApplication, isWelTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, isAmended, issueDate);
         sendNotification(event, notificationId, postalNotificationDetails, thirdParty, emailAddressOptional, addressOptional);
+    }
+
+    /**
+     * Falls back to reference data for a prosecuting-authority party's email when the payload does not carry one,
+     * mirroring the informant path. Returns empty for non-authority parties (e.g. defendants), for authorities
+     * with no id, or when reference data has no (non-blank) email.
+     */
+    private Optional<String> getProsecutingAuthorityEmailFromReferenceData(final JsonEnvelope event, final CourtApplicationParty courtApplicationParty) {
+        return ofNullable(courtApplicationParty.getProsecutingAuthority())
+                .map(ProsecutingAuthority::getProsecutionAuthorityId)
+                .map(authorityId -> courtApplicationService.getProsecutingAuthority(authorityId, event))
+                .map(ProsecutingAuthority::getContact)
+                .map(ContactNumber::getPrimaryEmail)
+                .map(String::trim)
+                .filter(email -> !email.isEmpty());
     }
 
     private PostalNotificationDetails buildPostalNotificationDetails(final CourtApplication courtApplication, final Boolean isWelTranslationRequired, final CourtCentre courtCentre, final String hearingDate,

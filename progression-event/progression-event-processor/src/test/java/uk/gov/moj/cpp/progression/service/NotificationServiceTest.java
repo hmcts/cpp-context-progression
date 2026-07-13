@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1597,151 +1598,144 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void bothCurrentAndPreviousProsecutorsEmailedWhenNeitherIsRespondent() {
+    public void onlyOriginalProsecutorEmailedNotUpdatedCaseProsecutor() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
         final UUID prosecutionCaseId = randomUUID();
-        final UUID currentProsecutorAuthorityId = randomUUID();
-        final UUID previousProsecutorAuthorityId = randomUUID();
-        stubCurrentProsecutor(prosecutionCaseId, currentProsecutorAuthorityId);
-        // current prosecutor is CPS
-        when(referenceDataService.getProsecutorV2(envelope, currentProsecutorAuthorityId, requester))
-                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.current@cps.gov.uk").build()));
-        when(courtApplicationService.getProsecutingAuthority(eq(currentProsecutorAuthorityId), any(JsonEnvelope.class)))
-                .thenReturn(createProsecutorAuthority(currentProsecutorAuthorityId, "unused-contact@cps.gov.uk"));
-        // previous prosecutor is not CPS
-        when(referenceDataService.getProsecutorV2(envelope, previousProsecutorAuthorityId, requester))
+        final UUID updatedCaseProsecutorAuthorityId = randomUUID();
+        final UUID originalProsecutorAuthorityId = randomUUID();
+        // the case's prosecutor has been updated to a different authority after the application was created
+        stubCurrentProsecutor(prosecutionCaseId, updatedCaseProsecutorAuthorityId);
+        // updated case prosecutor is CPS
+        when(referenceDataService.getProsecutorV2(envelope, updatedCaseProsecutorAuthorityId, requester))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.updated@cps.gov.uk").build()));
+        // original prosecutor (embedded on the application) is not CPS
+        when(referenceDataService.getProsecutorV2(envelope, originalProsecutorAuthorityId, requester))
                 .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
-        when(courtApplicationService.getProsecutingAuthority(eq(previousProsecutorAuthorityId), any(JsonEnvelope.class)))
-                .thenReturn(createProsecutorAuthority(previousProsecutorAuthorityId, "previous.prosecutor@authority.com"));
+        when(courtApplicationService.getProsecutingAuthority(eq(originalProsecutorAuthorityId), any(JsonEnvelope.class)))
+                .thenReturn(createProsecutorAuthority(originalProsecutorAuthorityId, "original.prosecutor@authority.com"));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withApplicationReference("URN")
                 .withType(CourtApplicationType.courtApplicationType().withAppealFlag(true).withSummonsTemplateType(NOT_APPLICABLE).build())
-                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, previousProsecutorAuthorityId))
+                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, originalProsecutorAuthorityId))
                 .withApplicant(applicantWithEmail("applicant@test.com"))
                 .build();
 
         notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
 
         verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
-        // both are notified: current CPS at ccCpsEmailAddress, previous non-CPS at contactEmailAddress
-        assertThat(countEmailsTo("cps.current@cps.gov.uk"), equalTo(1L));
-        assertThat(countEmailsTo("previous.prosecutor@authority.com"), equalTo(1L));
-        assertThat(countEmailsTo("unused-contact@cps.gov.uk"), equalTo(0L));
+        // only the original prosecutor (embedded on the application) is emailed via the informant path
+        assertThat(countEmailsTo("original.prosecutor@authority.com"), equalTo(1L));
+        // the updated case prosecutor is NOT notified as it is not a named party on the application
+        assertThat(countEmailsTo("cps.updated@cps.gov.uk"), equalTo(0L));
     }
 
     @Test
-    public void prosecutorNotifiedOnceWhenPreviousAndCurrentAreSameAuthority() {
+    public void originalProsecutorEmailedOnceViaInformantPath() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
         final UUID prosecutionCaseId = randomUUID();
-        final UUID sharedProsecutorAuthorityId = randomUUID();
-        // the case's current prosecutor is the same authority as the embedded (previous) prosecutionCaseIdentifier
-        stubCurrentProsecutor(prosecutionCaseId, sharedProsecutorAuthorityId);
-        when(referenceDataService.getProsecutorV2(envelope, sharedProsecutorAuthorityId, requester))
-                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.shared@cps.gov.uk").build()));
-        when(courtApplicationService.getProsecutingAuthority(eq(sharedProsecutorAuthorityId), any(JsonEnvelope.class)))
-                .thenReturn(createProsecutorAuthority(sharedProsecutorAuthorityId, "unused-contact@cps.gov.uk"));
+        final UUID originalProsecutorAuthorityId = randomUUID();
+        // the original prosecutor (embedded on the application) is CPS and is not a named party
+        when(referenceDataService.getProsecutorV2(envelope, originalProsecutorAuthorityId, requester))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.original@cps.gov.uk").build()));
+        when(courtApplicationService.getProsecutingAuthority(eq(originalProsecutorAuthorityId), any(JsonEnvelope.class)))
+                .thenReturn(createProsecutorAuthority(originalProsecutorAuthorityId, "unused-contact@cps.gov.uk"));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withApplicationReference("URN")
                 .withType(CourtApplicationType.courtApplicationType().withAppealFlag(true).withSummonsTemplateType(NOT_APPLICABLE).build())
-                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, sharedProsecutorAuthorityId))
+                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, originalProsecutorAuthorityId))
                 .withApplicant(applicantWithEmail("applicant@test.com"))
                 .build();
 
         notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
 
         verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
-        // previous == current -> de-duplicated to a single email, no duplicate
-        assertThat(countEmailsTo("cps.shared@cps.gov.uk"), equalTo(1L));
+        // the original prosecutor is notified exactly once via the informant path
+        assertThat(countEmailsTo("cps.original@cps.gov.uk"), equalTo(1L));
     }
 
     @Test
-    public void currentProsecutorRespondentIsDedupedWhilePreviousProsecutorIsStillNotified() {
+    public void cpsRespondentEmailedAndOriginalProsecutorStillNotified() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
         final UUID prosecutionCaseId = randomUUID();
-        final UUID currentProsecutorAuthorityId = randomUUID();
-        final UUID previousProsecutorAuthorityId = randomUUID();
-        stubCurrentProsecutor(prosecutionCaseId, currentProsecutorAuthorityId);
-        // current prosecutor is CPS and is also a respondent
-        when(referenceDataService.getProsecutorV2(envelope, currentProsecutorAuthorityId, requester))
+        final UUID cpsRespondentAuthorityId = randomUUID();
+        final UUID originalProsecutorAuthorityId = randomUUID();
+        // a CPS authority named as a respondent on the application
+        when(referenceDataService.getProsecutorV2(envelope, cpsRespondentAuthorityId, requester))
                 .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.resp@cps.gov.uk").build()));
-        // previous prosecutor is not CPS and is not a party
-        when(referenceDataService.getProsecutorV2(envelope, previousProsecutorAuthorityId, requester))
+        // original prosecutor (embedded on the application) is not CPS and is not a party
+        when(referenceDataService.getProsecutorV2(envelope, originalProsecutorAuthorityId, requester))
                 .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
-        when(courtApplicationService.getProsecutingAuthority(eq(previousProsecutorAuthorityId), any(JsonEnvelope.class)))
-                .thenReturn(createProsecutorAuthority(previousProsecutorAuthorityId, "previous.prosecutor@authority.com"));
+        when(courtApplicationService.getProsecutingAuthority(eq(originalProsecutorAuthorityId), any(JsonEnvelope.class)))
+                .thenReturn(createProsecutorAuthority(originalProsecutorAuthorityId, "original.prosecutor@authority.com"));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withApplicationReference("URN")
                 .withType(CourtApplicationType.courtApplicationType().withAppealFlag(true).withSummonsTemplateType(NOT_APPLICABLE).build())
-                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, previousProsecutorAuthorityId))
+                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, originalProsecutorAuthorityId))
                 .withApplicant(applicantWithEmail("applicant@test.com"))
-                .withRespondents(singletonList(buildCourtApplicationParty(currentProsecutorAuthorityId, "unused-contact@cps.gov.uk")))
+                .withRespondents(singletonList(buildCourtApplicationParty(cpsRespondentAuthorityId, "unused-contact@cps.gov.uk")))
                 .build();
 
         notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
 
         verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
-        // current prosecutor is a respondent -> emailed once (as CPS respondent), not a second time as informant
+        // the CPS respondent is emailed once at its ccCpsEmailAddress via the respondent path
         assertThat(countEmailsTo("cps.resp@cps.gov.uk"), equalTo(1L));
-        // previous prosecutor is not a party -> still notified at contactEmailAddress
-        assertThat(countEmailsTo("previous.prosecutor@authority.com"), equalTo(1L));
+        // the original prosecutor is not a party -> still notified at contactEmailAddress via the informant path
+        assertThat(countEmailsTo("original.prosecutor@authority.com"), equalTo(1L));
     }
 
     @Test
-    public void neitherProsecutorEmailedWhenNotAnAppeal() {
+    public void originalProsecutorNotEmailedWhenNotAnAppeal() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
         final UUID prosecutionCaseId = randomUUID();
-        final UUID currentProsecutorAuthorityId = randomUUID();
-        final UUID previousProsecutorAuthorityId = randomUUID();
-        stubCurrentProsecutor(prosecutionCaseId, currentProsecutorAuthorityId);
-        when(referenceDataService.getProsecutorV2(envelope, currentProsecutorAuthorityId, requester))
-                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.current@cps.gov.uk").build()));
-        when(courtApplicationService.getProsecutingAuthority(eq(previousProsecutorAuthorityId), any(JsonEnvelope.class)))
-                .thenReturn(createProsecutorAuthority(previousProsecutorAuthorityId, "previous.prosecutor@authority.com"));
+        final UUID originalProsecutorAuthorityId = randomUUID();
+        when(referenceDataService.getProsecutorV2(envelope, originalProsecutorAuthorityId, requester))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
+        when(courtApplicationService.getProsecutingAuthority(eq(originalProsecutorAuthorityId), any(JsonEnvelope.class)))
+                .thenReturn(createProsecutorAuthority(originalProsecutorAuthorityId, "original.prosecutor@authority.com"));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withApplicationReference("URN")
                 .withType(CourtApplicationType.courtApplicationType().withAppealFlag(false).withSummonsTemplateType(NOT_APPLICABLE).build())
-                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, previousProsecutorAuthorityId))
+                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, originalProsecutorAuthorityId))
                 .withApplicant(applicantWithEmail("applicant@test.com"))
                 .build();
 
         notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
 
         verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
-        // not an appeal -> neither the current nor the previous prosecutor is emailed
-        assertThat(countEmailsTo("cps.current@cps.gov.uk"), equalTo(0L));
-        assertThat(countEmailsTo("previous.prosecutor@authority.com"), equalTo(0L));
+        // not an appeal -> the informant path is skipped, so the original prosecutor is not emailed
+        assertThat(countEmailsTo("original.prosecutor@authority.com"), equalTo(0L));
     }
 
     @Test
-    public void samplePayloadShapeEmailsLnerRespondentAndCpsCurrentProsecutorRespondentWithoutDuplicate() {
+    public void samplePayloadShapeEmailsBothRespondentsOnceWithApplicantPostal() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
         final UUID prosecutionCaseId = randomUUID();
         final UUID lnerAuthorityId = randomUUID();
         final UUID cpsAuthorityId = randomUUID();
-        // current prosecutor of the live case is CPS-LS (also a respondent)
-        stubCurrentProsecutor(prosecutionCaseId, cpsAuthorityId);
+        // lner is the original prosecutor (embedded on the application) and is also named as a respondent
         when(referenceDataService.getProsecutorV2(envelope, lnerAuthorityId, requester))
                 .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
         when(referenceDataService.getProsecutorV2(envelope, cpsAuthorityId, requester))
@@ -1762,8 +1756,9 @@ public class NotificationServiceTest {
         notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
 
         verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        // lner is a respondent and the original prosecutor -> emailed once (informant path suppressed as it is a party)
         assertThat(countEmailsTo("ecdr@lner.co.uk"), equalTo(1L));
-        // CPS-LS is both the current prosecutor and a respondent -> emailed once at ccCpsEmailAddress
+        // CPS-LS respondent -> emailed once at ccCpsEmailAddress
         assertThat(countEmailsTo("cps.ls@cps.gov.uk"), equalTo(1L));
         // defendant/applicant has an address but no email -> postal
         verify(postalService).sendPostalNotification(eq(envelope), eq(applicationId), any(PostalNotification.class), any(), any());
@@ -1777,8 +1772,7 @@ public class NotificationServiceTest {
         final UUID prosecutionCaseId = randomUUID();
         final UUID cpsApplicantAuthorityId = randomUUID();
         final UUID surreyAuthorityId = randomUUID();
-        // No CPS update on the case: the case's current prosecutor is still Surrey Police (== the embedded/previous PA)
-        stubCurrentProsecutor(prosecutionCaseId, surreyAuthorityId);
+        // Surrey Police is the original prosecutor embedded on the application (Respondent 1)
         // CPS London South (Applicant) -> CPS, email from reference data ccCpsEmailAddress
         when(referenceDataService.getProsecutorV2(envelope, cpsApplicantAuthorityId, requester))
                 .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.london.south@cps.gov.uk").build()));
@@ -1820,6 +1814,53 @@ public class NotificationServiceTest {
         assertThat(countEmailsTo("mail_data_bureau_res@surrey.police.uk"), equalTo(1L));
         // Defendant (Respondent 2) -> emailed
         assertThat(countEmailsTo("defendant@test.com"), equalTo(1L));
+    }
+
+    @Test
+    public void applicantProsecutingAuthorityEmailResolvedFromReferenceDataWhenAbsentInPayload() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID tvlAuthorityId = randomUUID();
+        final UUID cpsRespondentAuthorityId = randomUUID();
+        // TVL is the applicant and the original prosecutor; it is not CPS and carries NO email on the party payload
+        when(referenceDataService.getProsecutorV2(envelope, tvlAuthorityId, requester))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
+        // ...but reference data holds its email, which must be used instead of falling back to postal
+        when(courtApplicationService.getProsecutingAuthority(eq(tvlAuthorityId), any(JsonEnvelope.class)))
+                .thenReturn(createProsecutorAuthority(tvlAuthorityId, "court.results@tvl.cjsm.net"));
+        // CPS respondent named on the application
+        when(referenceDataService.getProsecutorV2(envelope, cpsRespondentAuthorityId, requester))
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("ccCpsEmailAddress", "cps.ls@cps.gov.uk").build()));
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        final CourtApplicationParty applicantAuthorityNoEmail = CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                        .withProsecutionAuthorityId(tvlAuthorityId)
+                        .withAddress(Address.address().withAddress1("PO BOX 88").withPostcode("BB3 1YX").build())
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("URN")
+                .withType(CourtApplicationType.courtApplicationType().withAppealFlag(true).withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withCourtApplicationCases(courtApplicationCasesWithCaseId(prosecutionCaseId, tvlAuthorityId))
+                .withApplicant(applicantAuthorityNoEmail)
+                .withRespondents(singletonList(buildCourtApplicationParty(cpsRespondentAuthorityId, "unused-contact@cps.gov.uk")))
+                .build();
+
+        notificationService.sendNotificationForAutoApplication(envelope, autoInitiated(courtApplication));
+
+        verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        // applicant PA had no payload email -> resolved from reference data and emailed once (informant path suppressed as applicant == original PA)
+        assertThat(countEmailsTo("court.results@tvl.cjsm.net"), equalTo(1L));
+        // CPS respondent emailed at ccCpsEmailAddress
+        assertThat(countEmailsTo("cps.ls@cps.gov.uk"), equalTo(1L));
+        // no postal fallback for the applicant since an email was resolved
+        verify(postalService, never()).sendPostalNotification(eq(envelope), eq(applicationId), any(PostalNotification.class), any(), any());
     }
 
     private SendNotificationForAutoApplicationInitiated autoInitiated(final CourtApplication courtApplication) {
