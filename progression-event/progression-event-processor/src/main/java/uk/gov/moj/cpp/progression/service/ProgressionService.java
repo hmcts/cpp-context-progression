@@ -283,6 +283,16 @@ public class ProgressionService {
         return prosecutionCasesArrayBuilder.build();
     }
 
+    /**
+     * Builds a Hearing from a listing-needs request (court applications + prosecution cases, judicial
+     * results stripped) for use as the hearing snapshot when creating the application-hearing link on the
+     * related-hearing path (CHD-2665). Group flags default to null — the link command only embeds the
+     * hearing JSON and does not depend on them.
+     */
+    public Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds, final SeedingHearing seedingHearing) {
+        return transformHearingListingNeeds(hearingListingNeeds, seedingHearing, null, null);
+    }
+
     private Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds, final SeedingHearing seedingHearing, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         final ZonedDateTime hearingDateTime = nonNull(hearingListingNeeds.getEarliestStartDateTime()) ?
                 hearingListingNeeds.getEarliestStartDateTime() : hearingListingNeeds.getListedStartDateTime();
