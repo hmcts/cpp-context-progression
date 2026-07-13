@@ -231,7 +231,7 @@ public class RelatedHearingEventProcessor {
                 .withName(PROGRESSION_COMMAND_ADD_CASES_FOR_UPDATED_RELATED_HEARING)
                 .withMetadataFrom(jsonEnvelope));
 
-        final String hearingId = jsonEnvelope.payloadAsJsonObject().getString("hearingId");
+        final String hearingId = jsonEnvelope.payloadAsJsonObject().getString(HEARING_ID);
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, fromString(hearingId));
     }
 
