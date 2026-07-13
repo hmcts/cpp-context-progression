@@ -3,13 +3,17 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.UpdateRelatedHearingCommandForAdhocHearing;
@@ -48,6 +52,9 @@ public class RelatedHearingEventProcessor {
 
     private static final String PROGRESSION_COMMAND_ADD_CASES_FOR_UPDATED_RELATED_HEARING = "progression.command.add-cases-for-updated-related-hearing";
     private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
+    private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String HEARING_ID = "hearingId";
+    private static final String COURT_APPLICATION = "courtApplication";
 
     @Inject
     private ProgressionService progressionService;
@@ -134,10 +141,33 @@ public class RelatedHearingEventProcessor {
             sender.send(Enveloper.envelop(objectToJsonObjectConverter.convert(updateRelatedHearingForListing)).withName("listing.update-related-hearing").withMetadataFrom(jsonEnvelope));
 
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
+        }
 
-        } else if (isNotEmpty(courtApplications)) {
-            // DD-8648: Application related hearings
-        } else {
+        // CHD-2665: an application adjourned onto an existing hearing must also reach hearing context.
+        // Cases and applications can arrive together, so this is independent of the prosecutionCases branch.
+        // Transport each application via the established hearing-extended mechanism (consumed by the hearing
+        // extend) and create the app<->hearing link the cases-only path never made.
+        if (isNotEmpty(courtApplications)) {
+
+            courtApplications.forEach(courtApplication ->
+                    sender.send(envelop(createObjectBuilder()
+                                    .add(HEARING_ID, hearingId.toString())
+                                    .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                                    .build())
+                            .withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED)
+                            .withMetadataFrom(jsonEnvelope)));
+
+            final List<UUID> applicationIds = courtApplications.stream()
+                    .map(CourtApplication::getId)
+                    .collect(toList());
+
+            final Hearing hearing = progressionService.transformHearingListingNeeds(
+                    relatedHearingUpdated.getHearingRequest(), relatedHearingUpdated.getSeedingHearing());
+
+            progressionService.linkApplicationsToHearing(jsonEnvelope, hearing, applicationIds, SENT_FOR_LISTING);
+        }
+
+        if (isEmpty(prosecutionCases) && isEmpty(courtApplications)) {
             LOGGER.info("Court Application / Prosecution Case not found for hearing: {}", hearingId);
         }
     }

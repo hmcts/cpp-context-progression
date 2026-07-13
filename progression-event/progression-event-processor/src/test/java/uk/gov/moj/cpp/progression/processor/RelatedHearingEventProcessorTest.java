@@ -8,14 +8,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
@@ -74,6 +81,9 @@ public class RelatedHearingEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<List<ProsecutionCase>> prosecutionCasesArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<List<UUID>> applicationIdsArgumentCaptor;
 
     @Test
     public void shouldIssueUpdateRelatedHearingCommand() {
@@ -192,6 +202,100 @@ public class RelatedHearingEventProcessorTest {
         assertThat(prosecutionCasesArgumentCaptor.getValue(), notNullValue());
         assertThat(prosecutionCasesArgumentCaptor.getValue().get(0).getId(), is(prosecutionCaseId));
 
+    }
+
+    @Test
+    public void shouldTransportApplicationToHearingContextAndCreateLinkWhenRelatedHearingHasCaseAndApplication() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final List<ProsecutionCase> prosecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase().withId(prosecutionCaseId).build());
+        final List<CourtApplication> courtApplications = Arrays.asList(CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(Arrays.asList(CourtApplicationCase.courtApplicationCase()
+                        .withProsecutionCaseId(prosecutionCaseId).build()))
+                .build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build();
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(prosecutionCases)
+                .withCourtApplications(courtApplications)
+                .build();
+        final RelatedHearingUpdated relatedHearingUpdated = RelatedHearingUpdated.relatedHearingUpdated()
+                .withSeedingHearing(seedingHearing)
+                .withHearingRequest(hearingListingNeeds)
+                .build();
+
+        final Hearing linkHearing = Hearing.hearing().withId(hearingId).withCourtApplications(courtApplications).build();
+        when(progressionService.transformHearingListingNeeds(eq(hearingListingNeeds), eq(seedingHearing))).thenReturn(linkHearing);
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.related-hearing-updated"),
+                objectToJsonObjectConverter.convert(relatedHearingUpdated));
+
+        this.eventProcessor.processRelatedHearingUpdated(event);
+
+        // cases side still handled
+        verify(progressionService).linkProsecutionCasesToHearing(eq(event), eq(hearingId), any());
+
+        // two sends: listing.update-related-hearing (cases) + hearing-extended (application)
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+        final Envelope hearingExtended = envelopeArgumentCaptor.getAllValues().stream()
+                .filter(e -> "public.progression.events.hearing-extended".equals(e.metadata().name()))
+                .findFirst().orElseThrow(AssertionError::new);
+        assertThat(hearingExtended.payload().toString(), isJson(allOf(
+                withJsonPath("$.hearingId", is(hearingId.toString())),
+                withJsonPath("$.courtApplication.id", is(applicationId.toString())))));
+        // prosecutionCases travel on the update-related channel only, not on hearing-extended
+        assertThat(((JsonObject) hearingExtended.payload()).containsKey("prosecutionCases"), is(false));
+
+        // app<->hearing link created with the built hearing
+        verify(progressionService).linkApplicationsToHearing(eq(event), eq(linkHearing), applicationIdsArgumentCaptor.capture(), eq(SENT_FOR_LISTING));
+        assertThat(applicationIdsArgumentCaptor.getValue().get(0), is(applicationId));
+    }
+
+    @Test
+    public void shouldTransportApplicationAndCreateLinkEvenWhenRelatedHearingHasNoProsecutionCases() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final List<CourtApplication> courtApplications = Arrays.asList(CourtApplication.courtApplication()
+                .withId(applicationId).build());
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build();
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withCourtApplications(courtApplications)
+                .build();
+        final RelatedHearingUpdated relatedHearingUpdated = RelatedHearingUpdated.relatedHearingUpdated()
+                .withSeedingHearing(seedingHearing)
+                .withHearingRequest(hearingListingNeeds)
+                .build();
+
+        final Hearing linkHearing = Hearing.hearing().withId(hearingId).withCourtApplications(courtApplications).build();
+        when(progressionService.transformHearingListingNeeds(eq(hearingListingNeeds), eq(seedingHearing))).thenReturn(linkHearing);
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.related-hearing-updated"),
+                objectToJsonObjectConverter.convert(relatedHearingUpdated));
+
+        this.eventProcessor.processRelatedHearingUpdated(event);
+
+        // no case-side work
+        verify(progressionService, never()).linkProsecutionCasesToHearing(any(), any(), any());
+
+        // exactly one send: the hearing-extended for the application (no listing.update-related-hearing)
+        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
+        final Envelope hearingExtended = envelopeArgumentCaptor.getValue();
+        assertThat(hearingExtended.metadata().name(), is("public.progression.events.hearing-extended"));
+        assertThat(hearingExtended.payload().toString(), isJson(allOf(
+                withJsonPath("$.hearingId", is(hearingId.toString())),
+                withJsonPath("$.courtApplication.id", is(applicationId.toString())))));
+
+        verify(progressionService).linkApplicationsToHearing(eq(event), eq(linkHearing), applicationIdsArgumentCaptor.capture(), eq(SENT_FOR_LISTING));
+        assertThat(applicationIdsArgumentCaptor.getValue().get(0), is(applicationId));
     }
 
     @Test
