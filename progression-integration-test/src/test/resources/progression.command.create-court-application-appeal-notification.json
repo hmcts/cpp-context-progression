@@ -1,0 +1,194 @@
+{
+  "courtApplication": {
+    "id": "RANDOM_APPLICATION_ID",
+    "type": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "code": "a",
+      "type": "Appeal against sentence by a Magistrates' Court to the Crown Court",
+      "typeWelsh": "a",
+      "legislation": "a",
+      "legislationWelsh": "a",
+      "categoryCode": "CR",
+      "linkType": "STANDALONE",
+      "jurisdiction": "CROWN",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": true,
+      "applicantAppellantFlag": true,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE"
+    },
+    "applicationParticulars": "Appeal application particulars",
+    "applicationReceivedDate": "2019-01-01",
+    "applicationReference": "RANDOM_REFERENCE",
+    "applicant": {
+      "id": "37026378-51be-41f9-84a9-1e7dab676823",
+      "prosecutingAuthority": {
+        "address": {
+          "address1": "Surrey Police",
+          "address2": "Mount Browne",
+          "address3": "Sandy Lane",
+          "address4": "Guildford",
+          "postcode": "GU3 1HG"
+        },
+        "contact": {
+          "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+        },
+        "majorCreditorCode": "PO45",
+        "name": "Surrey Police",
+        "prosecutionAuthorityCode": "SURRPF",
+        "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+        "prosecutionAuthorityOUCode": "0450000"
+      },
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "subject": {
+      "id": "a48ce9c6-eb21-4c1d-af75-50979f3b1118",
+      "masterDefendant": {
+        "masterDefendantId": "29f9264b-0ee6-4ad8-9185-bb29b92d64f3",
+        "personDefendant": {
+          "personDetails": {
+            "firstName": "DefendantName",
+            "lastName": "DefendantSurName",
+            "gender": "MALE",
+            "documentationLanguageNeeds": "ENGLISH",
+            "address": {
+              "address1": "Test address",
+              "postcode": "N14 6JT"
+            },
+            "contact": {
+              "primaryEmail": "defendant-appeal@email.com"
+            }
+          }
+        },
+        "defendantCase": [
+          {
+            "defendantId": "RANDOM_RESPONDENT_DEFENDANT_ID",
+            "caseId": "RANDOM_CASE_ID",
+            "caseReference": "APPEALREF"
+          }
+        ]
+      },
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "respondents": [
+      {
+        "id": "a6f8e8ef-7849-467f-aa7e-b8fb522f62a4",
+        "prosecutingAuthority": {
+          "address": {
+            "address1": "CPS",
+            "address2": "2nd Floor",
+            "address3": "102 Petty France",
+            "address4": "London",
+            "postcode": "SW1H 9EA"
+          },
+          "majorCreditorCode": "2070C",
+          "name": "CPS London South",
+          "prosecutionAuthorityCode": "CPS-LS",
+          "prosecutionAuthorityId": "c8e6c4c8-f31f-3e48-b40a-6e7d33fe5652",
+          "prosecutionAuthorityOUCode": "GAFCP00"
+        },
+        "summonsRequired": false,
+        "notificationRequired": true
+      },
+      {
+        "id": "a48ce9c6-eb21-4c1d-af75-50979f3b1118",
+        "summonsRequired": false,
+        "notificationRequired": true,
+        "masterDefendant": {
+          "masterDefendantId": "29f9264b-0ee6-4ad8-9185-bb29b92d64f3",
+          "personDefendant": {
+            "personDetails": {
+              "firstName": "DefendantName",
+              "lastName": "DefendantSurName",
+              "gender": "MALE",
+              "documentationLanguageNeeds": "ENGLISH",
+              "address": {
+                "address1": "Test address",
+                "postcode": "N14 6JT"
+              },
+              "contact": {
+                "primaryEmail": "defendant-appeal@email.com"
+              }
+            }
+          },
+          "defendantCase": [
+            {
+              "defendantId": "RANDOM_RESPONDENT_DEFENDANT_ID",
+              "caseId": "RANDOM_CASE_ID",
+              "caseReference": "APPEALREF"
+            }
+          ]
+        }
+      }
+    ],
+    "courtApplicationPayment": {
+      "feeStatus": "NOT_APPLICABLE"
+    },
+    "applicationStatus": "DRAFT",
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "RANDOM_PROSECUTION_CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityReference": "APPEALREF"
+        },
+        "isSJP": false,
+        "caseStatus": "ACTIVE",
+        "offences": [
+          {
+            "arrestDate": "2016-01-01",
+            "chargeDate": "2016-01-01",
+            "count": 0,
+            "id": "a3e2c582-9220-4de2-89e5-80a2d90cd944",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03014",
+            "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+            "orderIndex": 1,
+            "startDate": "2015-07-02",
+            "wording": "Some offence wording"
+          }
+        ]
+      }
+    ]
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
+      "description": "Appeal"
+    },
+    "jurisdictionType": "CROWN",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
+    "estimatedMinutes": 20,
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": null,
+      "roomName": "Courtroom 01"
+    }
+  }
+}

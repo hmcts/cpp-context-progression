@@ -1,0 +1,24 @@
+{
+  "id": "[PROSECUTION_AUTHORITY_ID]",
+  "oucode": "[OU_CODE]",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "2070C",
+  "shortName": "CPS-LS",
+  "fullName": "CPS London South",
+  "nameWelsh": "CPS London South",
+  "region": "London",
+  "stackType": "Regional",
+  "cpsFlag": true,
+  "sjpFlag": false,
+  "policeFlag": false,
+  "ccCpsEmailAddress": "london.crowncourt@cps.gov.uk",
+  "contactEmailAddress": "london.crowncourt@cps.gov.uk",
+  "informantEmailAddress": "london.crowncourt@cps.gov.uk",
+  "address": {
+    "address1": "CPS",
+    "address2": "2nd Floor",
+    "address3": "102 Petty France",
+    "address4": "London",
+    "postcode": "SW1H 9EA"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "[PROSECUTION_AUTHORITY_ID]",
+  "oucode": "[OU_CODE]",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "PO45",
+  "shortName": "SURRPF",
+  "fullName": "Surrey Police",
+  "nameWelsh": "Heddlu Surrey",
+  "region": "Surrey",
+  "stackType": "Regional",
+  "cpsFlag": false,
+  "sjpFlag": false,
+  "policeFlag": true,
+  "contactEmailAddress": "mail_data_bureau_res@surrey.police.uk",
+  "informantEmailAddress": "mail_data_bureau_res@surrey.police.uk",
+  "address": {
+    "address1": "Surrey Police",
+    "address2": "Mount Browne",
+    "address3": "Sandy Lane",
+    "address4": "Guildford",
+    "postcode": "GU3 1HG"
+  }
+}
