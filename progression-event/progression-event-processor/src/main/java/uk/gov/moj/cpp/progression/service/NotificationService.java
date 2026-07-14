@@ -690,7 +690,7 @@ public class NotificationService {
      * respondent or third party). A prosecutor that is also a party is later flagged as already-notified on its
      * tracker (see {@link #checkAndUpdateInformantNotifications}), so it is never emailed twice either.
      */
-    private List<InformantNotificationTracker> buildInformantTrackers(final JsonEnvelope event, final CourtApplication courtApplication) {
+    private List<InformantNotificationTracker> buildInformantTrackers(final CourtApplication courtApplication) {
         final List<uk.gov.justice.core.courts.CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases();
         if (isNull(courtApplicationCases) || courtApplicationCases.isEmpty()) {
             return new ArrayList<>();
@@ -702,7 +702,6 @@ public class NotificationService {
 
         return Stream.of(originalProsecutorAuthorityId)
                 .filter(Objects::nonNull)
-                .distinct()
                 .map(authorityId -> new InformantNotificationTracker(authorityId))
                 .collect(Collectors.toList());
     }
@@ -1125,7 +1124,7 @@ public class NotificationService {
     public void sendNotification(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType, final Boolean isAmended) {
         requireNonNull(courtApplication);
         if (courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
-            final List<InformantNotificationTracker> informantNotificationTrackers = buildInformantTrackers(event, courtApplication);
+            final List<InformantNotificationTracker> informantNotificationTrackers = buildInformantTrackers(courtApplication);
             final String hearingDate = hearingStartDateTime.toLocalDate().toString();
             final String hearingTime = getCourtTime(hearingStartDateTime);
 
@@ -1161,7 +1160,7 @@ public class NotificationService {
             final String hearingDate = hearingStartDateTime.toLocalDate().toString();
             final String hearingTime = getCourtTime(hearingStartDateTime);
 
-            final List<InformantNotificationTracker> informantNotificationTrackers = buildInformantTrackers(event, courtApplication);
+            final List<InformantNotificationTracker> informantNotificationTrackers = buildInformantTrackers(courtApplication);
 
             sendNotificationToApplicant(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTrackers);
             sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTrackers);
