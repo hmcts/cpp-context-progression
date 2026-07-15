@@ -424,7 +424,19 @@ public class CourtExtractTransformer {
                                        final Prosecutor prosecutor, final String extractType, final List<UUID> linkedApplicationsDefendantIds) {
         final UUID masterDefendantId = caseDefendant.getMasterDefendantId();
 
-        final Hearings latestHearing = hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0);
+        final Hearings latestHearing = isEmpty(hearingsList) ? null
+                : (hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0));
+
+        // CHD-2659: the requested hearing may not be on this case's hearings-at-a-glance (e.g. an
+        // application heard on a linked case's hearing), leaving no hearing to render. Degrade to the
+        // no-hearing-details extract instead of indexing an empty list / a null latest hearing.
+        if (latestHearing == null) {
+            courtExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant, defendantBuilder));
+            courtExtract.withProsecutingAuthority(prosecutor != null
+                    ? transformationHelper.transformProsecutor(prosecutor)
+                    : transformationHelper.transformProsecutingAuthority(hearingsAtAGlance.getProsecutionCaseIdentifier(), userId));
+            return;
+        }
 
         courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, masterDefendantId, userId, defendantBuilder, hearingsList, caseDefendant, hearingsAtAGlance, extractType, linkedApplicationsDefendantIds));
 

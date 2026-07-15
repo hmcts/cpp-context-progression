@@ -489,6 +489,23 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_shouldNotThrowWhenSelectedHearingIsNotOnThisCase() {
+        // CHD-2659: an application heard on a linked case's hearing means the selected hearing id is
+        // absent from this case's hearings-at-a-glance -> hearingsList is empty. Must degrade to a
+        // no-hearing-details extract, not crash with ArrayIndexOutOfBoundsException on hearingsList.get(0).
+        final String extractType = "CrownCourtExtract";
+        final GetHearingsAtAGlance hearingsAtGlance = createHearingsAtGlance();
+        final List<String> selectedHearingIds = singletonList(randomUUID().toString());
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested, is(notNullValue()));
+        assertThat(courtExtractRequested.getDefendant(), is(notNullValue()));
+        assertThat(courtExtractRequested.getDefendant().getHearings() == null
+                || courtExtractRequested.getDefendant().getHearings().isEmpty(), is(true));
+    }
+
+    @Test
     public void testTransformToCourtExtract_whenExtractTypeIsCrownCourtWithAPendingApplication_expectAppealPendingFlagAsTrue() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());

@@ -392,6 +392,22 @@ public class ReportsTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_shouldNotThrowWhenSelectedHearingIsNotOnThisCase() {
+        // CHD-2659 twin: selected hearing id absent from this case's hearings-at-a-glance -> empty
+        // hearingsList must degrade to a no-hearing-details extract, not crash on hearingsList.get(0).
+        final String extractType = "CrownCourtExtract";
+        final GetHearingsAtAGlance hearingsAtAGlance = createHearingsAtGlance();
+        final List<String> selectedHearingIds = singletonList(randomUUID().toString());
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested, is(notNullValue()));
+        assertThat(courtExtractRequested.getDefendant(), is(notNullValue()));
+        assertThat(courtExtractRequested.getDefendant().getHearings() == null
+                || courtExtractRequested.getDefendant().getHearings().isEmpty(), is(true));
+    }
+
+    @Test
     public void testTransformToCourtExtract_shouldUseDefendantAssociatedDefenceOrganisation_whenPresent() {
         when(requestedNameMapper.getRequestedJudgeName(argThat(Matchers.any(JsonObject.class)))).thenReturn("Denial", "Aladin", "Amit");
         when(referenceDataService.getJudiciary(argThat(Matchers.any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
