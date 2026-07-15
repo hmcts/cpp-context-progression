@@ -3,6 +3,10 @@
   "id": "http://justice.gov.uk/progression/query/progression.query.related-references.json",
   "type": "object",
   "properties": {
+    "isCivil": {
+      "description": "True if the primary case (identified by caseId) is a civil case, false if criminal, absent if the primary case cannot be resolved",
+      "type": "boolean"
+    },
     "relatedReferenceList": {
       "type": "array",
       "items": {

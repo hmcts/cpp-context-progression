@@ -11,6 +11,10 @@
     },
     "prosecutionCaseId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isCivil": {
+      "description": "True if the related case is a civil case, false if criminal, absent if the related case cannot be resolved",
+      "type": "boolean"
     }
   },
   "required": [

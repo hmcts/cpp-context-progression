@@ -375,6 +375,17 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response civilCaseInitiateCourtProceedings(final String caseId, final String defendantId, final String materialIdOne,
+                                                             final String materialIdTwo,
+                                                             final String referralId, final String caseUrn,
+                                                             final String listedStartDateTime, final String earliestStartDateTime, final String dob, final String feesId) {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getCivilCaseInitiateCourtProceedingsJsonFromResource("progression.command.civil-case-initiate-court-proceedings.json", caseId,
+                        defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob, feesId, ""));
+
+    }
+
     public static Response initiateCourtProceedingsForGroupCases(final UUID masterCaseId, final Map<UUID, Pair<UUID, UUID>> caseDefendantOffence, final String listedStartDateTime, final String earliestStartDateTime, final String groupId, final String courtCenterId, final String courtCenterName) throws JSONException {
         final String payload = getInitiateCourtProceedingsForGroupCasesJsonBody(masterCaseId, caseDefendantOffence, listedStartDateTime, earliestStartDateTime, groupId, courtCenterId, courtCenterName);
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
