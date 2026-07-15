@@ -646,7 +646,7 @@ public class NotificationService {
                                   final Boolean isAmended, final LocalDate issueDate) {
 
         final Optional<Address> addressOptional = getApplicantAddress(courtApplicationParty);
-        final Optional<String> emailAddressOptional = getCourtApplicationPartyEmailAddress(courtApplicationParty);
+        final Optional<String> emailAddressOptional = getCourtApplicationPartyEmailAddress(courtApplicationParty, event);
 
         final PostalNotificationDetails postalNotificationDetails = buildPostalNotificationDetails(courtApplication, isWelTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, isAmended, issueDate);
         sendNotification(event, notificationId, postalNotificationDetails, thirdParty, emailAddressOptional, addressOptional);
@@ -719,9 +719,19 @@ public class NotificationService {
 
         // Extract address and email as Optionals
         final Optional<Address> addressOptional = Optional.ofNullable(prosecutingAuthority.getAddress());
-        final Optional<String> emailAddressOptional = Optional.of(prosecutingAuthority)
-                .map(ProsecutingAuthority::getContact)
-                .map(ContactNumber::getPrimaryEmail);
+
+        final Optional<String> emailAddressOptional;
+        final Optional<JsonObject> cpsProsecutor = getCpsProsecutorRefData(event, prosecutingAuthority);
+
+        if (cpsProsecutor.isPresent()) {
+            emailAddressOptional = ofNullable(cpsProsecutor.get().getString("ccCpsEmailAddress", null))
+                    .map(String::trim)
+                    .filter(email -> !email.isEmpty());
+        } else {
+            emailAddressOptional = Optional.of(prosecutingAuthority)
+                    .map(ProsecutingAuthority::getContact)
+                    .map(ContactNumber::getPrimaryEmail);
+        }
 
         // Build PostalAddressee if address is present
         final Optional<PostalAddressee> postalAddressee = addressOptional.map(address ->
@@ -858,7 +868,7 @@ public class NotificationService {
         return address;
     }
 
-    private Optional<String> getCourtApplicationPartyEmailAddress(final CourtApplicationParty courtApplicationParty) {
+    private Optional<String> getCourtApplicationPartyEmailAddress(final CourtApplicationParty courtApplicationParty, final JsonEnvelope event) {
 
         final Optional<Person> personOptional = ofNullable(courtApplicationParty.getPersonDetails());
 
@@ -885,8 +895,16 @@ public class NotificationService {
             emailAddress = getDefendantEmailAddress(defendantOptional.get());
 
         } else if (prosecutingAuthorityOptional.isPresent()) {
-
             emailAddress = prosecutingAuthorityOptional.map(ProsecutingAuthority::getContact).map(ContactNumber::getPrimaryEmail);
+
+            final Optional<JsonObject> cpsProsecutor = getCpsProsecutorRefData(event, prosecutingAuthorityOptional.get());
+
+            if (cpsProsecutor.isPresent()) {
+                emailAddress = ofNullable(cpsProsecutor.get().getString("ccCpsEmailAddress", null))
+                        .map(String::trim)
+                        .filter(email -> !email.isEmpty());
+            }
+
         } else if (masterDefendantPersonOptional.isPresent()) {
             emailAddress = masterDefendantPersonOptional.map(Person::getContact).map(ContactNumber::getPrimaryEmail);
         }
@@ -896,6 +914,18 @@ public class NotificationService {
         }
 
         return emailAddress;
+    }
+
+    /**
+     * Returns the prosecutor reference-data record only when the respondent's prosecuting authority is CPS
+     * (cpsFlag = true); otherwise empty (including when there is no prosecuting authority to look up).
+     */
+    private Optional<JsonObject> getCpsProsecutorRefData(final JsonEnvelope event, final ProsecutingAuthority prosecutingAuthority) {
+        if (isNull(prosecutingAuthority) || isNull(prosecutingAuthority.getProsecutionAuthorityId())) {
+            return Optional.empty();
+        }
+        return referenceDataService.getProsecutorV2(event, prosecutingAuthority.getProsecutionAuthorityId(), requester)
+                .filter(prosecutor -> prosecutor.getBoolean("cpsFlag", false));
     }
 
     private Optional<String> getDefendantEmailAddress(final MasterDefendant masterDefendant) {
