@@ -22,6 +22,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -31,6 +32,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.MaterialTag;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Personalisation;
@@ -590,6 +592,10 @@ public class NotificationService {
         final List<CourtApplicationParty> respondents = ofNullable(courtApplication.getRespondents()).map(r -> courtApplication.getRespondents()).orElse(new ArrayList<>());
         respondents.forEach(courtApplicationParty -> {
             checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
+            if (shouldSuppressNotification(courtApplication, courtApplicationParty.getMasterDefendant())) {
+                LOGGER.info("Notification to respondent suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
+                return;
+            }
             final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
             sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
 
@@ -601,6 +607,22 @@ public class NotificationService {
         checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
         final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
         sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
+    }
+
+    private boolean shouldSuppressNotification(final CourtApplication courtApplication, final MasterDefendant masterDefendant) {
+        if (isNull(masterDefendant) || isNull(masterDefendant.getMasterDefendantId())) {
+            return false;
+        }
+        final List<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).orElse(new ArrayList<>());
+        return courtApplicationCases.stream().anyMatch(this::caseHasExParteOffence);
+    }
+
+    private boolean caseHasExParteOffence(final CourtApplicationCase courtApplicationCase) {
+        final List<Offence> offences = ofNullable(courtApplicationCase.getOffences()).orElse(new ArrayList<>());
+        return offences.stream()
+                .map(Offence::getCivilOffence)
+                .filter(Objects::nonNull)
+                .anyMatch(civilOffence -> Boolean.TRUE.equals(civilOffence.getIsExParte()));
     }
 
     private static void checkAndUpdateInformantNotifications(
