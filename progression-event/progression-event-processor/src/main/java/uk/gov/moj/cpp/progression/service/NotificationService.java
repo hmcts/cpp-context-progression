@@ -724,7 +724,7 @@ public class NotificationService {
         final Optional<JsonObject> cpsProsecutor = getCpsProsecutorRefData(event, prosecutingAuthority);
 
         if (cpsProsecutor.isPresent()) {
-            emailAddressOptional = ofNullable(cpsProsecutor.get().getString("cpsCcEmail_address", null))
+            emailAddressOptional = ofNullable(cpsProsecutor.get().getString("cpsCcEmailAddress", null))
                     .map(String::trim)
                     .filter(email -> !email.isEmpty());
         } else {
@@ -900,7 +900,7 @@ public class NotificationService {
             final Optional<JsonObject> cpsProsecutor = getCpsProsecutorRefData(event, prosecutingAuthorityOptional.get());
 
             if (cpsProsecutor.isPresent()) {
-                emailAddress = ofNullable(cpsProsecutor.get().getString("cpsCcEmail_address", null))
+                emailAddress = ofNullable(cpsProsecutor.get().getString("cpsCcEmailAddress", null))
                         .map(String::trim)
                         .filter(email -> !email.isEmpty());
             }

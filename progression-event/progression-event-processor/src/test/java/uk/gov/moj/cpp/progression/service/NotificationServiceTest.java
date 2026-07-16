@@ -702,12 +702,12 @@ public class NotificationServiceTest {
                         .build())
                 .withCourtApplicationCases(createCourtApplications(prosecutingAuthority.getProsecutionAuthorityId()))
                 .build();
-        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmail_address", "cps.applicant@cps.gov.uk").build()));
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmailAddress", "cps.applicant@cps.gov.uk").build()));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
 
-        // CPS prosecuting authority -> the CPS email (cpsCcEmail_address) from reference data is used, not the primary email
+        // CPS prosecuting authority -> the CPS email (cpsCcEmailAddress) from reference data is used, not the primary email
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_EMAIL),
                 payloadIsJson(
@@ -749,7 +749,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void sendNotificationWhenApplicantIsCPSButcpsCcEmail_addressBlankShouldNotSendEmail() {
+    public void sendNotificationWhenApplicantIsCPSButCpsCcEmailAddressBlankShouldNotSendEmail() {
 
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
@@ -772,7 +772,7 @@ public class NotificationServiceTest {
                 .withCourtApplicationCases(createCourtApplications(prosecutionAuthorityId))
                 .build();
         // CPS, but the CPS email is only whitespace -> trimmed to empty -> filtered out, so no email should be sent
-        when(referenceDataService.getProsecutorV2(envelope, prosecutionAuthorityId, requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmail_address", "   ").build()));
+        when(referenceDataService.getProsecutorV2(envelope, prosecutionAuthorityId, requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmailAddress", "   ").build()));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
@@ -1469,7 +1469,7 @@ public class NotificationServiceTest {
                                         .withPersonDetails(Person.person()
                                                 .withContact(ContactNumber.contactNumber().withPrimaryEmail("defantant@test.com").build()).build()).build()).build())
                         .build());
-        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmail_address", "cps.applicant@cps.gov.uk").build()));
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmailAddress", "cps.applicant@cps.gov.uk").build()));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
@@ -1547,7 +1547,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void sendNotificationToInformantWhenCPSUsescpsCcEmail_address() {
+    public void sendNotificationToInformantWhenCPSUsesCpsCcEmailAddress() {
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1570,12 +1570,12 @@ public class NotificationServiceTest {
 
         when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informant);
         when(referenceDataService.getProsecutorV2(envelope, informantAuthorityId, requester))
-                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmail_address", "cps.informant@cps.gov.uk").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).add("cpsCcEmailAddress", "cps.informant@cps.gov.uk").build()));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
 
-        // CPS informant -> the CPS email (cpsCcEmail_address) from reference data is used, not the primary email
+        // CPS informant -> the CPS email (cpsCcEmailAddress) from reference data is used, not the primary email
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_EMAIL),
                 payloadIsJson(allOf(
@@ -1605,9 +1605,9 @@ public class NotificationServiceTest {
                 .build();
 
         when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informant);
-        // cpsFlag=false -> cpsCcEmail_address must be ignored and the existing primary-email flow used
+        // cpsFlag=false -> cpsCcEmailAddress must be ignored and the existing primary-email flow used
         when(referenceDataService.getProsecutorV2(envelope, informantAuthorityId, requester))
-                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).add("cpsCcEmail_address", "should.be.ignored@cps.gov.uk").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).add("cpsCcEmailAddress", "should.be.ignored@cps.gov.uk").build()));
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
@@ -1624,13 +1624,13 @@ public class NotificationServiceTest {
         final UUID prosecutionAuthorityId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority()
                 .withProsecutionAuthorityId(prosecutionAuthorityId).build();
-        final JsonObject refData = createObjectBuilder().add("cpsFlag", true).add("cpsCcEmail_address", "cps@cps.gov.uk").build();
+        final JsonObject refData = createObjectBuilder().add("cpsFlag", true).add("cpsCcEmailAddress", "cps@cps.gov.uk").build();
         when(referenceDataService.getProsecutorV2(envelope, prosecutionAuthorityId, requester)).thenReturn(Optional.of(refData));
 
         final Optional<JsonObject> result = Whitebox.invokeMethod(notificationService, "getCpsProsecutorRefData", envelope, prosecutingAuthority);
 
         assertThat(result.isPresent(), is(true));
-        assertThat(result.get().getString("cpsCcEmail_address"), is("cps@cps.gov.uk"));
+        assertThat(result.get().getString("cpsCcEmailAddress"), is("cps@cps.gov.uk"));
     }
 
     @Test
