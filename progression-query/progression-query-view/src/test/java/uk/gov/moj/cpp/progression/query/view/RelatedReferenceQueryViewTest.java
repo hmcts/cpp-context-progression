@@ -25,6 +25,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCa
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -32,13 +33,17 @@ import javax.persistence.NoResultException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class RelatedReferenceQueryViewTest {
+class RelatedReferenceQueryViewTest {
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
@@ -66,26 +71,18 @@ public class RelatedReferenceQueryViewTest {
     private final UUID relatedReferenceId = randomUUID();
     private final String relatedReferenceUrn = "cn12345";
 
-    @Test
-    public void shouldReturnTrueForRootIsCivilWhenPrimaryCaseIsCivil() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnRootIsCivilMatchingPrimaryCase(final boolean isCivil) {
         givenRelatedReference();
-        givenPrimaryCase(true);
+        givenPrimaryCase(isCivil);
         givenRelatedCaseUrnNotFound();
 
-        assertThat(invoke().getBoolean("isCivil"), is(true));
+        assertThat(invoke().getBoolean("isCivil"), is(isCivil));
     }
 
     @Test
-    public void shouldReturnFalseForRootIsCivilWhenPrimaryCaseIsCriminal() {
-        givenRelatedReference();
-        givenPrimaryCase(false);
-        givenRelatedCaseUrnNotFound();
-
-        assertThat(invoke().getBoolean("isCivil"), is(false));
-    }
-
-    @Test
-    public void shouldOmitRootIsCivilWhenPrimaryCaseNotFound() {
+    void shouldOmitRootIsCivilWhenPrimaryCaseNotFound() {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
         givenRelatedCaseUrnNotFound();
@@ -93,35 +90,26 @@ public class RelatedReferenceQueryViewTest {
         assertThat(invoke().containsKey("isCivil"), is(false));
     }
 
-    @Test
-    public void shouldReturnTrueForRelatedCaseIsCivilOnEntry() {
+    private static Stream<Arguments> relatedCaseIsCivilScenarios() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(false, false),
+                Arguments.of(null, false)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("relatedCaseIsCivilScenarios")
+    void shouldResolveRelatedCaseIsCivilOnEntry(final Boolean isCivil, final boolean expected) {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
-        givenRelatedCaseResolvable(true);
+        givenRelatedCaseResolvable(isCivil);
 
-        assertThat(firstRelatedReference().getBoolean("isCivil"), is(true));
+        assertThat(firstRelatedReference().getBoolean("isCivil"), is(expected));
     }
 
     @Test
-    public void shouldReturnFalseForRelatedCaseIsCivilOnEntry() {
-        givenRelatedReference();
-        givenPrimaryCaseNotFound();
-        givenRelatedCaseResolvable(false);
-
-        assertThat(firstRelatedReference().getBoolean("isCivil"), is(false));
-    }
-
-    @Test
-    public void shouldTreatNullIsCivilOnRelatedCaseAsCriminal() {
-        givenRelatedReference();
-        givenPrimaryCaseNotFound();
-        givenRelatedCaseResolvable(null);
-
-        assertThat(firstRelatedReference().getBoolean("isCivil"), is(false));
-    }
-
-    @Test
-    public void shouldOmitEntryIsCivilWhenRelatedCaseUrnNotFound() {
+    void shouldOmitEntryIsCivilWhenRelatedCaseUrnNotFound() {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
         givenRelatedCaseUrnNotFound();
@@ -130,7 +118,7 @@ public class RelatedReferenceQueryViewTest {
     }
 
     @Test
-    public void shouldOmitEntryIsCivilWhenRelatedCaseMissingFromProsecutionCase() {
+    void shouldOmitEntryIsCivilWhenRelatedCaseMissingFromProsecutionCase() {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
         givenRelatedCaseMissingFromProsecutionCase();
@@ -139,7 +127,7 @@ public class RelatedReferenceQueryViewTest {
     }
 
     @Test
-    public void shouldResolveRelatedCaseIsCivilIndependentlyOfPrimaryCase() {
+    void shouldResolveRelatedCaseIsCivilIndependentlyOfPrimaryCase() {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
         givenRelatedCaseResolvable(true);
@@ -151,7 +139,7 @@ public class RelatedReferenceQueryViewTest {
     }
 
     @Test
-    public void shouldUppercaseRelatedReferenceBeforeLookup() {
+    void shouldUppercaseRelatedReferenceBeforeLookup() {
         givenRelatedReference();
         givenPrimaryCaseNotFound();
         givenRelatedCaseResolvable(false);
@@ -162,7 +150,7 @@ public class RelatedReferenceQueryViewTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenNoRelatedReferences() {
+    void shouldReturnEmptyListWhenNoRelatedReferences() {
         when(relatedReferenceRepository.findByProsecutionCaseId(primaryCaseId)).thenReturn(emptyList());
         givenPrimaryCase(false);
 
