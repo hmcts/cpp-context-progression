@@ -140,7 +140,7 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRelatedReferenceUrnOnCaseCreation() throws IOException {
+    public void shouldRelatedReferenceUrnOnCaseCreation() {
 
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
@@ -181,11 +181,14 @@ public class LinkCasesIT extends AbstractIT {
         JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, matchers.toArray(new Matcher[0])));
         final String relatedReferenceId = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReferenceId");
 
+        assertThat(responseAsJson.getBoolean("isCivil"), is(false));
+        assertThat(responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getBoolean("isCivil"), is(false));
+
         deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
     }
 
     @Test
-    public void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() throws IOException {
+    public void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() {
 
         civilCaseInitiateCourtProceedings(prosecutionCaseId_1, defendantId_1, materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB, randomUUID().toString());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
@@ -201,6 +204,9 @@ public class LinkCasesIT extends AbstractIT {
 
         JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, matchers.toArray(new Matcher[0])));
         final String relatedReferenceId = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReferenceId");
+
+        assertThat(responseAsJson.getBoolean("isCivil"), is(false));
+        assertThat(responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getBoolean("isCivil"), is(true));
 
         deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
     }
