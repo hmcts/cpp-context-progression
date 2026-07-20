@@ -20,6 +20,9 @@
       "description": "Indicates that the summons approval process is required to be initiated",
       "type": "boolean"
     },
+    "applicationSource": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/applicationSource"
+    },
     "isAmended": {
       "type": "boolean"
     },
