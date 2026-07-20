@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparingInt;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -102,6 +103,7 @@ import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
@@ -113,6 +115,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -972,7 +975,11 @@ public class ProgressionService {
         });
     }
 
-    private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing hearing) {
+    private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing rawHearing) {
+        // Preserving variant: the request may be a next/adjourned hearing carrying case offences that
+        // pre-exist independently of the application - they must stay so the projection routes it as a
+        // case hearing (SENT_FOR_LISTING) and not down the application-hearing branch below.
+        final Hearing hearing = shapeExistingHearingForListing(rawHearing, jsonEnvelope);
         if (isNotEmpty(hearing.getProsecutionCases())) {
             final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
@@ -1343,10 +1350,28 @@ public class ProgressionService {
      * @return
      */
     public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final SeedingHearing seedingHearing) {
+        return transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing, null);
+    }
+
+    /**
+     * Transform ConfirmedHearing to Hearing, ordering the prosecution cases against the hearing as
+     * progression already knows it: cases that were on the hearing before this confirmation keep
+     * their stored relative order and come first; newly arriving cases (e.g. adjourned onto an
+     * existing hearing) are appended. The manage-hearing display follows the payload order, so
+     * without the anchor an existing hearing's own case would render after the incoming one.
+     *
+     * @param confirmedHearing
+     * @param jsonEnvelope
+     * @param seedingHearing
+     * @param hearingInProgression progression's stored copy of the hearing (order anchor); null for
+     *                             hearings progression does not know yet
+     * @return
+     */
+    public Hearing transformConfirmedHearing(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final SeedingHearing seedingHearing, final Hearing hearingInProgression) {
 
         final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
-        return Hearing.hearing()
+        final Hearing hearing = Hearing.hearing()
                 .withHearingDays(confirmedHearing.getHearingDays())
                 .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
                 .withJurisdictionType(confirmedHearing.getJurisdictionType())
@@ -1362,6 +1387,113 @@ public class ProgressionService {
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
                 .build();
+
+        // Shape application/case offences once, at the source, so the persisted hearing matches the
+        // manage-hearing view (CHD-2556): active application offences move to the prosecution side and
+        // concluded ones stay with the application. A confirmed hearing may pre-exist and carry its own
+        // listed case offences (adjourn/next-hearing), so use the preserving variant — those case offences must never be dropped.
+        final Hearing shapedHearing = HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+
+        return reorderProsecutionCasesByExistingHearing(shapedHearing, hearingInProgression);
+    }
+
+    /**
+     * Stable partition of the shaped hearing's prosecution cases against the hearing progression
+     * already holds: anchored cases first in the stored copy's relative order, the rest appended in
+     * their incoming order. Pure reordering — case content is never touched.
+     */
+    // package-private for unit testing
+    Hearing reorderProsecutionCasesByExistingHearing(final Hearing hearing, final Hearing hearingInProgression) {
+        if (isNull(hearingInProgression) || isEmpty(hearingInProgression.getProsecutionCases())
+                || isNull(hearing) || isEmpty(hearing.getProsecutionCases())) {
+            return hearing;
+        }
+
+        final List<UUID> anchorOrder = hearingInProgression.getProsecutionCases().stream()
+                .map(ProsecutionCase::getId)
+                .collect(toList());
+
+        final List<ProsecutionCase> anchored = new ArrayList<>();
+        final List<ProsecutionCase> arriving = new ArrayList<>();
+        hearing.getProsecutionCases().forEach(prosecutionCase -> {
+            if (anchorOrder.contains(prosecutionCase.getId())) {
+                anchored.add(prosecutionCase);
+            } else {
+                arriving.add(prosecutionCase);
+            }
+        });
+
+        if (anchored.isEmpty()) {
+            return hearing;
+        }
+
+        anchored.sort(comparingInt(prosecutionCase -> anchorOrder.indexOf(prosecutionCase.getId())));
+
+        final List<ProsecutionCase> reordered = new ArrayList<>(anchored);
+        reordered.addAll(arriving);
+
+        return Hearing.hearing().withValuesFrom(hearing).withProsecutionCases(reordered).build();
+    }
+
+    /**
+     * Shapes an application-derived hearing (referral/boxwork creation flows) for listing: the
+     * hearing was just built from the application, so its prosecution side can only contain the
+     * application's own case — an application hearing (all application offences concluded) drops its
+     * prosecutionCases; active application offences move to the prosecution side and unreferenced
+     * case offences are dropped. Case-only hearings (no court applications) are returned unchanged.
+     * For hearings that already exist / were confirmed by listing use
+     * {@link #shapeExistingHearingForListing} instead.
+     */
+    public Hearing shapeHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
+        return HearingOffenceFilter.filterOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    }
+
+    /**
+     * Shapes a merged/existing hearing (confirmed by listing, adjourn/next-hearing, extend) whose
+     * prosecution side carries legitimately listed case offences: those are preserved; only the
+     * application's own offences are shaped (concluded ones stay under the application and are
+     * deduped off the prosecution side, active ones move to the prosecution side).
+     */
+    public Hearing shapeExistingHearingForListing(final Hearing hearing, final JsonEnvelope jsonEnvelope) {
+        return HearingOffenceFilter.filterOffencesPreservingHearingCaseOffences(hearing, offenceOwnerResolver(jsonEnvelope));
+    }
+
+    /**
+     * Builds an offence-owner resolver that fetches each prosecution case from the view store at most once
+     * per call (memoised by prosecutionCaseId), so multiple offences belonging to the same case do not
+     * trigger repeated API lookups. Used as a fallback when an active application offence is not already
+     * present under the prosecutionCases.
+     */
+    HearingOffenceFilter.OffenceOwnerResolver offenceOwnerResolver(final JsonEnvelope jsonEnvelope) {
+        final Map<UUID, Optional<ProsecutionCase>> caseCache = new HashMap<>();
+        return (prosecutionCaseId, offenceId) -> {
+            if (isNull(prosecutionCaseId)) {
+                return Optional.empty();
+            }
+            return caseCache.computeIfAbsent(prosecutionCaseId, id -> fetchProsecutionCase(jsonEnvelope, id))
+                    .flatMap(prosecutionCase -> findOwningDefendantId(prosecutionCase, offenceId));
+        };
+    }
+
+    private Optional<ProsecutionCase> fetchProsecutionCase(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId) {
+        try {
+            final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, prosecutionCaseId.toString());
+            return Optional.ofNullable(jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class));
+        } catch (final RuntimeException e) {
+            LOGGER.warn("Unable to fetch prosecution case {}: {}", prosecutionCaseId, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<UUID> findOwningDefendantId(final ProsecutionCase prosecutionCase, final UUID offenceId) {
+        if (isNull(prosecutionCase.getDefendants())) {
+            return Optional.empty();
+        }
+        return prosecutionCase.getDefendants().stream()
+                .filter(defendant -> nonNull(defendant.getOffences()))
+                .filter(defendant -> defendant.getOffences().stream().anyMatch(offence -> offenceId.equals(offence.getId())))
+                .map(Defendant::getId)
+                .findFirst();
     }
 
     public Hearing updateHearingForHearingUpdated(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final Hearing hearing) {
