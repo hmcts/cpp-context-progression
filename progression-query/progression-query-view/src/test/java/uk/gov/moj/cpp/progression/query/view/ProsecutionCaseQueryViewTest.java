@@ -121,6 +121,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import uk.gov.justice.services.messaging.JsonObjects;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
