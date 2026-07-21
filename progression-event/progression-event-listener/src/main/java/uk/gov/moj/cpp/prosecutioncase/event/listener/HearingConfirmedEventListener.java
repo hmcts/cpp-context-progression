@@ -9,7 +9,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import java.io.StringReader;
 import java.util.Comparator;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
@@ -121,7 +121,7 @@ public class HearingConfirmedEventListener {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

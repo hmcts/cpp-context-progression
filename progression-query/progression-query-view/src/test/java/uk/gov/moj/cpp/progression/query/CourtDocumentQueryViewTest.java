@@ -94,7 +94,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import uk.gov.justice.services.messaging.JsonObjects;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -1425,7 +1424,7 @@ public class CourtDocumentQueryViewTest {
         when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
                 .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
@@ -1484,7 +1483,7 @@ public class CourtDocumentQueryViewTest {
         when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
                 .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
@@ -1549,7 +1548,7 @@ public class CourtDocumentQueryViewTest {
         when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
                 .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
@@ -1613,7 +1612,7 @@ public class CourtDocumentQueryViewTest {
         when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
                 .add(createObjectBuilder().add("groupName", userGroup).build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);

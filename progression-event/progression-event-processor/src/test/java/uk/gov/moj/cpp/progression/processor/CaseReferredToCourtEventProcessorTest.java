@@ -345,7 +345,7 @@ public class CaseReferredToCourtEventProcessorTest {
 
         // Mock duplicate found for ProsecutionAuthorityReference
         when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "proAuthRef")).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+                (JsonObjects.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         this.eventProcessor.referSJPCasesToCourt(jsonEnvelope);
 
@@ -363,9 +363,9 @@ public class CaseReferredToCourtEventProcessorTest {
 
         // Mock no duplicate for ProAuthRef, but duplicate found for CaseURN
         when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "proAuthRef")).thenReturn(Optional.of
-                (Json.createObjectBuilder().build()));
+                (JsonObjects.createObjectBuilder().build()));
         when(progressionService.caseExistsByCaseUrn(jsonEnvelope, "caseURN")).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+                (JsonObjects.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         this.eventProcessor.referSJPCasesToCourt(jsonEnvelope);
 

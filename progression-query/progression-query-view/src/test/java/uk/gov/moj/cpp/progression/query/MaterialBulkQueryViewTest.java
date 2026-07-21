@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MaterialIdMapping;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MaterialBulkRepository;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.Arrays;
@@ -60,7 +60,7 @@ class MaterialBulkQueryViewTest {
         // Given
         final String materialIdsString = materialId1.toString() + "," + materialId2.toString();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialIds", materialIdsString)
                 .build();
 
@@ -112,7 +112,7 @@ class MaterialBulkQueryViewTest {
         // Given
         final String materialIdsString = materialId3.toString();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialIds", materialIdsString)
                 .build();
 
@@ -150,7 +150,7 @@ class MaterialBulkQueryViewTest {
         // Given
         final String materialIdsString = materialId1.toString();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialIds", materialIdsString)
                 .build();
 
@@ -183,7 +183,7 @@ class MaterialBulkQueryViewTest {
 
         final String materialIdsString = materialId1.toString();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialIds", materialIdsString)
                 .build();
 
@@ -209,7 +209,7 @@ class MaterialBulkQueryViewTest {
         // Given
         final String materialIdsString = materialId1.toString() + "," + materialId2.toString() + "," + materialId3.toString();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialIds", materialIdsString)
                 .build();
 

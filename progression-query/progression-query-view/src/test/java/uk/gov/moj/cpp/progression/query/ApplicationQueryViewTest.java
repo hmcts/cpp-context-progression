@@ -446,15 +446,15 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), anyBoolean())).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
-        final JsonObject linkedCaseJson = Json.createObjectBuilder()
-                .add("offences", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("orderIndex", 2).build())
+        final JsonObject linkedCaseJson = JsonObjects.createObjectBuilder()
+                .add("offences", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder().add("orderIndex", 2).build())
                         .build())
                 .build();
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)   // applicationDetails
                 .thenReturn(linkedCaseJson)               // linked case (inside getLinkedCases)
-                .thenReturn(Json.createObjectBuilder().build()) // laaApplnReference
+                .thenReturn(JsonObjects.createObjectBuilder().build()) // laaApplnReference
                 .thenReturn(mockApplicantDetailsJson);    // applicantDetails (and child summary)
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);

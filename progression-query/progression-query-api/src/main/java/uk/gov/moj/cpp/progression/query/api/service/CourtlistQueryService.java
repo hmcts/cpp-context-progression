@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -34,7 +34,7 @@ public class CourtlistQueryService {
     public JsonEnvelope buildCourtlistQueryEnvelope(final String courtCentreId, final String courtRoomId,
                                                    final String listId, final String startDate, final String endDate,
                                                    final boolean restricted, final UUID userId, final String courtListAction) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId)
                 .add("listId", listId)
                 .add("startDate", startDate)
@@ -59,7 +59,7 @@ public class CourtlistQueryService {
      * when available from reference data. courtIdNumeric is taken from reference data field "courtId", default "0".
      */
     public JsonObject buildEnrichedPayload(final JsonEnvelope document) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
         document.payloadAsJsonObject().keySet().forEach(key ->
                 builder.add(key, document.payloadAsJsonObject().get(key)));
 

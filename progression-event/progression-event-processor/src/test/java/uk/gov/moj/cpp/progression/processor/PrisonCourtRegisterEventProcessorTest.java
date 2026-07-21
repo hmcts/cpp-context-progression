@@ -17,6 +17,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
@@ -30,6 +31,7 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
@@ -41,9 +43,12 @@ import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
 import uk.gov.moj.cpp.progression.service.amp.mappers.HearingResultsDocumentSubscriptionPCRMapper;
 import uk.gov.moj.cpp.progression.service.amp.service.HearingResultsDocumentSubscriptionClient;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.ws.rs.core.Response;
 
 import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
