@@ -1,16 +1,22 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -21,6 +27,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.domain.pojo.Direction;
@@ -34,13 +41,6 @@ import uk.gov.moj.cpp.progression.query.view.service.transformer.WitnessPetTrans
 import uk.gov.moj.cpp.progression.query.view.service.transformer.WitnessPtphTransformer;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -49,23 +49,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.Json.createReader;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class DirectionsManagementQueryApiTest {
@@ -124,7 +122,7 @@ public class DirectionsManagementQueryApiTest {
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -162,7 +160,7 @@ public class DirectionsManagementQueryApiTest {
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -223,7 +221,7 @@ public class DirectionsManagementQueryApiTest {
         RefDataDirection refDataDirection = RefDataDirection.refDataDirection().withSequenceNumber(1).build();
 //        when(directionQueryView.getTransformedDirections(any(), any(), any(), any(), any(), anyBoolean(), anyString())).thenReturn(refDataDirection);
 
-        final JsonObjectBuilder queryPayload = Json.createObjectBuilder().add("categories", "cat1,cat2")
+        final JsonObjectBuilder queryPayload = JsonObjects.createObjectBuilder().add("categories", "cat1,cat2")
                 .add("formType", "PET")
                 .add("caseId", randomUUID().toString())
                 .add("formId", randomUUID().toString());
@@ -245,7 +243,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -266,7 +264,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "nonexistent")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -289,7 +287,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -320,7 +318,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -363,7 +361,7 @@ public class DirectionsManagementQueryApiTest {
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(fileName);
-             final JsonReader jsonReader = Json.createReader(stream)) {
+             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             return payload;
         }

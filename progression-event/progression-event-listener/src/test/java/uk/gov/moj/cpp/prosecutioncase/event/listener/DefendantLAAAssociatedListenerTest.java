@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.DefendantLAAAssociatedListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
@@ -14,7 +15,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssocia
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ public class DefendantLAAAssociatedListenerTest {
     }
 
     private static JsonObject createPayloadForDefendantLAAAssociation() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(DEFENDANT_ID, defendantId.toString())
                 .add(LAA_CONTRACT_NUMBER, laaContractNumber)
                 .add(IS_ASSOCIATED_BY_LAA, isAssociatedByLAA)

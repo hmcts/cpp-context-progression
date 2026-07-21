@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -35,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -198,7 +198,7 @@ public class RelatedHearingEventProcessorTest {
     public void shouldHandlePublicCasesAddedForUpdatedRelatedHearing() {
         final String hearingId = randomUUID().toString();
         final String seedingHearingId = randomUUID().toString();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingId)
                 .add("seedingHearingId", seedingHearingId).build();
         final JsonEnvelope event = envelopeFrom(

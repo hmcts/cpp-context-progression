@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
@@ -14,7 +15,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssocia
 
 import java.util.Collections;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class DefendantByLAAContractNumberQueryViewTest {
         final String defendantId = randomUUID().toString();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("laaContractNumber", laaContractNumber).build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(

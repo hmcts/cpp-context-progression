@@ -20,6 +20,7 @@ import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelp
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -68,7 +69,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -479,7 +479,7 @@ public class ReceiveRepresentationOrderHandlerTest {
 
 
     private static JsonObject getLegalStatus() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("id", LEGAL_STATUS_ID.toString())
                 .add("statusDescription", "description")
                 .add("defendantLevelStatus", "Granted")
@@ -488,19 +488,19 @@ public class ReceiveRepresentationOrderHandlerTest {
 
 
     private static JsonObject getAssociationWithOutAnyOrganisation() {
-        return Json.createObjectBuilder()
-                .add(ASSOCIATION, Json.createObjectBuilder())
+        return JsonObjects.createObjectBuilder()
+                .add(ASSOCIATION, JsonObjects.createObjectBuilder())
                 .build();
     }
 
     private static JsonObject getAssociationWithMatchingOrganisation(final String organisationId) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(ORGANISATION_ID, organisationId)
                 .build();
     }
 
     private static JsonObject getAssociationWithoutMatchingOrganisation() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(ORGANISATION_ID, randomUUID().toString())
                 .add(REPRESENTATION_TYPE, RepresentationType.REPRESENTATION_ORDER.toString())
                 .build();

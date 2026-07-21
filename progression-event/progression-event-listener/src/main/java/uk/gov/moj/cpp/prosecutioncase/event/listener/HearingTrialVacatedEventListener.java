@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -18,7 +19,6 @@ import java.io.StringReader;
 import java.util.Objects;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -72,7 +72,7 @@ public class HearingTrialVacatedEventListener {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

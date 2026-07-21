@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.QueryClientTestBase;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -19,7 +20,6 @@ import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 
 import java.util.List;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -79,7 +79,7 @@ public class UserDetailsLoaderTest {
     @Test
     public void shouldNotReturnOrganisationDetails() {
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder().build();
         final Metadata metadata = QueryClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION);
 
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);

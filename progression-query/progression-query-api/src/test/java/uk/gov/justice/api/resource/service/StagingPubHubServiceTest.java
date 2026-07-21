@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.utils.FileUtil;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -11,7 +12,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class StagingPubHubServiceTest {
 
         //when
         stagingPubHubService.publishStandardList(standardList, userId);
-        final JsonObject expectedJson = Json.createObjectBuilder()
+        final JsonObject expectedJson = JsonObjects.createObjectBuilder()
                 .add("standardList", standardList)
                 .build();
 

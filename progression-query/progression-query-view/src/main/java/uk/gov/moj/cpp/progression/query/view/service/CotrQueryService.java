@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -39,7 +40,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -152,7 +152,7 @@ public class CotrQueryService {
                     .collect(Collectors.toList());
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(prosecutionCaseId);
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
-            final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
             final JsonObject prosecutionFormData = Strings.isNullOrEmpty(cotrDetailsEntity.getProsecutionFormData()) ? null : stringToJsonObjectConverter.convert(cotrDetailsEntity.getProsecutionFormData());
 
             addAttribute(jsonObjectBuilder, "id", cotrDetailsEntity.getId().toString());

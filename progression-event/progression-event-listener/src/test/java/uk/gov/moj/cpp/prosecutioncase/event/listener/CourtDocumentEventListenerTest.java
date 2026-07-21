@@ -4,8 +4,8 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,6 +22,7 @@ import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
@@ -55,7 +56,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -146,8 +146,7 @@ public class CourtDocumentEventListenerTest {
                                 .add("prosecutionCaseId", CASE_DOCUMENT_ID)
                                 .add("defendants", createArrayBuilder().add("e1d32d9d-29ec-4934-a932-22a50f223966"))).build();
 
-        final JsonObject courtDocument =
-                createObjectBuilder().add("courtDocument",
+        return createObjectBuilder().add("courtDocument",
                         createObjectBuilder()
                                 .add("courtDocumentId", CASE_DOCUMENT_ID)
                                 .add("documentCategory", documentCategory)
@@ -158,14 +157,13 @@ public class CourtDocumentEventListenerTest {
                                 .add("materials", createObjectBuilder().add("id", "5e1cc18c-76dc-47dd-99c1-d6f87385edf1"))
                                 .add("containsFinancialMeans", true)
                                 .add("courtDocumentTypeRBAC",
-                                        Json.createObjectBuilder()
+                                        JsonObjects.createObjectBuilder()
                                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
                                 .add("seqNum",10)
 
                 ).build();
-        return courtDocument;
     }
 
     private static DocumentTypeRBAC createDocumentTypeRBACObject() {
@@ -529,6 +527,6 @@ public class CourtDocumentEventListenerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 }

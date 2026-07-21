@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.progression.command.service;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -19,7 +20,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class UserGroupQueryService {
@@ -72,7 +72,7 @@ public class UserGroupQueryService {
     }
 
     private JsonObject getUserGroups(final Metadata metadata, final UUID userId) {
-        final JsonObject getGroupsForUserRequest = Json.createObjectBuilder().add(USER_ID, userId.toString()).build();
+        final JsonObject getGroupsForUserRequest = JsonObjects.createObjectBuilder().add(USER_ID, userId.toString()).build();
         final Metadata metadataWithActionName = metadataFrom(metadata).withName("usersgroups.get-logged-in-user-groups").build();
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getGroupsForUserRequest);
         final Envelope<JsonObject> response = requester.request(requestEnvelope, JsonObject.class);

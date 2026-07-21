@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import org.slf4j.Logger;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
@@ -34,7 +35,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ResultListOpaNoticeRepository;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
@@ -287,7 +287,7 @@ public class OnlinePleaListener {
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

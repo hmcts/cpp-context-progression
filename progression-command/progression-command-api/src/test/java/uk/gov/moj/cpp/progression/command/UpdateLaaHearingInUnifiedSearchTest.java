@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -18,7 +19,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
@@ -42,7 +42,7 @@ public class UpdateLaaHearingInUnifiedSearchTest {
     public void testHandleUpdateLaaHearingDetailsUnifiedSearch() {
         final UUID hearingId1 = randomUUID();
         final UUID hearingId2 = randomUUID();
-        final JsonObject commandPayload = Json.createObjectBuilder()
+        final JsonObject commandPayload = JsonObjects.createObjectBuilder()
                 .add("hearingIds", createArrayBuilder()
                         .add(hearingId1.toString())
                         .add(hearingId2.toString())

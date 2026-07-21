@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.SJP_REFERRAL;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -33,7 +34,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -180,7 +180,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
     }
 
     private JsonObject getPayload(final ProsecutionCase prosecutionCase) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
                 .add("caseStatus", SJP_REFERRAL.getDescription())
                 .build();

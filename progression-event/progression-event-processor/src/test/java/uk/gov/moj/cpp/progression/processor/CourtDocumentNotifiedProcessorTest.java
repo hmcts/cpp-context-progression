@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -15,6 +15,7 @@ import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +113,7 @@ public class CourtDocumentNotifiedProcessorTest {
 
     @Test
     public void shouldProcessCourtDocumentSendToCPS_WhenFeatureToggleIsOnForDefenceDisclosure() {
-        final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
+        final String transformedPayload = JsonObjects.createObjectBuilder().add("a", "b").build().toString();
         when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
         when(featureControlGuard.isFeatureEnabled("defenceDisclosure")).thenReturn(true);
 
@@ -125,7 +125,7 @@ public class CourtDocumentNotifiedProcessorTest {
 
     @Test
     public void shouldProcessCourtDocumentSendToCPS_WhenSendToCpsTrue() {
-        final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
+        final String transformedPayload = JsonObjects.createObjectBuilder().add("a", "b").build().toString();
         when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
 
         courtDocument = courtDocument()
@@ -150,7 +150,7 @@ public class CourtDocumentNotifiedProcessorTest {
 
     @Test
     public void shouldProcessOPACourtDocumentSendToCPS_WhenSendToCpsTrue() {
-        final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
+        final String transformedPayload = JsonObjects.createObjectBuilder().add("a", "b").build().toString();
         when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
 
         courtDocument = courtDocument()

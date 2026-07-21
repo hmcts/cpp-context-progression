@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor.document;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedPr
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_DOCUMENT_ADDED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -46,7 +47,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -147,11 +147,11 @@ public class CourtDocumentAddedProcessorTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return Json.createObjectBuilder()
-                .add("documentAccess", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", Json.createArrayBuilder().add("Listing Officer"))
-                .add("readUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates").add("Defence Lawyers"))
-                .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return JsonObjects.createObjectBuilder()
+                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("readUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates").add("Defence Lawyers"))
+                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 

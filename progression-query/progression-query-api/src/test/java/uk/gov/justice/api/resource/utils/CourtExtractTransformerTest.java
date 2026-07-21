@@ -33,6 +33,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.dto.ResultLine;
@@ -132,7 +133,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -2825,7 +2825,7 @@ public class CourtExtractTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = JsonObjects.createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }

@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.progression.service;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -19,7 +20,6 @@ import uk.gov.moj.cpp.progression.service.payloads.CaseDefendantsOrganisations;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class DefenceService {
@@ -42,7 +42,7 @@ public class DefenceService {
     public CaseDefendantsOrganisations getDefendantsAndAssociatedOrganisationsForCase(final JsonEnvelope envelope, final String caseId){
 
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), CASE_DEFENDANTS_ORGANISATIONS);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add(CASE_ID, caseId)
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), CaseDefendantsOrganisations.class).payload();
@@ -51,7 +51,7 @@ public class DefenceService {
 
     public JsonObject getRoleInCaseByCaseId(final JsonEnvelope envelope, final String caseId){
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), ROLE_IN_CASE_BY_CASEID);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
                 .add(CASE_ID, caseId)
                 .build();
 

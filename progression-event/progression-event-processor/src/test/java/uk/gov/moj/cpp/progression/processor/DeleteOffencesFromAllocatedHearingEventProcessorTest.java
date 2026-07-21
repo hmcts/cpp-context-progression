@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,12 +15,12 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ public class DeleteOffencesFromAllocatedHearingEventProcessorTest {
         final UUID offenceId2 = randomUUID();
         final JsonObject offenceRemovedFromExistingUnallocatedHearing = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("offenceIds", Json.createArrayBuilder()
+                .add("offenceIds", JsonObjects.createArrayBuilder()
                         .add(offenceId1.toString())
                         .add(offenceId2.toString())
                         .build())

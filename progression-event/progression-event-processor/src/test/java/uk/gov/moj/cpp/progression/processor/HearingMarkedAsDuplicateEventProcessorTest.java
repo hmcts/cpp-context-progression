@@ -5,7 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
@@ -26,7 +27,6 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -66,15 +66,15 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
         final String offence2Id = randomUUID().toString();
         final JsonObject hearingMarkedAsDuplicate = createObjectBuilder()
                 .add("hearingId", hearingId)
-                .add("prosecutionCaseIds", Json.createArrayBuilder()
+                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
                         .add(case1Id)
                         .add(case2Id)
                         .build())
-                .add("defendantIds", Json.createArrayBuilder()
+                .add("defendantIds", JsonObjects.createArrayBuilder()
                         .add(defendant1Id)
                         .add(defendant2Id)
                         .build())
-                .add("offenceIds", Json.createArrayBuilder()
+                .add("offenceIds", JsonObjects.createArrayBuilder()
                         .add(offence1Id)
                         .add(offence2Id)
                         .build())
@@ -105,7 +105,7 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
         final UUID case2Id = randomUUID();
         final JsonObject hearingMarkedAsDuplicate = createObjectBuilder()
                 .add("hearingIdToBeDeleted", hearingId.toString())
-                .add("caseIds", Json.createArrayBuilder()
+                .add("caseIds", JsonObjects.createArrayBuilder()
                         .add(case1Id.toString())
                         .add(case2Id.toString())
                         .build())

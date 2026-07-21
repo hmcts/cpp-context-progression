@@ -5,8 +5,8 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 
 import java.util.UUID;
-import javax.json.Json;
 import javax.json.JsonObject;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -58,7 +58,7 @@ public class CaseMarkersUpdatedProcessor {
         final CaseMarkersSharedWithHearings caseMarkersSharedWithHearings = jsonObjectToObjectConverter.convert(privateEventPayload, CaseMarkersSharedWithHearings.class);
 
         caseMarkersSharedWithHearings.getHearingIds().forEach( hearingId ->
-                sender.send(envelop(Json.createObjectBuilder()
+                sender.send(envelop(JsonObjects.createObjectBuilder()
                         .add("prosecutionCaseId", caseMarkersSharedWithHearings.getProsecutionCaseId().toString())
                         .add("hearingId", hearingId.toString())
                         .add("caseMarkers", privateEventPayload.get("caseMarkers"))

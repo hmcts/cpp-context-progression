@@ -15,11 +15,10 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
-
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 @RunWith(CdiTestRunner.class)
 public class CaseLinkSplitMergeRepositoryTest {
@@ -83,7 +82,7 @@ public class CaseLinkSplitMergeRepositoryTest {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final UUID prosecutionCaseId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
-        prosecutionCaseEntity.setPayload(Json.createObjectBuilder().build().toString());
+        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         prosecutionCaseRepository.save(prosecutionCaseEntity);
         return prosecutionCaseEntity;
     }

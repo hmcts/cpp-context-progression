@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.event;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -38,6 +38,7 @@ import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GE
 import static uk.gov.moj.cpp.progression.utils.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -116,7 +117,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -1026,7 +1026,7 @@ public class HearingResultEventProcessorTest {
                 .withId(randomUUID())
                 .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
 
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = JsonObjects.createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
 

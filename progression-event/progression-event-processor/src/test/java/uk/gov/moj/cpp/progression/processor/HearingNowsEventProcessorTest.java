@@ -6,13 +6,13 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -35,8 +35,8 @@ public class HearingNowsEventProcessorTest {
 
     @Test
     public void shouldProcessNowNotificationGeneratedEvent() {
-        final JsonObject requestJson = Json.createObjectBuilder().add("key", "value").build();
-        final Metadata metadata = metadataFrom(Json.createObjectBuilder().add("id", ID.toString()).build())
+        final JsonObject requestJson = JsonObjects.createObjectBuilder().add("key", "value").build();
+        final Metadata metadata = metadataFrom(JsonObjects.createObjectBuilder().add("id", ID.toString()).build())
                 .withName(PROGRESSION_COMMAND_FOR_NOW_NOTIFICATION_GENERATED)
                 .build();
         final JsonEnvelope event = envelopeFrom(metadata, requestJson);

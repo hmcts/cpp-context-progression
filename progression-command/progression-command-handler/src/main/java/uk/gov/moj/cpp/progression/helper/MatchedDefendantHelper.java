@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.Defendant;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -50,7 +50,7 @@ public class MatchedDefendantHelper {
     ListToJsonArrayConverter listToJsonArrayConverter;
 
     public  String transformToPartialMatchDefendantPayload(final Defendant defendant, final ProsecutionCase prosecutionCase, final List<Cases> casesList ) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add(DEFENDANT_ID, defendant.getId().toString());
         addToJsonObjectNullSafe(jsonObjectBuilder,MASTER_DEFENDANT_ID, defendant.getMasterDefendantId());
         addToJsonObjectNullSafe(jsonObjectBuilder,PROSECUTION_CASE_ID, prosecutionCase.getId());
@@ -72,7 +72,7 @@ public class MatchedDefendantHelper {
         addAddress(defendant, jsonObjectBuilder);
         jsonObjectBuilder.add(DEFENDANTS_MATCHED_COUNT, casesList.size());
 
-        final JsonArrayBuilder jsonDefendantsMatchedBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonDefendantsMatchedBuilder = JsonObjects.createArrayBuilder();
         casesList.stream()
                 .forEach(cases -> {
                     final JsonArray jsonArray = listToJsonArrayConverter.convert(cases.getDefendants());
@@ -85,7 +85,7 @@ public class MatchedDefendantHelper {
 
     private  void addAddress(final Defendant defendant, final JsonObjectBuilder jsonObjectBuilder) {
         if (nonNull(defendant.getPersonDefendant().getPersonDetails().getAddress())) {
-            final JsonObjectBuilder addressJsonObjectBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder addressJsonObjectBuilder = JsonObjects.createObjectBuilder();
             final Address address = defendant.getPersonDefendant().getPersonDetails().getAddress();
             addToJsonObjectNullSafe(addressJsonObjectBuilder, ADDRESS_LINE_1, address.getAddress1());
             addToJsonObjectNullSafe(addressJsonObjectBuilder, ADDRESS_LINE_2, address.getAddress2());
@@ -102,7 +102,7 @@ public class MatchedDefendantHelper {
         defendantsArray.stream()
                 .map(j -> (JsonObject) j)
                 .forEach(jsonObject -> {
-                            final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+                            final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
                             jsonObject.forEach(jsonObjectBuilder::add);
                             jsonObjectBuilder.add(PROSECUTION_CASE_ID, prosecutionCaseId);
                             jsonObjectBuilder.add(CASE_REFERENCE, caseReference);

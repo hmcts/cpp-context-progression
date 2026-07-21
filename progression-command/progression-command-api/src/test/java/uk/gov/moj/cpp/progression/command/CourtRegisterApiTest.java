@@ -20,7 +20,6 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.time.LocalDate;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -92,7 +91,7 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildGenerateCourtRegisterByDateEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("registerDate", LocalDate.now().toString())
                 .build();
         final Metadata metadata = Envelope
@@ -105,7 +104,7 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildGenerateCourtRegisterEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .build();
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -117,8 +116,8 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("courtRegisterDocumentRequest", Json.createObjectBuilder().add("courtCentreId", randomUUID().toString()).build())
+        final JsonObject payload = JsonObjects.createObjectBuilder()
+                .add("courtRegisterDocumentRequest", JsonObjects.createObjectBuilder().add("courtCentreId", randomUUID().toString()).build())
                 .build();
 
         final Metadata metadata = Envelope

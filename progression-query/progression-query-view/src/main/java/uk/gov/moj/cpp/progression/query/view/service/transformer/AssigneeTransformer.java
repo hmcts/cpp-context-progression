@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.query.view.service.transformer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class AssigneeTransformer {
             final JsonObject assigneeForm = jsonObject.getJsonObject(DATA);
 
             if (nonNull(assigneeForm.getJsonArray(ASSIGNEES))) {
-                final JsonArray cpsAssignees = ofNullable(assigneeForm.getJsonArray(ASSIGNEES)).orElse(Json.createArrayBuilder().build());
+                final JsonArray cpsAssignees = ofNullable(assigneeForm.getJsonArray(ASSIGNEES)).orElse(JsonObjects.createArrayBuilder().build());
 
                 LOGGER.info("cpsAssignees >> {}", cpsAssignees);
 

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService.REFERENCEDATA_GET_PROSECUTOR;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -13,7 +14,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -82,11 +82,11 @@ public class ReferenceDataServiceTest {
     @Test
     void shouldGetHearingTypes() {
         when(requester.request(requestJsonEnvelope.capture())).thenReturn(jsonEnvelope);
-        final JsonArray hearingTypes = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", UUID.randomUUID().toString()).build())
+        final JsonArray hearingTypes = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("id", UUID.randomUUID().toString()).build())
                 .build();
         when(queryEnvelope.metadata()).thenReturn(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build());
-        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder()
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder()
                 .add("hearingTypes", hearingTypes)
                 .build()
         );

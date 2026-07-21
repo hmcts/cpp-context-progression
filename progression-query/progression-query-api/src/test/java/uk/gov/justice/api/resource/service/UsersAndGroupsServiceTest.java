@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -15,7 +16,6 @@ import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -47,7 +47,7 @@ public class UsersAndGroupsServiceTest {
         final UUID organisationId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
-        final JsonObjectBuilder associationBuilder = Json.createObjectBuilder().add("organisationId", organisationId.toString());
+        final JsonObjectBuilder associationBuilder = JsonObjects.createObjectBuilder().add("organisationId", organisationId.toString());
 
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, associationBuilder);
 

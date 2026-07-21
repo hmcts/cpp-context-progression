@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.progression.command;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -31,7 +31,7 @@ public class PatchAndResendLaaCaseOutcomeAPi {
         for (int i = 0; i < caseHearings.size(); i++) {
             final JsonObject caseHearing = caseHearings.getJsonObject(i);
 
-            final JsonObject jsonObject = Json.createObjectBuilder()
+            final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                     .add("caseId", caseHearing.getString("caseId"))
                     .add("hearingId", caseHearing.getString("hearingId"))
                     .add("resultDate", caseHearing.getString("resultDate"))

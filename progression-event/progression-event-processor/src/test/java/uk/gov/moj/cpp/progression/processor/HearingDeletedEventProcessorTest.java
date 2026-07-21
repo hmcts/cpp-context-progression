@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -24,7 +25,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -102,10 +102,10 @@ public class HearingDeletedEventProcessorTest {
         final UUID prosecutionCaseId2 = randomUUID();
         final JsonObject hearingDeletedForProsecutionCase = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("courtApplicationIds", Json.createArrayBuilder()
+                .add("courtApplicationIds", JsonObjects.createArrayBuilder()
                         .add(courtApplicationId.toString())
                         .build())
-                .add("prosecutionCaseIds", Json.createArrayBuilder()
+                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
                         .add(prosecutionCaseId1.toString())
                         .add(prosecutionCaseId2.toString())
                         .build())
@@ -153,7 +153,7 @@ public class HearingDeletedEventProcessorTest {
 
         final JsonObject offencesRemovedFromHearing = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("prosecutionCaseIds", Json.createArrayBuilder()
+                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
                         .add(prosecutionCaseId1.toString())
                         .add(prosecutionCaseId2.toString())
                         .build())

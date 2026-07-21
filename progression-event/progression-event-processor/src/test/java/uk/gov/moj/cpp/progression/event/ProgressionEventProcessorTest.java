@@ -5,8 +5,8 @@ import static java.lang.String.format;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.core.Is;
@@ -108,7 +108,7 @@ public class ProgressionEventProcessorTest {
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add("legislation", "legislation")
+        return JsonObjects.createObjectBuilder().add("legislation", "legislation")
                 .add("welshlegislation", LEGISLATION_WELSH)
                 .add("title", "title")
                 .add("welshoffencetitle", WELSH_OFFENCE_TITLE)

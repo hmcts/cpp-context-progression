@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
@@ -30,7 +31,6 @@ import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -43,7 +43,7 @@ import java.util.UUID;
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -163,12 +163,12 @@ public class DefendantTrialRecordSheetRequestedProcessorTest {
         final JsonObject payload2 = createObjectBuilder().add("caseReference", randomUUID().toString()).build();
         final String defendantName1 = "name1";
         final String defendantName2 = "name2";
-        when(progressionService.generateTrialRecordSheetPayloadForApplication(event, caseId, Arrays.asList(offenceId1, offenceId2))).thenReturn(Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        when(progressionService.generateTrialRecordSheetPayloadForApplication(event, caseId, Arrays.asList(offenceId1, offenceId2))).thenReturn(JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("payload", payload1)
                         .add("defendantName", defendantName1)
                         .build())
-                .add(Json.createObjectBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("payload", payload2)
                         .add("defendantName", defendantName2)
                         .build())

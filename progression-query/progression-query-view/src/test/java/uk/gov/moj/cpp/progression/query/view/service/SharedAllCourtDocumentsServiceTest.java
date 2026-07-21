@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -21,8 +22,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedAllCourtDocum
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +47,7 @@ class SharedAllCourtDocumentsServiceTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(Envelope.metadataBuilder().
                 withId(UUID.randomUUID()).
                 withUserId(userId.toString())
-                .withName("test"), Json.createObjectBuilder().build());
+                .withName("test"), JsonObjects.createObjectBuilder().build());
         final UUID caseId = UUID.randomUUID();
         final UUID hearingId = UUID.randomUUID();
         final String caseUrn = string(8).next();

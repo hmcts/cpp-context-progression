@@ -4,11 +4,10 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +28,7 @@ public class DeleteDefendantFinancialMeansApiTest {
     public void shouldRaiseCommandToDeleteDefendantFinancialMeans() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.delete-financial-means"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .build()
         );
 

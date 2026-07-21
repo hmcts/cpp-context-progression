@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -16,7 +17,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -56,10 +56,10 @@ public class MaterialBulkQueryView {
 
 
     private JsonObject createResponsePayload(final List<MaterialIdMapping> mappings) {
-        final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
 
         mappings.forEach(mapping -> {
-            final JsonObjectBuilder materialBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder materialBuilder = JsonObjects.createObjectBuilder()
                     .add("materialId", mapping.getMaterialId().toString());
 
             if (mapping.getCourtDocumentId() != null) {
@@ -83,6 +83,6 @@ public class MaterialBulkQueryView {
             arrayBuilder.add(materialBuilder);
         });
 
-        return Json.createObjectBuilder().add("materialIds", arrayBuilder).build();
+        return JsonObjects.createObjectBuilder().add("materialIds", arrayBuilder).build();
     }
 }

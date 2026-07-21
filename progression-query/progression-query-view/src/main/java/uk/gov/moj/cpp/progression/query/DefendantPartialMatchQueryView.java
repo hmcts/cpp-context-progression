@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -57,7 +56,7 @@ public class DefendantPartialMatchQueryView {
 
         final long count = defendantPartialMatchRepository.count();
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add("totalMatchedDefendants", count);
 
         if (isPageGreaterThanMaximumPage(page, pageSize, count)) {

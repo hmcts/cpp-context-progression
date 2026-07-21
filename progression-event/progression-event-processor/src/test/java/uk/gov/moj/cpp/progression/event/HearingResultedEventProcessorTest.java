@@ -16,6 +16,7 @@ import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -85,7 +86,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -193,7 +193,7 @@ public class HearingResultedEventProcessorTest {
     @Test
     public void shouldIssueCommandToProcessHearingResultsWhenHearingResultedReceived() {
         final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
-        final JsonObject publicEventPayload = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
+        final JsonObject publicEventPayload = JsonObjects.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
                 .add("sharedTime", new UtcClock().now().toString())
                 .add("hearingDay", LocalDate.now().toString()).build();
 
@@ -236,7 +236,7 @@ public class HearingResultedEventProcessorTest {
                         .withApplicant(courtApplicationParty)
                         .withSubject(courtApplicationParty)
                         .build())).build();
-        final JsonObject publicEventPayload = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
+        final JsonObject publicEventPayload = JsonObjects.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
                 .add("sharedTime", new UtcClock().now().toString())
                 .add("hearingDay", LocalDate.now().toString()).build();
 

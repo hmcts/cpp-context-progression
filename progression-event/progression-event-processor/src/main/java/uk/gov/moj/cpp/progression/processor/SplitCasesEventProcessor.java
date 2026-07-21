@@ -8,6 +8,7 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SPLIT_CASES
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildLSMCommandPayload;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.createResponsePayload;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -27,7 +28,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -71,7 +71,7 @@ public class SplitCasesEventProcessor {
                     if (alreadyLinkedCases.get().size() > 0 && alreadyLinkedCases.get().containsKey(SPLIT_CASES) && !alreadyLinkedCases.get().getJsonArray(SPLIT_CASES).isEmpty()) {
                         alreadyLinkedCases.get().getJsonArray(SPLIT_CASES).stream().forEach(
                                 sc -> {
-                                    final JsonObject splitCase = Json.createObjectBuilder().add("splitCase", sc).build();
+                                    final JsonObject splitCase = JsonObjects.createObjectBuilder().add("splitCase", sc).build();
                                     if (splitCase.getJsonObject("splitCase").getString(CASE_URN).contains(e)) {
                                         invalidCaseUrns.add(e);
                                         failed.set(true);

@@ -5,8 +5,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.HearingRequest.hearingRequest;
 import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW;
 import static uk.gov.moj.cpp.progression.task.Task.RETRY_ADD_DEFENDANT_TO_CASE;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -60,7 +61,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -359,7 +359,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private static JsonArray getDefendantOffences(final List<Defendant> defendants) {
-        final JsonArrayBuilder offenceIdArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceIdArrayBuilder = JsonObjects.createArrayBuilder();
         defendants.stream()
                 .flatMap(r -> r.getOffences().stream())
                 .map(Offence::getId)

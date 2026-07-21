@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -13,6 +13,7 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
@@ -48,7 +49,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -257,7 +257,7 @@ public class HearingUpdatedEventProcessor {
 
 
         allHearingOffencesUpdated.getHearingIds().forEach(hearingId -> {
-                   final JsonObjectBuilder payload = Json.createObjectBuilder()
+                   final JsonObjectBuilder payload = JsonObjects.createObjectBuilder()
                            .add("defendantId", allHearingOffencesUpdated.getDefendantId().toString())
                            .add(HEARING_ID, hearingId.toString());
                    if(privateEventPayload.containsKey(UPDATED_OFFENCES)){

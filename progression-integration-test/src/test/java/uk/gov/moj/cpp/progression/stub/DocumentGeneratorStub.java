@@ -26,13 +26,13 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 public class DocumentGeneratorStub {
 
@@ -87,7 +87,7 @@ public class DocumentGeneratorStub {
     public static Optional<JsonObject> getSummonsTemplate(final String templateName, final String... contains) {
         final List<String> documentRequests = getDocumentRequestsAsStream();
         return documentRequests.stream()
-                .map(s -> Json.createReader(new StringReader(s)).readObject())
+                .map(s -> JsonObjects.createReader(new StringReader(s)).readObject())
                 .filter(request -> Arrays.stream(contains).allMatch(request.toString()::contains))
                 .filter(json -> json.getString("templateName").equals(templateName))
                 .map(json -> json.getJsonObject("templatePayload"))
@@ -105,7 +105,7 @@ public class DocumentGeneratorStub {
     public static Optional<JsonObject> getHearingEventTemplate(final String templateName) {
         final List<String> documentRequests = getDocumentRequestsAsStream();
         return documentRequests.stream()
-                .map(s -> Json.createReader(new StringReader(s)).readObject())
+                .map(s -> JsonObjects.createReader(new StringReader(s)).readObject())
                 .filter(json -> json.getString("templateName").equals(templateName))
                 .map(json -> json.getJsonObject("templatePayload"))
                 .findFirst();

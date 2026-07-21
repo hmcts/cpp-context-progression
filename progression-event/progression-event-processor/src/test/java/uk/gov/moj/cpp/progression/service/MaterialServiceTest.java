@@ -21,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADETA_QUERY;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtsDocumentUploaded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -38,7 +39,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -116,7 +116,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")
@@ -151,7 +151,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")
@@ -176,12 +176,6 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("materialId", materialId.toString())
-                .add("fileName", "abc.txt")
-                .add("mimeType", "text")
-                .add("materialAddedDate", "2016-05-03")
-                .build();
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any(Class.class))).thenReturn(finalEnvelope);
         when(finalEnvelope.payload()).thenReturn(null);
 

@@ -14,6 +14,7 @@ import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_AL
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_URN;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SPLIT_CASES;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -88,8 +88,8 @@ public class SplitCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-split-cases"),
                 validatePayload);
 
-        when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().add(SPLIT_CASES, Json.createArrayBuilder().add(
-                Json.createObjectBuilder().add(CASE_URN, String.join(",", caseUrnsToSplit))).build()).build()));
+        when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(JsonObjects.createObjectBuilder().add(SPLIT_CASES, JsonObjects.createArrayBuilder().add(
+                JsonObjects.createObjectBuilder().add(CASE_URN, String.join(",", caseUrnsToSplit))).build()).build()));
         processor.handleSplitCasesValidations(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
@@ -120,7 +120,7 @@ public class SplitCasesEventProcessorTest {
                 validatePayload);
 
         when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(SPLIT_CASES, Json.createArrayBuilder().build()).build()
+                JsonObjects.createObjectBuilder().add(SPLIT_CASES, JsonObjects.createArrayBuilder().build()).build()
         ));
         processor.handleSplitCasesValidations(requestMessage);
 

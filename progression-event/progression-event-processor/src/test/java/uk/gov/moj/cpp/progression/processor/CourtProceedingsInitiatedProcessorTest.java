@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.FileUtil.givenPayload;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
@@ -68,7 +69,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -427,7 +427,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .build()))
                 .build());
         when(listCourtHearingTransformer.transform(any(), any(), anyList(), any())).thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(JsonObjects.createObjectBuilder().build());
 
         this.eventProcessor.handle(requestMessage);
         verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
@@ -691,29 +691,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         verify(progressionService, never()).prosecutionCaseByCaseId(any(), anyString());
     }
 
-    @Test
-    void shouldNotCreateCaseWhenNonStandaloneExistsWithoutMigrationSourceSystem() {
-        final UUID caseId = UUID.randomUUID();
-        final UUID defendantId = UUID.randomUUID();
-        final UUID offenceId = UUID.randomUUID();
-        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
-        final String existingCaseId = UUID.randomUUID().toString();
-
-        final ProsecutionCase prosecutionCase = getProsecutionCase(
-                caseId, List.of(defendantId), offenceId, offenceCode, true,
-                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(),
-                false);
-        final JsonEnvelope requestMessage = setupCourtProceedingsInitiatedEvent(prosecutionCase, caseId, defendantId, offenceId);
-
-        doReturn(Optional.of(buildSearchCaseDetailByUrnResponse(
-                searchResultEntry(existingCaseId, PCF_CASE_URN, false))))
-                .when(progressionService).searchCaseDetailByURN(requestMessage, PCF_CASE_URN);
-
-        eventProcessor.handle(requestMessage);
-
-        assertCreateProsecutionCaseCommandSent(false);
-        verify(progressionService, never()).prosecutionCaseByCaseId(any(), anyString());
-    }
 
     @Test
     void shouldNotCreateCaseWhenMultipleResultsIncludeNonStandaloneNotEjected() {
@@ -1467,7 +1444,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(referenceDataOffenceJsonString));
 
         return jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
     }

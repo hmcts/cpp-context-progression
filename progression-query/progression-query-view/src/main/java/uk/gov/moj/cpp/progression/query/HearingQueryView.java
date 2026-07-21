@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -45,7 +44,7 @@ public class HearingQueryView {
 
     @Handles("progression.query.hearing")
     public JsonEnvelope getHearing(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         final Optional<UUID> hearingId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
 
 

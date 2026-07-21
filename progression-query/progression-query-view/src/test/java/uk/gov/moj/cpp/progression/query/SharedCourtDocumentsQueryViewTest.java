@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,6 +15,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -60,7 +61,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -442,9 +442,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final String trialTypeId = randomUUID().toString();
         hearingEntity.setPayload(("{\"type\":{\"description\":\"Application\",\"id\":\"" + trialTypeId + "\"}}").replaceAll("%NOW%", ZonedDateTime.now().toString()));
         hearingApplicationEntity.setHearing(hearingEntity);
-        final JsonArray jsonHearingTypesArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", trialTypeId).add("trialTypeFlag", true).build())
-                .add(Json.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", false).build())
+        final JsonArray jsonHearingTypesArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("id", trialTypeId).add("trialTypeFlag", true).build())
+                .add(JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", false).build())
                 .build();
 
         when(hearingApplicationRepository.findBy(new HearingApplicationKey(applicationId, hearingId))).thenReturn(hearingApplicationEntity);
@@ -504,9 +504,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final String nonTrialTypeId = randomUUID().toString();
         hearingEntity.setPayload(("{\"type\":{\"description\":\"Application\",\"id\":\"" + nonTrialTypeId + "\"}}"));
         hearingApplicationEntity.setHearing(hearingEntity);
-        final JsonArray jsonHearingTypesArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", true).build())
-                .add(Json.createObjectBuilder().add("id", nonTrialTypeId).add("trialTypeFlag", false).build())
+        final JsonArray jsonHearingTypesArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", true).build())
+                .add(JsonObjects.createObjectBuilder().add("id", nonTrialTypeId).add("trialTypeFlag", false).build())
                 .build();
 
         when(hearingApplicationRepository.findBy(new HearingApplicationKey(applicationId, applicationHearingId))).thenReturn(hearingApplicationEntity);

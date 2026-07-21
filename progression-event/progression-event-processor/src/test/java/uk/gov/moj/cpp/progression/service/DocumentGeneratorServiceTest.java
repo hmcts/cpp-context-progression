@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.ACCOUNTING_DIVISION_CODE;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.NowsDocumentGenerated;
 import uk.gov.justice.core.courts.nces.DocumentContent;
@@ -51,7 +52,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -251,17 +251,17 @@ public class DocumentGeneratorServiceTest {
     }
 
     private JsonObject createNowDocumentContent() {
-        return Json.createObjectBuilder()
-                .add("defendant", Json.createObjectBuilder().add("address", Json.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
+        return JsonObjects.createObjectBuilder()
+                .add("defendant", JsonObjects.createObjectBuilder().add("address", JsonObjects.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
                         .add("emailAddress1", "emailAddress1@test.com").build()).build())
                 .add("financialOrderDetails",
-                        Json.createObjectBuilder().add(ACCOUNTING_DIVISION_CODE, "77").build())
+                        JsonObjects.createObjectBuilder().add(ACCOUNTING_DIVISION_CODE, "77").build())
                 .build();
     }
 
     private JsonObject createNcesDocumentContent() {
-        return Json.createObjectBuilder()
-                .add("defendant", Json.createObjectBuilder().add("address", Json.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
+        return JsonObjects.createObjectBuilder()
+                .add("defendant", JsonObjects.createObjectBuilder().add("address", JsonObjects.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
                         .add("emailAddress1", "emailAddress1@test.com").build()).build())
                 .add(ACCOUNTING_DIVISION_CODE, "77")
                 .build();

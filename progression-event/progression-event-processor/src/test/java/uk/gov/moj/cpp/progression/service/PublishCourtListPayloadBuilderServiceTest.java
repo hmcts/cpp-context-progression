@@ -4,8 +4,8 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Locale.UK;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAdd
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.CourtListPublished;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -44,7 +45,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -552,7 +552,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
     }
 
     private JsonObject prepareCorrespondenceCaseContacts() {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                 .add("caseContext", "HMCTS")
                 .add("caseId", CASE_ID_1.toString())
                 .add("contactId", randomUUID().toString())
@@ -570,7 +570,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
     }
 
     private JsonObject prepareCorrespondenceCaseContacts_WithoutEmail() {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                 .add("caseContext", "HMCTS")
                 .add("caseId", CASE_ID_1.toString())
                 .add("contactId", randomUUID().toString())

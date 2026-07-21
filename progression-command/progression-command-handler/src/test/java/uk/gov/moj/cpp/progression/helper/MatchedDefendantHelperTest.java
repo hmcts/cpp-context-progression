@@ -4,6 +4,7 @@ import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.Defendant;
@@ -25,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -174,7 +174,7 @@ public class MatchedDefendantHelperTest {
 
     @Test
     public void shouldAddToJsonObjectNullSafe() {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
 
         final String stringValue = null;
         matchedDefendantHelper.addToJsonObjectNullSafe(builder, "key", stringValue);

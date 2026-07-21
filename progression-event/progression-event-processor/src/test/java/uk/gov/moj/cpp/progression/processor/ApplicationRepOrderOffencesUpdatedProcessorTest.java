@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +14,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -49,7 +50,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -299,7 +299,7 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
                         .build()))
                 .build();
 
-        when(progressionService.getProsecutionCaseById(any(JsonEnvelope.class), eq(defendantCase.getCaseId().toString()))).thenReturn(Json.createObjectBuilder().add("prosecutionCase", objectToJsonConverter.convert(prosecutionCase)).build());
+        when(progressionService.getProsecutionCaseById(any(JsonEnvelope.class), eq(defendantCase.getCaseId().toString()))).thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCase", objectToJsonConverter.convert(prosecutionCase)).build());
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), eq(ProsecutionCase.class))).thenReturn(prosecutionCase);
 
         eventProcessor.handleApplicationRepOrderUpdatedForApplicationEvent(envelope);

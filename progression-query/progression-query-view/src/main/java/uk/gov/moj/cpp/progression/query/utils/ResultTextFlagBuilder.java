@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.utils;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.util.Arrays;
@@ -8,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ResultTextFlagBuilder {
 
     public JsonArray rebuildWithResultTextFlag(final JsonArray payload){
-        final JsonArrayBuilder response = Json.createArrayBuilder();
+        final JsonArrayBuilder response = JsonObjects.createArrayBuilder();
         payload.stream().map(JsonObject.class::cast).map(this::rebuildObject).forEach(response::add);
         return response.build();
 

@@ -376,7 +376,7 @@ public class HearingUnallocatedCourtroomRemovedEventProcessorTest {
     }
 
     private JsonObject createJsonObjectWithHearingId() {
-        return javax.json.Json.createObjectBuilder()
+        return uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder()
                 .add("hearingId", HEARING_ID.toString())
                 .build();
     }

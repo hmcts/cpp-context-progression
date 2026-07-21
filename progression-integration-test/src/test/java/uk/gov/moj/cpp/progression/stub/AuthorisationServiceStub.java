@@ -10,8 +10,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import uk.gov.moj.cpp.progression.helper.StubUtil;
 
 import java.util.UUID;
-
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 public class AuthorisationServiceStub extends StubUtil {
 
@@ -23,7 +22,7 @@ public class AuthorisationServiceStub extends StubUtil {
     }
 
     private static void stubEnableCapabilities(final String stubUrl, final boolean statusToReturn) {
-        final String responsePayload = Json.createObjectBuilder().add("enabled", statusToReturn).build().toString();
+        final String responsePayload = JsonObjects.createObjectBuilder().add("enabled", statusToReturn).build().toString();
 
         stubFor(get(urlMatching(stubUrl))
                 .willReturn(aResponse().withStatus(SC_OK)
