@@ -115,6 +115,7 @@ import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFact
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
+import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -3151,5 +3152,110 @@ public class CourtApplicationHandlerTest {
                 .withId(offenceId)
                 .withConvictionDate(convictionDate)
                 .build();
+    }
+
+    @Test
+    public void shouldUpdateOffenceWordingForActiveCaseWhenNoCourtOrder() throws EventStreamException {
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                buildInitiateCourtApplicationProceedings(randomUUID(), false, true, false, true, LinkType.LINKED, "ACTIVE");
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final String expectedWording = "Resentenced Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+        final String expectedWordingWelsh = "Resentenced Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING_WELSH;
+        final UUID activeOffenceId = initiateCourtApplicationProceedings.getCourtApplication().getCourtApplicationCases().get(0).getOffences().get(0).getId();
+        final UUID activeProsecutionCaseId = initiateCourtApplicationProceedings.getCourtApplication().getCourtApplicationCases().get(0).getProsecutionCaseId();
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", is(activeProsecutionCaseId.toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", is(activeOffenceId.toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].offenceCode", is(RESENTENCING_ACTIVATION_CODE)),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wording", is(expectedWording)),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wordingWelsh", is(expectedWordingWelsh))
+                        ))
+                )
+        ));
+    }
+
+    @Test
+    public void shouldIgnoreCaseOffencesWhenCaseStatusIsNullAndApplicationSourceIsMH() throws EventStreamException {
+        final UUID caseId = randomUUID();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = initiateCourtApplicationProceedings()
+                .withApplicationSource(ApplicationSource.MH)
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withType(courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .withProsecutorThirdPartyFlag(true)
+                                .withSummonsTemplateType(NOT_APPLICABLE)
+                                .build())
+                        .withApplicant(buildCourtApplicationParty(prosecutor1))
+                        .withRespondents(singletonList(buildCourtApplicationParty(respondent)))
+                        .withSubject(buildCourtApplicationParty(subject))
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withIsSJP(false)
+                                .withCaseStatus(null)
+                                .withProsecutionCaseId(caseId)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                        .withProsecutionAuthorityId(randomUUID()).build())
+                                .withOffences(singletonList(Offence.offence()
+                                        .withOffenceCode(ORG_OFFENCE_CODE)
+                                        .withWording(ORG_OFFENCE_WORDING)
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
+                        .build())
+                .withCourtHearing(buildCourtHearing(true))
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                hasNoJsonPath("$.courtApplication.courtApplicationCases[0].offences")
+                        ))
+                )
+        ));
     }
 }

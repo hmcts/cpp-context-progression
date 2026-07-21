@@ -159,8 +159,20 @@ public class HearingAggregate implements Aggregate {
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
 
-    private static final String GUILTY = "GUILTY";
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
+    //changed GUILTY to address sonar issue : java:S1192
+    private static final List<String> GUILTY_PLEA_VALUES = Arrays.asList(
+            GUILTY_VERDICT_STARTS_WITH,
+            "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
+            "GUILTY_REQUEST_HEARING",
+            "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+            "MCA_GUILTY",
+            "GUILTY_LESSER_OFFENCE_NAMELY",
+            "GUILTY_TO_ALTERNATIVE_OFFENCE",
+            "CHANGE_TO_GUILTY_AFTER_SWORN",
+            "CHANGE_TO_GUILTY_NO JURY",
+            "AUTREFOIS_CONVICT"
+    );
 
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
@@ -1901,7 +1913,7 @@ public class HearingAggregate implements Aggregate {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .collect(toList()));
-        if (isNotEmpty(hearing.getProsecutionCases()) && isNotEmpty(judicialResults)) {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
             streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
         }
 
@@ -1922,7 +1934,7 @@ public class HearingAggregate implements Aggregate {
 
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
-                    .withHearing(updatedHearing)
+                    .withHearing(getHearingWithUpdatedProsecutionCases(updatedHearing))
                     .withShadowListedOffences(shadowListedOffences)
                     .withCommittingCourt(this.committingCourt)
                     .build());
@@ -2834,6 +2846,34 @@ public class HearingAggregate implements Aggregate {
 
     }
 
+    private Hearing getHearingWithUpdatedProsecutionCases(final Hearing hearing) {
+        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> getUpdatedProsecutionCase(prosecutionCase, hearing.getDefendantJudicialResults()))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        final Map<UUID, String> caseStatusByProsecutionCaseId = ofNullable(updatedProsecutionCases).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getId()))
+                .collect(Collectors.toMap(ProsecutionCase::getId, ProsecutionCase::getCaseStatus, (existing, replacement) -> replacement));
+
+        final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplication -> CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                        .withCourtApplicationCases(ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
+                                        .withValuesFrom(courtApplicationCase)
+                                        .withCaseStatus(ofNullable(caseStatusByProsecutionCaseId.get(courtApplicationCase.getProsecutionCaseId()))
+                                                .orElse(courtApplicationCase.getCaseStatus()))
+                                        .build())
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        return Hearing.hearing()
+                .withValuesFrom(hearing)
+                .withProsecutionCases(updatedProsecutionCases)
+                .withCourtApplications(updatedCourtApplications)
+                .build();
+    }
+
     private List<Object> createNextHearingEvents(final Hearing hearing, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
 
         final List<Object> events = new ArrayList<>();
@@ -3553,8 +3593,10 @@ public class HearingAggregate implements Aggregate {
                 isCTLExpiryExists(offence);
     }
 
-    private static boolean isGuilty(final Offence offence) {
-        return (nonNull(offence.getPlea()) && GUILTY.equalsIgnoreCase(offence.getPlea().getPleaValue())) ||
+    private static boolean  isGuilty(final Offence offence) {
+        return (nonNull(offence.getPlea())
+                && GUILTY_PLEA_VALUES.stream()
+                .anyMatch(value -> value.equalsIgnoreCase(offence.getPlea().getPleaValue()))) ||
                 (nonNull(offence.getVerdict()) && isGuiltyVerdict(offence.getVerdict().getVerdictType())) ;
     }
 

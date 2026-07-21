@@ -18,6 +18,9 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.progression.courts.InsertCaseBdf;
 import uk.gov.justice.progression.courts.RemoveDuplicateApplicationBdf;
 import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
 import uk.gov.justice.progression.courts.application.CasesBdf;
@@ -31,6 +34,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
@@ -319,6 +323,68 @@ class AddCasesToHearingBdfHandlerTest {
         verifyAppendAndGetArgumentFrom(eventStream);
     }
 
+    @Test
+    public void shouldHandleInsertCaseBdfV2() throws EventStreamException {
+        final UUID caseId = UUID.randomUUID();
+        final CaseAggregate caseAggregate= new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(prosecutionCaseQueryService.getProsecutionCase(any(), eq(caseId.toString()))).thenReturn(createProsecutionCase(caseId, asList(Map.of(randomUUID(), asList(randomUUID())))));
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withCaseURN("TEST-URN")
+                        .build())
+                .withDefendants(new ArrayList<>())
+                .build();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        //Meta data
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.insert-case-bdf")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<InsertCaseBdf> envelope = envelopeFrom(metadata, InsertCaseBdf.insertCaseBdf().withProsecutionCaseId(caseId)
+                .withProsecutionCase(prosecutionCase)
+                .build());
+
+        addCasesToHearingBdfHandler.handleInsertCase(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+    }
+
+
+    @Test
+    public void shouldHandleInsertCaseBdf() throws EventStreamException {
+        final UUID caseId = UUID.randomUUID();
+        final CaseAggregate caseAggregate= new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(prosecutionCaseQueryService.getProsecutionCase(any(), eq(caseId.toString()))).thenReturn(Optional.empty());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withCaseURN("TEST-URN")
+                        .build())
+                .withDefendants(new ArrayList<>())
+                .build();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        //Meta data
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.insert-case-bdf")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<InsertCaseBdf> envelope = envelopeFrom(metadata, InsertCaseBdf.insertCaseBdf().withProsecutionCaseId(caseId)
+                .withProsecutionCase(prosecutionCase)
+                .build());
+
+        addCasesToHearingBdfHandler.handleInsertCase(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+    }
 
     private Hearing getHearing(final UUID hearingId) {
         final List<ProsecutionCase> prosecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
@@ -333,6 +399,7 @@ class AddCasesToHearingBdfHandlerTest {
                 .build();
         return hearing;
     }
+
 
     private Optional<JsonObject> createProsecutionCase(final UUID caseId, final List<Map<UUID, List<UUID>>> defendants) {
         ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
