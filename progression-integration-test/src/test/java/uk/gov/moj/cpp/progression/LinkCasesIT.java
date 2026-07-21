@@ -6,6 +6,7 @@ import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.deleteRelatedReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
@@ -37,7 +38,6 @@ public class LinkCasesIT extends AbstractIT {
 
     public static final String LINKED_CASES = "linkedCases";
     public static final String MERGED_CASES = "mergedCases";
-    private final String linkCasesPayloadJson = "progression.command.link-cases.json";
     private final String mergeCasePayloadJson = "progression.command.merge-cases.json";
     private final String splitCasesPayloadJson = "progression.command.split-cases.json";
     private final String unlinkCasesPayloadJson = "progression.command.unlink-cases.json";
@@ -83,7 +83,7 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldLinkUnlinkMergeAndSplitCases() throws IOException {
+    void shouldLinkUnlinkMergeAndSplitCases() throws IOException {
         // initiation of cases
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS, prosecutionCaseId_1, defendantId_1, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
@@ -95,6 +95,7 @@ public class LinkCasesIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(prosecutionCaseId_3, getProsecutionCaseMatchers(prosecutionCaseId_3, defendantId_3, emptyList()));
 
         //link cases
+        String linkCasesPayloadJson = "progression.command.link-cases.json";
         linkCases(prosecutionCaseId_1, caseUrn_2, caseUrn_3, linkCasesPayloadJson);
 
 
@@ -112,6 +113,8 @@ public class LinkCasesIT extends AbstractIT {
         } else {
             linkGroupId = responseAsJson.getJsonArray(LINKED_CASES).getJsonObject(1).getString("linkGroupId");
         }
+
+        assertThat(linkGroupId, is(notNullValue()));
 
         //shouldUnlink...
         unlinkCases(prosecutionCaseId_1, caseUrn_1, prosecutionCaseId_2, caseUrn_2, linkGroupId, unlinkCasesPayloadJson);
@@ -140,7 +143,7 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRelatedReferenceUrnOnCaseCreation() {
+    void shouldRelatedReferenceUrnOnCaseCreation() {
 
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
@@ -164,7 +167,7 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldReturnIsCivilFalseForBothPrimaryAndRelatedCaseWhenBothAreCriminal() throws IOException {
+    void shouldReturnIsCivilFalseForBothPrimaryAndRelatedCaseWhenBothAreCriminal() throws IOException {
 
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS, prosecutionCaseId_1, defendantId_1, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
@@ -188,7 +191,7 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() {
+    void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() {
 
         civilCaseInitiateCourtProceedings(prosecutionCaseId_1, defendantId_1, materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB, randomUUID().toString());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
