@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.deleteRelatedReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseLsmInfoFor;
@@ -138,13 +140,16 @@ public class LinkCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRelatedReferenceUrnOnCaseCreation() throws IOException {
+    public void shouldRelatedReferenceUrnOnCaseCreation() {
 
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
 
+        // caseUrn_1 is never ingested as a real case here, so its case type cannot be determined
         List<Matcher> matchers = List.of(
-                withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2))
+                withJsonPath("$.isCivil", is(false)),
+                withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2)),
+                hasNoJsonPath("$.relatedReferenceList[0].isCivil")
         );
         Matcher[] relatedReferenceMatchers = matchers.toArray(new Matcher[0]);
 
@@ -156,5 +161,53 @@ public class LinkCasesIT extends AbstractIT {
 
         deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
 
+    }
+
+    @Test
+    public void shouldReturnIsCivilFalseForBothPrimaryAndRelatedCaseWhenBothAreCriminal() throws IOException {
+
+        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS, prosecutionCaseId_1, defendantId_1, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
+
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
+
+        List<Matcher> matchers = List.of(
+                withJsonPath("$.isCivil", is(false)),
+                withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2)),
+                withJsonPath("$.relatedReferenceList[0].isCivil", is(false))
+        );
+
+        JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, matchers.toArray(new Matcher[0])));
+        final String relatedReferenceId = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReferenceId");
+
+        assertThat(responseAsJson.getBoolean("isCivil"), is(false));
+        assertThat(responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getBoolean("isCivil"), is(false));
+
+        deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
+    }
+
+    @Test
+    public void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() {
+
+        civilCaseInitiateCourtProceedings(prosecutionCaseId_1, defendantId_1, materialIdActive, materialIdDeleted, referralReasonId, caseUrn_1, listedStartDateTime, earliestStartDateTime, defendantDOB, randomUUID().toString());
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList()));
+
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
+
+        List<Matcher> matchers = List.of(
+                withJsonPath("$.isCivil", is(false)),
+                withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2)),
+                withJsonPath("$.relatedReferenceList[0].isCivil", is(true))
+        );
+
+        JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, matchers.toArray(new Matcher[0])));
+        final String relatedReferenceId = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReferenceId");
+
+        assertThat(responseAsJson.getBoolean("isCivil"), is(false));
+        assertThat(responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getBoolean("isCivil"), is(true));
+
+        deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
     }
 }
