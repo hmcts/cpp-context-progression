@@ -7,7 +7,6 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
@@ -16,6 +15,10 @@ import static uk.gov.justice.core.courts.ProsecutingAuthority.Builder;
 import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthority;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.CLOSED;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
+import static uk.gov.moj.cpp.progression.enums.ApplicationSource.MH;
+import static uk.gov.moj.cpp.progression.enums.ApplicationSource.UNKNOWN;
 
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
@@ -64,6 +67,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -74,7 +78,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -351,7 +354,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                                                                                            final boolean applicationReferredToNewHearing, final Envelope<InitiateCourtApplicationProceedings> envelope) {
         final boolean summonsApprovalRequired = isSummonsApprovalRequired(initiateCourtProceedingsForApplication.getBoxHearing(), initiateCourtProceedingsForApplication.getCourtApplication());
         final InitiateCourtApplicationProceedings.Builder initiateCourtProceedingsForApplicationBuilder = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
-                .withCourtApplication(rebuildCourtApplication(initiateCourtProceedingsForApplication.getCourtApplication(), envelope))
+                .withCourtApplication(rebuildCourtApplication(initiateCourtProceedingsForApplication.getCourtApplication(), initiateCourtProceedingsForApplication.getApplicationSource(), envelope))
                 .withSummonsApprovalRequired(summonsApprovalRequired)
                 .withIsAmended(initiateCourtProceedingsForApplication.getIsAmended())
                 .withOldApplicationId(initiateCourtProceedingsForApplication.getOldApplicationId())
@@ -386,13 +389,13 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final boolean summonsApprovalRequired = isSummonsApprovalRequired(editCourtApplicationProceedings.getBoxHearing(), editCourtApplicationProceedings.getCourtApplication());
         final EditCourtApplicationProceedings.Builder editCourtProceedingsForApplicationBuilder = EditCourtApplicationProceedings.editCourtApplicationProceedings()
                 .withValuesFrom(editCourtApplicationProceedings)
-                .withCourtApplication(rebuildCourtApplication(editCourtApplicationProceedings.getCourtApplication(), envelope))
+                .withCourtApplication(rebuildCourtApplication(editCourtApplicationProceedings.getCourtApplication(), UNKNOWN, envelope))
                 .withSummonsApprovalRequired(summonsApprovalRequired);
 
         return editCourtProceedingsForApplicationBuilder.build();
     }
 
-    private CourtApplication rebuildCourtApplication(final CourtApplication courtApplication, final Envelope<?> envelope) {
+    private CourtApplication rebuildCourtApplication(final CourtApplication courtApplication, final ApplicationSource applicationSource, final Envelope<?> envelope) {
 
         final LaaReference laaReference = getLaaApplnReference(courtApplication, envelope);
 
@@ -406,7 +409,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
 
         updateClonedCourtApplicationParties(courtApplicationBuilder, courtApplication, jsonEnvelope);
-        updateClonedOffenceApplicationCases(courtApplicationBuilder, courtApplication);
+        updateClonedOffenceApplicationCases(courtApplicationBuilder, courtApplication, applicationSource);
         updateClonedOffenceCourtOrder(courtApplicationBuilder, courtApplication);
 
 
@@ -448,7 +451,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         return StringUtils.isNotEmpty(type.getResentencingActivationCode());
     }
 
-    private void updateClonedOffenceApplicationCases(final CourtApplication.Builder courtApplicationBuilder, final CourtApplication courtApplication) {
+    private void updateClonedOffenceApplicationCases(final CourtApplication.Builder courtApplicationBuilder, final CourtApplication courtApplication, final ApplicationSource applicationSource) {
         if (isNull(courtApplication.getCourtApplicationCases())) {
             return;
         }
@@ -464,27 +467,28 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
                 .map(courtApplicationCase -> {
-                    if (activeCase(courtApplicationCase.getCaseStatus())) {
+                    if (ignoreCaseOffences(courtApplicationCase.getCaseStatus(), applicationSource)) {
                         return courtApplicationCase()
                                 .withValuesFrom(courtApplicationCase)
                                 .withOffences(null)
                                 .build();
                     } else {
                         return courtApplicationCase()
-                                .withValuesFrom(courtApplicationCase)
-                                .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
-                                        .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
-                                        .collect(collectingAndThen(toList(), getListOrNull())))
+                        .withValuesFrom(courtApplicationCase)
+                                .withOffences(ofNullable(courtApplicationCase.getOffences()).stream().flatMap(Collection::stream)
+                                .map(courtApplicationOffence -> updateOffence(courtApplication.getType(), courtApplicationOffence, wordingPattern, resentencingActivationCode))
+                                .collect(collectingAndThen(toList(), getListOrNull())))
                                 .build();
                     }
-                })
-                .collect(toList());
+                }).collect(toList());
 
         courtApplicationBuilder.withCourtApplicationCases(courtApplicationCases);
     }
 
-    private boolean activeCase(final String caseStatus) {
-        return nonNull(caseStatus) && !"INACTIVE".equalsIgnoreCase(caseStatus) && !"CLOSED".equalsIgnoreCase(caseStatus);
+    private boolean ignoreCaseOffences(final String caseStatus, final ApplicationSource applicationSource) {
+        final boolean activeCase = !(INACTIVE.name().equalsIgnoreCase(caseStatus) || CLOSED.name().equalsIgnoreCase(caseStatus));
+
+        return activeCase && MH == applicationSource;
     }
 
     private <T> UnaryOperator<List<T>> getListOrNull() {

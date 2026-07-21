@@ -5,11 +5,10 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonassert.impl.matcher.IsEmptyCollection.empty;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -75,14 +74,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +92,8 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -544,6 +543,95 @@ public class HearingAggregateTest {
                 updatedOffence.get().getCustodyTimeLimit());
     }
 
+    /**
+     * Test to verify CTL removal for offences with guilty plea values.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "GUILTY",
+            "CHANGE_TO_GUILTY_MAGISTRATES_COURT",
+            "GUILTY_REQUEST_HEARING",
+            "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+            "MCA_GUILTY",
+            "GUILTY_LESSER_OFFENCE_NAMELY",
+            "GUILTY_TO_ALTERNATIVE_OFFENCE",
+            "CHANGE_TO_GUILTY_AFTER_SWORN",
+            "CHANGE_TO_GUILTY_NO JURY",
+            "AUTREFOIS_CONVICT"
+    })
+    public void shouldSetCustodyTimeLimitToNullForOffencesWithGuiltyPleaValues(final String pleaValue) {
+        // Given
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID parentJudicialResultTypeId = randomUUID();
+
+        final JudicialResult judicialResult = JudicialResult.judicialResult()
+                .withOffenceId(offenceId)
+                .withParentJudicialResultTypeId(parentJudicialResultTypeId)
+                .withCategory(JudicialResultCategory.INTERMEDIARY)
+                .withIsDeleted(false)
+                .build();
+
+        final CustodyTimeLimit custodyTimeLimit = CustodyTimeLimit.custodyTimeLimit()
+                .withTimeLimit(LocalDate.now().plusDays(30))
+                .withIsCtlExtended(false)
+                .build();
+
+        final Offence offenceWithCTLAndChangeOfPlea = Offence.offence()
+                .withId(offenceId)
+                .withCustodyTimeLimit(custodyTimeLimit)
+                .withPlea(Plea.plea().withPleaValue(pleaValue).build())
+                .withJudicialResults(singletonList(judicialResult))
+                .build();
+
+        final Defendant defendant = Defendant.defendant()
+                .withId(defendantId)
+                .withOffences(singletonList(offenceWithCTLAndChangeOfPlea))
+                .build();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(singletonList(defendant))
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase))
+                .build();
+
+        final ZonedDateTime sharedTime = ZonedDateTime.now();
+        final LocalDate hearingDay = LocalDate.now();
+        final List<UUID> resultIdList = emptyList();
+        final List<UUID> shadowListedOffences = emptyList();
+
+        // When
+        final Stream<Object> result = hearingAggregate.processHearingResults(
+                hearing, sharedTime, shadowListedOffences, hearingDay, resultIdList);
+
+        // Then
+        final List<Object> events = result.collect(toList());
+        final Optional<ProsecutionCasesResultedV2> prosecutionCasesResultedEvent = events.stream()
+                .filter(event -> event instanceof ProsecutionCasesResultedV2)
+                .map(event -> (ProsecutionCasesResultedV2) event)
+                .findFirst();
+
+        assertTrue("ProsecutionCasesResultedV2 event should be present", prosecutionCasesResultedEvent.isPresent());
+        final Hearing updatedHearing = prosecutionCasesResultedEvent.get().getHearing();
+        assertThat("Updated hearing should not be null", updatedHearing, notNullValue());
+
+        final Optional<Offence> updatedOffence = updatedHearing.getProsecutionCases().stream()
+                .flatMap(pc -> pc.getDefendants().stream())
+                .flatMap(def -> def.getOffences().stream())
+                .filter(offence -> offence.getId().equals(offenceId))
+                .findFirst();
+
+        assertTrue("Offence with change of plea should be present in updated hearing", updatedOffence.isPresent());
+        assertNull("CustodyTimeLimit should be null for offence with change of plea",
+                updatedOffence.get().getCustodyTimeLimit());
+    }
+
 
     /**
      * Test to verify that CTL is set to null on offences when defendant is on bail and CTL expired offence IDs are present
@@ -953,12 +1041,61 @@ public class HearingAggregateTest {
 
         final List<Object> events = hearingAggregate.processHearingResults(prosecutionCasesResultedV2.getHearing(),ZonedDateTime.now(),null, LocalDate.now(), referenceResultIds).collect(toList());
 
-        assertTrue(events.stream().noneMatch(event -> event.getClass().equals(ProsecutionCasesResultedV2.class)));
-        assertThat(events.size(), is(3));
+        assertThat(events.size(), is(4));
         assertThat(events.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
         assertThat(events.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
-        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
+        assertThat(events.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+        assertThat(events.get(3).getClass(), is(CoreMatchers.equalTo(ApplicationsResulted.class)));
+    }
 
+    @Test
+    public void shouldUseSameUpdatedCaseStatusForHearingResultedAndApplicationsResulted() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withCaseStatus("ACTIVE")
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.FINAL)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build()))
+                .build();
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now(), referenceResultIds).collect(toList());
+
+        final HearingResulted hearingResulted = (HearingResulted) events.stream()
+                .filter(HearingResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        final ApplicationsResulted applicationsResulted = (ApplicationsResulted) events.stream()
+                .filter(ApplicationsResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        assertEquals("INACTIVE", hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals(hearingResulted.getHearing().getProsecutionCases().get(0).getCaseStatus(),
+                applicationsResulted.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getCaseStatus());
     }
 
     @Test
