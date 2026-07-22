@@ -26,8 +26,8 @@ import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANC
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplateWithNonVisibleUserList;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplateWithVisibleUserList;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.NowsDocumentGenerated;
@@ -122,7 +122,7 @@ public class NowsRequestedEventProcessorTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     @BeforeEach
@@ -358,11 +358,11 @@ public class NowsRequestedEventProcessorTest {
     }
 
     private void initReferenceData() {
-        final JsonObject docTypeData = JsonObjects.createObjectBuilder()
+        final JsonObject docTypeData = createObjectBuilder()
                 .add("section", COURT_FINAL_ORDERS)
                 .add("seqNum", 3)
                 .add("courtDocumentTypeRBAC",
-                        JsonObjects.createObjectBuilder()
+                        createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().build())
                                 .add("readUserGroups", createArrayBuilder()
                                         .add(buildUserGroup(MAGISTRATES))

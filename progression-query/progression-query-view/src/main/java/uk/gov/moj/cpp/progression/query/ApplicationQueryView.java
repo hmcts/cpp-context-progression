@@ -366,7 +366,7 @@ public class ApplicationQueryView {
 
     @Handles("progression.query.application-status")
     public JsonEnvelope getApplicationStatus(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         final List<UUID> applicationIdList = JsonObjects.getString(envelope.payloadAsJsonObject(), APPLICATION_IDS)
                 .map(applicationIdStr -> Arrays.stream(applicationIdStr.split(",")).map(UUID::fromString).toList())
@@ -377,7 +377,7 @@ public class ApplicationQueryView {
             final JsonArrayBuilder applicationStatusJsonArray = createArrayBuilder();
             courtApplicationEntityList.forEach(courtApplicationEntity -> {
                 final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
-                applicationStatusJsonArray.add(JsonObjects.createObjectBuilder()
+                applicationStatusJsonArray.add(createObjectBuilder()
                         .add(APPLICATION_ID, application.getString(ID))
                         .add(APPLICATION_STATUS, application.getString(APPLICATION_STATUS)));
             });

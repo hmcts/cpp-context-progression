@@ -14,7 +14,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CotrPdfContent;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantCotrServed;
@@ -231,7 +230,7 @@ public class CotrEventsProcessor {
 
     private JsonObject buildPayload(final Envelope<CotrCreated> event) {
 
-        final JsonObjectBuilder eventPayload = JsonObjects.createObjectBuilder()
+        final JsonObjectBuilder eventPayload = createObjectBuilder()
                 .add(COTR_ID, event.payload().getCotrId().toString());
 
         if (nonNull(event.payload().getSubmissionId())) {
@@ -659,7 +658,7 @@ public class CotrEventsProcessor {
                 .withName(PROGRESSION_OPERATION_FAILED)
                 .build();
 
-        final JsonObject cpsServeMaterialStatusUpdated = JsonObjects.createObjectBuilder().add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
+        final JsonObject cpsServeMaterialStatusUpdated = createObjectBuilder().add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(CASE_ID, payload.getString(CASE_ID))
                 .add(MESSAGE, message)
                 .add(OPERATION, command).build();
@@ -686,7 +685,7 @@ public class CotrEventsProcessor {
     }
 
     private JsonObject buildUpdateCotr(final JsonObject payload, final UUID hearingId) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add(COTR_ID, payload.getString(COTR_ID))
                 .add(HEARING_ID, String.valueOf(hearingId))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))

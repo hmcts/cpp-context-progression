@@ -14,7 +14,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -299,7 +298,7 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
                         .build()))
                 .build();
 
-        when(progressionService.getProsecutionCaseById(any(JsonEnvelope.class), eq(defendantCase.getCaseId().toString()))).thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCase", objectToJsonConverter.convert(prosecutionCase)).build());
+        when(progressionService.getProsecutionCaseById(any(JsonEnvelope.class), eq(defendantCase.getCaseId().toString()))).thenReturn(createObjectBuilder().add("prosecutionCase", objectToJsonConverter.convert(prosecutionCase)).build());
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), eq(ProsecutionCase.class))).thenReturn(prosecutionCase);
 
         eventProcessor.handleApplicationRepOrderUpdatedForApplicationEvent(envelope);

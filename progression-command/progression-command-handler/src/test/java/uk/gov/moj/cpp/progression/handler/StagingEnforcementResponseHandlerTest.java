@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -76,9 +76,9 @@ public class StagingEnforcementResponseHandlerTest {
 
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String accountNumber = "1234";
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", JsonObjects.createObjectBuilder().add("accountNumber", accountNumber)
+                .add("acknowledgement", createObjectBuilder().add("accountNumber", accountNumber)
                         .build())
                 .add("requestId", requestId.toString())
                 .add("materialId", materialId.toString()).build();
@@ -99,9 +99,9 @@ public class StagingEnforcementResponseHandlerTest {
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String errorCode = "ERR1234";
         final String errorMessage = "post code is invalid";
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", JsonObjects.createObjectBuilder().add("errorCode", errorCode)
+                .add("acknowledgement", createObjectBuilder().add("errorCode", errorCode)
                         .add("errorMessage", errorMessage)
                         .build())
                 .add("requestId", requestId.toString())

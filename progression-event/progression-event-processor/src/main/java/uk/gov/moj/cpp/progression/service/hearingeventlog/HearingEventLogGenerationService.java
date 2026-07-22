@@ -5,8 +5,8 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -98,7 +98,7 @@ public class HearingEventLogGenerationService {
     private void generateCourtDocument(final JsonEnvelope event, final UUID caseId, final String filename, final UUID materialId, final Optional<String> applicationId) {
 
         final CourtDocument courtDocument = courtDocument(event, materialId, caseId, filename, applicationId);
-        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating hearing event log court document payload - {}", courtDocumentPayload);
         sender.send(envelop(courtDocumentPayload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(event));

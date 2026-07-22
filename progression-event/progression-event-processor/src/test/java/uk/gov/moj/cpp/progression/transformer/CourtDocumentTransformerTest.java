@@ -11,8 +11,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -162,7 +162,7 @@ public class CourtDocumentTransformerTest {
     @Test
     public void shouldTransformCourtDocumentMaterialWhenProsecutionCaseHasNotHavingCaseURNAndCallRefDataToGetOuCode() {
 
-        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
@@ -181,7 +181,7 @@ public class CourtDocumentTransformerTest {
 
     @Test
     public void shouldTransformCourtDocumentMaterialWhenProsecutionCaseHasOuCodeOnly() {
-        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
@@ -262,7 +262,7 @@ public class CourtDocumentTransformerTest {
         final CourtDocument courtDocument = buildCourtDocumentWithApplication(materialId, applicationId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
 
-        final JsonObjectBuilder materialBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder materialBuilder = createObjectBuilder();
         materialBuilder.add("materialId", randomUUID().toString());
         materialBuilder.add("fileName", "fileName.pdf");
         materialBuilder.add("mimeType", "application/octet-stream");
@@ -345,7 +345,7 @@ public class CourtDocumentTransformerTest {
         final ProsecutionCaseIdentifier.Builder prosecutionCaseIdentifierBuilder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
         prosecutionCaseIdentifierBuilder.withCaseURN("URN-123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }
@@ -375,7 +375,7 @@ public class CourtDocumentTransformerTest {
         final ProsecutionCaseIdentifier.Builder prosecutionCaseIdentifierBuilder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
         prosecutionCaseIdentifierBuilder.withCaseURN("URN-123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }
@@ -397,7 +397,7 @@ public class CourtDocumentTransformerTest {
         prosecutionCaseIdentifierBuilder.withProsecutionAuthorityReference("prosecutorAuthorityRefNumber");
         prosecutionCaseIdentifierBuilder.withProsecutionAuthorityOUCode("OUCODE_123");
         prosecutionCaseBuilder.withProsecutionCaseIdentifier(prosecutionCaseIdentifierBuilder.build());
-        final JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder objectBuilder = createObjectBuilder();
         objectBuilder.add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCaseBuilder.build()));
         return ofNullable(objectBuilder.build());
     }

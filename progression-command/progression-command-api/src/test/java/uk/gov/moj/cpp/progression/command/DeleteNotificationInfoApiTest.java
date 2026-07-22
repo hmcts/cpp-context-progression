@@ -4,8 +4,8 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.service.DeleteNotificationInfoService;
 
@@ -30,7 +30,7 @@ public class DeleteNotificationInfoApiTest {
     public void shouldHandleDeleteNotificationInfo() {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.delete-notification-info"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 

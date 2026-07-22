@@ -27,7 +27,6 @@ import static uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAdd
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.CourtListPublished;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -552,7 +551,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
     }
 
     private JsonObject prepareCorrespondenceCaseContacts() {
-        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add("caseContext", "HMCTS")
                 .add("caseId", CASE_ID_1.toString())
                 .add("contactId", randomUUID().toString())
@@ -570,7 +569,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
     }
 
     private JsonObject prepareCorrespondenceCaseContacts_WithoutEmail() {
-        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add("caseContext", "HMCTS")
                 .add("caseId", CASE_ID_1.toString())
                 .add("contactId", randomUUID().toString())

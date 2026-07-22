@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.moj.cpp.progression.test.FileUtil.givenPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
@@ -172,7 +172,7 @@ class ReferenceDataOffenceServiceTest {
 
         final List<String> offenceCodes = Arrays.asList(offenceCode1, offenceCode2);
 
-        final JsonObject responsePayload = JsonObjects.createReader(
+        final JsonObject responsePayload = createReader(
                 new ByteArrayInputStream("{\"offences\":[]}".getBytes()))
                 .readObject();
 
@@ -253,7 +253,7 @@ class ReferenceDataOffenceServiceTest {
                 .replace("OFFENCE_CODE_1", offenceCode1)
                 .replace("OFFENCE_CODE_2", offenceCode2);
         try {
-            final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonString));
+            final JsonReader jsonReader = createReader(new StringReader(jsonString));
             return createEnvelope("referencedataoffences.query.offences-list", jsonReader.readObject());
         } catch (final Exception e) {
             throw new RuntimeException(e);
@@ -264,7 +264,7 @@ class ReferenceDataOffenceServiceTest {
         final String jsonString = givenPayload(fileName).toString()
                 .replace("OFFENCE_CODE", offenceCode);
         try {
-            final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonString));
+            final JsonReader jsonReader = createReader(new StringReader(jsonString));
             return createEnvelope("referencedataoffences.query.offences-list", jsonReader.readObject());
         } catch (final Exception e) {
             throw new RuntimeException(e);
@@ -276,7 +276,7 @@ class ReferenceDataOffenceServiceTest {
                 .replace("OFFENCE_CODE_1", offenceCode1)
                 .replace("OFFENCE_CODE_2", offenceCode2);
         try {
-            final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonString));
+            final JsonReader jsonReader = createReader(new StringReader(jsonString));
             return createEnvelope("referencedataoffences.query.offences-list", jsonReader.readObject());
         } catch (final Exception e) {
             throw new RuntimeException(e);

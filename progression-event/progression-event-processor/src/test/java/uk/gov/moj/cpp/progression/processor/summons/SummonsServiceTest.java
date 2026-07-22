@@ -5,8 +5,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -44,7 +44,7 @@ public class SummonsServiceTest {
                 .withProsecutionAuthorityId(UUID.randomUUID())
                 .build();
 
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder().build();
+        final JsonObject jsonObject = createObjectBuilder().build();
         when(referenceDataService.getProsecutor(envelope, prosecutionCaseIdentifier.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(jsonObject));
 
         summonsService.getProsecutor(envelope, prosecutionCaseIdentifier);

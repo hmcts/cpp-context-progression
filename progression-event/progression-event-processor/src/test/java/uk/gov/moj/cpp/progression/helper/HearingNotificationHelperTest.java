@@ -19,7 +19,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.HEARING_DATE_PATTERN;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -195,7 +194,7 @@ public class HearingNotificationHelperTest {
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(TEMPLATE_ID);
         jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
-                objectToJsonObjectConverter.convert(JsonObjects.createObjectBuilder().build()));
+                objectToJsonObjectConverter.convert(createObjectBuilder().build()));
 
     }
 

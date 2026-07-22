@@ -14,8 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -102,10 +102,10 @@ public class HearingDeletedEventProcessorTest {
         final UUID prosecutionCaseId2 = randomUUID();
         final JsonObject hearingDeletedForProsecutionCase = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("courtApplicationIds", JsonObjects.createArrayBuilder()
+                .add("courtApplicationIds", createArrayBuilder()
                         .add(courtApplicationId.toString())
                         .build())
-                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
+                .add("prosecutionCaseIds", createArrayBuilder()
                         .add(prosecutionCaseId1.toString())
                         .add(prosecutionCaseId2.toString())
                         .build())
@@ -153,7 +153,7 @@ public class HearingDeletedEventProcessorTest {
 
         final JsonObject offencesRemovedFromHearing = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
+                .add("prosecutionCaseIds", createArrayBuilder()
                         .add(prosecutionCaseId1.toString())
                         .add(prosecutionCaseId2.toString())
                         .build())

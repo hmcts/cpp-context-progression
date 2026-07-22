@@ -41,7 +41,6 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyMaterialReq
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePayloadValues;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.SummonsTemplateType;
@@ -199,7 +198,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     private JsonObject createPublicHearingResultedV2(final JsonObject hearing, final JsonObject summonResultJsonObject) {
         final JsonObject courtApplication = hearing.getJsonArray("courtApplications").getJsonObject(0);
         final JsonString sittingDay = hearing.getJsonArray("hearingDays").getJsonObject(0).getJsonString("sittingDay");
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("isReshare", true)
                 .add("hearingDay", fromJsonString(sittingDay).toLocalDate().toString())
                 .add("hearing", createObjectBuilder()

@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor.document;
 import static java.util.AbstractMap.SimpleEntry;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -64,7 +64,7 @@ public class CourtDocumentReviewRequiredProcessor {
 
     private JsonObject enrich(final JsonObject source, final Map<String, String> keyValuePair) {
         if(MapUtils.isNotEmpty(keyValuePair)) {
-            final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+            final JsonObjectBuilder builder = createObjectBuilder();
             source.entrySet().
                     forEach(e -> builder.add(e.getKey(), e.getValue()));
 

@@ -14,8 +14,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -442,9 +442,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final String trialTypeId = randomUUID().toString();
         hearingEntity.setPayload(("{\"type\":{\"description\":\"Application\",\"id\":\"" + trialTypeId + "\"}}").replaceAll("%NOW%", ZonedDateTime.now().toString()));
         hearingApplicationEntity.setHearing(hearingEntity);
-        final JsonArray jsonHearingTypesArray = JsonObjects.createArrayBuilder()
-                .add(JsonObjects.createObjectBuilder().add("id", trialTypeId).add("trialTypeFlag", true).build())
-                .add(JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", false).build())
+        final JsonArray jsonHearingTypesArray = createArrayBuilder()
+                .add(createObjectBuilder().add("id", trialTypeId).add("trialTypeFlag", true).build())
+                .add(createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", false).build())
                 .build();
 
         when(hearingApplicationRepository.findBy(new HearingApplicationKey(applicationId, hearingId))).thenReturn(hearingApplicationEntity);
@@ -504,9 +504,9 @@ public class SharedCourtDocumentsQueryViewTest {
         final String nonTrialTypeId = randomUUID().toString();
         hearingEntity.setPayload(("{\"type\":{\"description\":\"Application\",\"id\":\"" + nonTrialTypeId + "\"}}"));
         hearingApplicationEntity.setHearing(hearingEntity);
-        final JsonArray jsonHearingTypesArray = JsonObjects.createArrayBuilder()
-                .add(JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", true).build())
-                .add(JsonObjects.createObjectBuilder().add("id", nonTrialTypeId).add("trialTypeFlag", false).build())
+        final JsonArray jsonHearingTypesArray = createArrayBuilder()
+                .add(createObjectBuilder().add("id", randomUUID().toString()).add("trialTypeFlag", true).build())
+                .add(createObjectBuilder().add("id", nonTrialTypeId).add("trialTypeFlag", false).build())
                 .build();
 
         when(hearingApplicationRepository.findBy(new HearingApplicationKey(applicationId, applicationHearingId))).thenReturn(hearingApplicationEntity);

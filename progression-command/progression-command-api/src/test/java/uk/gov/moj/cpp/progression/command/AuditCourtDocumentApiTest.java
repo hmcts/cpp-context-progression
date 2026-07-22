@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,7 +42,7 @@ public class AuditCourtDocumentApiTest {
         final UUID uuid = randomUUID();
         final UUID userId = randomUUID();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("organisationId", randomUUID().toString())
                 .build();
 

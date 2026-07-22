@@ -18,8 +18,8 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -624,7 +624,7 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject payload = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("hearingType", "PTP")
-                .add("caseUrns", JsonObjects.createArrayBuilder()
+                .add("caseUrns", createArrayBuilder()
                         .add(createObjectBuilder().add("caseURN", firstCaseUrn))
                         .add(createObjectBuilder().add("caseURN", secondCaseUrn)))
                 .build();
@@ -657,10 +657,10 @@ public class ListHearingRequestedProcessorTest {
                 .build();
 
         final JsonObject hearingsAtAGlance = createObjectBuilder()
-                .add("hearings", JsonObjects.createArrayBuilder()
+                .add("hearings", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", hearingId.toString())
-                                .add("hearingDays", JsonObjects.createArrayBuilder()
+                                .add("hearingDays", createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("sittingDay", ZonedDateTime.now().toString())))))
                 .build();
@@ -715,7 +715,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", randomUUID().toString())
                         .add("hearingType", "PTP")
-                        .add("caseUrns", JsonObjects.createArrayBuilder())
+                        .add("caseUrns", createArrayBuilder())
                         .build());
 
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
@@ -732,7 +732,7 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject payload = createObjectBuilder()
                 .add("hearingId", hearingId)
                 .add("hearingType", "PTP")
-                .add("caseUrns", JsonObjects.createArrayBuilder()
+                .add("caseUrns", createArrayBuilder()
                         .add(createObjectBuilder().add("caseURN", caseUrn)))
                 .build();
         final JsonEnvelope requestMessage = envelopeFrom(
@@ -749,10 +749,10 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
                 .add("hearingsAtAGlance", createObjectBuilder()
-                        .add("hearings", JsonObjects.createArrayBuilder()
+                        .add("hearings", createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", hearingId)
-                                        .add("hearingDays", JsonObjects.createArrayBuilder()
+                                        .add("hearingDays", createArrayBuilder()
                                                 .add(createObjectBuilder()
                                                         .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
@@ -779,7 +779,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", randomUUID().toString())
                         .add("hearingType", "PTP")
-                        .add("caseUrns", JsonObjects.createArrayBuilder()
+                        .add("caseUrns", createArrayBuilder()
                                 .add(createObjectBuilder().add("caseURN", caseUrn)))
                         .build());
 
@@ -807,7 +807,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", hearingId)
                         .add("hearingType", "PTP")
-                        .add("caseUrns", JsonObjects.createArrayBuilder()
+                        .add("caseUrns", createArrayBuilder()
                                 .add(createObjectBuilder().add("caseURN", caseUrn)))
                         .build());
 
@@ -815,10 +815,10 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
                 .add("hearingsAtAGlance", createObjectBuilder()
-                        .add("hearings", JsonObjects.createArrayBuilder()
+                        .add("hearings", createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", hearingId)
-                                        .add("hearingDays", JsonObjects.createArrayBuilder()
+                                        .add("hearingDays", createArrayBuilder()
                                                 .add(createObjectBuilder()
                                                         .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
@@ -889,7 +889,7 @@ public class ListHearingRequestedProcessorTest {
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return JsonObjects.createObjectBuilder().add(LEGISLATION, "E12")
+        return createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")

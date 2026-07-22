@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.DefendantCotrServed;
 import uk.gov.justice.cpp.progression.event.CotrArchived;
 import uk.gov.justice.cpp.progression.event.CotrCreated;
@@ -305,8 +304,8 @@ public class CotrEventsListenerTest {
     }
 
     private JsonObject getJsonObject() {
-       return JsonObjects.createObjectBuilder()
-                .add("prosecutionQuestions",JsonObjects.createObjectBuilder()
+       return createObjectBuilder()
+                .add("prosecutionQuestions",createObjectBuilder()
                         .add(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION, FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION)
                         .build()
                 )

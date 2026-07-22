@@ -5,8 +5,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -133,9 +135,9 @@ public class DefendantDefenceOrganisationSavedListenerTest {
 
 
 
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
-                .add("payload", JsonObjects.createObjectBuilder()
-                        .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString()).build())
                                 .build())
                         .build()).build();
@@ -206,7 +208,7 @@ public class DefendantDefenceOrganisationSavedListenerTest {
     private JsonObject jsonFromString(final String jsonObjectStr) {
 
         JsonObject object;
-        try (JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
 

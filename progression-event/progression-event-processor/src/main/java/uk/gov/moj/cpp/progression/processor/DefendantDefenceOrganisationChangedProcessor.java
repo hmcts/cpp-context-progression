@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.processor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -22,6 +21,7 @@ import javax.json.JsonObject;
 import java.util.Optional;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantDefenceOrganisationChangedProcessor {
@@ -55,7 +55,7 @@ public class DefendantDefenceOrganisationChangedProcessor {
                 .filter(defendant -> defendant.getId().equals(defendantDefenceOrganisationChanged.getDefendantId()))
                 .findFirst();
         if (optionalDefendant.isPresent()) {
-            final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
+            final JsonObject publicEventPayload = createObjectBuilder()
                     .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendantDefenceOrganisationChanged, optionalDefendant.get())))
                     .build();
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DEFENDANT_CHANGED).apply(publicEventPayload));

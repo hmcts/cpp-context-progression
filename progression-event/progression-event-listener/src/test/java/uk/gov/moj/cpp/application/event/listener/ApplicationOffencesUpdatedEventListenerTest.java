@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -223,7 +222,7 @@ public class ApplicationOffencesUpdatedEventListenerTest {
         final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").build();
         final JsonObject updatedJsonObject = mock(JsonObject.class);
-        final JsonObject hearingJsonObject = JsonObjects.createObjectBuilder().build();
+        final JsonObject hearingJsonObject = createObjectBuilder().build();
 
         final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing = ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
                 .withHearingId(hearingId)
@@ -265,7 +264,7 @@ public class ApplicationOffencesUpdatedEventListenerTest {
         final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").build();
         final JsonObject updatedJsonObject = mock(JsonObject.class);
-        final JsonObject hearingJsonObject = JsonObjects.createObjectBuilder().build();
+        final JsonObject hearingJsonObject = createObjectBuilder().build();
 
         final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing = ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
                 .withHearingId(hearingId)

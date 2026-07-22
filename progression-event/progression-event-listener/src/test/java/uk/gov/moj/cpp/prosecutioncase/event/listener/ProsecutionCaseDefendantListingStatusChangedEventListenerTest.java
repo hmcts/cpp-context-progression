@@ -12,11 +12,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -112,7 +112,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
@@ -164,7 +164,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
@@ -613,7 +613,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();

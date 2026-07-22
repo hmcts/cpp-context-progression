@@ -10,8 +10,8 @@ import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.ORGANI
 import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON;
 import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON_DEFENDANT;
 import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PROSECUTING_AUTHORITY;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -122,7 +122,7 @@ public class PostalService {
 
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
-        JsonObject localJusticeArea = JsonObjects.createObjectBuilder().build();
+        JsonObject localJusticeArea = createObjectBuilder().build();
 
         localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
@@ -170,7 +170,7 @@ public class PostalService {
         final CourtCentre courtCentre = postalNotificationDetails.getCourtCentre();
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
-        JsonObject localJusticeArea = JsonObjects.createObjectBuilder().build();
+        JsonObject localJusticeArea = createObjectBuilder().build();
 
         localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
@@ -254,7 +254,7 @@ public class PostalService {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
+        final JsonObject courtDocumentPayload = createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .add("courtDocumentMetadata",
                         courtDocumentMetadata != null
@@ -272,7 +272,7 @@ public class PostalService {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
+        final JsonObject courtDocumentPayload = createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .add("courtDocumentMetadata",
                         courtDocumentMetadata != null

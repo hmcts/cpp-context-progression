@@ -12,7 +12,6 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
@@ -54,7 +53,7 @@ public class UsersGroupService {
     public Optional<DefenceOrganisationVO> getDefenceOrganisationDetails(final UUID organisationId, final Metadata metadata) {
         log.info("Getting defence organisation details for organisation id {} " + organisationId.toString());
 
-        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(ORGANISATION_ID, organisationId.toString()).build();
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(ORGANISATION_ID, organisationId.toString()).build();
         final Metadata metadataWithActionName = metadataWithNewActionName(metadata, "usersgroups.get-organisation-details");
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
         final JsonEnvelope response = requester.requestAsAdmin(requestEnvelope);
@@ -75,7 +74,7 @@ public class UsersGroupService {
     }
 
     public String getGroupIdForDefenceLawyers() {
-        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(GROUP_NAME, "Defence Lawyers").build();
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(GROUP_NAME, "Defence Lawyers").build();
         final Metadata metadata = metadataBuilder().withName("usersgroups.get-group-details-byname")
                 .withClientCorrelationId(randomUUID().toString())
                 .withId(randomUUID())
@@ -120,7 +119,7 @@ public class UsersGroupService {
     }
 
     public JsonObject getGroupsWithOrganisation(final JsonEnvelope event) {
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelop(payload)
                 .withName("usersgroups.get-groups-with-organisation")

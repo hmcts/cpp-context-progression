@@ -35,7 +35,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
@@ -548,16 +547,16 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.defendants-and-listing-hearing-requests-added"),
                 createObjectBuilder()
-                        .add("defendants", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                         .add("id", defendantId.toString())
-                                        .add("offences", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                                        .add("offences", createArrayBuilder().add(createObjectBuilder()
                                                         .add("id", offenceId.toString())
                                                         .build())
                                                 .build())
                                         .build())
                                 .build())
-                        .add("listHearingRequests", JsonObjects.createArrayBuilder().add(createObjectBuilder()
-                                        .add("listDefendantRequests", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                        .add("listHearingRequests", createArrayBuilder().add(createObjectBuilder()
+                                        .add("listDefendantRequests", createArrayBuilder().add(createObjectBuilder()
                                                         .add("defendantId", defendantId.toString())
                                                         .build())
                                                 .build())

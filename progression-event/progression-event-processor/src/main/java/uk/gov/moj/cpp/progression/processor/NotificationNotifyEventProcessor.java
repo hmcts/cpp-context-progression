@@ -13,9 +13,9 @@ import static uk.gov.moj.cpp.progression.NotificationInfoStatus.PROCESSED;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATION;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.json.JSONObject;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -151,7 +151,7 @@ public class NotificationNotifyEventProcessor {
                                         final String recipientType, final String notificationType) {
         final UUID materialId = randomUUID();
         final String fileName = format("%s notification of hearing %s %s copy", notificationType, formatter.format(LocalDateTime.now()), recipientType);
-        final JsonObject emailDocumentJson = JsonObjects.createObjectBuilder(event.payloadAsJsonObject())
+        final JsonObject emailDocumentJson = createObjectBuilder(event.payloadAsJsonObject())
                 .add(RECIPIENT_TYPE, recipientType)
                 .add(NOTIFICATION_TYPE, notificationType).build();
 

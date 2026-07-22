@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.query.api.helper;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -94,7 +93,7 @@ public class PetForDefendantQueryHelper {
         final JsonObject defendantPetData = buildDefendantPetData(petData, defendantId);
 
         final JsonArray offences = getOffencesOfDefendant(petDefendantOffence, defendantId);
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (!defendantPetData.isEmpty()) {
             jsonObjectBuilder
                     .add(PET_ID, petId)

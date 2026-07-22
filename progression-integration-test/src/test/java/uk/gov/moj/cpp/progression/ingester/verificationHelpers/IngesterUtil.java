@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 
 import java.io.StringReader;
@@ -17,7 +17,7 @@ public class IngesterUtil {
     private static final Poller poller = new Poller(1000, 10L);
     
     public static JsonObject jsonFromString(final String jsonObjectStr) {
-        JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

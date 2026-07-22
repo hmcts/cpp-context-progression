@@ -13,8 +13,8 @@ import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelp
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.AddConvictingCourt;
 import uk.gov.justice.core.courts.AddConvictingInformation;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -193,7 +193,7 @@ public class AddConvictingCourtCommandHandlerTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = createReader(new StringReader(referenceDataOffenceJsonString));
         return jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
     }
 

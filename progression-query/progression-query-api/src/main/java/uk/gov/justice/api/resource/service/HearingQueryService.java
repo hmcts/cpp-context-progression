@@ -11,7 +11,6 @@ import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultLine;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -84,7 +83,7 @@ public class HearingQueryService {
 
     private JsonObject getDraftResults(final JsonEnvelope jsonEnvelope, final UUID hearingId, final LocalDate hearingDay) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), HEARING_GET_DRAFT_RESULT_V2);
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("hearingDay", hearingDay.toString())
                 .build();

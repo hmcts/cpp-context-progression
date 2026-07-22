@@ -19,8 +19,8 @@ import static uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView.ID;
 import static uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView.IS_PINNED;
 import static uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView.LAST_NAME;
 import static uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView.NOTE;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -81,7 +81,7 @@ public class ApplicationNotesQueryViewTest {
         final JsonEnvelope envelope = applicationNotesQueryView.getApplicationNotes(
                 JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(randomUUID())
                                 .withName(PROGRESSION_QUERY_APPLICATION_NOTES).build(),
-                        JsonObjects.createObjectBuilder().add(APPLICATION_ID, VALUE_APPLICATION_ID.toString()).build()));
+                        createObjectBuilder().add(APPLICATION_ID, VALUE_APPLICATION_ID.toString()).build()));
 
         //Then
         verifyResponseList(envelope);

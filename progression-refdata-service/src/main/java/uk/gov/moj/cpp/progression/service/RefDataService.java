@@ -17,7 +17,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -254,7 +253,7 @@ public class RefDataService {
     }
 
     public Optional<JsonObject> getDocumentTypeAccessData(final UUID documentTypeId, final JsonEnvelope event, final Requester requester) {
-        final JsonObject payload = JsonObjects.createObjectBuilder().add(ID, documentTypeId.toString()).build();
+        final JsonObject payload = createObjectBuilder().add(ID, documentTypeId.toString()).build();
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_GET_DOCUMENT_ACCESS)
                 .withMetadataFrom(event));
@@ -265,7 +264,7 @@ public class RefDataService {
     }
 
     public Optional<JsonObject> getAllDocumentsTypes(final JsonEnvelope event, final LocalDate date, final Requester requester) {
-        final JsonObject payload = JsonObjects.createObjectBuilder().add("date", date.toString()).build();
+        final JsonObject payload = createObjectBuilder().add("date", date.toString()).build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_GET_ALL_DOCUMENTS_TYPE)
@@ -278,7 +277,7 @@ public class RefDataService {
     }
 
     public Optional<JsonObject> getCourtsByPostCodeAndProsecutingAuthority(final JsonEnvelope jsonEnvelope, final String postcode, final String prosecutingAuthority, final Requester requester) {
-        final JsonObject payloadForoucode = JsonObjects.createObjectBuilder()
+        final JsonObject payloadForoucode = createObjectBuilder()
                 .add("postcode", postcode)
                 .add("prosecutingAuthority", prosecutingAuthority)
                 .build();
@@ -293,7 +292,7 @@ public class RefDataService {
     }
 
     public Optional<JsonObject> getLocalJusticeArea(final JsonEnvelope jsonEnvelope, final String ljaCode, final Requester requester) {
-        final JsonObject payloadForLjaCode = JsonObjects.createObjectBuilder()
+        final JsonObject payloadForLjaCode = createObjectBuilder()
                 .add("nationalCourtCode", ljaCode)
                 .build();
         final Envelope<JsonObject> requestForLocalJusticeArea = envelop(payloadForLjaCode).withName(REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS).withMetadataFrom(jsonEnvelope);
@@ -311,7 +310,7 @@ public class RefDataService {
 
     public Optional<JsonObject> getCourtsOrganisationUnitsByOuCode(final JsonEnvelope event, final String oucode, final Requester requester) {
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("oucode", oucode)
                 .build();
 
@@ -326,7 +325,7 @@ public class RefDataService {
 
     public Optional<JsonObject> getCourtCentreWithCourtRoomsById(final UUID courtCentreId, final JsonEnvelope event, final Requester requester) {
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(ID, courtCentreId.toString())
                 .build();
 
@@ -419,7 +418,7 @@ public class RefDataService {
     public CourtCentre getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope, final Requester requester) {
         final CourtCentre.Builder courtCentreBuilder = CourtCentre.courtCentre();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("oucode", courtHouseOUCode)
                 .build();
         LOGGER.info(" Calling {} to get court centre for {} ", REFERENCEDATA_GET_COURTCENTER, courtHouseOUCode);
@@ -464,7 +463,7 @@ public class RefDataService {
     public Optional<JsonObject> getEthinicity(final JsonEnvelope event, final UUID id, final Requester requester) {
 
         LOGGER.info(" Calling {} to get ethinicity for {} ", REFERENCEDATA_QUERY_ETHNICITIES, id);
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_QUERY_ETHNICITIES)
@@ -479,7 +478,7 @@ public class RefDataService {
     public Optional<JsonObject> getHearingType(final JsonEnvelope event, final UUID id, final Requester requester) {
 
         LOGGER.info(" Calling {} to get hearing-type for {} ", REFERENCEDATA_QUERY_HEARING_TYPES, id);
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_QUERY_HEARING_TYPES)
@@ -513,7 +512,7 @@ public class RefDataService {
     }
 
     private JsonEnvelope getNationalityResponse(final JsonEnvelope event, final Requester requester) {
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final JsonEnvelope request = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_QUERY_NATIONALITIES)
@@ -526,7 +525,7 @@ public class RefDataService {
 
         LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR, id);
 
-        final JsonObject payload = JsonObjects.createObjectBuilder().add(ID, id.toString()).build();
+        final JsonObject payload = createObjectBuilder().add(ID, id.toString()).build();
 
 
         final JsonEnvelope request = requester.request(envelop(payload)
@@ -546,7 +545,7 @@ public class RefDataService {
 
         LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR, id);
 
-        final JsonObject payload = JsonObjects.createObjectBuilder().add(ID, id.toString()).build();
+        final JsonObject payload = createObjectBuilder().add(ID, id.toString()).build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_QUERY_PROSECUTOR)
@@ -563,7 +562,7 @@ public class RefDataService {
 
         LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE, id);
 
-        final JsonObject payload = JsonObjects.createObjectBuilder().add(OUCODE, id)
+        final JsonObject payload = createObjectBuilder().add(OUCODE, id)
                 .add(CPS_FLAG, TRUE)
                 .build();
 
@@ -583,7 +582,7 @@ public class RefDataService {
 
         LOGGER.info(" Calling {} to get prosecutors with cpsFlag true", REFERENCE_DATA_QUERY_CPS_PROSECUTORS);
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(CPS_FLAG, TRUE)
                 .build();
 
@@ -669,7 +668,7 @@ public class RefDataService {
     public Optional<JsonObject> getPetForm(final JsonEnvelope event, final Requester requester) {
 
         LOGGER.info("Get PET FORM details with ID '{}'", event.metadata().streamId());
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_QUERY_PET_FORM)
                 .withMetadataFrom(event));

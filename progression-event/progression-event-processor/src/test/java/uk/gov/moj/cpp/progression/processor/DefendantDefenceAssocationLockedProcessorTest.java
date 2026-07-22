@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -52,7 +52,7 @@ public class DefendantDefenceAssocationLockedProcessorTest {
                 .withName("public.progression.defence-association-for-laa-locked")
                 .withUserId(userId.toString());
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .add("prosecutionCaseId", prosecutionCaseId.toString())
                 .add("lockedByRepOrder", true)

@@ -9,8 +9,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,7 +42,7 @@ public class UpdateLaaHearingInUnifiedSearchTest {
     public void testHandleUpdateLaaHearingDetailsUnifiedSearch() {
         final UUID hearingId1 = randomUUID();
         final UUID hearingId2 = randomUUID();
-        final JsonObject commandPayload = JsonObjects.createObjectBuilder()
+        final JsonObject commandPayload = createObjectBuilder()
                 .add("hearingIds", createArrayBuilder()
                         .add(hearingId1.toString())
                         .add(hearingId2.toString())

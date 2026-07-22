@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.command;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -26,7 +26,7 @@ public class ReApplyMediaReportingRestrictionOnCaseCommandApi {
         final JsonArray jsonArrayOfCaseIds = payload.getJsonArray("caseIds");
 
         jsonArrayOfCaseIds.forEach(caseId ->
-            sender.send(envelop(JsonObjects.createObjectBuilder().add("caseId", caseId).build())
+            sender.send(envelop(createObjectBuilder().add("caseId", caseId).build())
                     .withName("progression.command.handler.reapply-media-reporting-restrictions")
                     .withMetadataFrom(envelope))
         );

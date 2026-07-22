@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -266,7 +266,7 @@ public class SearchCaseBuilder {
         }
 
         public SearchCaseBuilder.CaseBuilder withResultPayload() {
-            resultPayload = JsonObjects.createObjectBuilder()
+            resultPayload = createObjectBuilder()
                     .add(CASE_ID, this.caseId)
                     .add(REFERENCE, this.reference)
                     .add(DEFENDANT_NAME, defendantFullName)

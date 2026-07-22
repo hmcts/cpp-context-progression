@@ -13,7 +13,6 @@ import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestD
 
 import java.time.LocalDate;
 import java.util.Optional;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -84,7 +83,7 @@ public class ExtendedHearingProcessor {
             hearingExtended.getShadowListedOffences().forEach(shadowListedOffence -> shadowListedOffencesBuilder.add(shadowListedOffence.toString()));
         }
 
-        final JsonObject commandPayload = JsonObjects.createObjectBuilder()
+        final JsonObject commandPayload = createObjectBuilder()
                 .add("hearingRequest", objectToJsonObjectConverter.convert(hearingExtended.getHearingRequest()))
                 .add("shadowListedOffences", shadowListedOffencesBuilder.build())
                 .build();
@@ -108,7 +107,7 @@ public class ExtendedHearingProcessor {
         }
         if (nonNull(courtApplications)) {
             final CourtApplication courtApplication = courtApplications.get(0);
-            final JsonObject hearingCourtApplication = JsonObjects.createObjectBuilder()
+            final JsonObject hearingCourtApplication = createObjectBuilder()
                     .add("hearingId", hearingId.toString())
                     .add("courtApplication", objectToJsonObjectConverter.convert(courtApplication))
                     .build();

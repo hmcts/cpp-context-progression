@@ -18,7 +18,6 @@ import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -161,7 +160,7 @@ public class SystemDocGeneratorEventProcessorTest {
                 .add(createObjectBuilder().add(PROPERTY_NAME, "caseId").add(PROPERTY_VALUE, randomUUID().toString()))
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
                 .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
                 .add(CONVERSION_FORMAT, "pdf")
@@ -204,7 +203,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, RECORD_SHEET_ORIG_SOURCE)
                         .add(TEMPLATE_IDENTIFIER, RECORD_SHEET_TEMPLATE)
                         .add(CONVERSION_FORMAT, "pdf")
@@ -246,7 +245,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
                         .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
                         .add(CONVERSION_FORMAT, "pdf")
@@ -283,7 +282,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, "NOWs")
                         .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
                         .add(CONVERSION_FORMAT, "pdf")
@@ -317,7 +316,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, "NOWs")
                         .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
                         .add(CONVERSION_FORMAT, "pdf")
@@ -350,7 +349,7 @@ public class SystemDocGeneratorEventProcessorTest {
         final UUID systemDocGeneratorId = UUID.randomUUID();
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, "NOWS_DOCUMENTS")
                         .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
                         .add(CONVERSION_FORMAT, "pdf")
@@ -370,7 +369,7 @@ public class SystemDocGeneratorEventProcessorTest {
         final UUID fileId = UUID.randomUUID();
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add(ORIGINATING_SOURCE, "NOWS_DOCUMENTS")
                         .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
                         .add(CONVERSION_FORMAT, "pdf")
@@ -387,7 +386,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
-        return metadataFrom(JsonObjects.createObjectBuilder()
+        return metadataFrom(createObjectBuilder()
                 .add("court_register", courtCentreId.toString())
                 .add(JsonMetadata.ID, randomUUID().toString())
                 .add(HeaderConstants.USER_ID, userId)
@@ -396,7 +395,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId, final String originatingSource) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add(PAYLOAD_FILE_SERVICE_ID, templatePayloadId.toString())
                 .add(TEMPLATE_IDENTIFIER, templateIdentifier)
                 .add(CONVERSION_FORMAT, "pdf")

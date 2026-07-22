@@ -14,7 +14,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -386,11 +385,11 @@ public class EmailServiceTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return JsonObjects.createObjectBuilder()
-                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return createObjectBuilder()
+                .add("documentAccess", createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", createArrayBuilder().add("Listing Officer"))
+                .add("canReadUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates"))
+                .add("canDownloadUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 

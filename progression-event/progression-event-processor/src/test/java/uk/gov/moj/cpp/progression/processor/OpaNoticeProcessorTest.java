@@ -15,8 +15,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.event.OpaPressListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaPublicListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
@@ -223,7 +223,7 @@ public class OpaNoticeProcessorTest {
                         .withName(commandName)
                         .withId(randomUUID())
                         .build(),
-                JsonObjects.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     private void verifyOpaNoticeSentContents(final Envelope<JsonObject> envelope, final JsonObject opaNoticeSent, final String event) {

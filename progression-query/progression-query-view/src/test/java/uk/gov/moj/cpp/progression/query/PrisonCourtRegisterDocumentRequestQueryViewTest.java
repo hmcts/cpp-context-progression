@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.query;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PrisonCourtRegisterEntity;
@@ -41,14 +41,14 @@ public class PrisonCourtRegisterDocumentRequestQueryViewTest {
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID())
                         .withName("progression.query.prison-court-register-document-by-court-centre").build(),
-                JsonObjects.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build());
+                createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build());
 
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity = new PrisonCourtRegisterEntity();
         prisonCourtRegisterEntity.setCourtCentreId(courtCentreId);
         prisonCourtRegisterEntity.setFileId(fileId);
         prisonCourtRegisterEntity.setRecordedDate(LocalDate.now());
 
-        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder()
+        final JsonObject transformedJsonEntity = createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("fileId", fileId.toString())
                 .build();

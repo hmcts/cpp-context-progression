@@ -21,9 +21,9 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import io.restassured.response.Response;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -150,7 +150,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
 
     private void ejectCase(final String prosecutionCaseId, final String removalReason) {
-        JsonObject payload = JsonObjects.createObjectBuilder()
+        JsonObject payload = createObjectBuilder()
                 .add("prosecutionCaseId", prosecutionCaseId)
                 .add("removalReason", removalReason)
                 .build();

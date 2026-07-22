@@ -22,6 +22,7 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class DefendantPartialMatchQueryView {
@@ -56,7 +57,7 @@ public class DefendantPartialMatchQueryView {
 
         final long count = defendantPartialMatchRepository.count();
 
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         jsonObjectBuilder.add("totalMatchedDefendants", count);
 
         if (isPageGreaterThanMaximumPage(page, pageSize, count)) {

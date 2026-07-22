@@ -11,8 +11,9 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROG
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildCaseLinkedOrUnlinkedEventJson;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildLSMCommandPayload;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.createResponsePayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -93,7 +94,7 @@ public class LinkCasesEventProcessor {
                         if (alreadyLinkedCases.get().size() > 0 && alreadyLinkedCases.get().containsKey(LINKED_CASES) && !alreadyLinkedCases.get().getJsonArray(LINKED_CASES).isEmpty()) {
                             alreadyLinkedCases.get().getJsonArray(LINKED_CASES).stream().forEach(
                                     lc -> {
-                                        final JsonObject linkedCase = JsonObjects.createObjectBuilder().add("linkedCase", lc).build();
+                                        final JsonObject linkedCase = createObjectBuilder().add("linkedCase", lc).build();
                                         if (linkedCase.getJsonObject("linkedCase").getString(CASE_ID).equals(existingCase.get().getString(CASE_ID))) {
                                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                                             failed.set(true);
@@ -131,8 +132,8 @@ public class LinkCasesEventProcessor {
     }
 
     private JsonObject buildCasesLinkedEventPayload(final JsonEnvelope envelope, final UUID leadCaseId, final List<String> caseUrns) {
-        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString());
-        final JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString());
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         // for case reference; caseURN is used  for spi cases, and prosecutionAuthorityReference is used for sjp cases
         final ProsecutionCaseIdentifier pci = jsonObjectToObjectConverter.convert(progressionService.getProsecutionCaseDetailById(envelope, leadCaseId.toString()).get().getJsonObject("prosecutionCase"), ProsecutionCase.class).getProsecutionCaseIdentifier();
         final String leadCaseUrn = pci.getCaseURN() != null ? pci.getCaseURN() : pci.getProsecutionAuthorityReference();

@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.prosecutioncase.persistence;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
@@ -54,15 +54,15 @@ public class CaseDefendantHearingRepositoryTest {
         caseDefendantHearingKey.setHearingId(randomUUID());
 
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(randomUUID());
 
         final Set<HearingResultLineEntity> resultLines = new HashSet<>();
-        resultLines.add(new HearingResultLineEntity(randomUUID(), JsonObjects.createObjectBuilder().build().toString(), null));
+        resultLines.add(new HearingResultLineEntity(randomUUID(), createObjectBuilder().build().toString(), null));
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(caseDefendantHearingKey.getHearingId());
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         hearingEntity.setResultLines(resultLines);
@@ -150,12 +150,12 @@ public class CaseDefendantHearingRepositoryTest {
 
     private void saveEntity(final UUID hearingId, final UUID caseId, final UUID defendantId, final UUID resultId) {
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(resultId);
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         hearingRepository.save(hearingEntity);

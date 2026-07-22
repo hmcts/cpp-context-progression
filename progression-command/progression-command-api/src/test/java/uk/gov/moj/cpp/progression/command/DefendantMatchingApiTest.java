@@ -5,8 +5,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -37,7 +37,7 @@ public class DefendantMatchingApiTest {
 
     @Test
     public void shouldMatchDefendant() {
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("prosecutionCaseId", randomUUID().toString())
                 .add("matchedDefendants", createArrayBuilder().build())

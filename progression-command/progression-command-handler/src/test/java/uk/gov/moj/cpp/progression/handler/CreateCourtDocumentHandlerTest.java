@@ -16,8 +16,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.CreateCourtDocument;
@@ -139,9 +139,9 @@ public class CreateCourtDocumentHandlerTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("courtDocumentTypeRBAC",
-                        JsonObjects.createObjectBuilder()
+                        createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
@@ -150,7 +150,7 @@ public class CreateCourtDocumentHandlerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
 

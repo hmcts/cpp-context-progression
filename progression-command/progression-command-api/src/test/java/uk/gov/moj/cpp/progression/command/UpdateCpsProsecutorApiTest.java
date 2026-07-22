@@ -5,8 +5,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -62,7 +62,7 @@ public class UpdateCpsProsecutorApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -35,14 +37,14 @@ public class NowDocumentRequestQueryView {
     @Handles(NOW_DOCUMENT_REQUESTS_BY_REQUEST_ID_QUERY)
     public JsonEnvelope getNowDocumentRequestsByRequestId(final JsonEnvelope envelope) {
         final Optional<UUID> requestId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), REQUEST_ID_PARAM);
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (requestId.isPresent()) {
             final List<NowDocumentRequestEntity> nowDocumentRequests = nowDocumentRequestRepository.findByRequestId(requestId.get());
 
             nowDocumentRequests.forEach(nowDocumentRequestEntity ->
                     jsonArrayBuilder.add(
-                            JsonObjects.createObjectBuilder()
+                            createObjectBuilder()
                                     .add(MATERIAL_ID_PARAM, nowDocumentRequestEntity.getMaterialId().toString())
                                     .add(REQUEST_ID_PARAM, nowDocumentRequestEntity.getRequestId().toString())
                                     .add(HEARING_ID_PARAM, nowDocumentRequestEntity.getHearingId().toString())
@@ -58,13 +60,13 @@ public class NowDocumentRequestQueryView {
     @Handles(NOW_DOCUMENT_REQUEST_BY_HEARING_QUERY)
     public JsonEnvelope getNowDocumentRequestByHearing(final JsonEnvelope envelope) {
         final Optional<UUID> hearingId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), HEARING_ID_PARAM);
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (hearingId.isPresent()) {
             final List<NowDocumentRequestEntity> nowDocumentRequests = nowDocumentRequestRepository.findByHearingId(hearingId.get());
             nowDocumentRequests.forEach(nowDocumentRequestEntity -> {
                 final UUID requestId = nowDocumentRequestEntity.getRequestId();
-                final JsonObjectBuilder builder = JsonObjects.createObjectBuilder()
+                final JsonObjectBuilder builder = createObjectBuilder()
                         .add(MATERIAL_ID_PARAM, nowDocumentRequestEntity.getMaterialId().toString())
                         .add(HEARING_ID_PARAM, nowDocumentRequestEntity.getHearingId().toString())
                         .add(PAYLOAD_PARAM, nowDocumentRequestEntity.getPayload());

@@ -12,8 +12,8 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaDocument;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaFinancialDocument;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +149,7 @@ public class SystemDocGeneratorEventProcessor {
             final FileReference payloadFileReference = fileService.retrieve(payloadFileId).orElseThrow(() -> new BadRequestException("Failed to retrieve file"));
             LOGGER.info("Retrieved file reference '{}' successfully", payloadFileReference);
 
-            try (JsonReader reader = JsonObjects.createReader(payloadFileReference.getContentStream())) {
+            try (JsonReader reader = createReader(payloadFileReference.getContentStream())) {
                 final JsonObject rawPayload = reader.readObject();
                 LOGGER.info("Read payload '{}'", rawPayload);
                 this.sender.send(envelopeFrom(metadataFrom(documentAvailableEvent.metadata()).withName("progression.command.handle-online-plea-document-creation").build(),

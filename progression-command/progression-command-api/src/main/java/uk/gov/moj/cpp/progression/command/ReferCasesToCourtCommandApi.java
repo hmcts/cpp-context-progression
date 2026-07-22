@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
@@ -70,7 +71,7 @@ public class ReferCasesToCourtCommandApi {
     }
 
     private JsonArray getUpdatedProsecutionCases(final JsonArray originProsecutionCases, final JsonEnvelope envelope) {
-        final JsonArrayBuilder builder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder builder = createArrayBuilder();
         originProsecutionCases.forEach(jsonValue -> {
             final JsonObject jsonObject = (JsonObject) jsonValue;
             builder.add(addProperty(jsonObject, PROSECUTION_CASE_IDENTIFIER, getUpdatedCaseIdentifier(jsonObject.getJsonObject(PROSECUTION_CASE_IDENTIFIER), envelope)));

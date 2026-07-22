@@ -13,7 +13,6 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
@@ -257,7 +256,7 @@ public class HearingUpdatedEventProcessor {
 
 
         allHearingOffencesUpdated.getHearingIds().forEach(hearingId -> {
-                   final JsonObjectBuilder payload = JsonObjects.createObjectBuilder()
+                   final JsonObjectBuilder payload = createObjectBuilder()
                            .add("defendantId", allHearingOffencesUpdated.getDefendantId().toString())
                            .add(HEARING_ID, hearingId.toString());
                    if(privateEventPayload.containsKey(UPDATED_OFFENCES)){

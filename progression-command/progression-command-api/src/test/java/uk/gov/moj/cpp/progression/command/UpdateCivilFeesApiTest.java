@@ -5,8 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -39,9 +40,9 @@ public class UpdateCivilFeesApiTest {
     @Test
     public void shouldAddCivilFee() {
         //Given
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", "cca197ad-2a4c-4cb2-acf9-d4c5e114e3d1")
-                .add("civilFees", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
+                .add("civilFees", createArrayBuilder().add(createObjectBuilder()
                         .add("feeType", "Initial")
                         .add("feeStatus", "Outstanding")
                         .add("paymentReference", "REF001")

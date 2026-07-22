@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.helper;
 import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.Defendant;
@@ -174,7 +174,7 @@ public class MatchedDefendantHelperTest {
 
     @Test
     public void shouldAddToJsonObjectNullSafe() {
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
 
         final String stringValue = null;
         matchedDefendantHelper.addToJsonObjectNullSafe(builder, "key", stringValue);

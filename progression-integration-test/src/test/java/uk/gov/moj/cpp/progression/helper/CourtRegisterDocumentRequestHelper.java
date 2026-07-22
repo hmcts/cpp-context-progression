@@ -9,8 +9,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -62,7 +62,7 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("payloadFileServiceId", templatePayloadId.toString())
                 .add("templateIdentifier", templateIdentifier)
                 .add("conversionFormat", "pdf")
@@ -76,7 +76,7 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
-        return metadataFrom(JsonObjects.createObjectBuilder()
+        return metadataFrom(createObjectBuilder()
                 .add(ORIGINATOR, courtCentreId.toString())
                 .add(ID, randomUUID().toString())
                 .add(HeaderConstants.USER_ID, userId)

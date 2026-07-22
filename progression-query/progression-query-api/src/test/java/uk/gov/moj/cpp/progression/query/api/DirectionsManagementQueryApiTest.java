@@ -27,7 +27,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.domain.pojo.Direction;
@@ -122,7 +121,7 @@ public class DirectionsManagementQueryApiTest {
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -160,7 +159,7 @@ public class DirectionsManagementQueryApiTest {
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -221,7 +220,7 @@ public class DirectionsManagementQueryApiTest {
         RefDataDirection refDataDirection = RefDataDirection.refDataDirection().withSequenceNumber(1).build();
 //        when(directionQueryView.getTransformedDirections(any(), any(), any(), any(), any(), anyBoolean(), anyString())).thenReturn(refDataDirection);
 
-        final JsonObjectBuilder queryPayload = JsonObjects.createObjectBuilder().add("categories", "cat1,cat2")
+        final JsonObjectBuilder queryPayload = createObjectBuilder().add("categories", "cat1,cat2")
                 .add("formType", "PET")
                 .add("caseId", randomUUID().toString())
                 .add("formId", randomUUID().toString());
@@ -243,7 +242,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -264,7 +263,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "nonexistent")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -287,7 +286,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -318,7 +317,7 @@ public class DirectionsManagementQueryApiTest {
         final UUID formId = randomUUID();
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("directionsmanagement.query.form-directions"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("categories", "test1,test2")
                         .add("caseId", caseId.toString())
                         .add("formId", formId.toString())
@@ -361,7 +360,7 @@ public class DirectionsManagementQueryApiTest {
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(fileName);
-             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
+             final JsonReader jsonReader = createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             return payload;
         }

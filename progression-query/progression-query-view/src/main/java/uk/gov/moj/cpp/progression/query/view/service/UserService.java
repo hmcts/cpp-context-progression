@@ -4,8 +4,8 @@ package uk.gov.moj.cpp.progression.query.view.service;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -54,7 +54,7 @@ public class UserService {
             final Metadata metadata = metadataFrom(action.envelope().metadata())
                     .withName("usersgroups.get-groups-by-user").build();
             final JsonObject payload =
-                    JsonObjects.createObjectBuilder().add("userId", userId.get()).build();
+                    createObjectBuilder().add("userId", userId.get()).build();
             final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
             final Envelope<JsonObject> response =

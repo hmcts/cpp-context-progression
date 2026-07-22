@@ -2,8 +2,8 @@ package uk.gov.justice.api.resource;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
@@ -23,7 +23,7 @@ public class CourtDocumentCommandProvider {
 
     public Action getDocumentTypeId(final Action action) {
 
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder().add("courtDocumentId", action.envelope().payloadAsJsonObject().getString("courtDocumentId"));
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder().add("courtDocumentId", action.envelope().payloadAsJsonObject().getString("courtDocumentId"));
 
         final MetadataBuilder metadataBuilder = metadataFrom(action.metadata()).withName("progression.query.courtdocument");
 

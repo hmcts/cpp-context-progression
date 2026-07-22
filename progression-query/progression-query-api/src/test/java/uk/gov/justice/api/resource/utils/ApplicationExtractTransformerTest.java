@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.DefaultQueryApiApplicationsApplicationIdExtractResource.STANDALONE_APPLICATION;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
@@ -594,7 +593,7 @@ public class ApplicationExtractTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add("value", "desc");
         return judiciaryBuilder.build();
     }

@@ -7,7 +7,6 @@ import static uk.gov.moj.cpp.progression.task.Task.GENERATE_OPA_NOTICE;
 
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.jobstore.api.ExecutionService;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
 import uk.gov.moj.cpp.jobstore.persistence.Priority;
@@ -84,7 +83,7 @@ public class OpaNoticeService {
     private JsonObject createJsonObject(final String commandName,
                                         final JsonObject opaNotice,
                                         final String triggerDate) {
-        final JsonObject payload = JsonObjects.createObjectBuilder(opaNotice)
+        final JsonObject payload = createObjectBuilder(opaNotice)
                 .add(TRIGGER_DATE, triggerDate)
                 .build();
 

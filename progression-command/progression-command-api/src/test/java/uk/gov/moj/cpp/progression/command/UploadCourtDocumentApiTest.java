@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -56,7 +56,7 @@ public class UploadCourtDocumentApiTest {
     @Test
     public void shouldUploadMaterial() {
 
-        when(command.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(command.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
         when(userDetailsLoader.isPermitted(any(), any())).thenReturn(true);
         when(command.metadata()).thenReturn(CommandClientTestBase.metadataFor("progression.command.upload-court-document", UUID.randomUUID().toString()));
         uploadCourtDocumentApi.handleUploadForDefence(command);

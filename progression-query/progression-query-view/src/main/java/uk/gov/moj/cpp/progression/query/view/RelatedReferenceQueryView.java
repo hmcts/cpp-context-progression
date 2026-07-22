@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static uk.gov.moj.cpp.progression.query.CaseLsmInfoQuery.PARAM_CASE_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.progression.query.RelatedReference;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -34,8 +36,8 @@ public class RelatedReferenceQueryView {
     }
 
     private JsonObjectBuilder getRelatedReferences(final UUID caseId) {
-        final JsonObjectBuilder responseBuilder = JsonObjects.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonObjectBuilder responseBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         relatedReferenceRepository
                 .findByProsecutionCaseId(caseId)
                 .stream()

@@ -10,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
@@ -61,6 +60,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterEventProcessorTest {
@@ -152,9 +152,9 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
-        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(createObjectBuilder().build());
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                JsonObjects.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+                createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 
@@ -221,7 +221,7 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         MetadataBuilder metadata = MetadataBuilderFactory.metadataWithDefaults();
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
-        JsonObject jsonObjectWithId = JsonObjects.createObjectBuilder(jsonObject).add("id", prisonCourtRegisterId).build();
+        JsonObject jsonObjectWithId = createObjectBuilder(jsonObject).add("id", prisonCourtRegisterId).build();
         final JsonEnvelope requestMessage = envelopeFrom(metadata, jsonObjectWithId);
         PcrEventPayload pcrEventPayload = PcrEventPayload.builder()
                 .materialId(randomUUID())

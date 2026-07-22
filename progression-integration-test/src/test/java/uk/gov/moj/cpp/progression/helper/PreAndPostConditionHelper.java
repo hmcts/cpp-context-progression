@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
@@ -108,7 +107,7 @@ public class PreAndPostConditionHelper {
     public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) {
         return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
-                JsonObjects.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
+                createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
     }
 
     public static Response recordLAAReference(final String caseId, final String defendantId, final String offenceId, final String statusCode) {
@@ -386,7 +385,7 @@ public class PreAndPostConditionHelper {
     public static Response deleteRelatedReference(final String caseId, final String relatedReferenceId) {
         return postCommand(getWriteUrl("/prosecutioncases/" + caseId),
                 "application/vnd.progression.delete-related-reference+json",
-                JsonObjects.createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
+                createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
 
     }
 

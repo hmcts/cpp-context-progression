@@ -6,8 +6,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -93,7 +93,7 @@ public class ApplicationDefenceOrganisationChangedProcessor {
                 .filter(defendant -> defendant.getId().equals(defendantId))
                 .findFirst();
         if (optionalDefendant.isPresent()) {
-            final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
+            final JsonObject publicEventPayload = createObjectBuilder()
                     .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(caseId, defendantId, associatedDefenceOrganisation, optionalDefendant.get())))
                     .build();
 

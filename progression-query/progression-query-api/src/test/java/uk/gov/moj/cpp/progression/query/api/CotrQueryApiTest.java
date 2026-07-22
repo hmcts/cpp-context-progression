@@ -11,8 +11,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.query.CotrDefendant;
 import uk.gov.justice.progression.query.CotrDetail;
 import uk.gov.justice.progression.query.CotrDetails;
@@ -317,7 +317,7 @@ public class CotrQueryApiTest {
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
-        return JsonObjects.createReader(
+        return createReader(
                 new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }

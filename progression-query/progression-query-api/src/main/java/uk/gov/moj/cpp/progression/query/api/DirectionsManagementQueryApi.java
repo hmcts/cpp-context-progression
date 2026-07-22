@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.query.api;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -41,6 +40,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @ServiceComponent(Component.QUERY_API)
 public class DirectionsManagementQueryApi {
@@ -110,7 +110,7 @@ public class DirectionsManagementQueryApi {
                     .filter(d -> !Collections.disjoint(Arrays.asList(d.getCategory().split(",")), categories))
                     .collect(Collectors.toList());
         }
-        final JsonArrayBuilder refDataDirectionsInJson = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder refDataDirectionsInJson = createArrayBuilder();
 
         if (!directionManagementTypes.isEmpty()) {
             final List<RefDataDirection> refDataDirections = transformDirection(envelope, directionManagementTypes);
@@ -128,7 +128,7 @@ public class DirectionsManagementQueryApi {
         }
 
         return envelopeFrom(envelope.metadata(),
-                JsonObjects.createObjectBuilder().add("directions", refDataDirectionsInJson.build()).build());
+                createObjectBuilder().add("directions", refDataDirectionsInJson.build()).build());
     }
 
     private RefDataDirection buildRefDataDirection(final List<RefDataDirection> refDataDirectionsSortedOnSequence, final int idx, final String formType) {

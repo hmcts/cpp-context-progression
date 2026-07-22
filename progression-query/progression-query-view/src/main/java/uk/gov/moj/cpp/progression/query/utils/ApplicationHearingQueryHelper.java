@@ -7,7 +7,6 @@ import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.addHearing;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.progression.courts.Hearings;
@@ -61,7 +60,7 @@ public class ApplicationHearingQueryHelper {
         applicationHearings.forEach((courtApplication, hearings) ->
                 hearings.stream().filter(h -> isNull(h.getIsBoxHearing()) || !h.getIsBoxHearing())
                         .forEach(hearing -> {
-                            final JsonObjectBuilder applicationHearingsJsonBuilder = JsonObjects.createObjectBuilder()
+                            final JsonObjectBuilder applicationHearingsJsonBuilder = createObjectBuilder()
                                     .add(ID, courtApplication.getId().toString())
                                     .add(TITLE, courtApplication.getType().getType());
                             addHearing(applicationHearingsJsonBuilder, hearing);
@@ -85,7 +84,7 @@ public class ApplicationHearingQueryHelper {
                 Comparator.nullsLast(Comparator.naturalOrder())
         ));
 
-        final JsonArrayBuilder sortedArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder sortedArrayBuilder = createArrayBuilder();
         hearingJsonObjects.forEach(sortedArrayBuilder::add);
 
         return sortedArrayBuilder.build();

@@ -8,8 +8,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
@@ -82,7 +82,7 @@ class CourtlistQueryServiceTest {
 
     @Test
     void buildEnrichedPayload_shouldCopyPayloadWhenCourtCentreNameIsNull() {
-        final JsonObject originalPayload = JsonObjects.createObjectBuilder()
+        final JsonObject originalPayload = createObjectBuilder()
                 .add("listType", "public")
                 .build();
         final JsonEnvelope document = envelopeFrom(
@@ -101,7 +101,7 @@ class CourtlistQueryServiceTest {
     @Test
     void buildEnrichedPayload_shouldEnrichWithCourtCentreDataWhenCourtCentreNamePresentAndReferenceDataReturnsData() {
         final String courtCentreName = "Test Court";
-        final JsonObject originalPayload = JsonObjects.createObjectBuilder()
+        final JsonObject originalPayload = createObjectBuilder()
                 .add("courtCentreName", courtCentreName)
                 .add("listType", "public")
                 .build();
@@ -109,7 +109,7 @@ class CourtlistQueryServiceTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("test"),
                 originalPayload);
 
-        final JsonObject courtCentreData = JsonObjects.createObjectBuilder()
+        final JsonObject courtCentreData = createObjectBuilder()
                 .add("oucode", "OU123")
                 .add("id", "court-id-1")
                 .add("courtId", "456")
@@ -130,14 +130,14 @@ class CourtlistQueryServiceTest {
     @Test
     void buildEnrichedPayload_shouldUseDefaultCourtIdNumericWhenNotInReferenceData() {
         final String courtCentreName = "Other Court";
-        final JsonObject originalPayload = JsonObjects.createObjectBuilder()
+        final JsonObject originalPayload = createObjectBuilder()
                 .add("courtCentreName", courtCentreName)
                 .build();
         final JsonEnvelope document = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("test"),
                 originalPayload);
 
-        final JsonObject courtCentreData = JsonObjects.createObjectBuilder()
+        final JsonObject courtCentreData = createObjectBuilder()
                 .add("oucode", "OU456")
                 .add("id", "court-id-2")
                 .build();
@@ -152,7 +152,7 @@ class CourtlistQueryServiceTest {
     @Test
     void buildEnrichedPayload_shouldNotAddEnrichmentWhenReferenceDataReturnsEmpty() {
         final String courtCentreName = "Unknown Court";
-        final JsonObject originalPayload = JsonObjects.createObjectBuilder()
+        final JsonObject originalPayload = createObjectBuilder()
                 .add("courtCentreName", courtCentreName)
                 .build();
         final JsonEnvelope document = envelopeFrom(

@@ -5,8 +5,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -112,9 +113,9 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
 
         when(defendantsAddedToCourtProceedings.getDefendants()).thenReturn(Collections.singletonList(defendant));
 
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
-                .add("payload", JsonObjects.createObjectBuilder()
-                        .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                         .add("id", defendant.getId().toString())
                                         .add("prosecutionCaseId", defendant.getProsecutionCaseId().toString()).build())
                                 .build())

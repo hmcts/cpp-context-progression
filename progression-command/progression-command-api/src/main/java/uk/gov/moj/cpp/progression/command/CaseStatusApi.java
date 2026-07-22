@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.command;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -25,7 +25,7 @@ public class CaseStatusApi {
     @Handles("progression.inactive-case-bdf")
     public void handleCaseInactiveViaBdf(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("prosecutionCaseId", payload.getString("prosecutionCaseId"))
                 .add("caseStatus", CaseStatusEnum.INACTIVE.name())
                 .build();

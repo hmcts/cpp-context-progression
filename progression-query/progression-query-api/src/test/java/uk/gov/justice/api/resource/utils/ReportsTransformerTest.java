@@ -31,10 +31,10 @@ import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.progression.courts.Offences.offences;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.dto.ResultLine;
@@ -2160,7 +2160,7 @@ public class ReportsTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }

@@ -5,7 +5,6 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -38,7 +37,7 @@ public class UsersAndGroupsService {
 
     public JsonObject getOrganisationDetails(final JsonEnvelope envelope) {
 
-        final JsonObject organisationDetail = JsonObjects.createObjectBuilder().add("organisationId",
+        final JsonObject organisationDetail = createObjectBuilder().add("organisationId",
                 envelope.payloadAsJsonObject().getJsonString("organisationId").getString()).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(organisationDetail)
                 .withName("usersgroups.get-organisation-details").withMetadataFrom(envelope);

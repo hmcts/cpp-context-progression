@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static uk.gov.moj.cpp.progression.domain.constant.FeeStatus.*;
 import static uk.gov.moj.cpp.progression.domain.constant.FeeType.*;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.FeeStatus;
 import uk.gov.moj.cpp.progression.domain.constant.FeeType;
@@ -47,7 +47,7 @@ class CivilFeesQueryViewTest {
         List<CivilFeeEntity> civilFeeEntities = List.of(civilFeeEntityOne, civilFeeEntityTwo);
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne, uuidTwo))).thenReturn(civilFeeEntities);
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("feeIds", uuidOne + "," + uuidTwo)
                 .build();
 
@@ -66,7 +66,7 @@ class CivilFeesQueryViewTest {
         UUID uuidTwo = UUID.randomUUID();
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne, uuidTwo))).thenReturn(Collections.emptyList());
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("feeIds", uuidOne + "," + uuidTwo)
                 .build();
 
@@ -88,7 +88,7 @@ class CivilFeesQueryViewTest {
         List<CivilFeeEntity> civilFeeEntities = List.of(civilFeeEntityOne);
 
         when(civilFeeRepository.findByFeeIds(List.of(uuidOne))).thenReturn(civilFeeEntities);
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("feeIds", String.valueOf(uuidOne))
                 .build();
 

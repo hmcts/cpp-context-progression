@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PRO
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASE_IDENTIFIER;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTOR_CODE;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -131,14 +130,14 @@ public class VejCaseworkerProcessor {
         final JsonObject hearingObj = ((JsonObject) hearingParent.get(HEARING));
         LOGGER.info("Starting extractPoliceCases prosecution cases from hearingParent {}", hearingParent);
         final JsonArray prosecutionCases = (JsonArray) hearingObj.get(PROSECUTION_CASES);
-        final JsonArrayBuilder policeCaseProsecutionCasesBuilder = JsonObjects.createArrayBuilder();
-        final JsonArrayBuilder policeCasesBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder policeCaseProsecutionCasesBuilder = createArrayBuilder();
+        final JsonArrayBuilder policeCasesBuilder = createArrayBuilder();
         final JsonArray courtApplications = (JsonArray) hearingObj.get(COURT_APPLICATIONS);
-        final JsonArrayBuilder courtApplicationsBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder courtApplicationsBuilder = createArrayBuilder();
         if (null != prosecutionCases && !prosecutionCases.isEmpty()) {
             extractPoliceProsecutionCases(prosecutionCases, policeCaseProsecutionCasesBuilder);
         }
-        JsonObject hearingObj1 = JsonObjects.createObjectBuilder().build();
+        JsonObject hearingObj1 = createObjectBuilder().build();
         final JsonArray policeCaseProsecutionCases1 = policeCaseProsecutionCasesBuilder.build();
         if (null != policeCaseProsecutionCases1 && !policeCaseProsecutionCases1.isEmpty()) {
             hearingObj1 = removeProperty(hearingObj, PROSECUTION_CASES);
@@ -193,17 +192,17 @@ public class VejCaseworkerProcessor {
     private JsonObject iterateCourtApplications(final JsonArray courtApplications, final JsonArrayBuilder policeCourtApplications, JsonObject hearingObj1, final JsonObject item) {
         for (int ic = 0; ic < courtApplications.size(); ic++) {
             final JsonObject itemCourt = courtApplications.getJsonObject(ic);
-            JsonObject newItem = JsonObjects.createObjectBuilder().build();
+            JsonObject newItem = createObjectBuilder().build();
             final JsonArray courtApplicationCases = (JsonArray) itemCourt.get(COURT_APPLICATION_CASES);
-            final JsonArrayBuilder policeCourtApplicationCases = JsonObjects.createArrayBuilder();
+            final JsonArrayBuilder policeCourtApplicationCases = createArrayBuilder();
             if (null != courtApplicationCases && !courtApplicationCases.isEmpty()) {
                 iterateCourtApplicationCasesForOffences(item, courtApplicationCases, policeCourtApplicationCases);
             }
             final JsonObject courtOrder = itemCourt.getJsonObject(COURT_ORDER);
-            JsonObject newCourtOrder = JsonObjects.createObjectBuilder().build();
+            JsonObject newCourtOrder = createObjectBuilder().build();
             if (null != courtOrder) {
                 final JsonArray courtOrderOffences = (JsonArray) courtOrder.get(COURT_ORDER_OFFENCES);
-                final JsonArrayBuilder laaCourtOrderOffences = JsonObjects.createArrayBuilder();
+                final JsonArrayBuilder laaCourtOrderOffences = createArrayBuilder();
                 if (null != courtOrderOffences && !courtOrderOffences.isEmpty()) {
                     iterateCourtOrderOffencesForOffences(item, courtOrderOffences, laaCourtOrderOffences);
                     newCourtOrder = removeProperty(courtOrder, COURT_ORDER_OFFENCES);
@@ -332,7 +331,7 @@ public class VejCaseworkerProcessor {
     }
 
     private static JsonObjectBuilder getJsonObjectBuilder() {
-        return JsonObjects.createObjectBuilder();
+        return createObjectBuilder();
     }
 
 }

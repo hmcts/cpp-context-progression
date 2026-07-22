@@ -20,8 +20,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.FileUtil.givenPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
@@ -427,7 +427,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .build()))
                 .build());
         when(listCourtHearingTransformer.transform(any(), any(), anyList(), any())).thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
 
         this.eventProcessor.handle(requestMessage);
         verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
@@ -1444,7 +1444,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = createReader(new StringReader(referenceDataOffenceJsonString));
 
         return jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
     }

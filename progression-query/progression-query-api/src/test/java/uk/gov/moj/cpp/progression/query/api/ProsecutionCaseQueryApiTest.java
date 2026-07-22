@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.readJson;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.QueryClientTestBase;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
@@ -264,7 +264,7 @@ public class ProsecutionCaseQueryApiTest {
     @Test
     public void shouldHandleProsecutionCaseQueryWithEmptyCourtOrders() {
         final JsonObject prosecutionCasePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
-        final JsonObject courtOrdersPayload = createObjectBuilder().add("courtOrders", JsonObjects.createArrayBuilder().build()).build();
+        final JsonObject courtOrdersPayload = createObjectBuilder().add("courtOrders", createArrayBuilder().build()).build();
 
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
@@ -305,7 +305,7 @@ public class ProsecutionCaseQueryApiTest {
     @Test
     public void shouldHandleProsecutionCaseAtAGlanceWithOutRepresentation() {
         final JsonObject caagResponse = readJson(JSON_CAAG_RESPONSE_JSON, JsonObject.class);
-        final JsonObject jsonObjectPayload = createObjectBuilder().add("defendants", JsonObjects.createArrayBuilder().build()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("defendants", createArrayBuilder().build()).build();
 
         final Metadata metadata = QueryClientTestBase.metadataFor(CAAG_PROSECUTION_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, caagResponse);

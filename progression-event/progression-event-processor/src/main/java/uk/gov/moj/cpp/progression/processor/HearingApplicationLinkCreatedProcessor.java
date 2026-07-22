@@ -4,13 +4,13 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class HearingApplicationLinkCreatedProcessor {
@@ -28,7 +28,7 @@ public class HearingApplicationLinkCreatedProcessor {
 
     @Handles("progression.event.hearing-application-link-created")
     public void process(final JsonEnvelope event) {
-        final JsonObjectBuilder payload = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder payload = createObjectBuilder();
         final JsonObject hearing  = event.payloadAsJsonObject().getJsonObject("hearing");
         payload.add("id",hearing.getString("id"));
         payload.add("courtCentre",hearing.getJsonObject("courtCentre"));

@@ -16,8 +16,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
@@ -154,14 +154,14 @@ public class HearingEventLogGenerationServiceTest {
     }
 
     private static Optional<JsonObject> buildDocumentTypeDataWithRBAC(final String documentCategory) {
-        return Optional.ofNullable(JsonObjects.createObjectBuilder().add("section", "orders & notices")
+        return Optional.ofNullable(createObjectBuilder().add("section", "orders & notices")
                 .add("documentCategory", "documentCategory")
                 .add("documentTypeDescription", "Applications")
                 .add("documentTypeId", documentCategory)
                 .add("", "")
                 .add("mimeType", "application/pdf")
                 .add("courtDocumentTypeRBAC",
-                        JsonObjects.createObjectBuilder()
+                        createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
@@ -170,7 +170,7 @@ public class HearingEventLogGenerationServiceTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
 

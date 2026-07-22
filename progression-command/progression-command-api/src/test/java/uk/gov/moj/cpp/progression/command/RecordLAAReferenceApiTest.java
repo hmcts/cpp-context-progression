@@ -17,7 +17,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.InjectMocks;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -93,7 +92,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldRecordLAAReferenceForOffence() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.handler.record-laareference-for-offence", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
@@ -108,7 +107,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsNotValidUUIDForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", "invalid-uuid")
                 .build());
@@ -120,7 +119,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsnullForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .build());
 
@@ -131,7 +130,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfDefendantIdIsNotValidUUIDForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("defendantId", "invalid-uuid")
                 .add("offenceId", randomUUID().toString())
                 .build());
@@ -143,7 +142,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfDefendantIdIsNullForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("offenceId", randomUUID().toString())
                 .build());
 
@@ -154,7 +153,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfCasedIsNullForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("offenceId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .build());
@@ -166,7 +165,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfProsecutionCaseIdIsNotValidUUIDForCase() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-defendant", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("defendantId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .add("prosecutionCaseId", "invalid-uuid")
@@ -184,7 +183,7 @@ public class RecordLAAReferenceApiTest {
         final UUID childApplicationId1 = randomUUID();
         final UUID childApplicationId2 = randomUUID();
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.handler.record-laareference-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", parentApplicationId.toString())
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
@@ -222,7 +221,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfApplicationIdIsNullForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .build());
@@ -234,7 +233,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfApplicationIdIsNotValidUUIDForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", "invalid-uuid")
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
@@ -247,7 +246,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfSubjectIdIsNullForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())
                 .build());
@@ -259,7 +258,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfSubjectIdIsNotValidUUIDForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .add("subjectId", "invalid-uuid")
                 .add("offenceId", randomUUID().toString())
@@ -272,7 +271,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsNullForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .add("subjectId", randomUUID().toString())
                 .build());
@@ -284,7 +283,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldThrowBadRequestIfOffenceIdIsNotValidUUIDForApplication() {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", "invalid-uuid")
@@ -298,7 +297,7 @@ public class RecordLAAReferenceApiTest {
     public void shouldUpdateLAAReferenceAsApplicationHasNoOffencesAndIsNotChildApplication() throws Exception {
 
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.record-laareference-for-application-on-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .build());
         final JsonObject payload = CommandClientTestBase.readJson("json/progression-query-application-without-offences.json", JsonObject.class);
@@ -316,7 +315,7 @@ public class RecordLAAReferenceApiTest {
         final UUID childApplicationId2 = randomUUID();
 
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.record-laareference-for-application-on-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", parentApplicationId.toString())
                 .build());
         final JsonObject payload = CommandClientTestBase.readJson("json/progression-query-application-without-offences.json", JsonObject.class);
@@ -355,7 +354,7 @@ public class RecordLAAReferenceApiTest {
     public void shouldRejectUpdatingLAAReferenceWhenApplicationHasOffences() throws Exception {
 
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.record-laareference-for-application-on-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .build());
         final JsonObject payload = CommandClientTestBase.readJson("json/progression-query-application-with-offences.json", JsonObject.class);
@@ -366,7 +365,7 @@ public class RecordLAAReferenceApiTest {
     @Test
     public void shouldRejectUpdatingLAAReferenceWhenApplicationIsChildApplication() throws Exception {
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.record-laareference-for-application-on-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .build());
         final JsonObject payload = CommandClientTestBase.readJson("json/progression-query-child-application.json", JsonObject.class);
@@ -378,7 +377,7 @@ public class RecordLAAReferenceApiTest {
     public void shouldRejectUpdatingLAAReferenceWhenApplicationNotFound() throws Exception {
 
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.record-laareference-for-application-on-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", randomUUID().toString())
                 .build());
         when(progressionQueryService.getCourtApplicationById(any(),any())).thenReturn(Optional.empty());
@@ -389,7 +388,7 @@ public class RecordLAAReferenceApiTest {
     public void shouldThrowBadRequestExceptionRecordLAAReferenceForApplication() {
         final UUID applicationId = randomUUID();
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.handler.record-laareference-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", applicationId.toString())
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())

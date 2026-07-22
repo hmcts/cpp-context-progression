@@ -6,8 +6,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
@@ -115,7 +116,7 @@ public class ProgressionEventFactoryTest {
         when(envelope.payloadAsJsonObject().getString(any())).thenReturn(CASE_ID);
         when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
                 .thenReturn(
-                   JsonObjects.createArrayBuilder()
+                   createArrayBuilder()
                         .add(createDefendantJsonWithIsPsrRequested(true))
                         .add(createDefendantJsonWithIsPsrRequested(false))
                         .build());
@@ -135,7 +136,7 @@ public class ProgressionEventFactoryTest {
     }
 
     private JsonObject createDefendantJsonWithIsPsrRequested(final Boolean isPsrRequested) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("defendantId", UUID.randomUUID().toString())
                 .add("psrIsRequested", isPsrRequested).build();
     }

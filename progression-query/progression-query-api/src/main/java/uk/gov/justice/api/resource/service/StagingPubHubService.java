@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -40,7 +40,7 @@ public class StagingPubHubService {
                         .withName(PUBHUB_PUBLISH_STANDARD_LIST)
                         .withUserId(userId.toString())
                         .build(),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .add("standardList", standardList)
                         .build());
 

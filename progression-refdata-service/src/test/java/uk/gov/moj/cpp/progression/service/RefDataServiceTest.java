@@ -28,7 +28,6 @@ import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GE
 import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_QUERY_JUDICIARIES;
 import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -160,7 +159,7 @@ public class RefDataServiceTest {
     public void shouldReturnPublicHolidays() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referencedata.public-holidays.json"), Charset.defaultCharset());
 
-        final JsonObject payload = JsonObjects.createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
+        final JsonObject payload = createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
 
         final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
                         .withId(randomUUID())
@@ -180,7 +179,7 @@ public class RefDataServiceTest {
 
     @Test
     public void shouldReturnEmptyListWhenPublicHolidaysServiceReturnsEmptyList() {
-        final JsonObject payload = JsonObjects.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
                         .withId(randomUUID())
@@ -601,7 +600,7 @@ public class RefDataServiceTest {
     private JsonEnvelope getEnvelope(final String name) {
         return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
-                JsonObjects.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     private JsonEnvelope getEnvelope(final String name, final JsonObject jsonObject) {
@@ -611,9 +610,9 @@ public class RefDataServiceTest {
     }
 
     private JsonObject getPayloadForOrgUnits(final String id) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("organisationunits", createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("id", id)
                                 .add("oucodeL3Name", "South Western (Lavender Hill)")
                                 .add("oucodeL3WelshName", "welshName_Test")
@@ -623,17 +622,17 @@ public class RefDataServiceTest {
     }
 
     private JsonObject getPayloadForCourts() {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("courts", createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                        .add(createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                         .build())
                 .build();
     }
 
     private JsonObject getReferralReasonsPayload() {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("referralReasons", createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("id", "7e2f843e-d639-40b3-8611-8015f3a18957")
                                 .add("seqId", 1)
                                 .add("reason", "Sections 135")

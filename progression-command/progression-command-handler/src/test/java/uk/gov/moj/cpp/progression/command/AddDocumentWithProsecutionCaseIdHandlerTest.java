@@ -21,7 +21,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -165,7 +164,7 @@ public class AddDocumentWithProsecutionCaseIdHandlerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     private CourtDocument buildCourtDocument() {

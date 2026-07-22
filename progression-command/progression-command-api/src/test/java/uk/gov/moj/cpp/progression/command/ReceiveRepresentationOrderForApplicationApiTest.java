@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -312,7 +311,7 @@ class ReceiveRepresentationOrderForApplicationApiTest {
     public void shouldThrowBadRequestExceptionRecordRepresentationOrderForApplicationWithoutOffences() {
         final UUID applicationId = randomUUID();
         final Metadata metadata = CommandClientTestBase.metadataFor("progression.command.receive-representationorder-for-application", randomUUID().toString());
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, JsonObjects.createObjectBuilder()
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
                 .add("applicationId", applicationId.toString())
                 .add("subjectId", randomUUID().toString())
                 .add("offenceId", randomUUID().toString())

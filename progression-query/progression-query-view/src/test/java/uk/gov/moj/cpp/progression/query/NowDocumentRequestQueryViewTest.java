@@ -6,8 +6,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NowDocumentRequestEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NowDocumentRequestRepository;
@@ -44,7 +44,7 @@ public class NowDocumentRequestQueryViewTest {
     @Test
     public void shouldFindNowDocumentRequestByRequestId() {
         final UUID requestId = UUID.randomUUID();
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(REQUEST_ID_PARAM, requestId.toString()).build();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
@@ -65,7 +65,7 @@ public class NowDocumentRequestQueryViewTest {
     @Test
     public void shouldReturnEmptyNowDocumentRequests() {
         final UUID requestId = UUID.randomUUID();
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(REQUEST_ID_PARAM, requestId.toString()).build();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
@@ -82,7 +82,7 @@ public class NowDocumentRequestQueryViewTest {
     @Test
     public void shouldNowDocumentRequestByHearing() {
         final UUID requestId = UUID.randomUUID();
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add(HEARING_ID_PARAM, HEARING_ID.toString()).build();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())

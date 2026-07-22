@@ -6,8 +6,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -54,8 +55,8 @@ public class OrganisationServiceTest {
 
     @Test
     public void shouldReturnEmptyOrganisationDetails() {
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
-                .add("association", JsonObjects.createObjectBuilder())
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add("association", createObjectBuilder())
                 .build();
         final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATION_QUERY, randomUUID().toString());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
@@ -69,8 +70,8 @@ public class OrganisationServiceTest {
     @Test
     public void shouldReturnDefendantIdsWhenDefenceIsAssociatedWithDefendants() {
 
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
-                .add("defendantIds", JsonObjects.createArrayBuilder()
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add("defendantIds", createArrayBuilder()
                         .add(randomUUID().toString())
                         .add(randomUUID().toString())
                 ).build();
@@ -87,8 +88,8 @@ public class OrganisationServiceTest {
     @Test
     public void shouldReturnEmptyDefendantIdsWhenDefenceIsNotAssociatedWithDefendants() {
 
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
-                .add("defendantIds", JsonObjects.createArrayBuilder()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add("defendantIds", createArrayBuilder()).build();
         final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATED_DEFENDANTS_QUERY, randomUUID().toString());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
 

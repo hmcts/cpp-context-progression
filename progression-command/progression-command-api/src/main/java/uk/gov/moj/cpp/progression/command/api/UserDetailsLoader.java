@@ -44,7 +44,7 @@ public class UserDetailsLoader {
 
 
     public static boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final Requester requester, final String applicationTypeCode) {
-        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder()
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder()
                 .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
                 .add(OBJECT, applicationTypeCode)
                 .build();
@@ -62,7 +62,7 @@ public class UserDetailsLoader {
 
 
     public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {
-        final JsonObject getOrganisationForUserRequest = JsonObjects.createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
         final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.permissions");
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);

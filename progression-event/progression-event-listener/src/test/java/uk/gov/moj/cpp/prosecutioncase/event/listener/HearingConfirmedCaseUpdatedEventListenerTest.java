@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.SJP_REFERRAL;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -180,7 +180,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
     }
 
     private JsonObject getPayload(final ProsecutionCase prosecutionCase) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
                 .add("caseStatus", SJP_REFERRAL.getDescription())
                 .build();

@@ -7,9 +7,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.QueryClientTestBase;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -79,7 +79,7 @@ public class UserDetailsLoaderTest {
     @Test
     public void shouldNotReturnOrganisationDetails() {
 
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         final Metadata metadata = QueryClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION);
 
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);

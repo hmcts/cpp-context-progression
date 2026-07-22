@@ -11,8 +11,8 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -61,7 +61,7 @@ public class ListingServiceTest {
                 .with(metadataBuilder)
                 .build();
 
-        final JsonObject listingPayload = JsonObjects.createObjectBuilder()
+        final JsonObject listingPayload = createObjectBuilder()
                 .add("id", "id-value")
                 .build();
 
@@ -91,7 +91,7 @@ public class ListingServiceTest {
                 .withPayloadOf("53b3c80f-57ea-3915-8b2d-457291d94d9a","clusterId")
                 .build();
 
-        final JsonObject listingPayload = JsonObjects.createObjectBuilder()
+        final JsonObject listingPayload = createObjectBuilder()
                 .add("id", "id-value")
                 .build();
 

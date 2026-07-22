@@ -37,8 +37,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
 import static uk.gov.moj.cpp.progression.utils.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
@@ -1026,7 +1026,7 @@ public class HearingResultEventProcessorTest {
                 .withId(randomUUID())
                 .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
 
-        final JsonObject payload = JsonObjects.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
 

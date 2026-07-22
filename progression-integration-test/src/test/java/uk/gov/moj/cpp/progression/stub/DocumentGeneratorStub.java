@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PdfTestHelper.asPdf;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import java.io.StringReader;
 import java.util.Arrays;
@@ -32,8 +33,6 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 public class DocumentGeneratorStub {
 
     private static final String PATH = "/systemdocgenerator-service/command/api/rest/systemdocgenerator/render";
@@ -87,7 +86,7 @@ public class DocumentGeneratorStub {
     public static Optional<JsonObject> getSummonsTemplate(final String templateName, final String... contains) {
         final List<String> documentRequests = getDocumentRequestsAsStream();
         return documentRequests.stream()
-                .map(s -> JsonObjects.createReader(new StringReader(s)).readObject())
+                .map(s -> createReader(new StringReader(s)).readObject())
                 .filter(request -> Arrays.stream(contains).allMatch(request.toString()::contains))
                 .filter(json -> json.getString("templateName").equals(templateName))
                 .map(json -> json.getJsonObject("templatePayload"))
@@ -105,7 +104,7 @@ public class DocumentGeneratorStub {
     public static Optional<JsonObject> getHearingEventTemplate(final String templateName) {
         final List<String> documentRequests = getDocumentRequestsAsStream();
         return documentRequests.stream()
-                .map(s -> JsonObjects.createReader(new StringReader(s)).readObject())
+                .map(s -> createReader(new StringReader(s)).readObject())
                 .filter(json -> json.getString("templateName").equals(templateName))
                 .map(json -> json.getJsonObject("templatePayload"))
                 .findFirst();

@@ -26,8 +26,9 @@ import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -175,7 +176,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -212,7 +213,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -246,7 +247,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -281,7 +282,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -333,19 +334,19 @@ public class ApplicationAtAGlanceHelperTest {
                 .withCourtApplicationCases(List.of(courtApplicationCase1, courtApplicationCase2))
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final JsonObject representation = JsonObjects.createObjectBuilder()
-                .add("defendants", JsonObjects.createArrayBuilder().add(
-                        JsonObjects.createObjectBuilder()
+        final JsonObject representation = createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(
+                        createObjectBuilder()
                                 .add("defendantId", masterDefendantId.toString())
                                 .add("organisationName", "organisationName")
-                                .add("organisationAddress", JsonObjects.createObjectBuilder()
+                                .add("organisationAddress", createObjectBuilder()
                                         .add("address1", "address1")
                                         .add("address2", "address2")
                                         .add("address3", "address3")
@@ -452,7 +453,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -505,7 +506,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().build())
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -550,19 +551,19 @@ public class ApplicationAtAGlanceHelperTest {
                 .withCourtApplicationCases(List.of(courtApplicationCase1, courtApplicationCase2))
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
                 .withName("progression.query.application.aaag"), payload);
 
-        final JsonObject representation = JsonObjects.createObjectBuilder()
-                .add("defendants", JsonObjects.createArrayBuilder().add(
-                        JsonObjects.createObjectBuilder()
+        final JsonObject representation = createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(
+                        createObjectBuilder()
                                 .add("defendantId", masterDefendantId.toString())
                                 .add("organisationName", "organisationName")
-                                .add("organisationAddress", JsonObjects.createObjectBuilder()
+                                .add("organisationAddress", createObjectBuilder()
                                         .add("address1", "address1")
                                         .add("address2", "address2")
                                         .add("address3", "address3")
@@ -600,7 +601,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withApplicant(applicant)
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 

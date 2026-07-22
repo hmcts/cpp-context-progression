@@ -13,8 +13,6 @@ import java.util.Objects;
 import static java.nio.charset.Charset.defaultCharset;
 import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.junit.jupiter.api.Assertions.fail;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 public class FileUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
@@ -49,7 +47,7 @@ public class FileUtil {
     public static JsonObject getJsonPayload(final String fileName) throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream(fileName);
-             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
+             final JsonReader jsonReader = createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             return payload;
         }

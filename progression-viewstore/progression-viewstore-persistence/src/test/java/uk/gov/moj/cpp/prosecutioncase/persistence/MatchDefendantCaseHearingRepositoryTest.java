@@ -7,8 +7,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
@@ -179,11 +179,11 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
     private HearingEntity getHearingEntity(UUID resultId, UUID hearingId) {
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(resultId);
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         return hearingEntity;
@@ -192,7 +192,7 @@ public class MatchDefendantCaseHearingRepositoryTest {
     private ProsecutionCaseEntity getProsecutionCaseEntity(UUID prosecutionCaseId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
-        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        prosecutionCaseEntity.setPayload(createObjectBuilder().build().toString());
         return prosecutionCaseEntity;
     }
 

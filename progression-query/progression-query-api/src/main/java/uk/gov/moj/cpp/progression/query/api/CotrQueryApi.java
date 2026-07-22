@@ -14,7 +14,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -163,7 +162,7 @@ public class CotrQueryApi {
                     .build();
             return envelopeFrom(envelope.metadata(), responsePayload);
         }
-        return envelopeFrom(envelope.metadata(), JsonObjects.createObjectBuilder().build());
+        return envelopeFrom(envelope.metadata(), createObjectBuilder().build());
     }
 
     @Handles("progression.query.trial-readiness-details")

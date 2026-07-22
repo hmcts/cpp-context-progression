@@ -12,7 +12,6 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails.newBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -104,7 +103,7 @@ public class UsersGroupService {
 
     protected Envelope<JsonObject> getOrganisationForLaaContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
 
-        final JsonObject orgDetailsJsonEnvelope = JsonObjects.createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
+        final JsonObject orgDetailsJsonEnvelope = createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
 
         return requester.requestAsAdmin(envelopeFrom(
                 metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details-by-laaContractNumber"),
@@ -115,7 +114,7 @@ public class UsersGroupService {
 
     protected JsonObject getOrganisationForOrganisationId(final Envelope<?> envelope, final String organisationId) {
 
-        final JsonObject orgDetailsJsonEnvelope = JsonObjects.createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
+        final JsonObject orgDetailsJsonEnvelope = createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
 
         final Envelope<JsonObject> jsonResultEnvelope = requester.requestAsAdmin(envelopeFrom(
                 metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details"),

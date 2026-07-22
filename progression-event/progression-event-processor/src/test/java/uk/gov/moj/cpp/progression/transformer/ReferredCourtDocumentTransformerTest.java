@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.core.requester.Requester;
@@ -52,11 +52,11 @@ public class ReferredCourtDocumentTransformerTest {
         final ReferredCourtDocument referredCourtDocument = buildCourtDocument(documentTypeId);
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("section", CASE_DOCUMENT)
                 .add("seqNum", 10)
                 .add("courtDocumentTypeRBAC",
-                        JsonObjects.createObjectBuilder()
+                        createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build()
@@ -79,7 +79,7 @@ public class ReferredCourtDocumentTransformerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     @Test

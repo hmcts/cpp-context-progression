@@ -13,8 +13,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -65,7 +65,7 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
-        JsonObject responseJsonObject = JsonObjects.createObjectBuilder().add("organisationId",organisationId.toString()).build();
+        JsonObject responseJsonObject = createObjectBuilder().add("organisationId",organisationId.toString()).build();
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), "userId").build();
 
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
@@ -232,13 +232,13 @@ public class UsersGroupServiceTest {
     }
 
     private JsonObject getHMCTSGroups() {
-        return JsonObjects.createObjectBuilder()
-                .add("groups", JsonObjects.createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
+                .add("groups", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("groupId", "7e2f143e-d619-40b3-8611-8015f3a18957")
                                 .add("groupName", "Listing Officers")
                         )
-                        .add(JsonObjects.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("groupId", "8c5327b6-354e-4574-9558-b13fce8c055a")
                                 .add("groupName", "Court Clerks")
                         )
@@ -246,8 +246,8 @@ public class UsersGroupServiceTest {
     }
 
     private JsonObject getNoGroups() {
-        return JsonObjects.createObjectBuilder()
-                .add("groups", JsonObjects.createArrayBuilder()).build();
+        return createObjectBuilder()
+                .add("groups", createArrayBuilder()).build();
     }
 
 }

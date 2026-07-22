@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -73,7 +73,7 @@ public class MaterialAddedProcessorTest {
 
     @Test
     public void shouldForwardCourtOriginUpdateWhenOriginatorIsCourt() {
-        final JsonObject metaDataJsonLocal = JsonObjects.createObjectBuilder()
+        final JsonObject metaDataJsonLocal = createObjectBuilder()
                 .add(MaterialAddedProcessor.ORIGINATOR, MaterialAddedProcessor.ORIGINATOR_VALUE)
                 .add("id", UUID.randomUUID().toString()).build();
         when(metadata.asJsonObject()).thenReturn(metaDataJsonLocal);

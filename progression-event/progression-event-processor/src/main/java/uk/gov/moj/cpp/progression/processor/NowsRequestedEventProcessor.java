@@ -8,8 +8,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -233,7 +233,7 @@ public class NowsRequestedEventProcessor {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;
@@ -291,7 +291,7 @@ public class NowsRequestedEventProcessor {
 
         final CourtDocument courtDocument = courtDocument(nowDocumentRequest, permittedGroups, documentTypeDataJsonObject);
 
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject jsonObject = createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         sender.send(envelop(jsonObject).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(incomingEvent));
     }

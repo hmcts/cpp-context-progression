@@ -12,8 +12,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
@@ -52,7 +52,7 @@ public class CustodyTimeLimitProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("public.events.hearing.custody-time-limit-clock-stopped"),
                 createObjectBuilder()
                         .add("hearingId", hearingId)
-                        .add("offenceIds", JsonObjects.createArrayBuilder()
+                        .add("offenceIds", createArrayBuilder()
                                 .add(offence1Id)
                                 .add(offence2Id)
                                 .build())
@@ -109,7 +109,7 @@ public class CustodyTimeLimitProcessorTest {
         final String extendedTimeLimit = LocalDate.now().toString();
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.events.custody-time-limit-extended"),
                 createObjectBuilder()
-                        .add("hearingIds", JsonObjects.createArrayBuilder()
+                        .add("hearingIds", createArrayBuilder()
                                 .add(hearing1Id)
                                 .add(hearing2Id)
                                 .build()

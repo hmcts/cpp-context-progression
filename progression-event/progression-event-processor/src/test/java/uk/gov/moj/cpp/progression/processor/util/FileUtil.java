@@ -16,8 +16,6 @@ import javax.json.JsonReader;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 public class FileUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
@@ -38,7 +36,7 @@ public class FileUtil {
     }
 
     public static JsonObject jsonFromString(String jsonObjectStr) {
-        JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

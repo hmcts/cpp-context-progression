@@ -8,8 +8,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -65,7 +65,7 @@ public class ReApplyMediaReportingRestrictionOnCaseCommandApiTest {
     public void testHandleReApplyMediaReportingRestrictionOnCase() {
         final UUID caseId1 = randomUUID();
         final UUID caseId2 = randomUUID();
-        final JsonObject commandPayload = JsonObjects.createObjectBuilder()
+        final JsonObject commandPayload = createObjectBuilder()
                 .add("caseIds", createArrayBuilder()
                         .add(caseId1.toString())
                         .add(caseId2.toString())

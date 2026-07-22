@@ -11,8 +11,8 @@ import static uk.gov.QueryClientTestBase.readJson;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.service.OrganisationService.DEFENCE_ASSOCIATED_CASE_DEFENDANTS_ORGANISATION_QUERY;
 import static uk.gov.moj.cpp.progression.query.api.service.OrganisationService.DEFENCE_ASSOCIATION_QUERY;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -55,8 +55,8 @@ public class OrganisationServiceTest {
 
     @Test
     public void shouldReturnEmptyOrganisationDetails() {
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
-                .add("association", JsonObjects.createObjectBuilder())
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add("association", createObjectBuilder())
                 .build();
         final Metadata metadata = metadataFor(DEFENCE_ASSOCIATION_QUERY, randomUUID());
         final Envelope envelope = envelopeFrom(metadata, jsonObjectPayload);

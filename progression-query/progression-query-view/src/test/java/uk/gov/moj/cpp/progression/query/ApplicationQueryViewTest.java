@@ -29,8 +29,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.query.view.utils.SchemaValidator.validateObjectAgainstSchema;
 import static uk.gov.moj.cpp.progression.query.view.utils.FileUtil.getJsonPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -447,15 +447,15 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(false))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
-        final JsonObject linkedCaseJson = JsonObjects.createObjectBuilder()
-                .add("offences", JsonObjects.createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder().add("orderIndex", 2).build())
+        final JsonObject linkedCaseJson = createObjectBuilder()
+                .add("offences", createArrayBuilder()
+                        .add(createObjectBuilder().add("orderIndex", 2).build())
                         .build())
                 .build();
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)   // applicationDetails
                 .thenReturn(linkedCaseJson)               // linked case (inside getLinkedCases)
-                .thenReturn(JsonObjects.createObjectBuilder().build()) // laaApplnReference
+                .thenReturn(createObjectBuilder().build()) // laaApplnReference
                 .thenReturn(mockApplicantDetailsJson);    // applicantDetails (and child summary)
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
@@ -528,7 +528,7 @@ public class ApplicationQueryViewTest {
 
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)
-                .thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
                 .thenReturn(mockApplicantDetailsJson);
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
@@ -600,7 +600,7 @@ public class ApplicationQueryViewTest {
 
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)
-                .thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
                 .thenReturn(mockApplicantDetailsJson);
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);

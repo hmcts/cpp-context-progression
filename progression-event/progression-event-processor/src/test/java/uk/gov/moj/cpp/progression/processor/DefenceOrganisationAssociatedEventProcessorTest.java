@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -53,7 +53,7 @@ public class DefenceOrganisationAssociatedEventProcessorTest {
                 .withName("public.progression.defence-organisation-associated")
                 .withUserId(userId.toString());
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .add("organisationId", organisationId.toString())
                 .add("organisationName", ORGANISATION_NAME)

@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.HearingRequest.hearingRequest;
 import static uk.gov.moj.cpp.progression.enums.HearingRequestStatus.NEW;
 import static uk.gov.moj.cpp.progression.task.Task.RETRY_ADD_DEFENDANT_TO_CASE;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -359,7 +358,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private static JsonArray getDefendantOffences(final List<Defendant> defendants) {
-        final JsonArrayBuilder offenceIdArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder offenceIdArrayBuilder = createArrayBuilder();
         defendants.stream()
                 .flatMap(r -> r.getOffences().stream())
                 .map(Offence::getId)

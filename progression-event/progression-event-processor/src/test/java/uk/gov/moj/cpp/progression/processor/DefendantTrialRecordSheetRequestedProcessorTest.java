@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
@@ -56,6 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @ExtendWith(MockitoExtension.class)
 public class DefendantTrialRecordSheetRequestedProcessorTest {
@@ -163,12 +163,12 @@ public class DefendantTrialRecordSheetRequestedProcessorTest {
         final JsonObject payload2 = createObjectBuilder().add("caseReference", randomUUID().toString()).build();
         final String defendantName1 = "name1";
         final String defendantName2 = "name2";
-        when(progressionService.generateTrialRecordSheetPayloadForApplication(event, caseId, Arrays.asList(offenceId1, offenceId2))).thenReturn(JsonObjects.createArrayBuilder()
-                .add(JsonObjects.createObjectBuilder()
+        when(progressionService.generateTrialRecordSheetPayloadForApplication(event, caseId, Arrays.asList(offenceId1, offenceId2))).thenReturn(createArrayBuilder()
+                .add(createObjectBuilder()
                         .add("payload", payload1)
                         .add("defendantName", defendantName1)
                         .build())
-                .add(JsonObjects.createObjectBuilder()
+                .add(createObjectBuilder()
                         .add("payload", payload2)
                         .add("defendantName", defendantName2)
                         .build())

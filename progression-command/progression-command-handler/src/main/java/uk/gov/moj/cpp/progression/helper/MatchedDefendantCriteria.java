@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.substring;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Person;
 
@@ -336,7 +336,7 @@ public class MatchedDefendantCriteria {
     }
 
     private JsonObjectBuilder getDefaultCriteriaBuilder() {
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         jsonObjectBuilder.add(PAGE_SIZE, DEFAULT_PAGE_SIZE)
                 .add(PROCEEDINGS_CONCLUDED, DEFAULT_PROCEEDINGS_CONCLUDED)
                 .add(COURT_ORDER_VALIDITY_DATE, LocalDate.now().toString())

@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -72,16 +72,16 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
         final UUID prosecutionId = randomUUID();
 
         ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        final JsonObject caseMarker = JsonObjects.createObjectBuilder()
+        final JsonObject caseMarker = createObjectBuilder()
                 .add("hearingId", randomUUID().toString()).build();
-        final JsonObject prosecutionCase = JsonObjects.createObjectBuilder()
+        final JsonObject prosecutionCase = createObjectBuilder()
                 .add("cpsOrganisation", "A01")
                 .add("trialReceiptType", "Transfer")
                 .build();
         prosecutionCaseEntity.setPayload(prosecutionCase.toString());
         when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
 
-        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(), JsonObjects.createObjectBuilder().add("payload", caseMarker).build());
+        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(), createObjectBuilder().add("payload", caseMarker).build());
         eventListener.processCaseMarkersUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
         ProsecutionCaseEntity prosecutionCaseEntitySaved = argumentCaptor.getValue();

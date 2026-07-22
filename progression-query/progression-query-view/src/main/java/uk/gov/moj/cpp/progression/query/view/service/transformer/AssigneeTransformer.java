@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.query.view.service.transformer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import javax.inject.Inject;
@@ -17,6 +16,7 @@ import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @SuppressWarnings("squid:S1612 ")
 public class AssigneeTransformer {
@@ -42,7 +42,7 @@ public class AssigneeTransformer {
             final JsonObject assigneeForm = jsonObject.getJsonObject(DATA);
 
             if (nonNull(assigneeForm.getJsonArray(ASSIGNEES))) {
-                final JsonArray cpsAssignees = ofNullable(assigneeForm.getJsonArray(ASSIGNEES)).orElse(JsonObjects.createArrayBuilder().build());
+                final JsonArray cpsAssignees = ofNullable(assigneeForm.getJsonArray(ASSIGNEES)).orElse(createArrayBuilder().build());
 
                 LOGGER.info("cpsAssignees >> {}", cpsAssignees);
 

@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseLinkSplitMergeEntity;
@@ -18,8 +19,6 @@ import javax.inject.Inject;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 @RunWith(CdiTestRunner.class)
 public class CaseLinkSplitMergeRepositoryTest {
 
@@ -82,7 +81,7 @@ public class CaseLinkSplitMergeRepositoryTest {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final UUID prosecutionCaseId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
-        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        prosecutionCaseEntity.setPayload(createObjectBuilder().build().toString());
         prosecutionCaseRepository.save(prosecutionCaseEntity);
         return prosecutionCaseEntity;
     }

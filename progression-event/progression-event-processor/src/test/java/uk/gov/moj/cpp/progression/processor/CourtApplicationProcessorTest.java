@@ -58,8 +58,8 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOO
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMAIL_ADDRESS;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.processor.CourtApplicationProcessor.PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -1499,7 +1499,7 @@ public class CourtApplicationProcessorTest {
 
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToExistingHearing.class)).thenReturn(applicationReferredToExistingHearing);
         when(progressionService.getHearing(event, hearingId.toString())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().
-                add("prosecutionCases", JsonObjects.createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
+                add("prosecutionCases", createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
 
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -1557,7 +1557,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1603,7 +1603,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1651,7 +1651,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1813,7 +1813,7 @@ public class CourtApplicationProcessorTest {
         when(sjpService.getProsecutionCase(event, caseId)).thenReturn(sjpCase);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -1877,7 +1877,7 @@ public class CourtApplicationProcessorTest {
                 .build());
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -1909,7 +1909,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", JsonObjects.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -2412,7 +2412,7 @@ public class CourtApplicationProcessorTest {
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
-        return JsonObjects.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }

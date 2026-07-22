@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonObjects.getJsonObject;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class StagingEnforcementAcknowledgmentEventProcessor {
@@ -69,7 +70,7 @@ public class StagingEnforcementAcknowledgmentEventProcessor {
 
     private void processAckResponse(JsonEnvelope event, JsonObject enforcementResponsePayload, Map<String, String> materialIdsForRequestId) {
         materialIdsForRequestId.forEach((materialId, payload) -> {
-            final JsonObject commandPayload = JsonObjects.createObjectBuilder(enforcementResponsePayload).add(MATERIAL_ID, materialId).build();
+            final JsonObject commandPayload = createObjectBuilder(enforcementResponsePayload).add(MATERIAL_ID, materialId).build();
             final Envelope<JsonObject> envelope = envelop(commandPayload).withName("progression.command.apply-enforcement-acknowledgement").withMetadataFrom(event);
             this.sender.sendAsAdmin(envelope);
         });
@@ -77,14 +78,14 @@ public class StagingEnforcementAcknowledgmentEventProcessor {
 
     private void processErrorAckResponse(JsonEnvelope event, JsonObject enforcementResponsePayload, Map<String, String> materialIdsForRequestId) {
         materialIdsForRequestId.forEach((materialId, payload) -> {
-            final JsonObject commandPayload = JsonObjects.createObjectBuilder(enforcementResponsePayload).add(MATERIAL_ID, materialId).build();
+            final JsonObject commandPayload = createObjectBuilder(enforcementResponsePayload).add(MATERIAL_ID, materialId).build();
             final Envelope<JsonObject> envelope = envelop(commandPayload).withName("progression.command.enforcement-acknowledgement-error").withMetadataFrom(event);
             this.sender.sendAsAdmin(envelope);
         });
     }
 
     private Map<String, String> getMaterialIdsForRequestId(final String requestId, final JsonEnvelope event) {
-        final JsonObject payload = JsonObjects.createObjectBuilder().add("requestId", requestId).build();
+        final JsonObject payload = createObjectBuilder().add("requestId", requestId).build();
         final JsonObject requestMaterialIdPayload = requester.request(envelop(payload)
                 .withName("progression.query.now-document-requests-by-request-id")
                 .withMetadataFrom(event)).payloadAsJsonObject();

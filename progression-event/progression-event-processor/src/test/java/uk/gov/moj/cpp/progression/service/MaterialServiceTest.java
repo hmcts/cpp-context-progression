@@ -20,8 +20,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADETA_QUERY;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtsDocumentUploaded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -116,7 +116,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")
@@ -151,7 +151,7 @@ public class MaterialServiceTest {
 
         //given
         final UUID materialId = UUID.randomUUID();
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", "abc.txt")
                 .add("mimeType", "text")

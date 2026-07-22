@@ -6,7 +6,6 @@ import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -31,7 +30,7 @@ public class ListingQueryService {
     public Hearing searchHearing(final UUID userId, final UUID hearingId) {
 
         final Metadata metadata = metadataWithNewActionName(getListingQueryJsonEnvelop(userId).metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();

@@ -5,8 +5,8 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.Defendant;
@@ -159,7 +159,7 @@ public class SharedCourtDocumentsQueryView {
 
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
-                JsonObjects.createObjectBuilder().add("sharedCourtDocumentsLinksForApplication", sharedCourtDocumentsLinksForApplicationListToJsonArrayConverter.convert(sharedCourtDocumentsLinks)).build());
+                createObjectBuilder().add("sharedCourtDocumentsLinksForApplication", sharedCourtDocumentsLinksForApplicationListToJsonArrayConverter.convert(sharedCourtDocumentsLinks)).build());
 
     }
 

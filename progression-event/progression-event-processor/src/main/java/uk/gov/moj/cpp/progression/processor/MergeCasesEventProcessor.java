@@ -12,8 +12,9 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROG
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildCaseLinkedOrUnlinkedEventJson;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildLSMCommandPayload;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.createResponsePayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -94,7 +95,7 @@ public class MergeCasesEventProcessor {
                         if (alreadyMergedCases.get().size() > 0 && alreadyMergedCases.get().containsKey(MERGED_CASES) && !alreadyMergedCases.get().getJsonArray(MERGED_CASES).isEmpty()) {
                             alreadyMergedCases.get().getJsonArray(MERGED_CASES).stream().forEach(
                                     mc -> {
-                                        final JsonObject mergedCase = JsonObjects.createObjectBuilder().add("mergedCase", mc).build();
+                                        final JsonObject mergedCase = createObjectBuilder().add("mergedCase", mc).build();
                                         if (mergedCase.getJsonObject("mergedCase").getString(CASE_ID).equals(existingCase.get().getString(CASE_ID))) {
                                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                                             failed.set(true);
@@ -133,8 +134,8 @@ public class MergeCasesEventProcessor {
     }
 
     private JsonObject buildCasesMergedEventPayload(final JsonEnvelope envelope, final UUID leadCaseId, final List<String> caseUrns) {
-        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString()); // type is LINK in the listing public event, even for merge
-        final JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder().add(LINK_ACTION_TYPE, LinkType.LINK.toString()); // type is LINK in the listing public event, even for merge
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         // for case reference; caseURN is used  for spi cases, and prosecutionAuthorityReference is used for sjp cases
         final ProsecutionCaseIdentifier pci = jsonObjectToObjectConverter.convert(progressionService.getProsecutionCaseDetailById(envelope, leadCaseId.toString()).get().getJsonObject("prosecutionCase"), ProsecutionCase.class).getProsecutionCaseIdentifier();
         final String leadCaseUrn = pci.getCaseURN() != null ? pci.getCaseURN() : pci.getProsecutionAuthorityReference();
@@ -151,7 +152,7 @@ public class MergeCasesEventProcessor {
                     if (!previousMergeSearchResult.isEmpty() && previousMergeSearchResult.containsKey(MERGED_CASES)) {
                         previousMergeSearchResult.getJsonArray(MERGED_CASES).forEach(
                                 pmc -> {
-                                    final JsonObject implicitMergedCase = JsonObjects.createObjectBuilder().add(IMPLICIT_MERGED_CASE, pmc).build();
+                                    final JsonObject implicitMergedCase = createObjectBuilder().add(IMPLICIT_MERGED_CASE, pmc).build();
                                     buildCaseLinkedOrUnlinkedEventJson(arrayBuilder, UUID.fromString(mergeCaseId), mergeCaseUrn, implicitMergedCase.getJsonObject(IMPLICIT_MERGED_CASE).getString(CASE_ID), implicitMergedCase.getJsonObject(IMPLICIT_MERGED_CASE).getString(CASE_URN));
 
                                 }

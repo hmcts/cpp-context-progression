@@ -13,7 +13,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -71,7 +70,7 @@ public class MaterialService {
             throw new RuntimeException("UserId missing from event.");
         }
         LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
-        final JsonObject uploadMaterialPayload = JsonObjects.createObjectBuilder()
+        final JsonObject uploadMaterialPayload = createObjectBuilder()
                 .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())
                 .build();

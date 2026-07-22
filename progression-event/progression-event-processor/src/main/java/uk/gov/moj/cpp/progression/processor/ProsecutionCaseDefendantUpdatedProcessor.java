@@ -9,8 +9,8 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -155,7 +155,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
                     final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
-                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = JsonObjects.createObjectBuilder();
+                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = createObjectBuilder();
                     if(nonNull(applicationId) && nonNull(linkedApplicationJsonObject.getJsonArray(HEARING_IDS))){
                         updateDefendantAddressOnApplicationBuilder
                                 .add(APPLICATION_ID, applicationId)
@@ -176,7 +176,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             if (prosecutionCaseJson.containsKey("linkedApplicationsSummary") && caseStatus.equalsIgnoreCase(CaseStatusEnum.ACTIVE.name())) {
                 prosecutionCaseJson.getJsonArray("linkedApplicationsSummary").forEach(linkedApplicationSummaryJson -> {
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
-                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = JsonObjects.createObjectBuilder();
+                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = createObjectBuilder();
                     final String subjectId = linkedApplicationJsonObject.getString("subjectId", null);
                     if (nonNull(subjectId) && nonNull(defendant.getMasterDefendantId()) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
                         updateCustodialInformationForApplicationBuilder.add(APPLICATION_ID, linkedApplicationJsonObject.getString(APPLICATION_ID));
@@ -425,14 +425,14 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private void updateMatchedDefendantCustodialInformation(final JsonEnvelope jsonEnvelope, final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested, final JsonObject matchedCases) {
-        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = createObjectBuilder();
         final String matchedCaseIdString = matchedCases.getString(CASE_ID);
         updateMatchedDefendantCustodialInformationBuilder.add(CASE_ID, matchedCaseIdString);
         updateMatchedDefendantCustodialInformationBuilder.add(MASTER_DEFENDANT_ID, matchedCases.getString(MATCHED_MASTER_DEFENDANT_ID));
         if (nonNull(defendantCustodialInformationUpdateRequested.getCustodialEstablishment())) {
             updateMatchedDefendantCustodialInformationBuilder.add(CUSTODIAL_ESTABLISHMENT, objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested.getCustodialEstablishment()));
         }
-        final JsonArrayBuilder defendantsArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder defendantsArrayBuilder = createArrayBuilder();
         matchedCases.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class).stream()
                 .filter(defendant -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(defendant.getString(MASTER_DEFENDANT_ID)))
                 .filter(defendant -> shouldAvoidSameCaseSameDefendantId(matchedCaseIdString, defendant.getString("id"), defendantCustodialInformationUpdateRequested))

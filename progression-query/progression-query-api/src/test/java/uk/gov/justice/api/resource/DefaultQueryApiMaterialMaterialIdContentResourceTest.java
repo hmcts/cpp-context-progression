@@ -26,7 +26,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
@@ -127,7 +126,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = JsonObjects.createObjectBuilder()
+        final JsonObject json = createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 
@@ -214,7 +213,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = JsonObjects.createObjectBuilder()
+        final JsonObject json = createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 
@@ -313,7 +312,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
-        final JsonObject json = JsonObjects.createObjectBuilder()
+        final JsonObject json = createObjectBuilder()
                 .add("url", documentUrl)
                 .build();
 

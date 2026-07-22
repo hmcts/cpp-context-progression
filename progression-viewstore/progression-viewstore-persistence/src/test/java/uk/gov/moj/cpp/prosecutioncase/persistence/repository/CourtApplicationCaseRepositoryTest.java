@@ -4,6 +4,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
@@ -18,8 +20,6 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 @RunWith(CdiTestRunner.class)
 public class CourtApplicationCaseRepositoryTest {
 
@@ -48,8 +48,8 @@ public class CourtApplicationCaseRepositoryTest {
 
         prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(CASE_ID);
-        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder()
-                .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
+        prosecutionCaseEntity.setPayload(createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", randomUUID().toString()).build())
                         .build()).add("caseStatus", "INACTIVE")
                 .build().toString());
@@ -57,7 +57,7 @@ public class CourtApplicationCaseRepositoryTest {
 
 
         courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        courtApplicationEntity.setPayload(createObjectBuilder().build().toString());
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
 
         courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), APPLICATION_ID, CASE_ID);

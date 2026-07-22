@@ -17,7 +17,6 @@ import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getCourtTime;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseSubjects;
@@ -688,7 +687,7 @@ public class NotificationService {
 
             emailAddressOptional.ifPresent(email -> {
                 final CourtDocument courtDocument = postalService.courtDocument(postalNotificationDetails.getCourtApplication().getId(), materialId, event, null);
-                final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
+                final JsonObject courtDocumentPayload = createObjectBuilder()
                         .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                         .add("courtDocumentMetadata",
                                 courtDocumentMetadata != null
@@ -798,7 +797,7 @@ public class NotificationService {
                 postalNotificationDetails.getCourtApplication().getId(), materialId, event, null
         );
 
-        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
+        final JsonObject courtDocumentPayload = createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .build();
 

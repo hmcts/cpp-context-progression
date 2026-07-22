@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.query.PrisonCourtRegisterDocumentRequestQueryView;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterRequestApiTest {
@@ -24,7 +24,7 @@ public class PrisonCourtRegisterRequestApiTest {
 
     @Test
     public void getPrisonCourtRegisterDocumentRequestByCourtCentre() {
-        final JsonObjectBuilder prisonCourtRegisterDocumentPayload = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder prisonCourtRegisterDocumentPayload = createObjectBuilder();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.prison-court-register-document-by-court-centre"),
                 prisonCourtRegisterDocumentPayload);

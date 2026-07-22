@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
@@ -58,7 +58,7 @@ public class ProbationCaseworkerProcessorTest {
         when(restEasyClientService.post(eq(HEARING_DETAILS_URL), any(), any())).thenReturn(response);
 
         final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("hearing.json"), defaultCharset()));
-        final JsonObject payload = JsonObjects.createObjectBuilder().add("hearing", hearing).build();
+        final JsonObject payload = createObjectBuilder().add("hearing", hearing).build();
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.events.hearing-populated-to-probation-caseworker"),
@@ -79,7 +79,7 @@ public class ProbationCaseworkerProcessorTest {
         when(restEasyClientService.post(eq(HEARING_DELETED_URL), any(), any())).thenReturn(response);
 
         final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("hearing.json"), defaultCharset()));
-        final JsonObject payload = JsonObjects.createObjectBuilder().add("hearing", hearing).build();
+        final JsonObject payload = createObjectBuilder().add("hearing", hearing).build();
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.events.hearing-populated-to-probation-caseworker"),

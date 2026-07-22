@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -121,7 +120,7 @@ public class NotificationRequestProcessorTest {
                 .add("postage", false)
                 .build();
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("notifications", createArrayBuilder()
                         .add(notification)
                         .build())
@@ -147,7 +146,7 @@ public class NotificationRequestProcessorTest {
         final String urn = "AB1243";
         final String email = "email@hmcts.net";
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("systemDocGeneratorId", materialId.toString())
                 .add("notificationId", notificationId.toString())
                 .add("caseId", caseId.toString())
@@ -179,7 +178,7 @@ public class NotificationRequestProcessorTest {
         final String email = "email@hmcts.net";
         final String postcode = "CR0 5QT";
 
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("email", email)
                 .add("urn", urn)

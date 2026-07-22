@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -32,8 +33,8 @@ public class PrisonCourtRegisterDocumentRequestQueryView {
     @Handles("progression.query.prison-court-register-document-by-court-centre")
     public JsonEnvelope getPrisonCourtRegistersByCourtCentre(final JsonEnvelope envelope) {
         final UUID courtCentreId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTRE_ID));
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final List<PrisonCourtRegisterEntity> prisonCourtRegisterEntities = prisonCourtRegisterRepository.findByCourtCentreId(courtCentreId);
         prisonCourtRegisterEntities.forEach(i -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(i)));
         return envelopeFrom(envelope.metadata(),

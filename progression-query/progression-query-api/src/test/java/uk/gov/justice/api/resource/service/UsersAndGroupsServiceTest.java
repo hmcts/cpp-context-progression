@@ -6,8 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -47,7 +47,7 @@ public class UsersAndGroupsServiceTest {
         final UUID organisationId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(organisationId.toString(), "organisationId").build();
-        final JsonObjectBuilder associationBuilder = JsonObjects.createObjectBuilder().add("organisationId", organisationId.toString());
+        final JsonObjectBuilder associationBuilder = createObjectBuilder().add("organisationId", organisationId.toString());
 
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(metadataBuilder, associationBuilder);
 

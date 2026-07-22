@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.command;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
@@ -33,7 +33,7 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     public void shouldRaiseCommandToRemoveDeletedHearingChildEntriesBdf() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.command.remove-deleted-hearing-child-entries-bdf"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 
@@ -45,7 +45,7 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     public void shouldRaiseCommandToRemoveDuplicateApplications() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.command.handler.remove-duplicate-application-bdf"),
-                JsonObjects.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 

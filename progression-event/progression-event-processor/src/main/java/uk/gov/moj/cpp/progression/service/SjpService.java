@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.service;
 
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -28,7 +28,7 @@ public class SjpService {
     public ProsecutionCase getProsecutionCase(final JsonEnvelope envelope, final UUID caseId){
 
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), GET_SJP_PROSECUTION_CASE);
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), ProsecutionCase.class).payload();

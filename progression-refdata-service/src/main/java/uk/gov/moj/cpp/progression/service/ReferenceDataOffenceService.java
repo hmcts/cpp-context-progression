@@ -7,7 +7,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -54,7 +53,7 @@ public class ReferenceDataOffenceService {
 
     public Optional<JsonObject> getOffenceById(final UUID offenceId, final JsonEnvelope envelope, final Requester requester) {
 
-        final JsonObject payload = JsonObjects.createObjectBuilder().add(OFFENCE_ID, offenceId.toString()).build();
+        final JsonObject payload = createObjectBuilder().add(OFFENCE_ID, offenceId.toString()).build();
 
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATAOFFENCE_GET_OFFENCE)
@@ -68,7 +67,7 @@ public class ReferenceDataOffenceService {
             return Optional.empty();
         }
         final JsonObject offencePayload = response.payloadAsJsonObject();
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         return buildOffence(offencePayload, jsonObjectBuilder);
     }
 
@@ -149,7 +148,7 @@ public class ReferenceDataOffenceService {
     }
 
     private JsonObject generateOffenceJsonObject(final JsonObject offencePayload) {
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, getString(offencePayload, CJS_OFFENCE_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(OFFENCE_ID, getString(offencePayload, OFFENCE_ID).orElse(EMPTY));
         jsonObjectBuilder.add(MODE_OF_TRIAL, getString(offencePayload, MODEOFTRIAL_DERIVED).orElse(EMPTY));

@@ -29,8 +29,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -468,7 +469,7 @@ public class CourtDocumentAggregateTest {
         final String section = "abc";
         final Boolean isCpsCase = true;
         final Boolean isUnbundledDocument = true;
-        final JsonObject userOrganisationDetails = JsonObjects.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","LEGAL_ORGANISATION")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -479,7 +480,7 @@ public class CourtDocumentAggregateTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",JsonObjects.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -496,7 +497,7 @@ public class CourtDocumentAggregateTest {
         final String section = "abc";
         final Boolean isCpsCase = true;
         final Boolean isUnbundledDocument = true;
-        final JsonObject userOrganisationDetails = JsonObjects.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","HMCTS")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -507,7 +508,7 @@ public class CourtDocumentAggregateTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",JsonObjects.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -524,7 +525,7 @@ public class CourtDocumentAggregateTest {
         final String section = "abc";
         final Boolean isCpsCase = true;
         final Boolean isUnbundledDocument = true;
-        final JsonObject userOrganisationDetails = JsonObjects.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -535,7 +536,7 @@ public class CourtDocumentAggregateTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",JsonObjects.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -552,7 +553,7 @@ public class CourtDocumentAggregateTest {
         final String section = "abc";
         final Boolean isCpsCase = true;
         final Boolean isUnbundledDocument = true;
-        final JsonObject userOrganisationDetails = JsonObjects.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType",JsonObject.NULL)
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -563,7 +564,7 @@ public class CourtDocumentAggregateTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",JsonObjects.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 

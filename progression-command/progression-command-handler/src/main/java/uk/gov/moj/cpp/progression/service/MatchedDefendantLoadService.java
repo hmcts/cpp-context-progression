@@ -6,8 +6,8 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.MatchedDefendantsResult;
@@ -116,7 +116,7 @@ public class MatchedDefendantLoadService {
         Integer totalResult = 0;
         final List<Cases> casesList = new ArrayList<>();
         while (true) {
-            final JsonObjectBuilder criteriaBuilder = JsonObjects.createObjectBuilder();
+            final JsonObjectBuilder criteriaBuilder = createObjectBuilder();
             criteria.forEach(criteriaBuilder::add);
             criteriaBuilder.add(START_FROM, page);
 

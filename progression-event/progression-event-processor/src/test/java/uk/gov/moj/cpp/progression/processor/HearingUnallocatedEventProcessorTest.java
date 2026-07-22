@@ -15,8 +15,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -55,7 +55,7 @@ public class HearingUnallocatedEventProcessorTest {
         final UUID offenceId2 = randomUUID();
         final JsonObject hearingUnllocated = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("offenceIds", JsonObjects.createArrayBuilder()
+                .add("offenceIds", createArrayBuilder()
                         .add(offenceId1.toString())
                         .add(offenceId2.toString())
                         .build())
@@ -86,7 +86,7 @@ public class HearingUnallocatedEventProcessorTest {
         final UUID offenceId2 = randomUUID();
         final JsonObject hearingUnllocated = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("offenceIds", JsonObjects.createArrayBuilder()
+                .add("offenceIds", createArrayBuilder()
                         .add(offenceId1.toString())
                         .add(offenceId2.toString())
                         .build())
@@ -117,7 +117,7 @@ public class HearingUnallocatedEventProcessorTest {
         final UUID offenceId2 = randomUUID();
         final JsonObject offenceRemovedFromExistingUnallocatedHearing = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("offenceIds", JsonObjects.createArrayBuilder()
+                .add("offenceIds", createArrayBuilder()
                         .add(offenceId1.toString())
                         .add(offenceId2.toString())
                         .build())

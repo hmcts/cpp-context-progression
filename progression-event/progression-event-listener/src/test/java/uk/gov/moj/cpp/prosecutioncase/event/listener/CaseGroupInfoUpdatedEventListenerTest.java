@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -122,7 +122,7 @@ public class CaseGroupInfoUpdatedEventListenerTest {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

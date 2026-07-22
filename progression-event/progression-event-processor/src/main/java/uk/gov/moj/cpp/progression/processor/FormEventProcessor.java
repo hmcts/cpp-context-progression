@@ -19,7 +19,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -699,15 +698,15 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
-        formDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
+        formDefendantList.forEach(defendant -> defendantIdArray.add(createObjectBuilder()
                         .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                         .build()
                 )
         );
 
-        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
                 .add(FORM_DEFENDANTS, defendantIdArray.build())
@@ -735,15 +734,15 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
-        formDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
+        formDefendantList.forEach(defendant -> defendantIdArray.add(createObjectBuilder()
                         .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                         .build()
                 )
         );
 
-        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
                 .add(FORM_DEFENDANTS, defendantIdArray.build())

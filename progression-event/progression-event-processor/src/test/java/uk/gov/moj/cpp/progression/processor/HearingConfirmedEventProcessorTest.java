@@ -37,8 +37,8 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
@@ -661,8 +661,7 @@ public class HearingConfirmedEventProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearing);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(JsonObjects.
-                createObjectBuilder().add("hearing", JsonObjects.createObjectBuilder().build())
+        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
 
@@ -855,8 +854,7 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(JsonObjects.
-                createObjectBuilder().add("hearing", JsonObjects.createObjectBuilder().build())
+        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
 
@@ -1490,9 +1488,9 @@ public class HearingConfirmedEventProcessorTest {
     private JsonObject createProsecutionCaseJson(final UUID offenceId, final UUID defendantId, final UUID caseId) {
         return createObjectBuilder()
                 .add("id", caseId.toString())
-                .add("defendants", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString())
-                                .add("offences", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                                .add("offences", createArrayBuilder().add(createObjectBuilder()
                                                 .add("id", offenceId.toString())
                                                 .build())
                                         .build())

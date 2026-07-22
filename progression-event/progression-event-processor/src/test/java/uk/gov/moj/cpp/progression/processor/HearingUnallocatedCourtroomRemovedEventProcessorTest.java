@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -376,7 +377,7 @@ public class HearingUnallocatedCourtroomRemovedEventProcessorTest {
     }
 
     private JsonObject createJsonObjectWithHearingId() {
-        return uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("hearingId", HEARING_ID.toString())
                 .build();
     }

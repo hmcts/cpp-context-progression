@@ -11,7 +11,6 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -351,15 +350,15 @@ public class PetFormEventProcessor {
         final Optional<JsonObject> petFormObject = referenceDataService.getPetForm(envelope, requester);
         final String formId = petFormObject.map(jsonObject -> jsonObject.getString(FORM_ID_SNAKE_CASE)).orElse(null);
 
-        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = createArrayBuilder();
         final List<JsonObject> petDefendantList = payload.getJsonArray(PET_DEFENDANTS).getValuesAs(JsonObject.class);
-        petDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
+        petDefendantList.forEach(defendant -> defendantIdArray.add(createObjectBuilder()
                                 .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                                 .build()
                         )
                 );
 
-        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(PET_ID, String.valueOf(randomUUID()))
                 .add(FORM_ID, formId)

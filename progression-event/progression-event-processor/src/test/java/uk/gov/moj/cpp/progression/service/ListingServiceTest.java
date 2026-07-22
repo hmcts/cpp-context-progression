@@ -21,7 +21,6 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.moj.cpp.listing.domain.CourtHouseType.MAGISTRATES;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -148,11 +147,11 @@ public class ListingServiceTest {
         //given
         ListUnscheduledCourtHearing listCourtHearing = getListUnscheduledCourtHearing();
 
-        final JsonObject listCourtHearingJson = JsonObjects.createObjectBuilder().build();
+        final JsonObject listCourtHearingJson = createObjectBuilder().build();
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("referral").build(),
-                JsonObjects.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).build(),

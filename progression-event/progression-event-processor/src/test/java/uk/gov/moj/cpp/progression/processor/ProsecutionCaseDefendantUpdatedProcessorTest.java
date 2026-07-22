@@ -27,7 +27,6 @@ import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdat
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MATCHED_MASTER_DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -157,7 +156,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
+                createObjectBuilder().add(MATCHED_DEFENDANT_CASES, createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, randomUUID().toString())
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -212,7 +211,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(objectToJsonObjectConverter.convert(Mockito.any(DefendantCustodialInformationUpdateRequested.class))).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
+                createObjectBuilder().add(MATCHED_DEFENDANT_CASES, createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -266,7 +265,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
+                createObjectBuilder().add(MATCHED_DEFENDANT_CASES, createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")
@@ -315,7 +314,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                JsonObjects.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, JsonObjects.createArrayBuilder()
+                createObjectBuilder().add(MATCHED_DEFENDANT_CASES, createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add(CASE_ID, caseIdProsecutionCaseService)
                                         .add(CASE_URN, "caseIdProsecutionCaseService")

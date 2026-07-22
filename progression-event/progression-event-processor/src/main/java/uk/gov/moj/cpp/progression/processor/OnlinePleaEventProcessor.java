@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.SENTEN
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.SENTENCE_DOCUMENT_TYPE_ID;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaFinancialDocument;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -182,7 +181,7 @@ public class OnlinePleaEventProcessor {
             final String fileName = fileMetaDataJsonObject.getJsonString(FILE_NAME).getString();
             materialService.uploadMaterial(uploadedAsCaseMaterial.getFileId(), uploadedAsCaseMaterial.getMaterialId(), contextSystemUserId.orElse(null));
 
-            final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+            final JsonObject jsonObject = createObjectBuilder()
                     .add(MATERIAL_ID, uploadedAsCaseMaterial.getMaterialId().toString())
                     .add(COURT_DOCUMENT, objectToJsonObjectConverter
                             .convert(buildCourtDocument(uploadedAsCaseMaterial.getCaseId(), uploadedAsCaseMaterial.getMaterialId(), fileName, uploadedAsCaseMaterial.getDefendantId(), uploadedAsCaseMaterial.getPleaNotificationType()))).build();
@@ -244,7 +243,7 @@ public class OnlinePleaEventProcessor {
     }
 
     private JsonObject getIndividualFinanceDocGeneratorPayload(final JsonObject payload, final PleadOnline pleadOnline) {
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         builder.add(URN, pleadOnline.getUrn())
                 .add(CASE_ID, pleadOnline.getCaseId().toString())
                 .add(DEFENDANT_ID, pleadOnline.getDefendantId().toString())
@@ -294,7 +293,7 @@ public class OnlinePleaEventProcessor {
     }
 
     private JsonObject getCompanyFinanceDocGeneratorPayload(final JsonObject payload, final PleadOnline pleadOnline) {
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         builder.add(URN, pleadOnline.getUrn())
                 .add(CASE_ID, pleadOnline.getCaseId().toString())
                 .add(DEFENDANT_ID, pleadOnline.getDefendantId().toString())

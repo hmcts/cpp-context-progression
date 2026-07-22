@@ -30,7 +30,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
@@ -741,7 +740,7 @@ public class CourtApplicationProcessor {
                 final Hearing updatedHearing = updateHearingWithApplication(event, hearing, courtApplication);
                 progressionService.linkApplicationsToHearing(event, updatedHearing, singletonList(courtApplication.getId()), SENT_FOR_LISTING);
 
-                final JsonArrayBuilder prosecutionCasesBuilder = JsonObjects.createArrayBuilder();
+                final JsonArrayBuilder prosecutionCasesBuilder = createArrayBuilder();
                 final Stream<ProsecutionCase> prosecutionCaseStream = ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty);
                 prosecutionCaseStream.map(prosecutionCase -> objectToJsonObjectConverter.convert(prosecutionCase)).forEach(prosecutionCasesBuilder::add);
                 final JsonObjectBuilder hearingExtendedPayloadBuilder = createObjectBuilder()

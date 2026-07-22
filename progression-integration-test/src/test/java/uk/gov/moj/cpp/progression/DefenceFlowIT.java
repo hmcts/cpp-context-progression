@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -45,6 +44,7 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @SuppressWarnings("squid:S1607")
 public class DefenceFlowIT extends AbstractIT {
@@ -178,7 +178,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     private JsonObject createPayloadForDisassociation(final boolean isLAA) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("userId", userId)
                 .add("defendantId", defendantId)
                 .add("organisationId", organisationId)
@@ -189,7 +189,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
     private JsonObject createPayloadForAssociation(final boolean isLAA, final String laaContractNumber) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("defendantId", defendantId)
                 .add("organisationId", organisationId)
                 .add("organisationName", organisationName)

@@ -13,8 +13,9 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCourtRegisterStreamId;
 import static uk.gov.moj.cpp.progression.processor.CourtRegisterEventProcessor.COURT_REGISTER_TEMPLATE;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -115,7 +116,7 @@ public class CourtRegisterEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-register-generated"),
                 jsonObject);
 
-        final JsonObject fileStorePayload = JsonObjects.createObjectBuilder().add("templatePayload", "some values").build();
+        final JsonObject fileStorePayload = createObjectBuilder().add("templatePayload", "some values").build();
         when(courtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(fileStorePayload);
 
         final UUID fileId = UUID.randomUUID();
@@ -135,14 +136,14 @@ public class CourtRegisterEventProcessorTest {
 
     @Test
     public void shouldNotifyCourt() {
-        final JsonArrayBuilder recipientJsonArray = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder recipientJsonArray = createArrayBuilder();
         final String templateId = UUID.randomUUID().toString();
         final String emailAddress1 = "abc@test.com";
-        recipientJsonArray.add(JsonObjects.createObjectBuilder().add("templateId", templateId)
+        recipientJsonArray.add(createObjectBuilder().add("templateId", templateId)
                 .add("recipientName", "yots court center")
                 .add("emailTemplateName", "some template")
                 .add("emailAddress1", emailAddress1).build());
-        final JsonObject notificationObject = JsonObjects.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
+        final JsonObject notificationObject = createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("progression.event.court-register-notified").withUserId(UUID.randomUUID().toString()),
                 notificationObject);
@@ -158,14 +159,14 @@ public class CourtRegisterEventProcessorTest {
 
     @Test
     public void shouldNotifyCourtV2() {
-        final JsonArrayBuilder recipientJsonArray = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder recipientJsonArray = createArrayBuilder();
         final String templateId = UUID.randomUUID().toString();
         final String emailAddress1 = "abc@test.com";
-        recipientJsonArray.add(JsonObjects.createObjectBuilder().add("templateId", templateId)
+        recipientJsonArray.add(createObjectBuilder().add("templateId", templateId)
                 .add("recipientName", "yots court center")
                 .add("emailTemplateName", "some template")
                 .add("emailAddress1", emailAddress1).build());
-        final JsonObject notificationObject = JsonObjects.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
+        final JsonObject notificationObject = createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("progression.event.court-register-notified").withUserId(UUID.randomUUID().toString()),
                 notificationObject);

@@ -24,7 +24,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtReferral;
@@ -150,14 +149,14 @@ public class ReferralDisqualificationWarningTest {
             .withPostcode("AS1 1DF").build()).build();
 
     private static Optional<JsonObject> buildDocumentTypeDataWithRBAC(final String documentCategory) {
-        return Optional.ofNullable(JsonObjects.createObjectBuilder().add("section", "orders & notices")
+        return Optional.ofNullable(createObjectBuilder().add("section", "orders & notices")
                 .add("documentCategory", "documentCategory")
                 .add("documentTypeDescription", "Applications")
                 .add("documentTypeId", documentCategory)
                 .add("", "")
                 .add("mimeType", "application/pdf")
                 .add("courtDocumentTypeRBAC",
-                        JsonObjects.createObjectBuilder()
+                        createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
                                 .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
                                 .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
@@ -166,7 +165,7 @@ public class ReferralDisqualificationWarningTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     @Test

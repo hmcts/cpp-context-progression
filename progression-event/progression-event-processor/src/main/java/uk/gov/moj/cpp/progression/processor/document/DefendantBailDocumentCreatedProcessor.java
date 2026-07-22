@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -72,7 +72,7 @@ public class DefendantBailDocumentCreatedProcessor {
 
             final Optional<JsonObject> materialMetadata = materialService.getMaterialMetadata(envelope, defendantBailDocumentCreated.getMaterialId());
             materialMetadata.ifPresent(data -> {
-                final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+                final JsonObject jsonObject = createObjectBuilder()
                         .add("materialId", defendantBailDocumentCreated.getMaterialId().toString())
                         .add("courtDocument", objectToJsonObjectConverter
                                 .convert(buildCourtDocumentWithMaterialUserGroups(defendantBailDocumentCreated, data, bailDocumentTypeId))).build();

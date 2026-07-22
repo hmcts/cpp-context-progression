@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -165,7 +165,7 @@ public class HearingResultedEventListener {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

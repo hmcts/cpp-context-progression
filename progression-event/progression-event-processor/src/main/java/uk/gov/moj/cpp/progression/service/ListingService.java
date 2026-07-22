@@ -6,8 +6,8 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -110,7 +110,7 @@ public class ListingService {
     public List<UUID> getShadowListedOffenceIds(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
         final Set<UUID> shadowListedOffenceIds = new HashSet<>();
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         final Hearing hearingListed = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();
@@ -141,7 +141,7 @@ public class ListingService {
     public List<Hearing> getFutureHearings(final JsonEnvelope jsonEnvelope, final String caseUrn) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_ANY_ALLOCATION_SEARCH_HEARINGS);
         final LocalDate startDate = utcClock.now().toLocalDate();
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("caseUrn", caseUrn)
                 .add("startDate", startDate.toString())
                 .build();
@@ -176,7 +176,7 @@ public class ListingService {
 
     private Hearing searchHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
         final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = JsonObjects.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();

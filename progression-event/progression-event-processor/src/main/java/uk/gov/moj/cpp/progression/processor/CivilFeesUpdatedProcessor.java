@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -52,7 +52,7 @@ public class CivilFeesUpdatedProcessor {
     }
 
     private static JsonObject createResponsePayload(final CivilFeeResults response) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("civilFeeResults", response.toString())
                 .build();
     }

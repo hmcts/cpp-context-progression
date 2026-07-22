@@ -28,8 +28,8 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
@@ -184,7 +184,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
         final DocumentContext prosecutionCase = parse(commandJsonInputJson);
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
-        final JsonObject prosecutionCaseEvent = JsonObjects.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
+        final JsonObject prosecutionCaseEvent = createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
         return parse(prosecutionCaseEvent);
     }
 }

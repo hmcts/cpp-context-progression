@@ -4,8 +4,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.MapUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -44,7 +44,7 @@ public class SystemDocGeneratorService {
                 .add("payloadFileServiceId", request.getPayloadFileServiceId().toString());
 
         if (isNotEmpty(request.getAdditionalInformation())) {
-            JsonArrayBuilder infoArrayBuilder = JsonObjects.createArrayBuilder();
+            JsonArrayBuilder infoArrayBuilder = createArrayBuilder();
             final Map<String, String> additionalInfo = request.getAdditionalInformation();
             additionalInfo.forEach((k, v) ->
                     infoArrayBuilder.add(createObjectBuilder()

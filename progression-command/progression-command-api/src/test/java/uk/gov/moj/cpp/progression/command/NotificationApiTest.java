@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,7 +41,7 @@ public class NotificationApiTest {
     @Test
     public void shouldHandleSendEmail() {
         //Given
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .add("applicationId", randomUUID().toString())
                 .add("materialId", randomUUID().toString())
@@ -63,7 +62,7 @@ public class NotificationApiTest {
     @Test
     public void shouldHandleSendPrint() {
         //Given
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .add("notificationId", randomUUID().toString())
                 .add("materialId", randomUUID().toString())
@@ -80,7 +79,7 @@ public class NotificationApiTest {
     @Test
     public void shouldHandleSendToCps() {
         //Given
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("courtDocumentId", randomUUID().toString())
                 .add("sendToCps", true)
                 .build();

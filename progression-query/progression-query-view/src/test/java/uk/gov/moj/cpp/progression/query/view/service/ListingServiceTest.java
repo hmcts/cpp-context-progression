@@ -7,8 +7,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -52,7 +52,7 @@ public class ListingServiceTest {
                 .with(metadataBuilder)
                 .build();
 
-        final JsonObject listingPayload = JsonObjects.createObjectBuilder()
+        final JsonObject listingPayload = createObjectBuilder()
                 .add("key", "value")
                 .build();
 

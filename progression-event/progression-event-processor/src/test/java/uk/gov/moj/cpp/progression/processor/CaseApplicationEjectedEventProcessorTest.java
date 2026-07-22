@@ -9,8 +9,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -180,7 +180,7 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(payload.getString("removalReason")).thenReturn(REMOVAL_REASON);
         when(progressionService.getCourtApplicationById(envelope,
                 applicationId)).thenReturn(of(applicationAtAGlance));
-        when(applicationAtAGlance.getJsonArray("hearings")).thenReturn(JsonObjects.createArrayBuilder().add(payload).build());
+        when(applicationAtAGlance.getJsonArray("hearings")).thenReturn(createArrayBuilder().add(payload).build());
         when(payload.getString("id")).thenReturn(hearingId);
 
         //When

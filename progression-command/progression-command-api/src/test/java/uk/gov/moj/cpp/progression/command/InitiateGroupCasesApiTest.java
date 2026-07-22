@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -66,8 +66,8 @@ public class InitiateGroupCasesApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = JsonObjects.createObjectBuilder()
-                .add("civilBulkInitiateCourtProceedings", JsonObjects.createObjectBuilder().build())
+        final JsonObject payload = createObjectBuilder()
+                .add("civilBulkInitiateCourtProceedings", createObjectBuilder().build())
                 .build();
 
         final Metadata metadata = Envelope

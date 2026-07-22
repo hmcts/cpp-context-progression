@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.utils;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.util.Arrays;
@@ -17,12 +16,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @SuppressWarnings({"squid:S1166"})
 public class ResultTextFlagBuilder {
 
     public JsonArray rebuildWithResultTextFlag(final JsonArray payload){
-        final JsonArrayBuilder response = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder response = createArrayBuilder();
         payload.stream().map(JsonObject.class::cast).map(this::rebuildObject).forEach(response::add);
         return response.build();
 

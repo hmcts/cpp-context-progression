@@ -222,7 +222,7 @@ public class CourtDocumentQueryApi {
     }
 
     private JsonObject getEnrichedQueryPayload(final JsonEnvelope query, final UUID defendantId) {
-        final JsonObjectBuilder enrichedQueryDocumentBuilder = uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder(query.payloadAsJsonObject());
+        final JsonObjectBuilder enrichedQueryDocumentBuilder = createObjectBuilder(query.payloadAsJsonObject());
         enrichedQueryDocumentBuilder.add(DEFENDANT_ID, defendantId.toString());
         return enrichedQueryDocumentBuilder.build();
     }

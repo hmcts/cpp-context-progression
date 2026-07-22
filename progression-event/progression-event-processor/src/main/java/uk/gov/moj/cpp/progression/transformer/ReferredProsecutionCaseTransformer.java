@@ -17,8 +17,8 @@ import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
 import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
 import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.RefDataService.SHORT_NAME;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Ethnicity;
@@ -292,7 +292,7 @@ public class ReferredProsecutionCaseTransformer {
                     .getEthinicity(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Ethnicity", id.toString()));
         }
-        return JsonObjects.createObjectBuilder().build();
+        return createObjectBuilder().build();
     }
 
     private JsonObject getNationalityJson(final UUID id, final JsonEnvelope jsonEnvelope) {
@@ -301,7 +301,7 @@ public class ReferredProsecutionCaseTransformer {
                     .getNationality(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Country Nationality", id.toString()));
         }
-        return JsonObjects.createObjectBuilder().build();
+        return createObjectBuilder().build();
     }
 
 }

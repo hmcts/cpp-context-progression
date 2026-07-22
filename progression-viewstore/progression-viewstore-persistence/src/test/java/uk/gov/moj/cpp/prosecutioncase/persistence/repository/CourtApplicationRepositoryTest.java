@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 
@@ -14,8 +15,6 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 @RunWith(CdiTestRunner.class)
 public class CourtApplicationRepositoryTest {
 
@@ -56,7 +55,7 @@ public class CourtApplicationRepositoryTest {
 
     private void saveApplication(final UUID applicationId) {
         courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        courtApplicationEntity.setPayload(createObjectBuilder().build().toString());
         courtApplicationEntity.setApplicationId(applicationId);
         courtApplicationRepository.save(courtApplicationEntity);
     }

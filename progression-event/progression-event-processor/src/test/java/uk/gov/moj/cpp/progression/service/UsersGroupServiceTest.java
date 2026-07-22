@@ -11,8 +11,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -219,8 +219,8 @@ public class UsersGroupServiceTest {
 
     private JsonObject buildGetOrganisationsDetailsForIds() {
         return createObjectBuilder()
-                .add("organisations", JsonObjects.createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder()
+                .add("organisations", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -233,7 +233,7 @@ public class UsersGroupServiceTest {
                                 .add("email", "joe@example.com")
                                 .add("laaContractNumber", "LAA3482374WER")
                         )
-                        .add(JsonObjects.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9b")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -251,13 +251,13 @@ public class UsersGroupServiceTest {
 
     private JsonObject buildGetOrganisationsDetailsForIdsWithNullEmail() {
         return createObjectBuilder()
-                .add("organisations", JsonObjects.createArrayBuilder()
-                        .add(JsonObjects.createObjectBuilder()
+                .add("organisations", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
                         )
-                        .add(JsonObjects.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")

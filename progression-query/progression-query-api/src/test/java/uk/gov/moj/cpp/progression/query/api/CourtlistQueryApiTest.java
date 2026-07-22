@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.api.service.CourtlistQueryService;
 
@@ -56,11 +56,11 @@ public class CourtlistQueryApiTest {
     @Test
     public void shouldHandleSearchCourtlistDataQuery() {
         stubCourtlistQueryView.setSearchCourtlistResponse(response);
-        var enrichedPayload = JsonObjects.createObjectBuilder().build();
+        var enrichedPayload = createObjectBuilder().build();
         when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(enrichedPayload);
         var metadata = metadataBuilder().withId(UUID.randomUUID()).withName("test").build();
         when(query.metadata()).thenReturn(metadata);
-        when(query.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
         var result = courtListQueryApi.searchCourtlistData(query);
         assertThat(result.metadata().name(), equalTo(metadata.name()));
         assertThat(result.payloadAsJsonObject(), equalTo(enrichedPayload));
@@ -69,11 +69,11 @@ public class CourtlistQueryApiTest {
     @Test
     public void shouldHandleSearchPrisonCourtlistDataQuery() {
         stubCourtlistQueryView.setSearchPrisonCourtlistResponse(response);
-        var enrichedPayload = JsonObjects.createObjectBuilder().build();
+        var enrichedPayload = createObjectBuilder().build();
         when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(enrichedPayload);
         var metadata = metadataBuilder().withId(UUID.randomUUID()).withName("test").build();
         when(query.metadata()).thenReturn(metadata);
-        when(query.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
         var result = courtListQueryApi.searchPrisonCourtlistData(query);
         assertThat(result.metadata().name(), equalTo(metadata.name()));
         assertThat(result.payloadAsJsonObject(), equalTo(enrichedPayload));
@@ -82,9 +82,9 @@ public class CourtlistQueryApiTest {
     @Test
     public void searchCourtlistData_shouldPassIncludeApplicationsTrueWhenPresentInPayload() {
         stubCourtlistQueryView.setSearchCourtlistResponse(response);
-        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(createObjectBuilder().build());
         when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
-        when(query.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().add("includeApplications", true).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("includeApplications", true).build());
 
         courtListQueryApi.searchCourtlistData(query);
 
@@ -95,9 +95,9 @@ public class CourtlistQueryApiTest {
     @Test
     public void searchCourtlistData_shouldPassIncludeApplicationsFalseWhenPresentInPayload() {
         stubCourtlistQueryView.setSearchCourtlistResponse(response);
-        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(createObjectBuilder().build());
         when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
-        when(query.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().add("includeApplications", false).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("includeApplications", false).build());
 
         courtListQueryApi.searchCourtlistData(query);
 
@@ -108,9 +108,9 @@ public class CourtlistQueryApiTest {
     @Test
     public void searchCourtlistData_shouldDefaultIncludeApplicationsToFalseWhenMissingFromPayload() {
         stubCourtlistQueryView.setSearchCourtlistResponse(response);
-        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(courtlistQueryService.buildEnrichedPayload(response)).thenReturn(createObjectBuilder().build());
         when(query.metadata()).thenReturn(metadataBuilder().withId(UUID.randomUUID()).withName("progression.search.court.list.data").build());
-        when(query.payloadAsJsonObject()).thenReturn(JsonObjects.createObjectBuilder().build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
 
         courtListQueryApi.searchCourtlistData(query);
 

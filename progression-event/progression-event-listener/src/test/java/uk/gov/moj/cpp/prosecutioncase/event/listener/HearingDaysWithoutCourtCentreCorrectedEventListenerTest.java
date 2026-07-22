@@ -5,8 +5,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
@@ -103,7 +105,7 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListenerTest {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;
@@ -111,8 +113,8 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListenerTest {
 
     private JsonObject getPayload(final HearingDaysWithoutCourtCentreCorrected hearingDaysWithoutCourtCentreCorrected) {
 
-        return JsonObjects.createObjectBuilder()
-                .add("hearingDays", JsonObjects.createArrayBuilder().add(objectToJsonObjectConverter.convert(hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0))).build())
+        return createObjectBuilder()
+                .add("hearingDays", createArrayBuilder().add(objectToJsonObjectConverter.convert(hearingDaysWithoutCourtCentreCorrected.getHearingDays().get(0))).build())
                 .add("id", hearingDaysWithoutCourtCentreCorrected.getId().toString())
                 .build();
     }

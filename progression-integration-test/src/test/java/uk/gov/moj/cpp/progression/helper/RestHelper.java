@@ -12,8 +12,8 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -83,7 +83,7 @@ public class RestHelper {
 
     public static JsonObject getJsonObject(final String jsonAsString) {
         final JsonObject payload;
-        try (final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonAsString))) {
+        try (final JsonReader jsonReader = createReader(new StringReader(jsonAsString))) {
             payload = jsonReader.readObject();
         }
         return payload;

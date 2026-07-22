@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -108,7 +107,7 @@ public class ProgressionEventProcessorTest {
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return JsonObjects.createObjectBuilder().add("legislation", "legislation")
+        return createObjectBuilder().add("legislation", "legislation")
                 .add("welshlegislation", LEGISLATION_WELSH)
                 .add("title", "title")
                 .add("welshoffencetitle", WELSH_OFFENCE_TITLE)

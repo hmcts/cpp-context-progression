@@ -18,7 +18,6 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED;
 import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED_INFO;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -112,18 +111,18 @@ public class DocumentQueryApiTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return JsonObjects.createObjectBuilder()
-                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return createObjectBuilder()
+                .add("documentAccess", createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", createArrayBuilder().add("Listing Officer"))
+                .add("canReadUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates"))
+                .add("canDownloadUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 
     private static JsonObject buildHearingTypeListJsonObject() {
 
-        return JsonObjects.createObjectBuilder()
-                .add("hearingTypes", JsonObjects.createArrayBuilder()
+        return createObjectBuilder()
+                .add("hearingTypes", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced")
                                 .add("hearingCode", "TIS")

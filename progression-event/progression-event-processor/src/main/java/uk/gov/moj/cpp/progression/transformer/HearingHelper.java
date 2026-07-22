@@ -36,6 +36,7 @@ import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.SEE
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.TYPE;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.YOUTH_COURT;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.YOUTH_COURT_DEFENDANT_IDS;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
 public class HearingHelper {
 
@@ -176,7 +175,7 @@ public class HearingHelper {
     }
 
     private static JsonArray filterDefendantJudicialResults(final JsonArray judicialResults) {
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final List<JsonObject> filteredResults = judicialResults.getValuesAs(JsonObject.class).stream().filter(jr -> !jr.getJsonObject(JUDICIAL_RESULT).getBoolean(PUBLISHED_FOR_NOWS))
                 .collect(Collectors.toList());
 
@@ -185,7 +184,7 @@ public class HearingHelper {
     }
 
     public static JsonArray filterJudicialResults(final JsonArray judicialResults) {
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final List<JsonObject> filteredResults = judicialResults.getValuesAs(JsonObject.class).stream().filter(jr -> !jr.getBoolean(PUBLISHED_FOR_NOWS))
                 .collect(Collectors.toList());
 

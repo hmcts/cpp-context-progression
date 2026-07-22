@@ -35,7 +35,6 @@ import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmai
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getPostBoxWorkApplicationReferredHearing;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -257,7 +256,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         final JsonObject courtApplication = courtApplicationsArray.getJsonObject(0);
         final JsonString sittingDay = hearing.getJsonArray("hearingDays").getJsonObject(0).getJsonString("sittingDay");
         final String hearingDay = ZonedDateTimes.fromJsonString(sittingDay).toLocalDate().toString();
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("isReshare", true)
                 .add("hearingDay", hearingDay)
                 .add("hearing", createObjectBuilder()

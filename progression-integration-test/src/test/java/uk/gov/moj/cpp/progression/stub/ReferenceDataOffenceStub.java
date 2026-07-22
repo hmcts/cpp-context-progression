@@ -9,14 +9,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import javax.json.JsonObject;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 public class ReferenceDataOffenceStub {
 
     public static void stubReferenceDataOffencesGetOffenceById(final String resourceName) {
-        final JsonObject offenceResponsePayLoad = JsonObjects.createReader(ReferenceDataOffenceStub.class
+        final JsonObject offenceResponsePayLoad = createReader(ReferenceDataOffenceStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences/.*";
@@ -29,7 +28,7 @@ public class ReferenceDataOffenceStub {
     }
 
     public static void stubReferenceDataOffencesGetOffenceByOffenceCode(final String resourceName) {
-        final JsonObject offenceResponsePayLoad = JsonObjects.createReader(ReferenceDataOffenceStub.class
+        final JsonObject offenceResponsePayLoad = createReader(ReferenceDataOffenceStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
         final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";

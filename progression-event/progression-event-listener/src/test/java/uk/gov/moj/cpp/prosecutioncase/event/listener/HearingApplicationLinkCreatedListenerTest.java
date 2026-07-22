@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingApplicationLinkCreated;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Hearing;
@@ -302,7 +302,7 @@ public class HearingApplicationLinkCreatedListenerTest {
                 .build();
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);

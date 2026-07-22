@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view.service.transformer;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import javax.inject.Inject;
@@ -14,6 +13,7 @@ import java.util.stream.IntStream;
 import java.util.LinkedHashMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 public class WitnessPetTransformer {
 
@@ -30,7 +30,7 @@ public class WitnessPetTransformer {
             final JsonObject jsonObject = stringToJsonObjectConverter.convert(payload.getString("data"));
             final JsonObject petForm = jsonObject.getJsonObject("data");
             if (nonNull(petForm.getJsonObject(PROSECUTION))) {
-                final JsonArray prosecutionWitnesses = ofNullable(petForm.getJsonObject(PROSECUTION).getJsonArray(WITNESSES)).orElse(JsonObjects.createArrayBuilder().build());
+                final JsonArray prosecutionWitnesses = ofNullable(petForm.getJsonObject(PROSECUTION).getJsonArray(WITNESSES)).orElse(createArrayBuilder().build());
                 IntStream.range(0, prosecutionWitnesses.size()).mapToObj(prosecutionWitnesses::getJsonObject).forEach(prosecutionWitnesse ->
                         mapWitness(witnesses, prosecutionWitnesse)
                 );
@@ -39,7 +39,7 @@ public class WitnessPetTransformer {
                 final JsonArray defendants = petForm.getJsonObject(DEFENCE).getJsonArray(DEFENDANTS);
                 IntStream.range(0, defendants.size()).mapToObj(defendants::getJsonObject).forEach(defendant ->
                         {
-                            final JsonArray prosecutionWitnesses = ofNullable(defendant.getJsonArray(WITNESSES)).orElse(JsonObjects.createArrayBuilder().build());
+                            final JsonArray prosecutionWitnesses = ofNullable(defendant.getJsonArray(WITNESSES)).orElse(createArrayBuilder().build());
                             IntStream.range(0, prosecutionWitnesses.size()).mapToObj(prosecutionWitnesses::getJsonObject).forEach(prosecutionWitnesse ->
                                     mapWitness(witnesses, prosecutionWitnesse)
                             );

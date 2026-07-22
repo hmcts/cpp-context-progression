@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -53,11 +53,11 @@ public class CourtApplicationServiceTest {
     @Test
     public void shouldReturnCourtApplicationPartyWhenProsecutingAuthorityDataExists() {
         // Mocking the JSON response from referenceDataService
-        JsonObject prosecutorJson = JsonObjects.createObjectBuilder()
+        JsonObject prosecutorJson = createObjectBuilder()
                 .add("fullName", "John Doe")
                 .add("nameWelsh", "Ioan Dda")
                 .add("contactEmailAddress", "john.doe@test.com")
-                .add("address", JsonObjects.createObjectBuilder()
+                .add("address", createObjectBuilder()
                         .add("line1", "123 Main St")
                         .add("line2", "Apt 4B")
                         .add("postcode", "SW1A 1AA")

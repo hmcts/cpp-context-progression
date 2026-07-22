@@ -19,8 +19,8 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -479,7 +479,7 @@ public class ReceiveRepresentationOrderHandlerTest {
 
 
     private static JsonObject getLegalStatus() {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add("id", LEGAL_STATUS_ID.toString())
                 .add("statusDescription", "description")
                 .add("defendantLevelStatus", "Granted")
@@ -488,19 +488,19 @@ public class ReceiveRepresentationOrderHandlerTest {
 
 
     private static JsonObject getAssociationWithOutAnyOrganisation() {
-        return JsonObjects.createObjectBuilder()
-                .add(ASSOCIATION, JsonObjects.createObjectBuilder())
+        return createObjectBuilder()
+                .add(ASSOCIATION, createObjectBuilder())
                 .build();
     }
 
     private static JsonObject getAssociationWithMatchingOrganisation(final String organisationId) {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add(ORGANISATION_ID, organisationId)
                 .build();
     }
 
     private static JsonObject getAssociationWithoutMatchingOrganisation() {
-        return JsonObjects.createObjectBuilder()
+        return createObjectBuilder()
                 .add(ORGANISATION_ID, randomUUID().toString())
                 .add(REPRESENTATION_TYPE, RepresentationType.REPRESENTATION_ORDER.toString())
                 .build();

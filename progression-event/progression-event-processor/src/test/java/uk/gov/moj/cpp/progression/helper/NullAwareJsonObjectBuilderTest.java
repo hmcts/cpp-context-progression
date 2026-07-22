@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.services.messaging.JsonObjects;
 /**
  * 
  * @deprecated
@@ -18,7 +18,7 @@ public class NullAwareJsonObjectBuilderTest {
     @Test
     public void testAddString() {
         final JsonObjectBuilder builder =
-                        NullAwareJsonObjectBuilder.wrap(JsonObjects.createObjectBuilder());
+                        NullAwareJsonObjectBuilder.wrap(createObjectBuilder());
         final String value = null;
         final String name = null;
         final JsonObject json =

@@ -16,8 +16,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
@@ -66,15 +66,15 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
         final String offence2Id = randomUUID().toString();
         final JsonObject hearingMarkedAsDuplicate = createObjectBuilder()
                 .add("hearingId", hearingId)
-                .add("prosecutionCaseIds", JsonObjects.createArrayBuilder()
+                .add("prosecutionCaseIds", createArrayBuilder()
                         .add(case1Id)
                         .add(case2Id)
                         .build())
-                .add("defendantIds", JsonObjects.createArrayBuilder()
+                .add("defendantIds", createArrayBuilder()
                         .add(defendant1Id)
                         .add(defendant2Id)
                         .build())
-                .add("offenceIds", JsonObjects.createArrayBuilder()
+                .add("offenceIds", createArrayBuilder()
                         .add(offence1Id)
                         .add(offence2Id)
                         .build())
@@ -105,7 +105,7 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
         final UUID case2Id = randomUUID();
         final JsonObject hearingMarkedAsDuplicate = createObjectBuilder()
                 .add("hearingIdToBeDeleted", hearingId.toString())
-                .add("caseIds", JsonObjects.createArrayBuilder()
+                .add("caseIds", createArrayBuilder()
                         .add(case1Id.toString())
                         .add(case2Id.toString())
                         .build())

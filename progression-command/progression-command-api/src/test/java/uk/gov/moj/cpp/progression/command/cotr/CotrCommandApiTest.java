@@ -14,7 +14,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -300,8 +299,8 @@ public class CotrCommandApiTest {
     }
 
     private Envelope getAssociatedDefendantsEnvelope(final Metadata metadata, final String defendant1, final String defendant2){
-        final JsonObject jsonObjectPayload = JsonObjects.createObjectBuilder()
-                .add(DEFENDANT_IDS, JsonObjects.createArrayBuilder()
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add(DEFENDANT_IDS, createArrayBuilder()
                         .add(defendant1)
                         .add(defendant2)
                 ).build();

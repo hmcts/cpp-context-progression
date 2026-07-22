@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
 import javax.json.JsonObjectBuilder;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -59,7 +59,7 @@ public class HearingTrialVacatedEventProcessor {
         LOGGER.info("public.listing.vacated-trial-updated event received with metadata {} and payload {}",
                 jsonEnvelope.metadata(), jsonEnvelope.payloadAsJsonObject());
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
-        final JsonObjectBuilder trialVacatedCommandBuilder = JsonObjects.createObjectBuilder()
+        final JsonObjectBuilder trialVacatedCommandBuilder = createObjectBuilder()
                         .add("hearingId", payload.getString("hearingId"));
         if(payload.containsKey(VACATED_TRIAL_REASON_ID)) {
             trialVacatedCommandBuilder.add(VACATED_TRIAL_REASON_ID, payload.getString(VACATED_TRIAL_REASON_ID));

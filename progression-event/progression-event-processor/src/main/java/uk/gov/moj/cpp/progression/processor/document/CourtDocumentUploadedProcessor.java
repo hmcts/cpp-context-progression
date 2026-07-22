@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtsDocumentUploaded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -44,7 +44,7 @@ public class CourtDocumentUploadedProcessor {
         final UUID materialId = courtsDocumentUploaded.getMaterialId();
         LOGGER.info("Received progression.event.court-document-uploaded , material id {} file service id {}", materialId,fileServiceId);
         materialService.uploadMaterial(fileServiceId, materialId, envelope);
-        final JsonObject payload = JsonObjects.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .build();
         sender.send(enveloper.withMetadataFrom(envelope, PUBLIC_COURT_DOCUMENT_UPLOADED).apply(payload));

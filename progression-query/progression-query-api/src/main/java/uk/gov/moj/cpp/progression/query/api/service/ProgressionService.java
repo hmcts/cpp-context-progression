@@ -9,7 +9,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
@@ -131,7 +130,7 @@ public class ProgressionService {
             return responseEnvelope.payloadAsJsonObject();
         }catch(Exception e){
             LOGGER.error("PET form Not Found or Error while fetching {}",e);
-            return JsonObjects.createObjectBuilder().build();
+            return createObjectBuilder().build();
         }
     }
 
@@ -150,7 +149,7 @@ public class ProgressionService {
             return responseEnvelope.payloadAsJsonObject();
         }catch(Exception e){
             LOGGER.error("PTPH form Not Found or Error while fetching {}",e);
-            return JsonObjects.createObjectBuilder().build();
+            return createObjectBuilder().build();
         }
     }
 }

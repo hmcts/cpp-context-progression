@@ -18,6 +18,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.getLong;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -195,7 +197,7 @@ public class CourtDocumentQueryView {
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
         final Optional<UUID> id = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID_PARAMETER);
         CourtDocumentEntity courtDocumentEntity = null;
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
 
@@ -782,7 +784,7 @@ public class CourtDocumentQueryView {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        try (final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr))) {
+        try (final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             return jsonReader.readObject();
         }
     }
@@ -825,13 +827,13 @@ public class CourtDocumentQueryView {
     private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope,
                                             final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
 
-        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
 
         applicationNotificationMap.forEach((k, v) -> applicationNotificationMap.get(k).forEach(
                 notificationStatusEntity -> prepareResponse(notificationStatusEntity,
                         jsonArrayBuilder)));
 
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         jsonObjectBuilder.add(NOTIFICATION_STATUS, jsonArrayBuilder.build());
 
@@ -841,7 +843,7 @@ public class CourtDocumentQueryView {
     private void prepareResponse(final NotificationStatusEntity notificationStatusEntity,
                                  final JsonArrayBuilder jsonArrayBuilder) {
 
-        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         jsonObjectBuilder.add(ID, notificationStatusEntity.getId().toString())
                 .add(NOTIFICATION_ID,
@@ -900,7 +902,7 @@ public class CourtDocumentQueryView {
             final Metadata metadata = metadataFrom(action.envelope().metadata())
                     .withName("usersgroups.get-groups-by-user").build();
             final JsonObject payload =
-                    JsonObjects.createObjectBuilder().add("userId", userId.get()).build();
+                    createObjectBuilder().add("userId", userId.get()).build();
             final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
             final Envelope<JsonObject> response =

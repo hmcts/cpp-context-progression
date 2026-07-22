@@ -12,8 +12,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -126,7 +126,7 @@ public class DefendantHelperTest {
     public void shouldUpdateOrderIndex() {
         final Offence offenceOne = createOffence(randomUUID(), "first");
         final ArrayList<JsonObject> jsonObjects = new ArrayList<>();
-        final JsonObject jsonObjectOffence = JsonObjects.createObjectBuilder().add("maxPenalty", "Indicated").add("cjsOffenceCode", "first").build();
+        final JsonObject jsonObjectOffence = createObjectBuilder().add("maxPenalty", "Indicated").add("cjsOffenceCode", "first").build();
         jsonObjects.add(jsonObjectOffence);
         final Optional<List<JsonObject>> refDataOffences = Optional.of(jsonObjects);
         Offence offence = DefendantHelper.updateOrderIndexAndExparteValue(offenceOne, 100, refDataOffences, false);
@@ -138,7 +138,7 @@ public class DefendantHelperTest {
     public void shouldUpdateOrderIndexForCivilOffence() {
         final Offence offenceOne = createOffence(randomUUID(), "first");
         final ArrayList<JsonObject> jsonObjects = new ArrayList<>();
-        final JsonObject jsonObjectOffence = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObjectOffence = createObjectBuilder()
                 .add("maxPenalty", "Indicated")
                 .add("cjsOffenceCode", "first")
                 .add("exParte", true)

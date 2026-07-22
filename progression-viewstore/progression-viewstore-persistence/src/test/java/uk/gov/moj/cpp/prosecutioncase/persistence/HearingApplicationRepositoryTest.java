@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.prosecutioncase.persistence;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
@@ -43,12 +43,12 @@ public class HearingApplicationRepositoryTest {
         APPLICATION_ID = randomUUID();
 
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(RESULT_ID);
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
 

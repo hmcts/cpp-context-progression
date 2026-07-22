@@ -9,8 +9,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.Country.WALES;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -126,7 +126,7 @@ public class ReferralDisqualifyWarningGenerationService {
 
     private void generateCourtDocument(final JsonEnvelope event, final UUID caseId, final ReferredDefendant defendant, final String filename, final UUID materialId) {
         final CourtDocument courtDocument = courtDocument(event, asList(defendant.getId()), materialId, caseId, filename);
-        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating ReferralDisqualifyWarning court document payload - {}", courtDocumentPayload);
         sender.send(envelop(courtDocumentPayload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(event));

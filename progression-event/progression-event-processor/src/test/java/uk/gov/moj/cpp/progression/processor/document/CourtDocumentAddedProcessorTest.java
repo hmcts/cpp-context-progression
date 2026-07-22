@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedPr
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_DOCUMENT_ADDED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -147,11 +146,11 @@ public class CourtDocumentAddedProcessorTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return JsonObjects.createObjectBuilder()
-                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
-                .add("readUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates").add("Defence Lawyers"))
-                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return createObjectBuilder()
+                .add("documentAccess", createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", createArrayBuilder().add("Listing Officer"))
+                .add("readUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates").add("Defence Lawyers"))
+                .add("canDownloadUserGroups", createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 

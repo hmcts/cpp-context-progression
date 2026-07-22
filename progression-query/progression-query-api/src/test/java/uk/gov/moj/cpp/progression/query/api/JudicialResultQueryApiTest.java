@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.JudicialResultQueryView;
 
@@ -32,7 +32,7 @@ class JudicialResultQueryApiTest {
 
     @Test
     void shouldGetJudicialChildResults() {
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", randomUUID().toString())
                 .add("masterDefendantId", randomUUID().toString())
                 .add("judicialResultTypeId", randomUUID().toString())
@@ -50,7 +50,7 @@ class JudicialResultQueryApiTest {
 
     @Test
     void shouldGetJudicialChildResultsV2() {
-        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", randomUUID().toString())
                 .add("masterDefendantId", randomUUID().toString())
                 .add("judicialResultTypeId", randomUUID().toString())

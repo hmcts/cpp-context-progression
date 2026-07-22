@@ -6,8 +6,8 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -110,7 +110,7 @@ public class ApplicationHearingToInActiveProsecutionCaseListingStatusChangedEven
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.SENT_FOR_LISTING);
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);

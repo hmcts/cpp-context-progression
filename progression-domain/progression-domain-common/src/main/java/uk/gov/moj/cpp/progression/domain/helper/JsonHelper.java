@@ -6,7 +6,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
-import uk.gov.justice.services.messaging.JsonObjects;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class JsonHelper {
 
@@ -14,7 +14,7 @@ public class JsonHelper {
 
     }
     public static JsonObject removeProperty(final JsonObject origin, final String key){
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             if (!entry.getKey().equals(key)){
                 builder.add(entry.getKey(), entry.getValue());
@@ -30,7 +30,7 @@ public class JsonHelper {
     }
 
     public static JsonObjectBuilder createBuilder(final JsonObject origin) {
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             builder.add(entry.getKey(), entry.getValue());
         }
@@ -38,7 +38,7 @@ public class JsonHelper {
     }
 
     public static JsonObject addProperty(final JsonObject origin, final String key, final boolean value){
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             builder.add(entry.getKey(), entry.getValue());
         }
@@ -47,7 +47,7 @@ public class JsonHelper {
     }
 
     public static JsonObject addProperty(final JsonObject origin, final String key, final JsonObject value){
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             builder.add(entry.getKey(), entry.getValue());
         }
@@ -56,7 +56,7 @@ public class JsonHelper {
     }
 
     public static JsonObject addProperty(final JsonObject origin, final String key, final JsonArray value){
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             builder.add(entry.getKey(), entry.getValue());
         }
@@ -65,7 +65,7 @@ public class JsonHelper {
     }
 
     public static JsonObject renameProperty(final JsonObject origin, final String key, final String newName){
-        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             if (!entry.getKey().equals(key)){
                 builder.add(entry.getKey(), entry.getValue());
