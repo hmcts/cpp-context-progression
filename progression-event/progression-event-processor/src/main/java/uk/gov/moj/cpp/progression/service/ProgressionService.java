@@ -1988,6 +1988,7 @@ public class ProgressionService {
             final List<CourtApplicationParty> respondents = new ArrayList<>();
             final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
                     .withPersonDefendant(defendant.getPersonDefendant())
+                    .withPncId(defendant.getPncId())
                     .withMasterDefendantId(defendant.getMasterDefendantId())
                     .withAssociatedPersons(defendant.getAssociatedPersons())
                     .withDefendantCase(singletonList(DefendantCase.defendantCase()

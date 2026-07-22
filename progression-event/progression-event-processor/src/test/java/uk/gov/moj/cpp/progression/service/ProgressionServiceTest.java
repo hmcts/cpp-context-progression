@@ -1292,6 +1292,29 @@ public class ProgressionServiceTest {
     }
 
     @Test
+    public void shouldPropagatePncIdOntoCourtApplicationSubjectAndRespondentMasterDefendant() {
+        final JsonEnvelope event = getJsonEnvelop("progression.event.initiate-application-for-case-requested");
+        final JsonObject jsonObject = getJsonObjectResponseFromJsonResource("progression.event.initiate-application-for-case-requested.json");
+        final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested = jsonObjectConverter.convert(jsonObject, InitiateApplicationForCaseRequested.class);
+        final CourtApplicationType courtApplicationType = courtApplicationType().withType("type").build();
+        when(referenceDataService.retrieveApplicationType(any(), any())).thenReturn(courtApplicationType);
+
+        // the defendant on the incoming event carries a pncId
+        final String expectedPncId = initiateApplicationForCaseRequested.getDefendant().getPncId();
+        assertThat(expectedPncId, is(notNullValue()));
+
+        progressionService.initiateNewCourtApplication(event, initiateApplicationForCaseRequested);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonObject courtApplication = ((JsonObject) envelopeCaptor.getValue().payload()).getJsonObject("courtApplication");
+
+        // the defendant-level pncId must be carried onto the subject's master defendant...
+        assertThat(courtApplication.getJsonObject("subject").getJsonObject("masterDefendant").getString("pncId"), is(expectedPncId));
+        // ...and onto the respondent's master defendant (same constructed MasterDefendant)
+        assertThat(courtApplication.getJsonArray("respondents").getJsonObject(0).getJsonObject("masterDefendant").getString("pncId"), is(expectedPncId));
+    }
+
+    @Test
     public void shouldTransformCourtCentre() {
         final UUID courtCentreId = randomUUID();
         final String address1 = "ADDRESS1";
