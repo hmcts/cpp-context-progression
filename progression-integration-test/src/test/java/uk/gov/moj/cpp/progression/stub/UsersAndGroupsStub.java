@@ -14,13 +14,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.List;
 
-import javax.json.Json;
-
 import org.apache.http.HttpHeaders;
-
 public class UsersAndGroupsStub {
 
     public static final String BASE_QUERY = "/usersgroups-service/query/api/rest/usersgroups";
@@ -130,7 +128,7 @@ public class UsersAndGroupsStub {
 
 
     public static void stubGetOrganisationDetailForLAAContractNumberAsEmpty(final String laaContractNumber) {
-        String body = Json.createObjectBuilder().build().toString();
+        String body = createObjectBuilder().build().toString();
 
         stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())

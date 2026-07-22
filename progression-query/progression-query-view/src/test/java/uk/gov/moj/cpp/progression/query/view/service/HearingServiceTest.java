@@ -12,6 +12,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,10 +44,10 @@ class HearingServiceTest {
         final UUID hearingId1 = randomUUID();
         final UUID hearingId2 = randomUUID();
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("hearingSummaries",Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("hearingId", hearingId1.toString()).build())
-                        .add(Json.createObjectBuilder().add("hearingId", hearingId2.toString()).build()))
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("hearingSummaries",createArrayBuilder()
+                        .add(createObjectBuilder().add("hearingId", hearingId1.toString()).build())
+                        .add(createObjectBuilder().add("hearingId", hearingId2.toString()).build()))
                 .build();
 
 

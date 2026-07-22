@@ -9,18 +9,17 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.time.LocalDate;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -76,7 +75,7 @@ public class CourtRegisterApiTest {
         final DefaultEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), is(GENERATE_COURT_REGISTER_COMMAND_NAME));
         final JsonObject payloadAsJsonObject = commandEnvelope.payloadAsJsonObject();
-        final JsonObject wrappedObject = JsonObjects.createObjectBuilder(payloadAsJsonObject).add("registerDate", LocalDate.now().toString()).build();
+        final JsonObject wrappedObject = createObjectBuilder(payloadAsJsonObject).add("registerDate", LocalDate.now().toString()).build();
         assertThat(newCommand.payload(), equalTo(wrappedObject));
     }
 
@@ -92,7 +91,7 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildGenerateCourtRegisterByDateEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("registerDate", LocalDate.now().toString())
                 .build();
         final Metadata metadata = Envelope
@@ -105,7 +104,7 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildGenerateCourtRegisterEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .build();
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -117,8 +116,8 @@ public class CourtRegisterApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("courtRegisterDocumentRequest", Json.createObjectBuilder().add("courtCentreId", randomUUID().toString()).build())
+        final JsonObject payload = createObjectBuilder()
+                .add("courtRegisterDocumentRequest", createObjectBuilder().add("courtCentreId", randomUUID().toString()).build())
                 .build();
 
         final Metadata metadata = Envelope

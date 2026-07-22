@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.application.event.listener;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import javax.json.Json;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +48,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplic
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -223,7 +222,7 @@ public class ApplicationOffencesUpdatedEventListenerTest {
         final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").build();
         final JsonObject updatedJsonObject = mock(JsonObject.class);
-        final JsonObject hearingJsonObject = Json.createObjectBuilder().build();
+        final JsonObject hearingJsonObject = createObjectBuilder().build();
 
         final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing = ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
                 .withHearingId(hearingId)
@@ -265,7 +264,7 @@ public class ApplicationOffencesUpdatedEventListenerTest {
         final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").build();
         final JsonObject updatedJsonObject = mock(JsonObject.class);
-        final JsonObject hearingJsonObject = Json.createObjectBuilder().build();
+        final JsonObject hearingJsonObject = createObjectBuilder().build();
 
         final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing = ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
                 .withHearingId(hearingId)

@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -71,7 +71,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -182,7 +181,7 @@ public class AddCourtDocumentHandlerTest {
                 .build();
         final EventStream eventStream = mock(EventStream.class);
 
-        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","HMCTS")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -193,7 +192,7 @@ public class AddCourtDocumentHandlerTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",Json.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -253,7 +252,7 @@ public class AddCourtDocumentHandlerTest {
                 .withName("progression.command.add-court-document-v2")
                 .withId(randomUUID())
                 .build();
-        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","HMCTS")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -264,7 +263,7 @@ public class AddCourtDocumentHandlerTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",Json.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -345,7 +344,7 @@ public class AddCourtDocumentHandlerTest {
     }
 
     private void isCpsCaseHandleWith(Boolean isCpsCase) throws Exception{
-        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","HMCTS")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -356,7 +355,7 @@ public class AddCourtDocumentHandlerTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",Json.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -394,7 +393,7 @@ public class AddCourtDocumentHandlerTest {
     }
 
     private void isUnbundledDocumentHandleWith(final Boolean isUnbundledDocument) throws Exception{
-        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+        final JsonObject userOrganisationDetails = createObjectBuilder()
                 .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
                 .add("organisationType","HMCTS")
                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -405,7 +404,7 @@ public class AddCourtDocumentHandlerTest {
                 .add("addressPostcode","SE14 2AB")
                 .add("phoneNumber","080012345678")
                 .add("email","joe@example.com")
-                .add("laaContractNumbers",Json.createArrayBuilder()
+                .add("laaContractNumbers",createArrayBuilder()
                         .add("LAA3482374WER")
                         .add("LAA3482374WEM")).build();
 
@@ -483,6 +482,6 @@ public class AddCourtDocumentHandlerTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return createObjectBuilder().add("cppGroup", createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 }

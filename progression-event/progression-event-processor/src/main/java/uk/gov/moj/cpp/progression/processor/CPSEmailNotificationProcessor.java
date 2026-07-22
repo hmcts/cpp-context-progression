@@ -6,6 +6,7 @@ import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingDay;
@@ -48,7 +49,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -113,7 +113,7 @@ public class CPSEmailNotificationProcessor {
             activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
                 final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
                 final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
-                final JsonObjectBuilder disassociateDefenceOrganisationForApplicationBuilder = Json.createObjectBuilder();
+                final JsonObjectBuilder disassociateDefenceOrganisationForApplicationBuilder = createObjectBuilder();
                 if(nonNull(applicationId)){
                     disassociateDefenceOrganisationForApplicationBuilder
                             .add(APPLICATION_ID, applicationId)
@@ -323,7 +323,7 @@ public class CPSEmailNotificationProcessor {
     }
 
     private JsonObject removeProperty(final JsonObject origin, final String key) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
             if (!entry.getKey().equals(key)) {
                 builder.add(entry.getKey(), entry.getValue());

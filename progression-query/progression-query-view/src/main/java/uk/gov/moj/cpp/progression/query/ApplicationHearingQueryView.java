@@ -7,6 +7,8 @@ import static java.util.UUID.fromString;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService.getDefendantName;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -34,7 +36,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -77,7 +78,7 @@ public class ApplicationHearingQueryView {
         final Optional<CourtApplication> optionalCourtApplication = ofNullable(hearing.getCourtApplications()).orElse(Collections.emptyList()).stream()
                 .filter(c -> c.getId().equals(applicationId))
                 .findFirst();
-        final JsonObjectBuilder responseBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder responseBuilder = createObjectBuilder();
         if (optionalCourtApplication.isPresent()) {
             final CourtApplication courtApplication = optionalCourtApplication.get();
             responseBuilder.add("hearingId", hearingId.toString())
@@ -110,12 +111,12 @@ public class ApplicationHearingQueryView {
 
     private void getCourtOrderCasesSummary(final CourtApplication courtApplication, final JsonObjectBuilder responseBuilder) {
         if (nonNull(courtApplication.getCourtOrder())) {
-            final JsonArrayBuilder caseDetails = Json.createArrayBuilder();
+            final JsonArrayBuilder caseDetails = createArrayBuilder();
             final List<UUID> addedCaseIds = new ArrayList<>();
             courtApplication.getCourtOrder().getCourtOrderOffences().forEach(courtOrderOffence -> {
                         if (!addedCaseIds.contains(courtOrderOffence.getProsecutionCaseId())) {
                             caseDetails.add(
-                                    Json.createObjectBuilder()
+                                    createObjectBuilder()
                                             .add(CASE_ID, courtOrderOffence.getProsecutionCaseId().toString())
                                             .add(CASE_URN, getCaseURN(courtOrderOffence.getProsecutionCaseIdentifier()))
                                             .add(CASE_STATUS, getCaseStatus(courtOrderOffence.getProsecutionCaseId()))
@@ -130,10 +131,10 @@ public class ApplicationHearingQueryView {
 
     private void getCourtApplicationCasesSummary(final CourtApplication courtApplication, final JsonObjectBuilder responseBuilder) {
         if (nonNull(courtApplication.getCourtApplicationCases())) {
-            final JsonArrayBuilder caseDetails = Json.createArrayBuilder();
+            final JsonArrayBuilder caseDetails = createArrayBuilder();
             courtApplication.getCourtApplicationCases().forEach(courtApplicationCase ->
                     caseDetails.add(
-                            Json.createObjectBuilder()
+                            createObjectBuilder()
                                     .add(CASE_ID, courtApplicationCase.getProsecutionCaseId().toString())
                                     .add(CASE_URN, getCaseURN(courtApplicationCase.getProsecutionCaseIdentifier()))
                                     .add(CASE_STATUS, courtApplicationCase.getCaseStatus())

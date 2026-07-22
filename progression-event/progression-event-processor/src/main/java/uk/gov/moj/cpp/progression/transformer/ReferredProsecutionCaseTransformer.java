@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
 import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
 import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.RefDataService.SHORT_NAME;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
@@ -50,7 +51,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067", "squid:S1854", "squid:S1135", "squid:S1481"})
@@ -292,7 +292,7 @@ public class ReferredProsecutionCaseTransformer {
                     .getEthinicity(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Ethnicity", id.toString()));
         }
-        return Json.createObjectBuilder().build();
+        return createObjectBuilder().build();
     }
 
     private JsonObject getNationalityJson(final UUID id, final JsonEnvelope jsonEnvelope) {
@@ -301,7 +301,7 @@ public class ReferredProsecutionCaseTransformer {
                     .getNationality(jsonEnvelope, id, requester)
                     .orElseThrow(() -> new ReferenceDataNotFoundException("Country Nationality", id.toString()));
         }
-        return Json.createObjectBuilder().build();
+        return createObjectBuilder().build();
     }
 
 }

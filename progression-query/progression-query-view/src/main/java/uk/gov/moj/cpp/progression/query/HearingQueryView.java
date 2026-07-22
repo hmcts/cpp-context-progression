@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -20,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -45,7 +45,7 @@ public class HearingQueryView {
 
     @Handles("progression.query.hearing")
     public JsonEnvelope getHearing(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         final Optional<UUID> hearingId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID);
 
 

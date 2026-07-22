@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,6 +12,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -19,8 +20,6 @@ import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +52,7 @@ public class CustodyTimeLimitProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("public.events.hearing.custody-time-limit-clock-stopped"),
                 createObjectBuilder()
                         .add("hearingId", hearingId)
-                        .add("offenceIds", Json.createArrayBuilder()
+                        .add("offenceIds", createArrayBuilder()
                                 .add(offence1Id)
                                 .add(offence2Id)
                                 .build())
@@ -110,7 +109,7 @@ public class CustodyTimeLimitProcessorTest {
         final String extendedTimeLimit = LocalDate.now().toString();
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.events.custody-time-limit-extended"),
                 createObjectBuilder()
-                        .add("hearingIds", Json.createArrayBuilder()
+                        .add("hearingIds", createArrayBuilder()
                                 .add(hearing1Id)
                                 .add(hearing2Id)
                                 .build()

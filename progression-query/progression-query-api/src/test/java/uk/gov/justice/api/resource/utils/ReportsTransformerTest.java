@@ -31,6 +31,7 @@ import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.progression.courts.Offences.offences;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -131,7 +132,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -2160,7 +2160,7 @@ public class ReportsTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }

@@ -5,13 +5,13 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.messaging.JsonMetadata.USER_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -28,11 +28,11 @@ public class Originator {
     }
 
     public static Metadata createMetadataWithProcessIdAndUserId(final String id, final String name, final String userId) {
-        return metadataFrom(Json.createObjectBuilder()
+        return metadataFrom(createObjectBuilder()
                 .add(ID, id)
                 .add(NAME, name)
                 .add(SOURCE, ORIGINATOR_VALUE)
-                .add(CONTEXT, Json.createObjectBuilder()
+                .add(CONTEXT, createObjectBuilder()
                         .add(USER_ID, userId))
                 .build()).build();
     }
@@ -44,7 +44,7 @@ public class Originator {
     }
 
     private static JsonObject addMetadataToPayload(final JsonObject load, final Metadata metadata) {
-        final JsonObjectBuilder job = Json.createObjectBuilder();
+        final JsonObjectBuilder job = createObjectBuilder();
         load.entrySet().forEach(entry -> job.add(entry.getKey(), entry.getValue()));
         job.add(JsonEnvelope.METADATA, metadata.asJsonObject());
         return job.build();

@@ -25,6 +25,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.READY_FOR_REVIEW;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -63,7 +64,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -2499,7 +2499,7 @@ public class HearingResultEventListenerTest {
     private JsonObject jsonFromString(final String jsonObjectStr) {
 
         JsonObject object;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
 

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -21,7 +22,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +57,7 @@ public class HearingQueryViewTest {
     public void shouldFindHearingById() {
         final UUID hearingId = randomUUID();
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("jurisdictionType", JurisdictionType.CROWN.toString())
                 .build();
@@ -90,11 +90,11 @@ public class HearingQueryViewTest {
         final UUID hearingId2 = randomUUID();
         final List<UUID> hearingIds = asList(hearingId1, hearingId2);
 
-        final JsonObject jsonObject1 = Json.createObjectBuilder()
+        final JsonObject jsonObject1 = createObjectBuilder()
                 .add("hearingId", hearingId1.toString())
                 .build();
 
-        final JsonObject jsonObject2 = Json.createObjectBuilder()
+        final JsonObject jsonObject2 = createObjectBuilder()
                 .add("hearingId", hearingId2.toString())
                 .build();
 
@@ -129,7 +129,7 @@ public class HearingQueryViewTest {
 
     @Test
     public void shouldReturnEmpty_FindHearingById() {
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", randomUUID().toString())
                 .add("jurisdictionType", JurisdictionType.CROWN.toString())
                 .build();

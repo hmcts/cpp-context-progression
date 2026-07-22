@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.test;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -9,14 +9,12 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Objects;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 public class FileUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
@@ -47,7 +45,7 @@ public class FileUtil {
     }
 
     public static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
 

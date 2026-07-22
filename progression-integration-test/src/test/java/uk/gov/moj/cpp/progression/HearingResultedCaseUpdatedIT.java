@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import io.restassured.response.Response;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -37,7 +38,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -150,7 +150,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
 
     private void ejectCase(final String prosecutionCaseId, final String removalReason) {
-        JsonObject payload = Json.createObjectBuilder()
+        JsonObject payload = createObjectBuilder()
                 .add("prosecutionCaseId", prosecutionCaseId)
                 .add("removalReason", removalReason)
                 .build();

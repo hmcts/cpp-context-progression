@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
@@ -17,8 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
-
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +51,7 @@ public class HearingRepositoryTest {
     public void setUp() {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingRepository.save(hearingEntity);
 
@@ -67,11 +66,11 @@ public class HearingRepositoryTest {
     public void shouldRemoveResultLineEntityByHearingId() throws Exception {
         //given
         final HearingResultLineEntity hearingResultLineEntityOne = new HearingResultLineEntity();
-        hearingResultLineEntityOne.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntityOne.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntityOne.setId(RESULT_ID_ONE);
 
         final HearingResultLineEntity hearingResultLineEntityTwo = new HearingResultLineEntity();
-        hearingResultLineEntityTwo.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntityTwo.setPayload(createObjectBuilder().build().toString());
         hearingResultLineEntityTwo.setId(RESULT_ID_TWO);
 
         final HearingEntity actual = hearingRepository.findBy(HEARING_ID);

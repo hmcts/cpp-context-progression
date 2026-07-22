@@ -8,7 +8,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociation
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -16,6 +15,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class DefendantByLAAContractNumberQueryView {
@@ -28,7 +29,7 @@ public class DefendantByLAAContractNumberQueryView {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final String laaContractNumber = payload.getString("laaContractNumber");
         final List<DefendantLAAAssociationEntity> defenceLAAAssociations = defendantLAAAssociationRepository.findByLAAContractNUmber(laaContractNumber);
-        final JsonObject responsePayload = Json.createObjectBuilder()
+        final JsonObject responsePayload = createObjectBuilder()
                 .add("defendants",convertProsecutionCaseEntityToDefendantsList(defenceLAAAssociations))
                 .build();
         return JsonEnvelope.envelopeFrom(
@@ -41,7 +42,7 @@ public class DefendantByLAAContractNumberQueryView {
                 .map(DefendantLAAAssociationEntity ::getDefendantLAAKey)
                 .map(defendantLAAKey -> defendantLAAKey.getDefendantId().toString())
                 .collect(toList());
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         defendantIdList.stream().forEach(jsonArrayBuilder :: add);
         return  jsonArrayBuilder.build();
     }

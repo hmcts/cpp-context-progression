@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.transformer.HearingHelper.transformedHearing;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATIONS;
@@ -32,7 +32,6 @@ import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -131,14 +130,14 @@ public class VejCaseworkerProcessor {
         final JsonObject hearingObj = ((JsonObject) hearingParent.get(HEARING));
         LOGGER.info("Starting extractPoliceCases prosecution cases from hearingParent {}", hearingParent);
         final JsonArray prosecutionCases = (JsonArray) hearingObj.get(PROSECUTION_CASES);
-        final JsonArrayBuilder policeCaseProsecutionCasesBuilder = Json.createArrayBuilder();
-        final JsonArrayBuilder policeCasesBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder policeCaseProsecutionCasesBuilder = createArrayBuilder();
+        final JsonArrayBuilder policeCasesBuilder = createArrayBuilder();
         final JsonArray courtApplications = (JsonArray) hearingObj.get(COURT_APPLICATIONS);
-        final JsonArrayBuilder courtApplicationsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder courtApplicationsBuilder = createArrayBuilder();
         if (null != prosecutionCases && !prosecutionCases.isEmpty()) {
             extractPoliceProsecutionCases(prosecutionCases, policeCaseProsecutionCasesBuilder);
         }
-        JsonObject hearingObj1 = Json.createObjectBuilder().build();
+        JsonObject hearingObj1 = createObjectBuilder().build();
         final JsonArray policeCaseProsecutionCases1 = policeCaseProsecutionCasesBuilder.build();
         if (null != policeCaseProsecutionCases1 && !policeCaseProsecutionCases1.isEmpty()) {
             hearingObj1 = removeProperty(hearingObj, PROSECUTION_CASES);
@@ -193,17 +192,17 @@ public class VejCaseworkerProcessor {
     private JsonObject iterateCourtApplications(final JsonArray courtApplications, final JsonArrayBuilder policeCourtApplications, JsonObject hearingObj1, final JsonObject item) {
         for (int ic = 0; ic < courtApplications.size(); ic++) {
             final JsonObject itemCourt = courtApplications.getJsonObject(ic);
-            JsonObject newItem = Json.createObjectBuilder().build();
+            JsonObject newItem = createObjectBuilder().build();
             final JsonArray courtApplicationCases = (JsonArray) itemCourt.get(COURT_APPLICATION_CASES);
-            final JsonArrayBuilder policeCourtApplicationCases = Json.createArrayBuilder();
+            final JsonArrayBuilder policeCourtApplicationCases = createArrayBuilder();
             if (null != courtApplicationCases && !courtApplicationCases.isEmpty()) {
                 iterateCourtApplicationCasesForOffences(item, courtApplicationCases, policeCourtApplicationCases);
             }
             final JsonObject courtOrder = itemCourt.getJsonObject(COURT_ORDER);
-            JsonObject newCourtOrder = Json.createObjectBuilder().build();
+            JsonObject newCourtOrder = createObjectBuilder().build();
             if (null != courtOrder) {
                 final JsonArray courtOrderOffences = (JsonArray) courtOrder.get(COURT_ORDER_OFFENCES);
-                final JsonArrayBuilder laaCourtOrderOffences = Json.createArrayBuilder();
+                final JsonArrayBuilder laaCourtOrderOffences = createArrayBuilder();
                 if (null != courtOrderOffences && !courtOrderOffences.isEmpty()) {
                     iterateCourtOrderOffencesForOffences(item, courtOrderOffences, laaCourtOrderOffences);
                     newCourtOrder = removeProperty(courtOrder, COURT_ORDER_OFFENCES);
@@ -332,7 +331,7 @@ public class VejCaseworkerProcessor {
     }
 
     private static JsonObjectBuilder getJsonObjectBuilder() {
-        return Json.createObjectBuilder();
+        return createObjectBuilder();
     }
 
 }

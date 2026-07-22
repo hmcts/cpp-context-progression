@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -19,7 +20,6 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +80,7 @@ public class UpdateCourtDocumentApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = createObjectBuilder().build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
