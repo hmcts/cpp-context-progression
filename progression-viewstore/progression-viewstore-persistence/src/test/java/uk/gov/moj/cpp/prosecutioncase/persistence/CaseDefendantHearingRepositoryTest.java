@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
@@ -55,15 +55,15 @@ public class CaseDefendantHearingRepositoryTest {
         caseDefendantHearingKey.setHearingId(randomUUID());
 
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(randomUUID());
 
         final Set<HearingResultLineEntity> resultLines = new HashSet<>();
-        resultLines.add(new HearingResultLineEntity(randomUUID(), Json.createObjectBuilder().build().toString(), null));
+        resultLines.add(new HearingResultLineEntity(randomUUID(), JsonObjects.createObjectBuilder().build().toString(), null));
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(caseDefendantHearingKey.getHearingId());
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         hearingEntity.setResultLines(resultLines);
@@ -151,12 +151,12 @@ public class CaseDefendantHearingRepositoryTest {
 
     private void saveEntity(final UUID hearingId, final UUID caseId, final UUID defendantId, final UUID resultId) {
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(resultId);
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         hearingRepository.save(hearingEntity);

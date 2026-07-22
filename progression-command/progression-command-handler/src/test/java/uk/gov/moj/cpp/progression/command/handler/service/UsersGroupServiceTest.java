@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command.handler.service;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -65,7 +65,7 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
-        JsonObject responseJsonObject = Json.createObjectBuilder().add("organisationId",organisationId.toString()).build();
+        JsonObject responseJsonObject = JsonObjects.createObjectBuilder().add("organisationId",organisationId.toString()).build();
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), "userId").build();
 
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
@@ -232,13 +232,13 @@ public class UsersGroupServiceTest {
     }
 
     private JsonObject getHMCTSGroups() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("groups", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
+                .add("groups", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("groupId", "7e2f143e-d619-40b3-8611-8015f3a18957")
                                 .add("groupName", "Listing Officers")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("groupId", "8c5327b6-354e-4574-9558-b13fce8c055a")
                                 .add("groupName", "Court Clerks")
                         )
@@ -247,8 +247,8 @@ public class UsersGroupServiceTest {
     }
 
     private JsonObject getNoGroups() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("groups", Json.createArrayBuilder()).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder()
+                .add("groups", JsonObjects.createArrayBuilder()).build();
         return payload;
     }
 

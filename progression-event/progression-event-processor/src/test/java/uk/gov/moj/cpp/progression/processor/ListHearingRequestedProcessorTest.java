@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -624,7 +624,7 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject payload = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("hearingType", "PTP")
-                .add("caseUrns", Json.createArrayBuilder()
+                .add("caseUrns", JsonObjects.createArrayBuilder()
                         .add(createObjectBuilder().add("caseURN", firstCaseUrn))
                         .add(createObjectBuilder().add("caseURN", secondCaseUrn)))
                 .build();
@@ -657,10 +657,10 @@ public class ListHearingRequestedProcessorTest {
                 .build();
 
         final JsonObject hearingsAtAGlance = createObjectBuilder()
-                .add("hearings", Json.createArrayBuilder()
+                .add("hearings", JsonObjects.createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", hearingId.toString())
-                                .add("hearingDays", Json.createArrayBuilder()
+                                .add("hearingDays", JsonObjects.createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("sittingDay", ZonedDateTime.now().toString())))))
                 .build();
@@ -715,7 +715,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", randomUUID().toString())
                         .add("hearingType", "PTP")
-                        .add("caseUrns", Json.createArrayBuilder())
+                        .add("caseUrns", JsonObjects.createArrayBuilder())
                         .build());
 
         listHearingRequestedProcessor.handlePublicHearingListed(requestMessage);
@@ -732,7 +732,7 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject payload = createObjectBuilder()
                 .add("hearingId", hearingId)
                 .add("hearingType", "PTP")
-                .add("caseUrns", Json.createArrayBuilder()
+                .add("caseUrns", JsonObjects.createArrayBuilder()
                         .add(createObjectBuilder().add("caseURN", caseUrn)))
                 .build();
         final JsonEnvelope requestMessage = envelopeFrom(
@@ -749,10 +749,10 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
                 .add("hearingsAtAGlance", createObjectBuilder()
-                        .add("hearings", Json.createArrayBuilder()
+                        .add("hearings", JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", hearingId)
-                                        .add("hearingDays", Json.createArrayBuilder()
+                                        .add("hearingDays", JsonObjects.createArrayBuilder()
                                                 .add(createObjectBuilder()
                                                         .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
@@ -779,7 +779,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", randomUUID().toString())
                         .add("hearingType", "PTP")
-                        .add("caseUrns", Json.createArrayBuilder()
+                        .add("caseUrns", JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder().add("caseURN", caseUrn)))
                         .build());
 
@@ -807,7 +807,7 @@ public class ListHearingRequestedProcessorTest {
                 createObjectBuilder()
                         .add("hearingId", hearingId)
                         .add("hearingType", "PTP")
-                        .add("caseUrns", Json.createArrayBuilder()
+                        .add("caseUrns", JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder().add("caseURN", caseUrn)))
                         .build());
 
@@ -815,10 +815,10 @@ public class ListHearingRequestedProcessorTest {
         final JsonObject storedCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(storedCase))
                 .add("hearingsAtAGlance", createObjectBuilder()
-                        .add("hearings", Json.createArrayBuilder()
+                        .add("hearings", JsonObjects.createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", hearingId)
-                                        .add("hearingDays", Json.createArrayBuilder()
+                                        .add("hearingDays", JsonObjects.createArrayBuilder()
                                                 .add(createObjectBuilder()
                                                         .add("sittingDay", ZonedDateTime.now().toString()))))))
                 .build();
@@ -889,7 +889,7 @@ public class ListHearingRequestedProcessorTest {
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
+        return JsonObjects.createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")

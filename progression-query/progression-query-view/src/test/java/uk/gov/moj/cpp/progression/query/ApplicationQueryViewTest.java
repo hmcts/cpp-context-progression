@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -99,10 +99,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+
 import javax.persistence.NoResultException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -117,8 +117,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
-import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
+
 
 
 @ExtendWith(MockitoExtension.class)
@@ -447,15 +446,15 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class), eq(false))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
-        final JsonObject linkedCaseJson = Json.createObjectBuilder()
-                .add("offences", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("orderIndex", 2).build())
+        final JsonObject linkedCaseJson = JsonObjects.createObjectBuilder()
+                .add("offences", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder().add("orderIndex", 2).build())
                         .build())
                 .build();
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)   // applicationDetails
                 .thenReturn(linkedCaseJson)               // linked case (inside getLinkedCases)
-                .thenReturn(Json.createObjectBuilder().build()) // laaApplnReference
+                .thenReturn(JsonObjects.createObjectBuilder().build()) // laaApplnReference
                 .thenReturn(mockApplicantDetailsJson);    // applicantDetails (and child summary)
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
@@ -528,7 +527,7 @@ public class ApplicationQueryViewTest {
 
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)
-                .thenReturn(Json.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
                 .thenReturn(mockApplicantDetailsJson);
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
@@ -600,7 +599,7 @@ public class ApplicationQueryViewTest {
 
         when(objectToJsonObjectConverter.convert(any()))
                 .thenReturn(mockApplicationDetailsJson)
-                .thenReturn(Json.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
+                .thenReturn(JsonObjects.createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build())
                 .thenReturn(mockApplicantDetailsJson);
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);

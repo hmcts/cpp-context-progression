@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtRegisterReques
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
@@ -39,12 +39,12 @@ public class CourtRegisterDocumentRequestQueryViewTest {
     public void shouldGetCourtRegisterRequests() {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID())
                         .withName("progression.query.court-register-document-request").build(),
-                Json.createObjectBuilder().add("requestStatus", RegisterStatus.RECORDED.name()).build());
+                JsonObjects.createObjectBuilder().add("requestStatus", RegisterStatus.RECORDED.name()).build());
         final CourtRegisterRequestEntity courtRegisterRequestEntity = new CourtRegisterRequestEntity();
         final UUID courtCentreId = UUID.randomUUID();
         courtRegisterRequestEntity.setCourtCentreId(courtCentreId);
         courtRegisterRequestEntity.setStatus(RegisterStatus.RECORDED);
-        final JsonObject transformedJsonEntity = Json.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build();
+        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build();
         when(objectToJsonObjectConverter.convert(courtRegisterRequestEntity)).thenReturn(transformedJsonEntity);
         when(courtRegisterRequestRepository.findByStatusRecorded()).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         final JsonEnvelope courtRegisterRequests = courtRegisterDocumentRequestQueryView.getCourtRegisterRequests(envelope);
@@ -58,12 +58,12 @@ public class CourtRegisterDocumentRequestQueryViewTest {
         final UUID materialId = UUID.randomUUID();
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID())
                         .withName("progression.query.court-register-document-by-material").build(),
-                Json.createObjectBuilder().add("materialId", materialId.toString()).build());
+                JsonObjects.createObjectBuilder().add("materialId", materialId.toString()).build());
         final CourtRegisterRequestEntity courtRegisterRequestEntity = new CourtRegisterRequestEntity();
         final UUID courtCentreId = UUID.randomUUID();
         courtRegisterRequestEntity.setCourtCentreId(courtCentreId);
         courtRegisterRequestEntity.setStatus(RegisterStatus.RECORDED);
-        final JsonObject transformedJsonEntity = Json.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build();
+        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder().add("courtCentreId", courtCentreId.toString()).build();
         when(objectToJsonObjectConverter.convert(courtRegisterRequestEntity)).thenReturn(transformedJsonEntity);
         when(courtRegisterRequestRepository.findBySystemDocGeneratorId(materialId)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         final JsonEnvelope courtRegisterRequests = courtRegisterDocumentRequestQueryView.getCourtRegisterByMaterial(envelope);
@@ -76,7 +76,7 @@ public class CourtRegisterDocumentRequestQueryViewTest {
     public void shouldGetCourtRegistersByDate() {
         final LocalDate requestDate = LocalDate.now();
         final String courtHouse = "liver pool";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("registerDate", requestDate.toString())
                 .add("courtHouse", courtHouse)
                 .build();
@@ -90,7 +90,7 @@ public class CourtRegisterDocumentRequestQueryViewTest {
         courtRegisterRequestEntity.setRegisterDate(requestDate);
         courtRegisterRequestEntity.setStatus(RegisterStatus.RECORDED);
 
-        final JsonObject transformedJsonEntity = Json.createObjectBuilder()
+        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("registerDate", requestDate.toString())
                 .build();
@@ -108,7 +108,7 @@ public class CourtRegisterDocumentRequestQueryViewTest {
     public void shouldGetCourtRegistersByDateCourtHouseEmpty() {
         final LocalDate requestDate = LocalDate.now();
         final String courtHouse = "liver pool";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("registerDate", requestDate.toString())
                 .build();
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID())
@@ -121,7 +121,7 @@ public class CourtRegisterDocumentRequestQueryViewTest {
         courtRegisterRequestEntity.setRegisterDate(requestDate);
         courtRegisterRequestEntity.setStatus(RegisterStatus.RECORDED);
 
-        final JsonObject transformedJsonEntity = Json.createObjectBuilder()
+        final JsonObject transformedJsonEntity = JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("registerDate", requestDate.toString())
                 .build();

@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.persistence.NonUniqueResultException;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
@@ -179,11 +179,11 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
     private HearingEntity getHearingEntity(UUID resultId, UUID hearingId) {
         final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
-        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(resultId);
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.addResultLine(hearingResultLineEntity);
         return hearingEntity;
@@ -192,7 +192,7 @@ public class MatchDefendantCaseHearingRepositoryTest {
     private ProsecutionCaseEntity getProsecutionCaseEntity(UUID prosecutionCaseId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
-        prosecutionCaseEntity.setPayload(Json.createObjectBuilder().build().toString());
+        prosecutionCaseEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         return prosecutionCaseEntity;
     }
 
