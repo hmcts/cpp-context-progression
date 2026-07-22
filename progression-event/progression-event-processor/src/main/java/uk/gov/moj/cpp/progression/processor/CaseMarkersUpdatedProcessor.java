@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
 import java.util.UUID;
-import javax.json.Json;
 import javax.json.JsonObject;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -58,7 +58,7 @@ public class CaseMarkersUpdatedProcessor {
         final CaseMarkersSharedWithHearings caseMarkersSharedWithHearings = jsonObjectToObjectConverter.convert(privateEventPayload, CaseMarkersSharedWithHearings.class);
 
         caseMarkersSharedWithHearings.getHearingIds().forEach( hearingId ->
-                sender.send(envelop(Json.createObjectBuilder()
+                sender.send(envelop(createObjectBuilder()
                         .add("prosecutionCaseId", caseMarkersSharedWithHearings.getProsecutionCaseId().toString())
                         .add("hearingId", hearingId.toString())
                         .add("caseMarkers", privateEventPayload.get("caseMarkers"))

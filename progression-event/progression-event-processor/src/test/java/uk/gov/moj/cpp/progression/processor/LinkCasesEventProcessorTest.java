@@ -15,6 +15,8 @@ import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NO
 import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NOT_VALID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.LINKED_CASES;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -31,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +86,7 @@ public class LinkCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 casesUnlinkedPayload);
 
-        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(createObjectBuilder().build()));
         processor.handleLinkCasesValidations(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
@@ -114,7 +115,7 @@ public class LinkCasesEventProcessorTest {
                 validatePayload);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
+                createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
         ));
         processor.handleLinkCasesValidations(requestMessage);
 
@@ -146,13 +147,13 @@ public class LinkCasesEventProcessorTest {
                 validatePayload);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+                createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(LINKED_CASES, Json.createArrayBuilder().build()).build()
+                createObjectBuilder().add(LINKED_CASES, createArrayBuilder().build()).build()
         ));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().add("id", leadCaseId.toString()).add("prosecutionCaseIdentifier", Json.createObjectBuilder().add("caseURN", leadCaseUrn)
+                createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", leadCaseId.toString()).add("prosecutionCaseIdentifier", createObjectBuilder().add("caseURN", leadCaseUrn)
                 ).build()).build()
         ));
         processor.handleLinkCasesValidations(requestMessage);

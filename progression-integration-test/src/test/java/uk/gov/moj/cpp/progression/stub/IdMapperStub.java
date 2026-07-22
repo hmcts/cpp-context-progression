@@ -7,14 +7,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpHeaders;
-
 public class IdMapperStub {
     private static final String SYSTEM_ID_MAPPER_ENDPOINT = "/system-id-mapper-api/rest/systemid/mappings/*";
 
@@ -96,7 +95,7 @@ public class IdMapperStub {
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(mime))
                 .willReturn(aResponse()
                         .withStatus(status.getStatusCode())
-                        .withBody(Json.createObjectBuilder().add("id", id.toString()).build().toString())
+                        .withBody(createObjectBuilder().add("id", id.toString()).build().toString())
                 )
         );
     }

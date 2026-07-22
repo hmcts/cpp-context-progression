@@ -4,12 +4,11 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import java.io.IOException;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.DMConstants.CASE_ID;
 import static uk.gov.moj.cpp.progression.DMConstants.DIRECTION_REF_DATA_ID;
 import static uk.gov.moj.cpp.progression.helper.DirectionVerificationHelper.verifyTransformedQueryFormDirection;
@@ -20,7 +19,7 @@ import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialStructure
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataDirectionStub.stubGetReferenceDataAllDirection;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataDirectionStub.stubGetReferenceDataDirectionManagementType;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 public class QueryFormDirectionIT extends AbstractIT {
 
     public static final String FORM_ID = "d0dff4cf-c833-4758-a54a-d18ad004095d";
@@ -28,11 +27,11 @@ public class QueryFormDirectionIT extends AbstractIT {
     public static final String PTPH = "PTPH";
     public static final String CATEGORIES = "pet_witness,pet_part_5";
 
-    static final JsonObject jsonObject = Json.createObjectBuilder()
-            .add("data", Json.createObjectBuilder()
-                    .add("prosecution", Json.createObjectBuilder()
-                            .add("witnesses", Json.createArrayBuilder()
-                                    .add(Json.createObjectBuilder()
+    static final JsonObject jsonObject = createObjectBuilder()
+            .add("data", createObjectBuilder()
+                    .add("prosecution", createObjectBuilder()
+                            .add("witnesses", createArrayBuilder()
+                                    .add(createObjectBuilder()
                                             .add("id", "84ec2958-8ab2-4b90-b32f-f3d5534d5ec9")
                                             .add("firstName", "Firstname")
                                             .add("lastName", "Lastname")
@@ -41,14 +40,14 @@ public class QueryFormDirectionIT extends AbstractIT {
                                             .add("collarNumber", "Theofficercollar/shouldernumber")
                                             .add("rank", "Theofficerrank")
                                             .add("relevantDisputedIssue", "Relevantdisputedissue")
-                                            .add("details", Json.createArrayBuilder()
+                                            .add("details", createArrayBuilder()
                                                     .add("INTERMEDIARY")
                                                     .add("POLICE_OFFICER")
                                             )
                                     )
                             )
                     )
-                    .add("defence", Json.createObjectBuilder())
+                    .add("defence", createObjectBuilder())
             )
             .add("lastUpdated", "2021-01-13T00:00Z[UTC]").build();
 

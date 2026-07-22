@@ -8,7 +8,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -3199,7 +3199,7 @@ public class CourtApplicationHandlerTest {
     }
 
     @Test
-    public void shouldIgnoreCaseOffencesWhenCaseStatusIsNullAndApplicationSourceIsMH() throws EventStreamException {
+    void shouldIgnoreCaseOffencesWhenCaseStatusIsNullAndApplicationSourceIsMH() throws EventStreamException {
         final UUID caseId = randomUUID();
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = initiateCourtApplicationProceedings()
                 .withApplicationSource(ApplicationSource.MH)
@@ -3237,10 +3237,10 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        final ApplicationAggregate applicationAggregateLocal = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregateLocal);
+        applicationAggregateLocal.apply(new CourtApplicationProceedingsInitiated.Builder()
                 .withCourtHearing(new CourtHearingRequest.Builder().build())
                 .withBoxHearing(new BoxHearingRequest.Builder().build())
                 .build());
