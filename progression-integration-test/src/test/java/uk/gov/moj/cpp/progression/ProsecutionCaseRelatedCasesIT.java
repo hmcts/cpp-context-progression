@@ -105,6 +105,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
                 withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(false)),
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY")),
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].maxPenalty", equalTo("Max Penalty"))
         );
@@ -114,6 +115,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(false)),
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
         );
 
@@ -125,6 +127,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
                 withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(false)),
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
         );
 
@@ -133,6 +136,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(false)),
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
         );
     }
@@ -159,6 +163,44 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
+        );
+    }
+
+    @Test
+    public void shouldReturnIsCivilTrueForBothPrimaryAndRelatedCaseWhenBothAreCivil() throws IOException {
+        verifyIsCivilOnMatchedDefendantCases(true, true);
+    }
+
+    @Test
+    public void shouldReturnIsCivilFalseForRelatedCaseWhenPrimaryIsCivilAndRelatedIsCriminal() throws IOException {
+        verifyIsCivilOnMatchedDefendantCases(true, false);
+    }
+
+    @Test
+    public void shouldReturnIsCivilTrueForRelatedCaseWhenPrimaryIsCriminalAndRelatedIsCivil() throws IOException {
+        verifyIsCivilOnMatchedDefendantCases(false, true);
+    }
+
+    private void verifyIsCivilOnMatchedDefendantCases(final boolean isCivilCase1, final boolean isCivilCase2) throws IOException {
+        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB, isCivilCase1);
+        pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1);
+
+        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, defendantId_2_forMasterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB, isCivilCase2);
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, emptyList());
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+        // match defendantId_2_forMasterDefendantId_1 associated to case 2
+        matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
+
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1,
+                withJsonPath("$.prosecutionCase.isCivil", equalTo(isCivilCase1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(isCivilCase2))
+        );
+
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2,
+                withJsonPath("$.prosecutionCase.isCivil", equalTo(isCivilCase2)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].isCivil", equalTo(isCivilCase1))
         );
     }
 
