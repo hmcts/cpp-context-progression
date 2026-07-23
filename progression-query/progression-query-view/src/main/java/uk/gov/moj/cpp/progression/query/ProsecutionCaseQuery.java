@@ -126,6 +126,7 @@ public class ProsecutionCaseQuery {
     public static final String ALL_CASE_HEARINGS = "allCaseHearings";
     public static final String LINKED_APPLICATIONS_SUMMARY = "linkedApplicationsSummary";
     public static final String CIVIL_FEES = "civilFees";
+    public static final String IS_CIVIL = "isCivil";
     public static final String PROSECUTION_CASES = "prosecutionCases";
     public static final String OFFENCE_IDS = "offenceIds";
     public static final String APPEALS_LODGED_INFO = "appealsLodgedInfo";
@@ -913,6 +914,7 @@ public class ProsecutionCaseQuery {
             final JsonObjectBuilder caseObjectBuilder = Json.createObjectBuilder();
             caseObjectBuilder.add(CASE_ID, prosecutionCase.getId().toString());
             caseObjectBuilder.add(CASE_STATUS, prosecutionCaseStatus);
+            caseObjectBuilder.add(IS_CIVIL, nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil());
             if (nonNull(prosecutionCase.getProsecutionCaseIdentifier())) {
                 final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
                 final JsonObjectBuilder pciJsonBuilder = Json.createObjectBuilder();

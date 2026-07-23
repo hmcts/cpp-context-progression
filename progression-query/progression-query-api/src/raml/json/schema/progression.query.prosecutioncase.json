@@ -563,6 +563,10 @@
         "caseStatus": {
           "type": "string"
         },
+        "isCivil": {
+          "description": "True if this related case is a civil case, false if criminal",
+          "type": "boolean"
+        },
         "offences": {
           "type": "array",
           "minItems": 1,
@@ -573,6 +577,7 @@
       },
       "required": [
         "caseId",
+        "isCivil",
         "offences"
       ],
       "additionalProperties": false
