@@ -34,6 +34,7 @@ import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.DeletedOffences;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.UpdatedOffences;
+import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.events.CustodialEstablishment;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
@@ -52,6 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -87,19 +89,46 @@ public class DefendantHelper {
                 .allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
     }
 
+    public static boolean isAllDefendantProceedingConcludedLaa(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
+        return isAllDefendantProceedingConcludedCommon(prosecutionCase, updatedDefendants, DefendantHelper::isConcludedForLaa);
+    }
+
     public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
-        return prosecutionCase.getDefendants().stream().map(defendant -> {
+        return isAllDefendantProceedingConcludedCommon(prosecutionCase, updatedDefendants, DefendantHelper::isConcluded);
+    }
+
+    private static boolean isAllDefendantProceedingConcludedCommon(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants, Predicate<Offence> concludedTarget) {
+
+        List<Defendant> defs = prosecutionCase.getDefendants();
+
+        boolean result = defs.stream().map(defendant -> {
             final List<Offence> updatedOffences = new ArrayList<>();
-            final boolean proceedingConcluded = defendant.getOffences().stream()
-                        .map(offence -> getUpdatedOffence(updatedOffences, offence, isConcluded(offence)))
-                        .map(Offence::getProceedingsConcluded)
-                        .collect(toList()).stream().allMatch(finalCategory -> finalCategory.equals(Boolean.TRUE));
+            final List<Offence> offs = defendant.getOffences();
+
+
+            final List<Boolean> proConcludedList = offs.stream()
+                    .map(offence -> {
+                        return getUpdatedOffence(updatedOffences, offence, concludedTarget.test(offence));
+                    })
+                    .map(Offence::getProceedingsConcluded)
+                    .collect(toList());
+
+            final boolean proceedingConcluded = proConcludedList.stream().allMatch(
+                    finalCategory -> finalCategory != null && finalCategory.equals(Boolean.TRUE));
 
             final Defendant updatedDefendant = getDefendant(defendant, updatedOffences, proceedingConcluded);
             updatedDefendants.add(updatedDefendant);
 
             return proceedingConcluded;
-        }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded.equals(TRUE));
+        }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded == true);
+
+        return result;
+    }
+
+    public static List<Defendant> getDefendantsWithLaaRepresentation(final List<Defendant> defendants) {
+        return defendants.stream()
+                .filter(defendant -> LegalAidStatusEnum.GRANTED.equals(defendant.getLegalAidStatus()))
+                .collect(toList());
     }
 
     public static List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase) {
@@ -270,6 +299,11 @@ public class DefendantHelper {
 
 
         return isChanged;
+    }
+
+    public static boolean isConcludedForLaa(final Offence offence) {
+        return Boolean.TRUE.equals(offence.getProceedingsConcluded())
+                && isConcluded(offence);
     }
 
     public static boolean isConcluded(final Offence offence) {
