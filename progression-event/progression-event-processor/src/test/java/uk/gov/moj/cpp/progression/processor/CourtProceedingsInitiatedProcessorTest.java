@@ -26,6 +26,7 @@ import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -246,6 +247,79 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         assertThat(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(1).getString("label"), is(SEXUAL_OFFENCE_RR_DESCRIPTION));
         assertThat(LocalDate.now().toString(), is(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(1).getString("orderedDate")));
+    }
+
+    /**
+     * A case submitted via the API as an "OTHER" case-type / civil case (initiationCode "O",
+     * isCivil=true, e.g. the enforcement / civil prosecution content types accepted through
+     * cpp-context-staging-prosecutors-civil -> prosecution-casefile) reaches Progression via
+     * exactly the same {@code progression.event.court-proceedings-initiated} event as any other
+     * case type. This test proves the case-type/isCivil flag does not gate the automatic
+     * "send case for listing" dispatch (progression.command.update-defendant-listing-status,
+     * which downstream drives listing.command.list-court-hearing via
+     * ProsecutionCaseDefendantListingStatusChangedProcessor) - i.e. no additional trigger is
+     * required for a Hearing to be created automatically for an accepted OTHER/civil case,
+     * provided the submission carries valid hearing details (as PCF's own validation already
+     * requires for this case type).
+     */
+    @Test
+    public void shouldSendOtherTypeCivilCaseForListingWithoutAnyManualStep() throws IOException {
+        //Given
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase baseProsecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, offenceCode, false);
+        final ProsecutionCase otherTypeCivilCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(baseProsecutionCase)
+                .withIsCivil(true)
+                .withInitiationCode(InitiationCode.O)
+                .build();
+
+        final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
+
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION, "/referencedataoffences.offences-list-withoutRR.json");
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        //When
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        when(courtReferral.getProsecutionCases()).thenReturn(singletonList(otherTypeCivilCase));
+        when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+        hearingsList.add(HearingListingNeeds.hearingListingNeeds()
+                .withProsecutionCases(List.of(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withIsCivil(true)
+                        .withInitiationCode(InitiationCode.O)
+                        .withDefendants(List.of(Defendant.defendant()
+                                .withOffences(List.of(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .build()))
+                .build());
+        when(listCourtHearingTransformer.transform(any(), any(), anyList(), any())).thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
+
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
+
+        //Then
+        this.eventProcessor.handle(requestMessage);
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
+
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+
+        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(1).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase").getString("id")));
+
+        assertThat("progression.command.update-defendant-listing-status", is(envelopeCaptor.getAllValues().get(2).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(2).payload().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id")));
+        assertThat("SENT_FOR_LISTING", is(envelopeCaptor.getAllValues().get(2).payload().getString("hearingListingStatus")));
     }
 
     @Test
