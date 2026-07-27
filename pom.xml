@@ -66,9 +66,9 @@
         <material.version>17.0.75</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.104.136</referencedata.version>
+        <referencedata.version>17.104.137</referencedata.version>
         <listing.version>17.104.3</listing.version>
-        <hearing.version>17.104.176</hearing.version>
+        <hearing.version>17.104.180</hearing.version>
         <usersgroups.version>17.104.50</usersgroups.version>
         <defence.version>17.104.102</defence.version>
         <referencedata.offence.version>17.104.48</referencedata.offence.version>

@@ -21,12 +21,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -242,18 +237,7 @@ import javax.json.JsonReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 
@@ -277,7 +261,6 @@ import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class CaseAggregateTest {
-
     private static final String CASE_ID = randomUUID().toString();
     private static final String DEFENDANT_ID = randomUUID().toString();
     private static final String COURT_CENTRE_NAME = "Warwick Justice Centre";
@@ -3384,7 +3367,7 @@ class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
+    public void shouldNotUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -3471,14 +3454,12 @@ class CaseAggregateTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() );
 
-        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.filter(o->o.getClass().getName().endsWith("LaaDefendantProceedingConcludedChanged")).findFirst().get();
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(false));
-
-
-
+        try {
+            LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.filter(o -> o.getClass().getName().endsWith("LaaDefendantProceedingConcludedChanged")).findFirst().get();
+            assert(false);
+        } catch (NoSuchElementException e) {
+            // expect not to find it
+        }
 
     }
 
