@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -31,6 +32,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -66,6 +68,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.model.HearingListing;
+import uk.gov.moj.cpp.progression.service.AvailableHearingSlot;
+import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -129,6 +133,8 @@ public class ListCourtHearingTransformerTest {
     private RefDataService referenceDataService;
     @Mock
     private ProgressionService progressionService;
+    @Mock
+    private ListingService listingService;
 
 
     @Test
@@ -593,6 +599,142 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getDefendantId(), is(defendantId));
         assertTrue(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getIsYouth());
 
+    }
+
+    @Test
+    void shouldResolveEnforcementSlotForOtherTypeDateRangeCase() {
+        final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
+        final UUID resolvedRoomId = randomUUID();
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("ADULT"), any(), any()))
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime)));
+
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
+                earliestStartDateTime, listedStartDateTime.plusDays(365));
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        assertThat(hearing.getCourtCentre().getRoomId(), is(resolvedRoomId));
+        assertThat(hearing.getListedStartDateTime(), is(resolvedStartTime));
+        // unrelated courtCentre fields must be preserved, not just the resolved roomId
+        assertThat(hearing.getCourtCentre().getId(), is(courtCenterId));
+        assertThat(hearing.getCourtCentre().getName(), is("Court Name"));
+    }
+
+    @Test
+    void shouldResolveEnforcementSlotForOtherTypeSingleDateCase() {
+        final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
+        final UUID resolvedRoomId = randomUUID();
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"), any(), any()))
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime)));
+
+        // no listedEndDateTime - single-date (hearingDetails) submission
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(listedStartDateTime, null);
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getRoomId(), is(resolvedRoomId));
+        assertThat(listCourtHearing.getHearings().get(0).getListedStartDateTime(), is(resolvedStartTime));
+    }
+
+    @Test
+    void shouldResolveEnforcementSlotWithYouthPanelWhenDefendantIsYouth() {
+        final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
+        final UUID resolvedRoomId = randomUUID();
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("YOUTH"), any(), any()))
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime)));
+
+        final ProsecutionCase otherTypeYouthCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase(LocalDate.now().minusYears(15)))
+                .withInitiationCode(InitiationCode.O)
+                .build();
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(listedStartDateTime, null);
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(otherTypeYouthCase), listHearingRequest, UUID.randomUUID(), null);
+
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getRoomId(), is(resolvedRoomId));
+        assertThat(listCourtHearing.getHearings().get(0).getListedStartDateTime(), is(resolvedStartTime));
+    }
+
+    @Test
+    void shouldLeaveHearingUnresolvedWhenNoEnforcementSlotAvailable() {
+        when(listingService.findAvailableHearingSlot(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
+                listedStartDateTime, listedStartDateTime.plusDays(365));
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        // left exactly as submitted (pass-through) - no pre-assigned room - Listing's own
+        // unchanged logic treats this as "not a candidate" and lands it in Unallocated
+        assertThat(hearing.getCourtCentre().getRoomId(), nullValue());
+        assertThat(hearing.getListedStartDateTime(), is(listedStartDateTime));
+    }
+
+    @Test
+    void shouldNotSearchForASlotWhenCaseIsNotOtherType() {
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
+                earliestStartDateTime, listedStartDateTime.plusDays(365));
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        // getProsecutionCase() (not the OTHER-type variant) has no initiationCode set at all
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        verifyNoInteractions(listingService);
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getRoomId(), nullValue());
+    }
+
+    private List<ListHearingRequest> getListHearingRequestForEnforcement(final ZonedDateTime startDateTime, final ZonedDateTime endDateTime) {
+        return List.of(ListHearingRequest.listHearingRequest()
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCenterId)
+                        .withCode("B01LY00")
+                        .withName("Court Name")
+                        .build())
+                .withListedStartDateTime(startDateTime)
+                .withListedEndDateTime(endDateTime)
+                .withEstimateMinutes(15)
+                .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantOffences(List.of(offenceId))
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build());
+    }
+
+    private ProsecutionCase getOtherTypeProsecutionCase() {
+        return ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase())
+                .withInitiationCode(InitiationCode.O)
+                .build();
     }
 
     @Test

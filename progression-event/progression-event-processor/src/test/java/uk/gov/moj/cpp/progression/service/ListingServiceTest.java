@@ -87,6 +87,7 @@ public class ListingServiceTest {
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
     private static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
+    private static final String LISTING_SEARCH_HEARING_SLOTS = "listing.search.hearing.slots";
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -448,6 +449,111 @@ public class ListingServiceTest {
 
                         .build()))
                 .build();
+    }
+
+    @Test
+    public void shouldFindAvailableEnforcementSlotOnFirstPage() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+
+        final JsonObject response = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 3)
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder().add("hearingStartTime", "2026-08-20T09:00:00.000Z").add("count", 3))))
+                        .build())
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"));
+
+        verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(JsonObject.class));
+        assertTrue(result.isPresent());
+        assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
+        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-20T09:00:00.000Z")));
+    }
+
+    @Test
+    public void shouldContinueToNextPageWhenFirstPageHasNoAvailableSlot() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+
+        final JsonObject fullyBookedPage = createObjectBuilder()
+                .add("results", 2)
+                .add("pageCount", 2)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("availableSlots", 0).add("slotStartTimes", Json.createArrayBuilder())))
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+        final JsonObject secondPageWithAvailability = createObjectBuilder()
+                .add("results", 2)
+                .add("pageCount", 2)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 1)
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder().add("hearingStartTime", "2026-08-21T10:00:00.000Z").add("count", 1)))))
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class)))
+                .thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage))
+                .thenReturn(Envelope.envelopeFrom(metadata, secondPageWithAvailability));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"));
+
+        verify(requester, times(2)).requestAsAdmin(any(Envelope.class), eq(JsonObject.class));
+        assertTrue(result.isPresent());
+        assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
+    }
+
+    @Test
+    public void shouldReturnEmptyWhenNoAvailableSlotAcrossAllPages() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+
+        final JsonObject fullyBookedPage = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("availableSlots", 0).add("slotStartTimes", Json.createArrayBuilder())))
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"));
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void shouldReturnEmptyWhenResponseHasNoHearingSlotsKey() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, createObjectBuilder().build()));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"));
+
+        assertFalse(result.isPresent());
     }
 
     @Test

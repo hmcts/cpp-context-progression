@@ -29,6 +29,7 @@ import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +40,9 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,8 @@ public class ListingService {
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
     private static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
+    private static final String LISTING_SEARCH_HEARING_SLOTS = "listing.search.hearing.slots";
+    private static final int HEARING_SLOTS_SEARCH_PAGE_SIZE = 20;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
@@ -154,6 +159,57 @@ public class ListingService {
                 .filter(hearing -> hearing.getHearingDays() != null && hearing.getHearingDays().stream()
                         .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(utcClock.now()) >= 0))
                 .collect(Collectors.toList());
+    }
+
+    public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
+                                                                    final String ouCode,
+                                                                    final String businessType,
+                                                                    final String panel,
+                                                                    final LocalDate sessionStartDate,
+                                                                    final LocalDate sessionEndDate) {
+        int pageNumber = 1;
+        while (true) {
+            final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING_SLOTS);
+            final JsonObject jsonPayLoad = Json.createObjectBuilder()
+                    .add("ouCode", ouCode)
+                    .add("businessType", businessType)
+                    .add("panel", panel)
+                    .add("sessionStartDate", sessionStartDate.toString())
+                    .add("sessionEndDate", sessionEndDate.toString())
+                    .add("pageSize", String.valueOf(HEARING_SLOTS_SEARCH_PAGE_SIZE))
+                    .add("pageNumber", String.valueOf(pageNumber))
+                    .build();
+            final JsonObject response = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), JsonObject.class).payload();
+
+            if (response == null || !response.containsKey("hearingSlots")) {
+                return empty();
+            }
+
+            final Optional<AvailableHearingSlot> availableSlot = response.getJsonArray("hearingSlots").stream()
+                    .map(JsonValue::asJsonObject)
+                    .filter(hearingSlot -> hearingSlot.getInt("availableSlots", 0) > 0)
+                    .findFirst()
+                    .map(ListingService::toAvailableHearingSlot);
+
+            if (availableSlot.isPresent()) {
+                return availableSlot;
+            }
+
+            final int pageCount = response.getInt("pageCount", 1);
+            if (pageNumber >= pageCount) {
+                return empty();
+            }
+            pageNumber++;
+        }
+    }
+
+    private static AvailableHearingSlot toAvailableHearingSlot(final JsonObject hearingSlot) {
+        final String courtRoomId = hearingSlot.getString("courtRoomId");
+        final JsonArray slotStartTimes = hearingSlot.getJsonArray("slotStartTimes");
+        final ZonedDateTime hearingStartTime = (slotStartTimes == null || slotStartTimes.isEmpty())
+                ? null
+                : ZonedDateTime.parse(slotStartTimes.getJsonObject(0).getString("hearingStartTime"));
+        return new AvailableHearingSlot(courtRoomId, hearingStartTime);
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
