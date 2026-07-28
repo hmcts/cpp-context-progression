@@ -210,7 +210,7 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleHearingConfirmedWithCasesEventMessage() throws Exception {
+    public void shouldHandleHearingConfirmedWithCasesEventMessage() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
