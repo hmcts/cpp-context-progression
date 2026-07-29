@@ -23,6 +23,7 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
@@ -142,6 +143,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -219,6 +221,15 @@ public class CourtApplicationProcessorTest {
                 Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH),
                 Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION)
         );
+    }
+
+    @BeforeEach
+    public void stubHearingShapingPassThrough() {
+        // progressionService is mocked here; the application flows now call shapeHearingForListing before
+        // building the hearing commands. These tests verify processor wiring (not the shaping itself, which
+        // is covered by ProgressionServiceTest + HearingOffenceFilterTest), so pass the hearing through unchanged.
+        lenient().when(progressionService.shapeHearingForListing(any(), any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -1339,8 +1350,6 @@ public class CourtApplicationProcessorTest {
                                                 .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
                                 ))).build()));
 
-
-
         //When
         courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
 
@@ -1368,6 +1377,38 @@ public class CourtApplicationProcessorTest {
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
         verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
+    }
+
+    @Test
+    public void shouldNotListProsecutionCaseWhenApplicationReferredToCourtHearingHasOnlyConcludedOffences() throws IOException {
+        final UUID applicationId = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        // flip the application offence to concluded -> application hearing: the active case must NOT be listed
+        final String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset())
+                .replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                .replace("\"proceedingsConcluded\": false", "\"proceedingsConcluded\": true");
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, stringToJsonObjectConverter.convert(inputPayload));
+
+        //When
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        //Then - no prosecution case is attached to the hearing, and none leaks into the listing payload
+        final ArgumentCaptor<Hearing> hearingCaptor = forClass(Hearing.class);
+        verify(progressionService).linkApplicationToHearing(any(JsonEnvelope.class), hearingCaptor.capture(), eq(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingCaptor.getValue().getProsecutionCases(), Matchers.nullValue());
+
+        final ArgumentCaptor<ListCourtHearing> listCaptor = forClass(ListCourtHearing.class);
+        verify(listingService).listCourtHearing(any(), listCaptor.capture());
+        // the listing payload carries no prosecution case to list (the application's courtApplicationCase
+        // reference may still hold the caseId, but the case must not appear under hearings[].prosecutionCases)
+        assertThat(objectToJsonObjectConverter.convert(listCaptor.getValue()).toString(), isJson(withoutJsonPath("$.hearings[0].prosecutionCases")));
     }
 
     @Test
@@ -2567,6 +2608,84 @@ public class CourtApplicationProcessorTest {
                 new Customization("hearing.id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearing.courtApplications[0].id", (o1, o2) -> o1 != null && o2 != null)
         );
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnFalseWhenAllOffencesConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(true).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenAnyOffenceNotConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(false).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldTreatNullProceedingsConcludedAsActive() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(singletonList(Offence.offence().build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToActiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToInactiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToClosedCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("CLOSED")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToCaseStatusWhenOffencesEmpty() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.<Offence>of())
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenNoOffencesAndCaseStatusNull() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase().build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
     }
 
     private MetadataBuilder getMetadata(final String eventName) {
