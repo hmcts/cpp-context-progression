@@ -33,8 +33,6 @@
         <module>progression-healthchecks</module>
     </modules>
 
-
-
     <properties>
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec
         </sonar.jacoco.itReportPath>
@@ -77,10 +75,10 @@
         <coredomain.version>17.103.13</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>17.104.110</results.version>
+        <results.version>17.104.112</results.version>
         <notification.notify.version>17.104.44</notification.notify.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
-        <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
+        <systemdocgenerator.version>17.104.114</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.70</applicationscourtorders.version>
         <sjp.version>17.103.170</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
