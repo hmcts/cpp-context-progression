@@ -4915,6 +4915,325 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotLoseDefendantAddedToHearingWhenHearingInitiateEnrichedUsesStalePayload() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID firstDefendantId = randomUUID();
+        final UUID secondDefendantId = randomUUID();
+        final UUID firstOffenceId = randomUUID();
+        final UUID secondOffenceId = randomUUID();
+
+        hearingAggregate.createHearingDefendantRequest(singletonList(ListDefendantRequest.listDefendantRequest()
+                .withDefendantId(firstDefendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build())).collect(toList());
+
+        final Hearing hearingWithFirstDefendantOnly = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withHasSharedResults(false)
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .withType(HearingType.hearingType().withDescription("First hearing").build())
+                .withCourtCentre(CourtCentre.courtCentre().withCode("B30PG00").build())
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(firstDefendantId)
+                                .withIsYouth(false)
+                                .withOffences(new ArrayList<>(singletonList(Offence.offence()
+                                        .withId(firstOffenceId)
+                                        .withListingNumber(1)
+                                        .build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithFirstDefendantOnly)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        hearingAggregate.createHearingDefendantRequest(singletonList(ListDefendantRequest.listDefendantRequest()
+                .withDefendantId(secondDefendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build())).collect(toList());
+
+        final Defendant secondDefendant = Defendant.defendant()
+                .withId(secondDefendantId)
+                .withIsYouth(false)
+                .withOffences(new ArrayList<>(singletonList(Offence.offence()
+                        .withId(secondOffenceId)
+                        .withListingNumber(1)
+                        .build())))
+                .build();
+        hearingAggregate.addDefendant(hearingId, prosecutionCaseId, singletonList(secondDefendant)).collect(toList());
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+
+        final Hearing staleEnrichedHearingFromCommand = Hearing.hearing()
+                .withValuesFrom(hearingWithFirstDefendantOnly)
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(staleEnrichedHearingFromCommand).collect(toList());
+        assertThat(enrichEvents.get(0), instanceOf(HearingInitiateEnriched.class));
+
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+        assertThat(hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+
+        final List<HearingPopulatedToProbationCaseworker> probationEvents = hearingAggregate.populateHearingToProbationCaseWorker()
+                .map(HearingPopulatedToProbationCaseworker.class::cast)
+                .collect(toList());
+
+        assertThat(probationEvents.get(0).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+    }
+
+    @Test
+    public void shouldPreserveOffenceOrderWhenEnrichInitiateHearingMergesAggregateOffencesWithStalePayload() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID firstOffenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        final UUID secondOffenceId = UUID.fromString("4789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+
+        final Hearing hearingWithTwoOffences = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(
+                                        Offence.offence().withId(firstOffenceId).build(),
+                                        Offence.offence().withId(secondOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithTwoOffences)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        hearingAggregate.getNewOffences().add(secondOffenceId);
+
+        final Hearing staleEnrichedHearingFromCommand = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(singletonList(Offence.offence().withId(firstOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(staleEnrichedHearingFromCommand).collect(toList());
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+        final List<Offence> offences = hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+
+        assertThat(offences.size(), is(2));
+        assertThat(offences.get(0).getId(), is(firstOffenceId));
+        assertThat(offences.get(1).getId(), is(secondOffenceId));
+    }
+
+    @Test
+    public void shouldNotReAddListedDefendantWhenEnrichInitiateHearingUsesPartialConfirmPayload() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID confirmedDefendantId = randomUUID();
+        final UUID unconfirmedDefendantId = randomUUID();
+
+        final Hearing hearingWithTwoDefendants = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(asList(
+                                Defendant.defendant().withId(confirmedDefendantId).withOffences(new ArrayList<>()).build(),
+                                Defendant.defendant().withId(unconfirmedDefendantId).withOffences(new ArrayList<>()).build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithTwoDefendants)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        final Hearing partialConfirmPayload = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(confirmedDefendantId)
+                                .withOffences(new ArrayList<>())
+                                .build())))
+                        .build())))
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(partialConfirmPayload).collect(toList());
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+        final List<Defendant> defendants = hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants();
+
+        assertThat(defendants.size(), is(1));
+        assertThat(defendants.get(0).getId(), is(confirmedDefendantId));
+    }
+
+    @Test
+    public void shouldNotReAddListedOffenceWhenEnrichInitiateHearingUsesPartialConfirmPayload() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID confirmedOffenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        final UUID unconfirmedOffenceId = UUID.fromString("4789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+
+        final Hearing hearingWithTwoOffences = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(
+                                        Offence.offence().withId(confirmedOffenceId).withListingNumber(1).build(),
+                                        Offence.offence().withId(unconfirmedOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithTwoOffences)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        final Hearing partialConfirmPayload = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(singletonList(Offence.offence()
+                                        .withId(confirmedOffenceId)
+                                        .withListingNumber(1)
+                                        .build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(partialConfirmPayload).collect(toList());
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+        final List<Offence> offences = hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+
+        assertThat(offences.size(), is(1));
+        assertThat(offences.get(0).getId(), is(confirmedOffenceId));
+        assertThat(offences.get(0).getListingNumber(), is(1));
+    }
+
+    @Test
+    public void shouldPreferPayloadListingNumberWhenEnrichInitiateHearingMergesSharedOffence() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID confirmedOffenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        final UUID unconfirmedOffenceId = UUID.fromString("4789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+
+        final Hearing hearingWithTwoOffences = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(
+                                        Offence.offence().withId(confirmedOffenceId).withListingNumber(2).build(),
+                                        Offence.offence().withId(unconfirmedOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithTwoOffences)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        final Hearing partialConfirmPayload = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(singletonList(Offence.offence()
+                                        .withId(confirmedOffenceId)
+                                        .withListingNumber(1)
+                                        .build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(partialConfirmPayload).collect(toList());
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+        final List<Offence> offences = hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+
+        assertThat(offences.size(), is(1));
+        assertThat(offences.get(0).getId(), is(confirmedOffenceId));
+        assertThat(offences.get(0).getListingNumber(), is(1));
+    }
+
+    @Test
+    public void shouldPreserveOffenceOrderWhenEnrichInitiateHearingUsesAddedOffencesMovedToHearingEvent() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID firstOffenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        final UUID secondOffenceId = UUID.fromString("4789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+
+        final Hearing hearingWithTwoOffences = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(
+                                        Offence.offence().withId(firstOffenceId).build(),
+                                        Offence.offence().withId(secondOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearingWithTwoOffences)
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        hearingAggregate.apply(AddedOffencesMovedToHearing.addedOffencesMovedToHearing()
+                .withHearingId(hearingId)
+                .withCaseId(prosecutionCaseId)
+                .withDefendantId(defendantId)
+                .withIsHearingInitiateEnriched(false)
+                .withNewOffences(singletonList(Offence.offence().withId(secondOffenceId).build()))
+                .build());
+
+        assertThat(hearingAggregate.getNewOffences().contains(secondOffenceId), is(true));
+
+        final Hearing staleEnrichedHearingFromCommand = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(singletonList(Offence.offence().withId(firstOffenceId).build())))
+                                .build())))
+                        .build())))
+                .build();
+
+        final List<Object> enrichEvents = hearingAggregate.enrichInitiateHearing(staleEnrichedHearingFromCommand).collect(toList());
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) enrichEvents.get(0);
+        final List<Offence> offences = hearingInitiateEnriched.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+
+        assertThat(offences.size(), is(2));
+        assertThat(offences.get(0).getId(), is(firstOffenceId));
+        assertThat(offences.get(1).getId(), is(secondOffenceId));
+    }
+
+    @Test
     public void shouldUpdateDefendant(){
         final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
                 .setJurisdictionType(JurisdictionType.CROWN)
