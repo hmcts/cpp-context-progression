@@ -530,7 +530,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
     @Test
     public void shouldBuildEmailNotificationForCaseSummonsWhenNotSuppressedAndExParteTrue() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
-        final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
+        final SummonsDocument summonsDocumentContent = getCaseSummonsDocumentForDefendant();
         final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = true;
@@ -563,7 +563,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
     @Test
     public void shouldBuildEmailNotificationForCaseSummonsWhenSuppressedAndExParteTrue() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
-        final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
+        final SummonsDocument summonsDocumentContent = getCaseSummonsDocumentForDefendant();
         final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = false;

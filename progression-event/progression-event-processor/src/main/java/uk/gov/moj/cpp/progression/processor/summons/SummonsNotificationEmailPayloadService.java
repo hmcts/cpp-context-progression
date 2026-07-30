@@ -14,7 +14,6 @@ import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.SPACE_SEPARATED_3_CHAR_MONTH;
 
-import com.google.common.collect.ImmutableList;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
@@ -34,6 +33,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 
 public class SummonsNotificationEmailPayloadService {
@@ -202,7 +202,7 @@ public class SummonsNotificationEmailPayloadService {
 
     private EmailChannel buildEmailNotificationForExParteTrue(final SummonsDataPrepared summonsDataPrepared,
                                                               final String emailAddress,
-                                                              final SummonsDocumentContent summonsDocumentContent,
+                                                              final SummonsDocument summonsDocumentContent,
                                                               final Defendant defendant,
                                                               final boolean notificationForParentOrGuardian) {
         return emailChannel()

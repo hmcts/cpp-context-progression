@@ -38,6 +38,7 @@ import static uk.gov.justice.core.courts.SummonsType.BREACH;
 import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
 import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
+import static uk.gov.justice.core.courts.summons.SummonsDocument.summonsDocument;
 import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.BREACH_OFFENCES;

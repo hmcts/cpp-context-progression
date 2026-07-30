@@ -139,34 +139,6 @@ public class SummonsRejectedServiceTest {
         verify(notificationService).sendEmail(eq(jsonEnvelope), eq(null), eq(courtApplication.getId()), eq(null), eq(singletonList(emailChannel)));
     }
 
-    @MethodSource("firstHearingSummons")
-    @ParameterizedTest
-    public void sendSummonsRejectionNotificationForFirstHearingApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
-        final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
-        final List<String> partyDetails = getPartyDetails(courtApplication.getRespondents(), partyType);
-
-        when(summonsNotificationEmailPayloadService.getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS))).thenReturn(emailChannel);
-
-        summonsRejectedService.sendSummonsRejectionNotification(jsonEnvelope, courtApplication, getRejectionOutcome());
-
-        verify(summonsNotificationEmailPayloadService).getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS));
-        verify(notificationService).sendEmail(eq(jsonEnvelope), eq(null), eq(courtApplication.getId()), eq(null), eq(singletonList(emailChannel)));
-    }
-
-    @MethodSource("firstHearingSummons")
-    @ParameterizedTest
-    public void sendSummonsRejectionNotificationForFirstHearingApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
-        final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
-        final List<String> partyDetails = getPartyDetails(courtApplication.getRespondents(), partyType);
-
-        when(summonsNotificationEmailPayloadService.getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS))).thenReturn(emailChannel);
-
-        summonsRejectedService.sendSummonsRejectionNotification(jsonEnvelope, courtApplication, getRejectionOutcome());
-
-        verify(summonsNotificationEmailPayloadService).getEmailChannelForSummonsRejected(eq(APPLICANT_EMAIL_ADDRESS), eq(courtApplication.getApplicationReference()), eq(partyDetails), eq(REASONS));
-        verify(notificationService).sendEmail(eq(jsonEnvelope), eq(null), eq(courtApplication.getId()), eq(null), eq(singletonList(emailChannel)));
-    }
-
     private CourtApplication buildCourtApplication(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
         return courtApplication()
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(summonsTemplateType).build())
