@@ -23,13 +23,14 @@
           }
         ],
         "prosecutionCaseIdentifier": {
-          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
-          "prosecutionAuthorityCode": "TFL",
-          "prosecutionAuthorityOUCode": "GB10056",
+          "majorCreditorCode": "CPS_EM",
+          "prosecutionAuthorityCode": "CPS-EM",
+          "prosecutionAuthorityId": "3c39ec72-694b-4d3e-87ea-0e84fabf6816",
+          "prosecutionAuthorityName": "CPS East Midlands",
+          "prosecutionAuthorityOUCode": "CPS_EM",
           "prosecutionAuthorityReference": "RANDOM_REFERENCE"
         },
         "originatingOrganisation": "G01FT01AB",
-        "cpsOrganisation": "A01",
         "initiationCode": "O",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",
