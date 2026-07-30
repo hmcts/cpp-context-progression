@@ -77,7 +77,8 @@
                   "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
                   "chargeDate": "2020-03-14",
                   "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
-                  "startDate": "2020-03-10"
+                  "startDate": "2020-03-10",
+                  "proceedingsConcluded": true
                 }
               ],
               "isSJP": false,

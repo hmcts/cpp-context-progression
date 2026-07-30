@@ -43,7 +43,7 @@ public class PartialHearingConfirmService {
 
     private static final Integer ESTIMATED_MINUTES = 30;
 
-    public List<ProsecutionCase> getDifferences(final ConfirmedHearing confirmedHearing, final Hearing hearing) {
+    public List<ProsecutionCase> getDifferences(final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
 
         if (isNotEmpty(confirmedHearing.getProsecutionCases())) {
 
@@ -56,8 +56,8 @@ public class PartialHearingConfirmService {
                     .collect(toList());
 
             final Hearing cloneHearing = Hearing.hearing()
-                    .withValuesFrom(hearing)
-                    .withProsecutionCases(hearing.getProsecutionCases().stream()
+                    .withValuesFrom(hearingInProgression)
+                    .withProsecutionCases(hearingInProgression.getProsecutionCases().stream()
                             .map(pc -> ProsecutionCase.prosecutionCase().withValuesFrom(pc)
                                     .withDefendants(pc.getDefendants().stream().map(defendant -> Defendant.defendant().withValuesFrom(defendant)
                                             .withOffences(defendant.getOffences().stream().map(offence -> Offence.offence().withValuesFrom(offence).build()).collect(toList()))
