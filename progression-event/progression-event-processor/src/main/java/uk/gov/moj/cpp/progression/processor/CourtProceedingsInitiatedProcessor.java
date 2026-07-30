@@ -48,6 +48,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -294,28 +295,40 @@ public class CourtProceedingsInitiatedProcessor {
     }
 
     private boolean isNewCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase) {
+        if (pCase.getMigrationSourceSystem() != null
+                && pCase.getMigrationSourceSystem().getMigrationSourceSystemName() != null) {
+            return true;
+        }
+
         String prosecutionAuthorityReference = pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
         String caseURN = pCase.getProsecutionCaseIdentifier().getCaseURN();
 
-        return getCaseByReference(jsonEnvelope, pCase,prosecutionAuthorityReference) &&  getCaseByReference(jsonEnvelope, pCase,caseURN) ;
+        return getCaseByReference(jsonEnvelope, pCase, prosecutionAuthorityReference) && getCaseByReference(jsonEnvelope, pCase, caseURN);
     }
 
     private boolean getCaseByReference(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase, final String reference) {
         if (StringUtils.isNotEmpty(reference)) {
-            Optional<JsonObject> jsonObject = progressionService.caseExistsByCaseUrn(jsonEnvelope, reference);
-            if (jsonObject.isPresent() && !jsonObject.get().isEmpty() && !isCaseEjected(jsonEnvelope, jsonObject.get().getString(CASE_ID), pCase)) {
-                LOGGER.info("Prosecution case {} already exists", reference);
-                return false;
+            final Optional<JsonObject> searchResponse = progressionService.searchCaseDetailByURN(jsonEnvelope, reference);
+            if (searchResponse.isPresent() && searchResponse.get().containsKey("searchResults")) {
+                final JsonArray searchResults = searchResponse.get().getJsonArray("searchResults");
+                for (int i = 0; i < searchResults.size(); i++) {
+                    final JsonObject searchResult = searchResults.getJsonObject(i);
+                    if (Boolean.FALSE.equals(searchResult.getBoolean("isStandaloneApplication", true))
+                            && !isCaseEjected(jsonEnvelope, searchResult.getString(CASE_ID), pCase)) {
+                        LOGGER.info("Prosecution case {} already exists", reference);
+                        return false;
+                    }
+                }
             }
         }
         return true;
     }
 
 
-    private boolean isCaseEjected(final JsonEnvelope jsonEnvelope, final String reference, final ProsecutionCase prosecutionCase) {
+    private boolean isCaseEjected(final JsonEnvelope jsonEnvelope, final String caseId, final ProsecutionCase prosecutionCase) {
         return prosecutionCase.getMigrationSourceSystem() != null
                 && prosecutionCase.getMigrationSourceSystem().getMigrationSourceSystemName() != null
-                && progressionService.prosecutionCaseByCaseId(jsonEnvelope, reference)
+                && progressionService.prosecutionCaseByCaseId(jsonEnvelope, caseId)
                 .map(jsonObject -> CASE_EJECTED.equals(jsonObject.getJsonObject("prosecutionCase").getString(CASE_STATUS,"NO_STATUS")))
                 .orElse(false);
     }
