@@ -274,6 +274,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         verifyCourtApplicationSummonsAmendedEvent(amendedProsecutionCost);
     }
 
+
     @Test
     public void shouldRaisePublicSummonsRejectedV2() throws Exception {
         final String userId = randomUUID().toString();
