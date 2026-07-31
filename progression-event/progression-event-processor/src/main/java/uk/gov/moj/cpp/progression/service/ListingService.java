@@ -188,8 +188,9 @@ public class ListingService {
             final Optional<AvailableHearingSlot> availableSlot = response.getJsonArray("hearingSlots").stream()
                     .map(JsonValue::asJsonObject)
                     .filter(hearingSlot -> hearingSlot.getInt("availableSlots", 0) > 0)
-                    .findFirst()
-                    .map(ListingService::toAvailableHearingSlot);
+                    .map(ListingService::toAvailableHearingSlot)
+                    .flatMap(Optional::stream)
+                    .findFirst();
 
             if (availableSlot.isPresent()) {
                 return availableSlot;
@@ -203,13 +204,29 @@ public class ListingService {
         }
     }
 
-    private static AvailableHearingSlot toAvailableHearingSlot(final JsonObject hearingSlot) {
+    /**
+     * A hearingSlot's top-level availableSlots is the sum of its slotStartTimes' individual
+     * counts, so the first slotStartTimes entry can still have count 0 - keep looking until one
+     * with count > 0 is found.
+     */
+    private static Optional<AvailableHearingSlot> toAvailableHearingSlot(final JsonObject hearingSlot) {
         final String courtRoomId = hearingSlot.getString("courtRoomId");
         final JsonArray slotStartTimes = hearingSlot.getJsonArray("slotStartTimes");
-        final ZonedDateTime hearingStartTime = (slotStartTimes == null || slotStartTimes.isEmpty())
-                ? null
-                : ZonedDateTime.parse(slotStartTimes.getJsonObject(0).getString("hearingStartTime"));
-        return new AvailableHearingSlot(courtRoomId, hearingStartTime);
+        if (slotStartTimes == null) {
+            return empty();
+        }
+        return slotStartTimes.stream()
+                .map(JsonValue::asJsonObject)
+                .filter(slotStartTime -> slotStartTime.getInt("count", 0) > 0)
+                .findFirst()
+                .map(slotStartTime -> new AvailableHearingSlot(courtRoomId, toHearingStartTime(slotStartTime)));
+    }
+
+    private static ZonedDateTime toHearingStartTime(final JsonObject slotStartTime) {
+        final String hearingStartTime = slotStartTime.containsKey("hearingStartTime")
+                ? slotStartTime.getString("hearingStartTime")
+                : slotStartTime.getString("sessionStartTime");
+        return ZonedDateTime.parse(hearingStartTime);
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {

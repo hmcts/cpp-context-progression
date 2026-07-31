@@ -483,6 +483,91 @@ public class ListingServiceTest {
     }
 
     @Test
+    public void shouldSkipSlotStartTimesWithZeroCountAndFallBackToSessionStartTimeWhenHearingStartTimeMissing() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+
+        final JsonObject response = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 10)
+                                .add("maxDuration", 0)
+                                .add("availableDuration", 0)
+                                .add("judiciaries", Json.createArrayBuilder())
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-08-21T09:00:00.000Z")
+                                                .add("sessionEndTime", "2026-08-21T10:00:00.000Z")
+                                                .add("hearingStartTime", "2026-08-21T09:00:00.000Z")
+                                                .add("count", 0))
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-08-21T10:00:00.000Z")
+                                                .add("sessionEndTime", "2026-08-21T11:00:00.000Z")
+                                                .add("hearingStartTime", "2026-08-21T10:30:00.000Z")
+                                                .add("count", 3))
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-08-21T11:00:00.000Z")
+                                                .add("sessionEndTime", "2026-08-21T12:00:00.000Z")
+                                                .add("count", 7))))
+                        .build())
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"));
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
+        // first entry has count 0, must be skipped in favour of the second (count 3)
+        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-21T10:30:00.000Z")));
+    }
+
+    @Test
+    public void shouldFallBackToSessionStartTimeWhenHearingStartTimeAbsentOnTheChosenSlot() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+
+        final JsonObject response = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 7)
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-08-21T09:00:00.000Z")
+                                                .add("sessionEndTime", "2026-08-21T10:00:00.000Z")
+                                                .add("hearingStartTime", "2026-08-21T09:00:00.000Z")
+                                                .add("count", 0))
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-08-21T11:00:00.000Z")
+                                                .add("sessionEndTime", "2026-08-21T12:00:00.000Z")
+                                                .add("count", 7))))
+                        .build())
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"));
+
+        assertTrue(result.isPresent());
+        // no hearingStartTime on the chosen (count > 0) entry - falls back to sessionStartTime
+        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-21T11:00:00.000Z")));
+    }
+
+    @Test
     public void shouldContinueToNextPageWhenFirstPageHasNoAvailableSlot() {
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
         final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
