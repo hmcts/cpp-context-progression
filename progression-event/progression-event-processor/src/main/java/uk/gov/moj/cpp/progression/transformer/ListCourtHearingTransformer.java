@@ -88,7 +88,6 @@ public class ListCourtHearingTransformer {
     private ListingService listingService;
 
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
-    private static final String ENFORCEMENT_BUSINESS_TYPE = "ENF";
     private static final String ENFORCEMENT_AUTO_BUSINESS_TYPE = "ENF_AUTO";
     private static final String PANEL_ADULT = "ADULT";
     private static final String PANEL_YOUTH = "YOUTH";
@@ -342,16 +341,21 @@ public class ListCourtHearingTransformer {
     }
 
     /**
-     * OTHER-type cases (initiationCode "O") have no pre-assigned court room - find one by
-     * searching Listing's existing hearing-slots search, single-date (business type "ENF")
-     * or date-range (business type "ENF_AUTO", searching the whole listedStartDateTime-to-listedEndDateTime
-     * span in one call) depending on which was submitted. Returns empty if there's nothing to
-     * search (no court centre/date) or no slot is available - the case is left exactly as
-     * submitted, which Listing's own unchanged allocation logic already treats as "not a
-     * candidate" (no pre-assigned room), landing it in Unallocated.
+     * OTHER-type cases (initiationCode "O") submitted as a date range (business type "ENF_AUTO")
+     * have no pre-assigned court room - find one by searching Listing's existing hearing-slots
+     * search across the whole listedStartDateTime-to-listedEndDateTime span in one call. Single-date
+     * ("ENF") submissions are left exactly as submitted - no search is performed for them. Returns
+     * empty if there's nothing to search (no court centre/date, or not a date-range submission) or
+     * no slot is available - the case is left exactly as submitted, which Listing's own unchanged
+     * allocation logic already treats as "not a candidate" (no pre-assigned room), landing it in
+     * Unallocated.
      */
     private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
                                                                    final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
+        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
+        if (isNull(endDateTime)) {
+            return Optional.empty();
+        }
         if (isNull(listHearingRequest.getCourtCentre()) || isNull(listHearingRequest.getCourtCentre().getCode())) {
             return Optional.empty();
         }
@@ -360,19 +364,15 @@ public class ListCourtHearingTransformer {
         if (isNull(startDateTime)) {
             return Optional.empty();
         }
-        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
-        final boolean isDateRange = nonNull(endDateTime);
-        final String businessType = isDateRange ? ENFORCEMENT_AUTO_BUSINESS_TYPE : ENFORCEMENT_BUSINESS_TYPE;
-        final LocalDate sessionEndDate = isDateRange ? endDateTime.toLocalDate() : startDateTime.toLocalDate();
         final String panel = resolvePanel(expectedListingStartDateTime, listOfProsecutionCase);
 
         return listingService.findAvailableHearingSlot(
                 jsonEnvelope,
                 listHearingRequest.getCourtCentre().getCode(),
-                businessType,
+                ENFORCEMENT_AUTO_BUSINESS_TYPE,
                 panel,
                 startDateTime.toLocalDate(),
-                sessionEndDate);
+                endDateTime.toLocalDate());
     }
 
     /**

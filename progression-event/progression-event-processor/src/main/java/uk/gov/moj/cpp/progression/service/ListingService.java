@@ -219,14 +219,7 @@ public class ListingService {
                 .map(JsonValue::asJsonObject)
                 .filter(slotStartTime -> slotStartTime.getInt("count", 0) > 0)
                 .findFirst()
-                .map(slotStartTime -> new AvailableHearingSlot(courtRoomId, toHearingStartTime(slotStartTime)));
-    }
-
-    private static ZonedDateTime toHearingStartTime(final JsonObject slotStartTime) {
-        final String hearingStartTime = slotStartTime.containsKey("hearingStartTime")
-                ? slotStartTime.getString("hearingStartTime")
-                : slotStartTime.getString("sessionStartTime");
-        return ZonedDateTime.parse(hearingStartTime);
+                .map(slotStartTime -> new AvailableHearingSlot(courtRoomId, ZonedDateTime.parse(slotStartTime.getString("sessionStartTime"))));
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
