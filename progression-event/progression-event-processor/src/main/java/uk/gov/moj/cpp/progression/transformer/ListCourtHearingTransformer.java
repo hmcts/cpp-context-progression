@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -41,6 +42,8 @@ import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.model.HearingListing;
+import uk.gov.moj.cpp.progression.service.AvailableHearingSlot;
+import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -81,7 +84,13 @@ public class ListCourtHearingTransformer {
     @Inject
     private ProgressionService progressionService;
 
+    @Inject
+    private ListingService listingService;
+
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
+    private static final String ENFORCEMENT_AUTO_BUSINESS_TYPE = "ENF_AUTO";
+    private static final String PANEL_ADULT = "ADULT";
+    private static final String PANEL_YOUTH = "YOUTH";
 
     /**
      * Transform a CourtReferral to ListCourtHearing
@@ -290,9 +299,24 @@ public class ListCourtHearingTransformer {
         final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCasesFromSpi(prosecutionCases, listHearingRequest.getListDefendantRequests());
         final ZonedDateTime expectedListingStartDateTime = calculateExpectedStartDate(listHearingRequest);
         final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
+
+        final Optional<AvailableHearingSlot> availableSlot = isOtherTypeCase(listOfProsecutionCase)
+                ? resolveEnforcementSlot(jsonEnvelope, listHearingRequest, listOfProsecutionCase, expectedListingStartDateTime)
+                : Optional.empty();
+
+        final CourtCentre courtCentre = availableSlot
+                .map(slot -> CourtCentre.courtCentre()
+                        .withValuesFrom(listHearingRequest.getCourtCentre())
+                        .withRoomId(UUID.fromString(slot.courtRoomId()))
+                        .build())
+                .orElseGet(listHearingRequest::getCourtCentre);
+        final ZonedDateTime listedStartDateTime = availableSlot
+                .map(AvailableHearingSlot::hearingStartTime)
+                .orElseGet(listHearingRequest::getListedStartDateTime);
+
         return HearingListingNeeds.hearingListingNeeds()
                 .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
-                .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
+                .withListedStartDateTime(listedStartDateTime)
                 .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
                 .withEstimatedDuration(listHearingRequest.getEstimatedDuration())
                 .withId(hearingId)
@@ -302,7 +326,7 @@ public class ListCourtHearingTransformer {
                 .withType(listHearingRequest.getHearingType())
                 .withListingDirections(listHearingRequest.getListingDirections())
                 .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
-                .withCourtCentre(listHearingRequest.getCourtCentre())
+                .withCourtCentre(courtCentre)
                 .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
                 .withIsGroupProceedings(isGroupProceedings)
                 .withNumberOfGroupCases(isNotEmpty(prosecutionCases) ? prosecutionCases.size() : null)
@@ -314,6 +338,61 @@ public class ListCourtHearingTransformer {
                 .withSpecialRequirements(listHearingRequest.getSpecialRequirements())
                 .withPriority(listHearingRequest.getPriority())
                 .build();
+    }
+
+    /**
+     * OTHER-type cases (initiationCode "O") submitted as a date range (business type "ENF_AUTO")
+     * have no pre-assigned court room - find one by searching Listing's existing hearing-slots
+     * search across the whole listedStartDateTime-to-listedEndDateTime span in one call. Single-date
+     * ("ENF") submissions are left exactly as submitted - no search is performed for them. Returns
+     * empty if there's nothing to search (no court centre/date, or not a date-range submission) or
+     * no slot is available - the case is left exactly as submitted, which Listing's own unchanged
+     * allocation logic already treats as "not a candidate" (no pre-assigned room), landing it in
+     * Unallocated.
+     */
+    private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
+                                                                   final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
+        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
+        if (isNull(endDateTime)) {
+            return Optional.empty();
+        }
+        if (isNull(listHearingRequest.getCourtCentre()) || isNull(listHearingRequest.getCourtCentre().getCode())) {
+            return Optional.empty();
+        }
+        final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime())
+                ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
+        if (isNull(startDateTime)) {
+            return Optional.empty();
+        }
+        final String panel = resolvePanel(expectedListingStartDateTime, listOfProsecutionCase);
+
+        return listingService.findAvailableHearingSlot(
+                jsonEnvelope,
+                listHearingRequest.getCourtCentre().getCode(),
+                ENFORCEMENT_AUTO_BUSINESS_TYPE,
+                panel,
+                startDateTime.toLocalDate(),
+                endDateTime.toLocalDate());
+    }
+
+    /**
+     * Panel is mandatory on Listing's hearing-slots search. Derived the same way the rest of this
+     * transformer already decides youth vs adult ({@link #isDefendantYouth}) - any defendant under
+     * 18 at the expected hearing date means a youth panel is required; defaults to adult when that
+     * can't be determined (no date of birth, or no expected hearing date yet).
+     */
+    private String resolvePanel(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase) {
+        final boolean anyDefendantIsYouth = nonNull(expectedListingStartDateTime) && listOfProsecutionCase.stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .map(this::getDateOfBirth)
+                .flatMap(Optional::stream)
+                .anyMatch(dateOfBirth -> calculateIsYouth(dateOfBirth, expectedListingStartDateTime));
+        return anyDefendantIsYouth ? PANEL_YOUTH : PANEL_ADULT;
+    }
+
+    private static boolean isOtherTypeCase(final List<ProsecutionCase> prosecutionCases) {
+        return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
+                .allMatch(prosecutionCase -> InitiationCode.O.equals(prosecutionCase.getInitiationCode()));
     }
 
     private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
