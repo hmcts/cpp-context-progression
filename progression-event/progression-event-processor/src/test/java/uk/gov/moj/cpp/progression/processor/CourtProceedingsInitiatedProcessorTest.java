@@ -263,7 +263,7 @@ public class CourtProceedingsInitiatedProcessorTest {
      * requires for this case type).
      */
     @Test
-    public void shouldSendOtherTypeCivilCaseForListingWithoutAnyManualStep() throws IOException {
+    void shouldSendOtherTypeCivilCaseForListingWithoutAnyManualStep() throws IOException {
         //Given
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
