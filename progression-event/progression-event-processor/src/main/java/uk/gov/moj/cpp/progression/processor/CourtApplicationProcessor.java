@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -127,7 +128,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String OLD_APPLICATION_ID = "oldApplicationId";
@@ -296,7 +296,7 @@ public class CourtApplicationProcessor {
     public void processCourtApplicationInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
 
-        if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
+        if (TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationProceedingsInitiated.getOldApplicationId());
@@ -545,7 +545,9 @@ public class CourtApplicationProcessor {
             hearingBuilder.withIsVirtualBoxHearing(true);
         }
 
-        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearingBuilder.build()).build();
+        final Hearing hearing = progressionService.shapeHearingForListing(hearingBuilder.build(), jsonEnvelope);
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
         progressionService.linkApplicationToHearing(jsonEnvelope, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
@@ -580,7 +582,7 @@ public class CourtApplicationProcessor {
 
         final List<ProsecutionCase> prosecutionCases = getProsecutionCases(event, application);
 
-        final Hearing hearing = hearing()
+        final Hearing rawHearing = hearing()
                 .withProsecutionCases(prosecutionCases)
                 .withId(courtHearing.getId())
                 .withHearingDays(singletonList(hearingDay()
@@ -596,6 +598,8 @@ public class CourtApplicationProcessor {
                 .withSpecialRequirements(courtHearing.getSpecialRequirements())
                 .build();
 
+        final Hearing hearing = progressionService.shapeHearingForListing(rawHearing, event);
+
         final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
         progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
@@ -606,7 +610,12 @@ public class CourtApplicationProcessor {
         // then update application status - hearing initiated in the Listing hence applicationStatus == UN_ALLOCATED
         progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
 
-        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
+        // build the listing needs from the filtered hearing so the application/prosecutionCases sent to
+        // listing match the shaped hearing (e.g. an application hearing carries no prosecution case)
+        final List<CourtApplication> filteredCourtApplications = hearingInitiate.getHearing().getCourtApplications();
+        final CourtApplication listingApplication = isNotEmpty(filteredCourtApplications) ? filteredCourtApplications.get(0) : application;
+        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(),
+                listingApplication, hearingInitiate.getHearing().getProsecutionCases());
         // then list hearing
         listingService.listCourtHearing(event, listCourtHearing);
     }
@@ -874,7 +883,7 @@ public class CourtApplicationProcessor {
     private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
-        if (isAllActiveCases(courtApplicationCases)) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases)) {
             ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(courtApplicationCase -> {
                 final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
                 if (prosecutionCaseDetailById.isPresent()) {
@@ -966,14 +975,26 @@ public class CourtApplicationProcessor {
 
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
-        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+        return t -> map.putIfAbsent(keyExtractor.apply(t), TRUE) == null;
     }
 
-    private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
-        return courtApplicationCases
-                .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
-                        && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
-                        && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+    /**
+     * Determines whether every court application case is active, based on its offences' proceedings
+     * status. A case with offences is INACTIVE only when all its offences have
+     * {@code proceedingsConcluded == true}, otherwise it is ACTIVE. A case with no offences falls
+     * back to the {@code caseStatus} check.
+     */
+    private boolean isAllActiveCasesByOffenceStatus(final Stream<CourtApplicationCase> courtApplicationCases) {
+        return courtApplicationCases.allMatch(this::isActiveCaseByOffenceStatus);
+    }
+
+    // package-private for unit testing
+    boolean isActiveCaseByOffenceStatus(final CourtApplicationCase courtApplicationCase) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase.getOffences().stream()
+                    .anyMatch(offence -> !TRUE.equals(offence.getProceedingsConcluded()));
+        }
+        return !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()) && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
     }
 
     private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {
@@ -1043,7 +1064,7 @@ public class CourtApplicationProcessor {
 
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
 
-        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
             final List<CourtApplicationCase> courtApplicationCasesForWhichWeNeedToCreateHearing = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .filter(courtApplicationCase -> hearing.getProsecutionCases().stream().noneMatch(prosecutionCase -> courtApplicationCase.getProsecutionCaseId().equals(prosecutionCase.getId())))
                     .collect(toList());
