@@ -1,61 +1,47 @@
 {
-  "initiateCourtProceedings": {
+  "courtReferral": {
+    "sjpReferral": {
+      "noticeDate": "2018-01-01",
+      "referralDate": "2018-02-15",
+      "referringJudicialDecision": {
+        "location": "Lavender Hill Magistrates' Court",
+        "judiciary": [
+          {
+            "judicialName": "Mrs Theresa Mary May",
+            "judicialRoleTypeSJP": "MAGISTRATE"
+          },
+          {
+            "judicialName": "Mr Michel Bernard Barnier",
+            "judicialRoleTypeSJP": "MAGISTRATE"
+          }
+        ]
+      }
+    },
     "prosecutionCases": [
       {
         "id": "RANDOM_CASE_ID",
-        "isCivil": true,
-        "isGroupMember": false,
-        "isGroupMaster": false,
-        "civilFees": [
-          {
-            "feeId" : "RANDOM_FEES_ID",
-            "feeType" : "INITIAL",
-            "paymentReference" : "paymentReferenceOne",
-            "feeStatus": "SATISFIED"
-          }
-        ],
-        "caseMarkers": [
-          {
-            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-            "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-            "markerTypeCode": "WP",
-            "markerTypeDescription": "Prohibited Weapons"
-          }
-        ],
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
-          "prosecutionAuthorityCode": "TFL",
-          "prosecutionAuthorityOUCode": "GB10056",
+          "prosecutionAuthorityCode": "CPS",
           "prosecutionAuthorityReference": "RANDOM_REFERENCE"
         },
         "originatingOrganisation": "G01FT01AB",
-        "cpsOrganisation": "A01",
-        "initiationCode": "O",
+        "initiationCode": "J",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",
         "defendants": [
           {
             "id": "RANDOM_DEFENDANT_ID",
-            "masterDefendantId": "RANDOM_DEFENDANT_ID",
-            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
             "prosecutionCaseId": "RANDOM_CASE_ID",
             "numberOfPreviousConvictionsCited": 5,
-            "prosecutionAuthorityReference": "TFL12345-ABC",
+            "prosecutionAuthorityReference": "CPS12345-ABC",
             "witnessStatement": "he did not do it",
             "witnessStatementWelsh": "he did not do it in Welsh",
             "mitigation": "I was not there",
             "mitigationWelsh": "I was not there in Welsh",
-            "aliases": [
-              {
-                "firstName": "johnny",
-                "lastName": "robber"
-              },
-              {
-                "firstName": "jack the",
-                "lastName": "knife"
-              }
-            ],
-            "pncId": "1234567",
+            "defenceOrganisation": {
+              "name": "defence Organisation abc"
+            },
             "offences": [
               {
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
@@ -67,13 +53,7 @@
                 "arrestDate": "2018-01-01",
                 "chargeDate": "2018-01-01",
                 "orderIndex": 1,
-                "offenceCode": "TTH105HY",
-                "offenceTitle": "ROBBERY",
                 "count": 0,
-                "civilOffence": {
-                  "isExParte" : true,
-                  "isRespondent" : true
-                },
                 "notifiedPlea": {
                   "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
                   "notifiedPleaDate": "2018-04-01",
@@ -84,7 +64,20 @@
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
                 },
-                "offenceDateCode":4
+                "maxPenalty": "Max Penalty",
+                "reportingRestrictions": [
+                  {
+                    "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                    "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                    "orderedDate": "2021-08-28"
+                  },
+                  {
+                    "id": "6fdc9e9d-6f0a-4d02-92e9-bc5765475182",
+                    "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                    "orderedDate": "2021-08-28"
+                  }
+                ],
+                "offenceDateCode": 4
               }
             ],
             "associatedPersons": [
@@ -98,9 +91,6 @@
                   "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "disabilityStatus": "a",
-                  "ethnicity": {
-                    "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
-                  },
                   "gender": "MALE",
                   "interpreterLanguageNeeds": "Hindi",
                   "documentationLanguageNeeds": "WELSH",
@@ -133,10 +123,11 @@
                 "firstName": "Harry",
                 "middleName": "Jack",
                 "lastName": "Kane Junior",
-                "dateOfBirth": "DOB",
+                "dateOfBirth": "2010-01-01",
                 "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "disabilityStatus": "a",
+                "ethnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "gender": "MALE",
                 "interpreterLanguageNeeds": "Welsh",
                 "documentationLanguageNeeds": "WELSH",
@@ -159,10 +150,6 @@
                   "primaryEmail": "harry.kanejunior@spurs.co.uk",
                   "secondaryEmail": "harry.kanejunior@hotmail.com",
                   "fax": "3425678"
-                },
-                "ethnicity": {
-                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
-                  "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
                 }
               },
               "bailStatus": {
@@ -170,7 +157,6 @@
                 "code": "C",
                 "description": "Remanded into Custody"
               },
-              "bailConditions": "bail conditions...",
               "custodyTimeLimit": "2018-01-01",
               "perceivedBirthYear": 2015,
               "driverNumber": "AACC12345",
@@ -193,35 +179,77 @@
                   "fax": "a"
                 }
               },
-              "employerPayrollReference": "payyou1234"
+              "employerPayrollReference": "payyou1234",
+              "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "pncId": "1234567"
             }
           }
         ]
       }
     ],
+    "courtDocuments": [
+      {
+        "courtDocumentId": "RANDOM_DOC_ID",
+        "documentCategory": {
+          "defendantDocument": {
+            "prosecutionCaseId": "RANDOM_CASE_ID",
+            "defendants": [
+              "e1d32d9d-29ec-4934-a932-22a50f223966"
+            ]
+          }
+        },
+        "name": "Bank Statement",
+        "documentTypeId": "460f7ec0-c002-11e8-a355-529269fb1459",
+        "mimeType": "pdf",
+        "materials": [
+          {
+            "id": "RANDOM_MATERIAL_ID_ONE",
+            "name": "BankStatment.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "courtClerk",
+              "Listing Officers"
+            ]
+          },
+          {
+            "id": "RANDOM_MATERIAL_ID_TWO",
+            "name": "Fine.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "defence",
+              "prosecution",
+              "Legal Advisers",
+              "Listing Officers"
+            ]
+          }
+        ],
+        "containsFinancialMeans": true
+      }
+    ],
     "listHearingRequests": [
       {
         "hearingType": {
-          "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
-          "description": "sentencing"
+          "id": "2daefec3-2f76-8109-82d9-2e60544a6c02"
         },
         "jurisdictionType": "MAGISTRATES",
         "estimateMinutes": 20,
-        "listedStartDateTime": "LISTED_START_DATE_TIME",
-        "earliestStartDateTime": "EARLIEST_START_DATE_TIME",
         "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
         "courtCentre": {
-          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-          "name": "Lavender Hill Magistrate's Court",
-          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
-          "roomName": "Courtroom 01"
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
         },
         "prosecutorDatesToAvoid": "wednesdays",
         "listingDirections": "tricky defendant",
         "listDefendantRequests": [
           {
             "prosecutionCaseId": "RANDOM_CASE_ID",
-            "defendantId": "RANDOM_DEFENDANT_ID",
+            "referralReason": {
+              "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "description": "forTrial",
+              "defendantId": "RANDOM_DEFENDANT_ID"
+            },
             "datesToAvoid": "thursdays",
             "summonsRequired": "SJP_REFERRAL",
             "hearingLanguageNeeds": "WELSH",

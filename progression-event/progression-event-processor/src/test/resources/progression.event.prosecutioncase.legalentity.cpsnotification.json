@@ -221,6 +221,8 @@
 		],
 		"id": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074",
 		"initiationCode": "C",
+		"isCivil": true,
+		"cpsOrganisationId": "42880989-5d09-332e-a711-8797af06ecea",
 		"originatingOrganisation": "GAAAA01",
 		"prosecutionCaseIdentifier": {
 			"prosecutionAuthorityCode": "DVLA",
