@@ -583,6 +583,10 @@ public class NotificationService {
 
         thirdParties.forEach(courtApplicationParty -> {
             checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
+            if (shouldSuppressNotification(courtApplication, courtApplicationParty.getMasterDefendant())) {
+                LOGGER.info("Notification to third party suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
+                return;
+            }
             sendNotification(event, UUID.randomUUID(), courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, "YES", isAmended, issueDate);
         });
     }
