@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.listing.domain.CourtHouseType.MAGISTRATES;
+import static uk.gov.moj.cpp.progression.listing.domain.CourtHouseType.MAGISTRATES;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 
 import uk.gov.justice.core.courts.Address;
@@ -45,11 +45,11 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.listing.domain.Defendant;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.HearingDay;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.Offence;
+import uk.gov.moj.cpp.progression.listing.domain.Defendant;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.HearingDay;
+import uk.gov.moj.cpp.progression.listing.domain.ListedCase;
+import uk.gov.moj.cpp.progression.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
 import java.io.IOException;
@@ -288,7 +288,7 @@ public class ListingServiceTest {
         verifyNoMoreInteractions(sender);
     }
 
-    private List<ListedCase> getListedCases(List<UUID> offenceIds, uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt) {
+    private List<ListedCase> getListedCases(List<UUID> offenceIds, uk.gov.moj.cpp.progression.listing.domain.CommittingCourt committingCourt) {
 
         final List<ListedCase> listedCases = Stream.of(ListedCase.listedCase()
                 .withDefendants(Stream.of(Defendant.defendant()
@@ -482,7 +482,7 @@ public class ListingServiceTest {
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
 
-        final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.listing.domain.CommittingCourt.committingCourt()
+        final uk.gov.moj.cpp.progression.listing.domain.CommittingCourt committingCourt = uk.gov.moj.cpp.progression.listing.domain.CommittingCourt.committingCourt()
                 .withCourtCentreId(randomUUID())
                 .withCourtHouseName("CourtHouseName")
                 .withCourtHouseType(MAGISTRATES)

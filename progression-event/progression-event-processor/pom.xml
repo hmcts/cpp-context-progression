@@ -40,6 +40,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-listing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.material</groupId>
             <artifactId>material-client</artifactId>
             <version>${material.version}</version>
@@ -171,20 +176,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.listing</groupId>
-            <artifactId>listing-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>uk.gov.moj.cpp.core.domain</groupId>
-                    <artifactId>common-core-domain</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <scope>provided</scope>
@@ -266,18 +257,6 @@
                             <exclusion>
                                 <artifactId>*</artifactId>
                                 <groupId>*</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.listing</groupId>
-                        <artifactId>listing-command-api</artifactId>
-                        <version>${listing.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
                             </exclusion>
                         </exclusions>
                     </dependency>
@@ -392,6 +371,23 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.listing</groupId>
                         <artifactId>listing-query-api</artifactId>
+                        <version>${listing.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <!-- Messaging contract only (raml classifier): registers the outbound
+                             listing.command.list-court-hearing / list-unscheduled-court-hearing / delete-hearing
+                             send actions. Contains no listing Java on the compile classpath, so it does not
+                             re-couple progression to listing code — kept per the "contracts are fine, only
+                             code deps must be broken" decoupling rule. -->
+                        <groupId>uk.gov.moj.cpp.listing</groupId>
+                        <artifactId>listing-command-api</artifactId>
                         <version>${listing.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

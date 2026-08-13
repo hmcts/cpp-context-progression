@@ -16,9 +16,9 @@ import uk.gov.justice.progression.courts.exract.CourtApplications;
 import uk.gov.justice.progression.courts.exract.CourtOrderOffences;
 import uk.gov.justice.progression.courts.exract.CourtOrders;
 import uk.gov.justice.progression.courts.exract.Results;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.progression.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import javax.inject.Inject;

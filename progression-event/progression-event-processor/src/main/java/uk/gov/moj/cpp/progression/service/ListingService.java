@@ -22,9 +22,9 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.Offence;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.ListedCase;
+import uk.gov.moj.cpp.progression.listing.domain.Offence;
 import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
@@ -195,7 +195,7 @@ public class ListingService {
                                 .orElse(null);
 
                         if (nonNull(offence) && offence.getCommittingCourt().isPresent()) {
-                            final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = offence.getCommittingCourt().get();
+                            final uk.gov.moj.cpp.progression.listing.domain.CommittingCourt committingCourt = offence.getCommittingCourt().get();
                             builder.withCourtCentreId(committingCourt.getCourtCentreId())
                                     .withCourtHouseType(JurisdictionType.MAGISTRATES)
                                     .withCourtHouseShortName(committingCourt.getCourtHouseShortName().get())
