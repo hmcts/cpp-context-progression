@@ -183,6 +183,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-listing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
@@ -276,20 +281,6 @@
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.listing</groupId>
-            <artifactId>listing-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>uk.gov.moj.cpp.core.domain</groupId>
-                    <artifactId>common-core-domain</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

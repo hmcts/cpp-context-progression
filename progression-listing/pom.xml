@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>progression-parent</artifactId>
+        <groupId>uk.gov.moj.cpp.progression</groupId>
+        <version>17.0.287-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>progression-listing</artifactId>
+
+    <!--
+        Listing's ProvisionalBooking REST client + the listing domain value objects it returns,
+        copied from listing (v17.104.8) under uk.gov.moj.cpp.progression.listing.* to decouple
+        progression from listing-common / listing-domain-*. The service still calls listing's REST
+        endpoint at runtime (a client adapter, like material-client) but there is no longer a
+        compile-time dependency on the listing artifacts.
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>utilities-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>
