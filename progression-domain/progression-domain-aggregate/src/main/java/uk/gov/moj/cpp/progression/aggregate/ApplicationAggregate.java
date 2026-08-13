@@ -63,6 +63,7 @@ import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -602,6 +603,7 @@ public class ApplicationAggregate implements Aggregate {
             }
             if (nonNull(courtApplicationCase)) {
                 updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
+                updatedCourtApplication = enrichCourtApplicationCasesWithCivilOffence(updatedCourtApplication, courtApplicationCase);
                 boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
                 updatedCourtApplication = updateCourtApplicatonWithFeeType(updatedCourtApplication, isCivil);
             }
@@ -628,6 +630,64 @@ public class ApplicationAggregate implements Aggregate {
 
         return CourtApplication.courtApplication().withValuesFrom(courtApplication)
                 .withCourtCivilApplication(CourtCivilApplication.courtCivilApplication().withIsCivil(isCivil).build())
+                .build();
+    }
+
+    /**
+     * The linked case's real civilOffence/isExParte data (e.g. from CaseAggregate ref-data enrichment) only lives
+     * on the case's own Defendant.offences - it is never included by callers building
+     * courtApplication.courtApplicationCases[].offences[] themselves. Without this, ex-parte notification
+     * suppression (NotificationService.shouldSuppressNotification) can never trigger for an application linked to
+     * an existing case, since it only inspects courtApplication.getCourtApplicationCases().
+     */
+    private CourtApplication enrichCourtApplicationCasesWithCivilOffence(final CourtApplication courtApplication, final ProsecutionCase prosecutionCase) {
+        if (isNull(courtApplication.getCourtApplicationCases()) || isNull(prosecutionCase.getDefendants())) {
+            return courtApplication;
+        }
+
+        final Map<UUID, CivilOffence> civilOffenceByOffenceId = prosecutionCase.getDefendants().stream()
+                .filter(Objects::nonNull)
+                .map(Defendant::getOffences)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(Collectors.toMap(Offence::getId, Offence::getCivilOffence, (first, second) -> first));
+
+        if (civilOffenceByOffenceId.isEmpty()) {
+            return courtApplication;
+        }
+
+        final List<CourtApplicationCase> enrichedCourtApplicationCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> enrichCourtApplicationCaseWithCivilOffence(courtApplicationCase, civilOffenceByOffenceId))
+                .collect(toList());
+
+        return courtApplication().withValuesFrom(courtApplication)
+                .withCourtApplicationCases(enrichedCourtApplicationCases)
+                .build();
+    }
+
+    private CourtApplicationCase enrichCourtApplicationCaseWithCivilOffence(final CourtApplicationCase courtApplicationCase, final Map<UUID, CivilOffence> civilOffenceByOffenceId) {
+        if (isNull(courtApplicationCase.getOffences())) {
+            return courtApplicationCase;
+        }
+
+        final List<Offence> enrichedOffences = courtApplicationCase.getOffences().stream()
+                .map(applicationOffence -> {
+                    if (nonNull(applicationOffence.getCivilOffence())) {
+                        return applicationOffence;
+                    }
+                    final CivilOffence civilOffence = civilOffenceByOffenceId.get(applicationOffence.getId());
+                    if (isNull(civilOffence)) {
+                        return applicationOffence;
+                    }
+                    return offence().withValuesFrom(applicationOffence)
+                            .withCivilOffence(civilOffence)
+                            .build();
+                })
+                .collect(toList());
+
+        return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                .withOffences(enrichedOffences)
                 .build();
     }
 

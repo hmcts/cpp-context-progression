@@ -61,7 +61,9 @@ import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
@@ -79,6 +81,8 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -296,6 +300,92 @@ public class ApplicationAggregateTest {
 
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
         assertThat(courtApplicationProceedingsInitiated.getCourtApplication().getApplicationReference(), is(applicationReference));
+    }
+
+    @Test
+    public void shouldEnrichCourtApplicationCaseOffenceWithCivilOffenceFromLinkedProsecutionCase() {
+        final UUID offenceId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final CivilOffence civilOffence = CivilOffence.civilOffence().withIsExParte(true).build();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withIsCivil(true)
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().build()).build())
+                        .withOffences(singletonList(Offence.offence()
+                                .withId(offenceId)
+                                .withCivilOffence(civilOffence)
+                                .build()))
+                        .build()))
+                .build();
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withApplicant(CourtApplicationParty.courtApplicationParty().build())
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(prosecutionCaseId)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                .withOffences(singletonList(Offence.offence().withId(offenceId).build()))
+                                .build()))
+                        .build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false, prosecutionCase).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
+        final Offence enrichedOffence = courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().get(0).getOffences().get(0);
+        assertThat(enrichedOffence.getCivilOffence(), is(notNullValue()));
+        assertThat(enrichedOffence.getCivilOffence().getIsExParte(), is(true));
+    }
+
+    @Test
+    public void shouldNotOverwriteExistingCivilOffenceOnCourtApplicationCaseOffence() {
+        final UUID offenceId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final CivilOffence caseCivilOffence = CivilOffence.civilOffence().withIsExParte(true).build();
+        final CivilOffence applicationCivilOffence = CivilOffence.civilOffence().withIsExParte(false).build();
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withIsCivil(true)
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().build()).build())
+                        .withOffences(singletonList(Offence.offence()
+                                .withId(offenceId)
+                                .withCivilOffence(caseCivilOffence)
+                                .build()))
+                        .build()))
+                .build();
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withApplicant(CourtApplicationParty.courtApplicationParty().build())
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(prosecutionCaseId)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .withCivilOffence(applicationCivilOffence)
+                                        .build()))
+                                .build()))
+                        .build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false, prosecutionCase).collect(toList());
+
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
+        final Offence unchangedOffence = courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().get(0).getOffences().get(0);
+        assertThat(unchangedOffence.getCivilOffence().getIsExParte(), is(false));
     }
 
     @Test
@@ -1387,6 +1477,8 @@ public class ApplicationAggregateTest {
                 .withCourtApplication(courtApplication()
                         .withId(randomUUID())
                         .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withApplicant(CourtApplicationParty.courtApplicationParty().build())
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
                         .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
                         .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())

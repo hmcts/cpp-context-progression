@@ -19,19 +19,26 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOO
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static java.util.Collections.emptyList;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplicationWithCourtHearing;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.sendNotification;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsNotRaisedWithContent;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCivilProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,8 +49,10 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,6 +62,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON = "progression.command.create-court-application-send-notification-exparte.json";
+    private static final String GENERIC_LINKED_APPLICATION_WITH_INDIVIDUAL_THIRDPARTY_JSON = "applications/progression.initiate-court-proceedings-for-generic-linked-application-with-individual-thirdparty.json";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
@@ -140,6 +151,73 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyApplicationAtAGlance(courtApplicationId);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, true);
         verifyPublicEvent();
+    }
+
+    @Test
+    public void shouldSuppressDefendantAndThirdPartyNotificationsForExParteOffenceOnLinkedCivilCase() throws Exception {
+
+        givenDefendantIsRepresentedByDefenceOrganisation(respondentDefendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        doHearingConfirmedAndVerify();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON, courtApplicationId, null);
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
+
+        verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
+        verifyEmailNotificationIsNotRaisedWithContent("respondent-org@email.com");
+
+        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-person@email.com");
+        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-org@email.com");
+    }
+
+    @Test
+    public void shouldSuppressRespondentNotificationForExParteOffenceWithoutDefenceOrganisationAssociation() throws Exception {
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        doHearingConfirmedAndVerify();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON, courtApplicationId, null);
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
+
+        verifyEmailNotificationIsNotRaisedWithContent("respondent-person-direct@email.com");
+
+        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-person@email.com");
+    }
+
+    @Test
+    public void shouldSuppressDefendantAndThirdPartyNotificationsForApplicationLinkedToRealCivilCaseWithExParteOffence() throws Exception {
+
+        final String materialIdOne = randomUUID().toString();
+        final String materialIdTwo = randomUUID().toString();
+        final String referralId = randomUUID().toString();
+        final String feesId = randomUUID().toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDoB = LocalDate.now().minusYears(30).toString();
+
+        civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, defendantDoB, feesId);
+
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
+
+        final String applicationHearingId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, GENERIC_LINKED_APPLICATION_WITH_INDIVIDUAL_THIRDPARTY_JSON);
+
+        final String caseResponse = getApplicationFor(courtApplicationId);
+        assertThat(caseResponse, is(notNullValue()));
+
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("generic-linked-applicant@email.com"));
+
+        verifyEmailNotificationIsNotRaisedWithContent("generic-linked-defendant@email.com");
+
+        verifyEmailNotificationIsNotRaisedWithContent("generic-linked-thirdparty@email.com");
     }
 
     private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {
