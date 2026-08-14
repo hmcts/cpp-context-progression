@@ -633,32 +633,28 @@ public class ApplicationAggregate implements Aggregate {
                 .build();
     }
 
-    /**
-     * The linked case's real civilOffence/isExParte data (e.g. from CaseAggregate ref-data enrichment) only lives
-     * on the case's own Defendant.offences - it is never included by callers building
-     * courtApplication.courtApplicationCases[].offences[] themselves. Without this, ex-parte notification
-     * suppression (NotificationService.shouldSuppressNotification) can never trigger for an application linked to
-     * an existing case, since it only inspects courtApplication.getCourtApplicationCases().
-     */
     private CourtApplication enrichCourtApplicationCasesWithCivilOffence(final CourtApplication courtApplication, final ProsecutionCase prosecutionCase) {
         if (isNull(courtApplication.getCourtApplicationCases()) || isNull(prosecutionCase.getDefendants())) {
             return courtApplication;
         }
 
-        final Map<UUID, CivilOffence> civilOffenceByOffenceId = prosecutionCase.getDefendants().stream()
+        final List<Offence> caseOffences = prosecutionCase.getDefendants().stream()
                 .filter(Objects::nonNull)
                 .map(Defendant::getOffences)
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)
-                .filter(offence -> nonNull(offence.getCivilOffence()))
-                .collect(Collectors.toMap(Offence::getId, Offence::getCivilOffence, (first, second) -> first));
+                .collect(toList());
 
-        if (civilOffenceByOffenceId.isEmpty()) {
+        if (caseOffences.isEmpty()) {
             return courtApplication;
         }
 
+        final Map<UUID, CivilOffence> civilOffenceByOffenceId = caseOffences.stream()
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(Collectors.toMap(Offence::getId, Offence::getCivilOffence, (first, second) -> first));
+
         final List<CourtApplicationCase> enrichedCourtApplicationCases = courtApplication.getCourtApplicationCases().stream()
-                .map(courtApplicationCase -> enrichCourtApplicationCaseWithCivilOffence(courtApplicationCase, civilOffenceByOffenceId))
+                .map(courtApplicationCase -> enrichCourtApplicationCaseWithCivilOffence(courtApplicationCase, prosecutionCase.getId(), caseOffences, civilOffenceByOffenceId))
                 .collect(toList());
 
         return courtApplication().withValuesFrom(courtApplication)
@@ -666,9 +662,16 @@ public class ApplicationAggregate implements Aggregate {
                 .build();
     }
 
-    private CourtApplicationCase enrichCourtApplicationCaseWithCivilOffence(final CourtApplicationCase courtApplicationCase, final Map<UUID, CivilOffence> civilOffenceByOffenceId) {
-        if (isNull(courtApplicationCase.getOffences())) {
+    private CourtApplicationCase enrichCourtApplicationCaseWithCivilOffence(final CourtApplicationCase courtApplicationCase, final UUID prosecutionCaseId,
+                                                                            final List<Offence> caseOffences, final Map<UUID, CivilOffence> civilOffenceByOffenceId) {
+        if (!Objects.equals(courtApplicationCase.getProsecutionCaseId(), prosecutionCaseId)) {
             return courtApplicationCase;
+        }
+
+        if (isNull(courtApplicationCase.getOffences()) || courtApplicationCase.getOffences().isEmpty()) {
+            return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                    .withOffences(caseOffences)
+                    .build();
         }
 
         final List<Offence> enrichedOffences = courtApplicationCase.getOffences().stream()

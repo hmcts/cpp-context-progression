@@ -1,0 +1,184 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicant": {
+      "id": "ad00ace8-fa31-45f4-bd8f-997601865a43",
+      "notificationRequired": true,
+      "prosecutingAuthority": {
+        "address": {
+          "address1": "Guildhall",
+          "address2": "London",
+          "postcode": "EC2V 7HH"
+        },
+        "contact": {
+          "primaryEmail": "michael.page2@cityoflondon.gov.uk"
+        },
+        "majorCreditorCode": "COLC",
+        "name": "City of London Corporation",
+        "prosecutionAuthorityCode": "COLCC",
+        "prosecutionAuthorityId": "3c39ec72-694b-4d3e-87ea-0e84fabf6816",
+        "prosecutionAuthorityOUCode": "GAXLC00"
+      },
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2026-08-14",
+    "applicationReference": "SCIV9694090",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "courtApplicationCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "isSJP": false,
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Guildhall",
+            "address2": "London",
+            "postcode": "EC2V 7HH"
+          },
+          "contact": {
+            "primaryEmail": "michael.page2@cityoflondon.gov.uk"
+          },
+          "majorCreditorCode": "COLC",
+          "prosecutionAuthorityCode": "COLCC",
+          "prosecutionAuthorityId": "3c39ec72-694b-4d3e-87ea-0e84fabf6816",
+          "prosecutionAuthorityName": "City of London Corporation",
+          "prosecutionAuthorityOUCode": "GAXLC00",
+          "caseURN": "SCIV9694090"
+        }
+      }
+    ],
+    "courtApplicationPayment": {
+      "feeStatus": "NOT_APPLICABLE"
+    },
+    "courtCivilApplication": {
+      "isCivil": true
+    },
+    "respondents": [
+      {
+        "id": "63b4f512-37e4-4ca1-b785-c8bfd6c6c32b",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "CASE_ID",
+              "caseReference": "SCIV9694090",
+              "defendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50"
+            }
+          ],
+          "masterDefendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50",
+          "personDefendant": {
+            "arrestSummonsNumber": "24SINCIV01019694090C",
+            "personDetails": {
+              "address": {
+                "address1": "849 Akeem Stravenue",
+                "postcode": "CR0 1XG"
+              },
+              "contact": {
+                "home": "02079876543",
+                "mobile": "07123456789",
+                "primaryEmail": "johnone.smith@example.com",
+                "secondaryEmail": "johnone.alt@example.com",
+                "work": "02071234567"
+              },
+              "dateOfBirth": "1985-11-07",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Gabe",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Kemmer",
+              "nationalityCode": "GBR",
+              "nationalityDescription": "British",
+              "nationalityId": "49433158-3542-49c8-a9af-581a0e746152"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      }
+    ],
+    "subject": {
+      "id": "63b4f512-37e4-4ca1-b785-c8bfd6c6c32b",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "CASE_ID",
+            "caseReference": "SCIV9694090",
+            "defendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50"
+          }
+        ],
+        "masterDefendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50",
+        "personDefendant": {
+          "arrestSummonsNumber": "24SINCIV01019694090C",
+          "personDetails": {
+            "address": {
+              "address1": "849 Akeem Stravenue",
+              "postcode": "CR0 1XG"
+            },
+            "contact": {
+              "home": "02079876543",
+              "mobile": "07123456789",
+              "primaryEmail": "johnone.smith@example.com",
+              "secondaryEmail": "johnone.alt@example.com",
+              "work": "02071234567"
+            },
+            "dateOfBirth": "1985-11-07",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Gabe",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Kemmer",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "applicationWording": "Application within civil proceedings for case number {1}. Nature of application: {2}",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "VP",
+      "code": "AP00503",
+      "commrOfOathFlag": false,
+      "contestedFeeApplicable": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "exParte": false,
+      "hearingCode": "APN",
+      "id": "126b96df-94e6-4400-977c-6f9a583f3e67",
+      "initialFeeApplicable": false,
+      "jurisdiction": "EITHER",
+      "legislation": "Refer to nature of application.",
+      "linkType": "LINKED",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "OFFENCE",
+      "pleaApplicableFlag": true,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application within civil proceedings"
+    }
+  },
+  "courtHearing": {
+    "id": "HEARING_ID",
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": null,
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2026-08-18T09:00:00.000Z",
+    "estimatedMinutes": 20,
+    "hearingType": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "jurisdictionType": "MAGISTRATES"
+  },
+  "summonsApprovalRequired": false
+}
