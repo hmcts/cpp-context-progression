@@ -355,6 +355,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final boolean summonsApprovalRequired = isSummonsApprovalRequired(initiateCourtProceedingsForApplication.getBoxHearing(), initiateCourtProceedingsForApplication.getCourtApplication());
         final InitiateCourtApplicationProceedings.Builder initiateCourtProceedingsForApplicationBuilder = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
                 .withCourtApplication(rebuildCourtApplication(initiateCourtProceedingsForApplication.getCourtApplication(), initiateCourtProceedingsForApplication.getApplicationSource(), envelope))
+                .withApplicationSource(initiateCourtProceedingsForApplication.getApplicationSource())
                 .withSummonsApprovalRequired(summonsApprovalRequired)
                 .withIsAmended(initiateCourtProceedingsForApplication.getIsAmended())
                 .withOldApplicationId(initiateCourtProceedingsForApplication.getOldApplicationId())
