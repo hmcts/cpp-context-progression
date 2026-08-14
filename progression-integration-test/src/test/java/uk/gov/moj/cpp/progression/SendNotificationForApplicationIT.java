@@ -18,8 +18,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static java.util.Collections.emptyList;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplicationWithCourtHearing;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
@@ -62,8 +62,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON = "progression.command.create-court-application-send-notification-exparte.json";
-    private static final String GENERIC_LINKED_APPLICATION_WITH_INDIVIDUAL_THIRDPARTY_JSON = "applications/progression.initiate-court-proceedings-for-generic-linked-application-with-individual-thirdparty.json";
+    private static final String CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-no-offences.json";
+    private static final String CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID = "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
@@ -154,43 +154,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSuppressDefendantAndThirdPartyNotificationsForExParteOffenceOnLinkedCivilCase() throws Exception {
-
-        givenDefendantIsRepresentedByDefenceOrganisation(respondentDefendantId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON, courtApplicationId, null);
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
-
-
-        verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
-
-        verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
-        verifyEmailNotificationIsNotRaisedWithContent("respondent-org@email.com");
-
-        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-person@email.com");
-        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-org@email.com");
-    }
-
-    @Test
-    public void shouldSuppressRespondentNotificationForExParteOffenceWithoutDefenceOrganisationAssociation() throws Exception {
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_EXPARTE_JSON, courtApplicationId, null);
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
-
-        verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
-
-        verifyEmailNotificationIsNotRaisedWithContent("respondent-person-direct@email.com");
-
-        verifyEmailNotificationIsNotRaisedWithContent("thirdparty-person@email.com");
-    }
-
-    @Test
-    public void shouldSuppressDefendantAndThirdPartyNotificationsForApplicationLinkedToRealCivilCaseWithExParteOffence() throws Exception {
+    public void shouldOnlyNotifyProsecutorForCivilProceedingsApplicationWhenLinkedCaseHasExParteOffence() throws Exception {
 
         final String materialIdOne = randomUUID().toString();
         final String materialIdTwo = randomUUID().toString();
@@ -205,19 +169,52 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList());
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 
+        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
+
         final String applicationHearingId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, GENERIC_LINKED_APPLICATION_WITH_INDIVIDUAL_THIRDPARTY_JSON);
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON);
 
         final String caseResponse = getApplicationFor(courtApplicationId);
         assertThat(caseResponse, is(notNullValue()));
 
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
 
-        verifyEmailNotificationIsRaisedWithAttachment(singletonList("generic-linked-applicant@email.com"));
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
 
-        verifyEmailNotificationIsNotRaisedWithContent("generic-linked-defendant@email.com");
+        verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+    }
 
-        verifyEmailNotificationIsNotRaisedWithContent("generic-linked-thirdparty@email.com");
+    @Test
+    public void shouldOnlyNotifyProsecutorForCivilProceedingsApplicationWithDefenceOrganisationAssociatedWhenLinkedCaseHasExParteOffence() throws Exception {
+
+        final String materialIdOne = randomUUID().toString();
+        final String materialIdTwo = randomUUID().toString();
+        final String referralId = randomUUID().toString();
+        final String feesId = randomUUID().toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDoB = LocalDate.now().minusYears(30).toString();
+
+        civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, defendantDoB, feesId);
+
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
+
+        givenDefendantIsRepresentedByDefenceOrganisation(CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
+
+        final String applicationHearingId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON);
+
+        final String caseResponse = getApplicationFor(courtApplicationId);
+        assertThat(caseResponse, is(notNullValue()));
+
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
+
+        verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
+
+        verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
     }
 
     private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {
