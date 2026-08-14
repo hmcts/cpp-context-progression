@@ -9,6 +9,9 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,6 +78,8 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
+    private static final String SITTING_DAY_IN_APPLICATIONS_ONLY_PAYLOAD = "2018-11-12T09:27:12Z";
+    private static final DateTimeFormatter UTC_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForWelshTranslationRequired = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.welsh-translation-required").getMessageConsumerClient();
@@ -250,7 +255,9 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         String applicationHearingId = verifyInMessagingQueueForCourtApplicationProceedingInitiatedPrivateEvent();
         getHearingForDefendant(applicationHearingId);
 
-        final JsonObject applicationHearingConfirmedJson = getApplicationHearingJsonObject("public.listing.hearing-confirmed-applications-only.json", applicationHearingId, applicationId, courtCentreId, courtCentreName);
+        // the application notification (and therefore the welsh translation) is only sent for a hearing that is not past dated
+        final JsonObject applicationHearingConfirmedJson = getApplicationHearingJsonObject("public.listing.hearing-confirmed-applications-only.json", applicationHearingId, applicationId, courtCentreId, courtCentreName,
+                payload -> payload.replace(SITTING_DAY_IN_APPLICATIONS_ONLY_PAYLOAD, futureSittingDay()));
 
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), applicationHearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
@@ -612,6 +619,22 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
         );
+    }
+
+    private JsonObject getApplicationHearingJsonObject(final String path, final String hearingId,
+                                                       final String applicationId, final String courtCentreId, final String courtCentreName,
+                                                       final Function<String, String> payloadModifier) {
+        return stringToJsonObjectConverter.convert(
+                payloadModifier.apply(getPayload(path)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("APPLICATION_ID", applicationId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("COURT_CENTRE_NAME", courtCentreName))
+        );
+    }
+
+    private String futureSittingDay() {
+        return ZonedDateTime.now(ZoneOffset.UTC).plusDays(1).format(UTC_DATE_TIME_FORMATTER);
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
