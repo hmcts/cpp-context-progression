@@ -716,7 +716,7 @@ public class RefDataService {
                 .build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelopeFrom(metadata, payload), JsonObject.class);
-        if (isNull(response.payload())) {
+        if (isNull(response) || isNull(response.payload())) {
             return Optional.empty();
         }
         final JsonArray prosecutors = response.payload().getJsonArray("prosecutors");

@@ -125,7 +125,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 8888819367477517208L;
+    private static final long serialVersionUID = 8888819367477517209L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -158,6 +158,7 @@ public class HearingAggregate implements Aggregate {
     // we need to know if offence was added hearing because the offence was added to case of the hearing.
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
+    private Set<UUID> defendantsAddedToHearing = new HashSet<>();
 
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
     //changed GUILTY to address sonar issue : java:S1192
@@ -457,11 +458,13 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> enrichInitiateHearing(final Hearing hearing) {
+        final List<ProsecutionCase> mergedProsecutionCases = getMergedProsecutionCasesForEnrichInitiate(hearing);
+
         if (!listDefendantRequests.isEmpty()) {
             final Hearing.Builder hearingBuilder = hearing();
 
-            if (isNotEmpty(hearing.getProsecutionCases())) {
-                final List<UUID> defendantIds = hearing.getProsecutionCases().stream()
+            if (isNotEmpty(mergedProsecutionCases)) {
+                final List<UUID> defendantIds = mergedProsecutionCases.stream()
                         .map(ProsecutionCase::getDefendants)
                         .flatMap(Collection::stream)
                         .map(Defendant::getId)
@@ -495,7 +498,7 @@ public class HearingAggregate implements Aggregate {
                     .withId(hearing.getId())
                     .withJudiciary(hearing.getJudiciary())
                     .withJurisdictionType(hearing.getJurisdictionType())
-                    .withProsecutionCases(hearing.getProsecutionCases())
+                    .withProsecutionCases(mergedProsecutionCases)
                     .withCourtApplications(hearing.getCourtApplications())
                     .withProsecutionCounsels(hearing.getProsecutionCounsels())
                     .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
@@ -514,10 +517,96 @@ public class HearingAggregate implements Aggregate {
 
         if (nonNull(this.hearing)) {
             enrichedHearingBuilder.withNumberOfGroupCases(this.hearing.getNumberOfGroupCases());
+            enrichedHearingBuilder.withProsecutionCases(mergedProsecutionCases);
         }
         final Hearing enrichedHearing = enrichedHearingBuilder.build();
         addNewOffencesToHearing(enrichedHearing);
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
+    }
+
+    private List<ProsecutionCase> getMergedProsecutionCasesForEnrichInitiate(final Hearing enrichCommandHearing) {
+        if (isNull(this.hearing) || isEmpty(this.hearing.getProsecutionCases())) {
+            return enrichCommandHearing.getProsecutionCases();
+        }
+        if (isEmpty(enrichCommandHearing.getProsecutionCases())) {
+            return this.hearing.getProsecutionCases();
+        }
+        return mergeProsecutionCasesForEnrichInitiate(enrichCommandHearing.getProsecutionCases());
+    }
+
+    private List<ProsecutionCase> mergeProsecutionCasesForEnrichInitiate(final List<ProsecutionCase> payloadProsecutionCases) {
+        final List<ProsecutionCase> resultCases = new ArrayList<>();
+        final Set<UUID> processedCaseIds = new HashSet<>();
+
+        payloadProsecutionCases.forEach(payloadCase -> {
+            final Optional<ProsecutionCase> caseInHearingOptional = this.hearing.getProsecutionCases().stream()
+                    .filter(hearingCase -> hearingCase.getId().equals(payloadCase.getId()))
+                    .findFirst();
+            if (caseInHearingOptional.isPresent()) {
+                resultCases.add(getMergedProsecutionForEnrichInitiate(caseInHearingOptional.get(), payloadCase));
+            } else {
+                resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(payloadCase).build());
+            }
+            processedCaseIds.add(payloadCase.getId());
+        });
+
+        this.hearing.getProsecutionCases().stream()
+                .filter(hearingCase -> !processedCaseIds.contains(hearingCase.getId()))
+                .forEach(hearingCase -> resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(hearingCase).build()));
+
+        return resultCases;
+    }
+
+    private ProsecutionCase getMergedProsecutionForEnrichInitiate(final ProsecutionCase caseInHearing, final ProsecutionCase caseInPayload) {
+        final List<Defendant> defendantResult = new ArrayList<>();
+        final Set<UUID> processedDefendantIds = new HashSet<>();
+
+        caseInPayload.getDefendants().forEach(payloadDefendant -> {
+            final Optional<Defendant> defInHearingCaseOptional = caseInHearing.getDefendants().stream()
+                    .filter(hearingDef -> hearingDef.getId().equals(payloadDefendant.getId()))
+                    .findFirst();
+            if (defInHearingCaseOptional.isPresent()) {
+                defendantResult.add(getMergedDefendantForEnrichInitiate(defInHearingCaseOptional.get(), payloadDefendant));
+            } else {
+                defendantResult.add(Defendant.defendant().withValuesFrom(payloadDefendant).build());
+            }
+            processedDefendantIds.add(payloadDefendant.getId());
+        });
+
+        caseInHearing.getDefendants().stream()
+                .filter(hearingDef -> !processedDefendantIds.contains(hearingDef.getId()))
+                .filter(this::isDefendantAddedToHearingAfterListing)
+                .forEach(hearingDef -> defendantResult.add(Defendant.defendant().withValuesFrom(hearingDef).build()));
+
+        return ProsecutionCase.prosecutionCase().withValuesFrom(caseInPayload).withDefendants(defendantResult).build();
+    }
+
+    private Defendant getMergedDefendantForEnrichInitiate(final Defendant defendantInHearingCase, final Defendant defendantInPayloadCase) {
+        final List<Offence> offenceResult = new ArrayList<>();
+        final Set<UUID> processedOffenceIds = new HashSet<>();
+
+        ofNullable(defendantInPayloadCase.getOffences()).orElse(emptyList()).forEach(payloadOffence -> {
+            final Offence mergedOffence = ofNullable(defendantInHearingCase.getOffences()).orElse(emptyList()).stream()
+                    .filter(hearingOffence -> hearingOffence.getId().equals(payloadOffence.getId()))
+                    .findFirst()
+                    .map(hearingOffence -> Offence.offence().withValuesFrom(hearingOffence).withValuesFrom(payloadOffence).build())
+                    .orElseGet(() -> Offence.offence().withValuesFrom(payloadOffence).build());
+            offenceResult.add(mergedOffence);
+            processedOffenceIds.add(payloadOffence.getId());
+        });
+
+        ofNullable(defendantInHearingCase.getOffences()).orElse(emptyList()).stream()
+                .filter(hearingOffence -> !processedOffenceIds.contains(hearingOffence.getId()))
+                .filter(this::isOffenceAddedToHearingAfterListing)
+                .forEach(hearingOffence -> offenceResult.add(Offence.offence().withValuesFrom(hearingOffence).build()));
+
+        final Defendant.Builder builder = Defendant.defendant()
+                .withValuesFrom(defendantInPayloadCase)
+                .withOffences(offenceResult);
+        if (isNull(defendantInPayloadCase.getIsYouth()) && nonNull(defendantInHearingCase.getIsYouth())) {
+            builder.withIsYouth(defendantInHearingCase.getIsYouth());
+        }
+        return builder.build();
     }
 
     public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus, final List<ListHearingRequest> listHearingRequests) {
@@ -2065,27 +2154,30 @@ public class HearingAggregate implements Aggregate {
      */
     private Set<ProsecutionCase> getProsecutionCasesAfterMergeAtDifferentLevel(HearingListingNeeds hearingListingNeeds, final Set<ProsecutionCase> resultCases) {
         if (nonNull(this.hearing.getProsecutionCases()) && nonNull(hearingListingNeeds.getProsecutionCases())) {
-
-            // Collects combined set of case Ids
-            final Set<UUID> combinedSetOfCaseIds = hearingListingNeeds.getProsecutionCases().stream().map(ProsecutionCase::getId).collect(Collectors.toSet());
-            combinedSetOfCaseIds.addAll(this.hearing.getProsecutionCases().stream().map(ProsecutionCase::getId).collect(Collectors.toSet()));
-
-            combinedSetOfCaseIds.stream().forEach(caseId -> {
-                final Optional<ProsecutionCase> caseInHearingOptional = this.hearing.getProsecutionCases().stream().filter(hearingCase -> hearingCase.getId().equals(caseId)).findFirst();
-                final Optional<ProsecutionCase> caseInPayloadOptional = hearingListingNeeds.getProsecutionCases().stream().filter(payloadCase -> payloadCase.getId().equals(caseId)).findFirst();
-
-                if (caseInHearingOptional.isPresent()) {
-                    if (caseInPayloadOptional.isPresent()) {
-                        final ProsecutionCase mergedProsecutionCase = getMergedProsecutionFromPayloadAndHearing(caseInHearingOptional.get(), caseInPayloadOptional.get());
-                        resultCases.add(mergedProsecutionCase);
-                    } else {
-                        resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(caseInHearingOptional.get()).build());
-                    }
-                } else {
-                    resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(caseInPayloadOptional.get()).build());
-                }
-            });
+            return mergeProsecutionCasesWithAggregateState(hearingListingNeeds.getProsecutionCases(), resultCases);
         }
+        return resultCases;
+    }
+
+    private Set<ProsecutionCase> mergeProsecutionCasesWithAggregateState(final List<ProsecutionCase> payloadProsecutionCases,
+                                                                         final Set<ProsecutionCase> resultCases) {
+        final Set<UUID> combinedSetOfCaseIds = payloadProsecutionCases.stream().map(ProsecutionCase::getId).collect(Collectors.toSet());
+        combinedSetOfCaseIds.addAll(this.hearing.getProsecutionCases().stream().map(ProsecutionCase::getId).collect(Collectors.toSet()));
+
+        combinedSetOfCaseIds.forEach(caseId -> {
+            final Optional<ProsecutionCase> caseInHearingOptional = this.hearing.getProsecutionCases().stream().filter(hearingCase -> hearingCase.getId().equals(caseId)).findFirst();
+            final Optional<ProsecutionCase> caseInPayloadOptional = payloadProsecutionCases.stream().filter(payloadCase -> payloadCase.getId().equals(caseId)).findFirst();
+
+            if (caseInHearingOptional.isPresent()) {
+                if (caseInPayloadOptional.isPresent()) {
+                    resultCases.add(getMergedProsecutionFromPayloadAndHearing(caseInHearingOptional.get(), caseInPayloadOptional.get()));
+                } else {
+                    resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(caseInHearingOptional.get()).build());
+                }
+            } else {
+                resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(caseInPayloadOptional.get()).build());
+            }
+        });
         return resultCases;
     }
 
@@ -3179,9 +3271,27 @@ public class HearingAggregate implements Aggregate {
     }
 
     public void addNewDefendant(final NewDefendantAddedToHearing newDefendantAddedToHearing) {
+        newDefendantAddedToHearing.getDefendants().forEach(defendant -> defendantsAddedToHearingSet().add(defendant.getId()));
         this.hearing.getProsecutionCases().stream().filter(prosecutionCase -> prosecutionCase.getId().equals(newDefendantAddedToHearing.getProsecutionCaseId()))
                 .forEach(prosecutionCase -> prosecutionCase.getDefendants().addAll(newDefendantAddedToHearing.getDefendants()));
 
+    }
+
+    private Set<UUID> defendantsAddedToHearingSet() {
+        if (isNull(defendantsAddedToHearing)) {
+            defendantsAddedToHearing = new HashSet<>();
+        }
+        return defendantsAddedToHearing;
+    }
+
+    private boolean isDefendantAddedToHearingAfterListing(final Defendant defendant) {
+        return defendantsAddedToHearingSet().contains(defendant.getId());
+    }
+
+    private boolean isOffenceAddedToHearingAfterListing(final Offence offence) {
+        return newOffences.contains(offence.getId()) || addedOffencesMovedToHearings.stream()
+                .flatMap(addedOffencesMovedToHearing -> addedOffencesMovedToHearing.getNewOffences().stream())
+                .anyMatch(newOffence -> newOffence.getId().equals(offence.getId()));
     }
 
     public HearingType getHearingType() {
