@@ -173,9 +173,6 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
 
-        // the case's own hearing (created as a side effect of case initiation) - reusing it, rather
-        // than a fresh random id, means progression already has a hearing view to attach the
-        // application to, avoiding a null hearingInProgression when hearing-confirmed arrives
         final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
 
@@ -207,10 +204,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 
         givenDefendantIsRepresentedByDefenceOrganisation(CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
-
-        // the case's own hearing (created as a side effect of case initiation) - reusing it, rather
-        // than a fresh random id, means progression already has a hearing view to attach the
-        // application to, avoiding a null hearingInProgression when hearing-confirmed arrives
+        
         final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
 
