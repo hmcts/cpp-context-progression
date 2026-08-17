@@ -22,7 +22,7 @@
       "summonsRequired": false
     },
     "applicationReceivedDate": "2026-08-14",
-    "applicationReference": "SCIV9694090",
+    "applicationReference": "SCIV9694091",
     "applicationStatus": "DRAFT",
     "commissionerOfOath": false,
     "courtApplicationCases": [
@@ -44,7 +44,7 @@
           "prosecutionAuthorityId": "3c39ec72-694b-4d3e-87ea-0e84fabf6816",
           "prosecutionAuthorityName": "City of London Corporation",
           "prosecutionAuthorityOUCode": "GAXLC00",
-          "caseURN": "SCIV9694090"
+          "caseURN": "SCIV9694091"
         }
       }
     ],
@@ -61,13 +61,13 @@
           "defendantCase": [
             {
               "caseId": "CASE_ID",
-              "caseReference": "SCIV9694090",
+              "caseReference": "SCIV9694091",
               "defendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50"
             }
           ],
           "masterDefendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50",
           "personDefendant": {
-            "arrestSummonsNumber": "24SINCIV01019694090C",
+            "arrestSummonsNumber": "24SINCIV01019694091C",
             "personDetails": {
               "address": {
                 "address1": "849 Akeem Stravenue",
@@ -102,13 +102,13 @@
         "defendantCase": [
           {
             "caseId": "CASE_ID",
-            "caseReference": "SCIV9694090",
+            "caseReference": "SCIV9694091",
             "defendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50"
           }
         ],
         "masterDefendantId": "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50",
         "personDefendant": {
-          "arrestSummonsNumber": "24SINCIV01019694090C",
+          "arrestSummonsNumber": "24SINCIV01019694091C",
           "personDetails": {
             "address": {
               "address1": "849 Akeem Stravenue",
@@ -169,7 +169,7 @@
     "courtCentre": {
       "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
       "name": "Lavender Hill Magistrates' Court",
-      "roomId": null,
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
       "roomName": "Courtroom 01"
     },
     "earliestStartDateTime": "2026-08-18T09:00:00.000Z",

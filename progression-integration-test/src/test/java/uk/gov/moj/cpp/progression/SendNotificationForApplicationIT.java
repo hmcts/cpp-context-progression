@@ -62,7 +62,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
-    private static final String CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-no-offences.json";
+    private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room.json";
+    private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
     private static final String CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID = "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -163,6 +164,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         final String defendantDoB = LocalDate.now().minusYears(30).toString();
+        final String courtCentreName = "Lavender Hill Magistrates' Court";
 
         civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, defendantDoB, feesId);
 
@@ -171,13 +173,16 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
 
-        final String applicationHearingId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON);
+        // the case's own hearing (created as a side effect of case initiation) - reusing it, rather
+        // than a fresh random id, means progression already has a hearing view to attach the
+        // application to, avoiding a null hearingInProgression when hearing-confirmed arrives
+        final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
 
         final String caseResponse = getApplicationFor(courtApplicationId);
         assertThat(caseResponse, is(notNullValue()));
 
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+        doHearingConfirmedForApplicationAndVerify(applicationHearingId, courtCentreName);
 
         verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
 
@@ -194,6 +199,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         final String defendantDoB = LocalDate.now().minusYears(30).toString();
+        final String courtCentreName = "Lavender Hill Magistrates' Court";
 
         civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, defendantDoB, feesId);
 
@@ -202,19 +208,44 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
         givenDefendantIsRepresentedByDefenceOrganisation(CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
 
-        final String applicationHearingId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_NO_OFFENCES_JSON);
+        // the case's own hearing (created as a side effect of case initiation) - reusing it, rather
+        // than a fresh random id, means progression already has a hearing view to attach the
+        // application to, avoiding a null hearingInProgression when hearing-confirmed arrives
+        final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
 
         final String caseResponse = getApplicationFor(courtApplicationId);
         assertThat(caseResponse, is(notNullValue()));
 
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, null, false, false);
+        doHearingConfirmedForApplicationAndVerify(applicationHearingId, courtCentreName);
 
         verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
 
         verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
 
         verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+    }
+
+    private void doHearingConfirmedForApplicationAndVerify(final String applicationHearingId, final String courtCentreName) {
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                        .withUserId(userId)
+                        .build(),
+                getHearingConfirmedWithLinkedCaseJsonObject(applicationHearingId, caseId, defendantId, courtCentreId, courtCentreName, courtApplicationId));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+    }
+
+    private JsonObject getHearingConfirmedWithLinkedCaseJsonObject(final String hearingId, final String caseId, final String defendantId,
+                                                                    final String courtCentreId, final String courtCentreName, final String applicationId) {
+        final String strPayload = getPayload(PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("APPLICATION_ID", applicationId)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("DEFENDANT_ID", defendantId);
+        return stringToJsonObjectConverter.convert(strPayload);
     }
 
     private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {

@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -314,15 +315,56 @@ public class HearingConfirmedEventProcessor {
                                   final ZonedDateTime hearingStartDateTime,
                                   final CourtApplication courtApplication) {
 
+        final CourtApplication courtApplicationForNotification = reattachCivilOffencesFromHearing(courtApplication, hearing);
+
         JsonObject payload = createObjectBuilder()
                 .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
                 .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
-                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationForNotification))
                 .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre()))
                 .build();
 
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
                 .apply(objectToJsonObjectConverter.convert(payload)));
+    }
+
+    /**
+     * HearingOffenceFilter relocates active application offences onto the hearing's prosecutionCases
+     * side before listing, clearing them from courtApplicationCase.offences. That drops the civilOffence
+     * data (e.g. isExParte) the notification suppression check relies on, so restore it here from the
+     * hearing's prosecution cases before the courtApplication is sent for notification.
+     */
+    private CourtApplication reattachCivilOffencesFromHearing(final CourtApplication courtApplication, final Hearing hearing) {
+        if (isNull(courtApplication.getCourtApplicationCases()) || isEmpty(hearing.getProsecutionCases())) {
+            return courtApplication;
+        }
+
+        final List<CourtApplicationCase> updatedCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> reattachCivilOffencesToCase(courtApplicationCase, hearing.getProsecutionCases()))
+                .collect(toList());
+
+        return CourtApplication.courtApplication().withValuesFrom(courtApplication).withCourtApplicationCases(updatedCases).build();
+    }
+
+    private CourtApplicationCase reattachCivilOffencesToCase(final CourtApplicationCase courtApplicationCase, final List<ProsecutionCase> prosecutionCases) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase;
+        }
+
+        final List<Offence> civilOffences = prosecutionCases.stream()
+                .filter(prosecutionCase -> java.util.Objects.equals(prosecutionCase.getId(), courtApplicationCase.getProsecutionCaseId()))
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getDefendants()))
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .filter(defendant -> nonNull(defendant.getOffences()))
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(toList());
+
+        if (civilOffences.isEmpty()) {
+            return courtApplicationCase;
+        }
+
+        return CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase).withOffences(civilOffences).build();
     }
 
     private boolean hasNextHearing(CourtApplication courtApplication) {
