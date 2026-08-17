@@ -204,6 +204,7 @@ public class SummonsDataPreparedEventProcessor {
                     LOGGER.info("Not generating summons for defendant with ID '{}' on case '{}' as its not a required scenario", defendantId, caseId);
                     return;
                 }
+                final boolean isExparte = isExparte(prosecutionCase, defendantId);
                 final ListDefendantRequest defendantRequest = optionalDefendantRequest.get();
                 final SummonsType summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
                 final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
@@ -220,7 +221,7 @@ public class SummonsDataPreparedEventProcessor {
                 final String prosecutorEmailAddress = getProsecutorEmailAddress(summonsApprovedOutcome);
                 final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                         summonsDataPrepared, defendantSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant, combinedDefendantDetailsForEmailChannel,
-                        sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+                        sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired, isExparte);
 
                 LOGGER.info("Generating {} summons for for defendant '{}' on case '{}'", defendantTemplateName, defendantId, caseId);
                 publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, defendantSummonsDocumentContent,
@@ -234,7 +235,7 @@ public class SummonsDataPreparedEventProcessor {
                     final UUID materialIdForParentGuardian = randomUUID();
                     final Optional<EmailChannel> emailChannelForParentGuardian = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                             summonsDataPrepared, parentGuardianSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant,
-                            combinedDefendantDetailsForEmailChannel, sendForRemotePrinting, materialIdForParentGuardian, summonsRequired);
+                            combinedDefendantDetailsForEmailChannel, sendForRemotePrinting, materialIdForParentGuardian, summonsRequired, isExparte);
 
                     LOGGER.info("Generating {} summons for parent / guardian of defendant '{}' on case '{}'", parentGuardianTemplateName, defendantId, caseId);
                     publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, parentGuardianSummonsDocumentContent,
@@ -302,6 +303,16 @@ public class SummonsDataPreparedEventProcessor {
 
     private Person getApplicationSubjectParentGuardian(final CourtApplicationParty courtApplicationParty) {
         return nonNull(courtApplicationParty.getMasterDefendant()) && isNotEmpty(courtApplicationParty.getMasterDefendant().getAssociatedPersons()) ? courtApplicationParty.getMasterDefendant().getAssociatedPersons().get(0).getPerson() : null;
+    }
+
+    private boolean isExparte(final ProsecutionCase prosecutionCase, final UUID defendantId) {
+        if (nonNull(prosecutionCase.getIsCivil()) && Boolean.TRUE.equals(prosecutionCase.getIsCivil())) {
+            return prosecutionCase.getDefendants().stream()
+                    .filter(def -> def.getId().equals(defendantId))
+                    .anyMatch(def -> def.getOffences().stream()
+                            .anyMatch(offence -> nonNull(offence.getCivilOffence()) && offence.getCivilOffence().getIsExParte()));
+        }
+        return false;
     }
 
 }
