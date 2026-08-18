@@ -34,6 +34,7 @@ import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrgan
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsNotRaisedWithContent;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorDataForGivenProsecutionAuthorityId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCivilProsecutionCaseMatchers;
 
@@ -65,6 +66,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
     private static final String CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID = "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50";
+    private static final String CIVIL_PROCEEDINGS_PROSECUTION_AUTHORITY_ID = "3c39ec72-694b-4d3e-87ea-0e84fabf6816";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
@@ -172,6 +174,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
+        stubApplicantIsNotCpsProsecutor();
 
         final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
@@ -204,7 +207,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
 
         givenDefendantIsRepresentedByDefenceOrganisation(CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
-        
+        stubApplicantIsNotCpsProsecutor();
+
         final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON);
 
@@ -218,6 +222,11 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
 
         verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+    }
+
+    private void stubApplicantIsNotCpsProsecutor() {
+        stubQueryProsecutorDataForGivenProsecutionAuthorityId("restResource/referencedata.query.prosecutor.not-cps.json",
+                CIVIL_PROCEEDINGS_PROSECUTION_AUTHORITY_ID, "GAXLC00");
     }
 
     private void doHearingConfirmedForApplicationAndVerify(final String applicationHearingId, final String courtCentreName) {
