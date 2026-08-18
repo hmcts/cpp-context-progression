@@ -692,6 +692,49 @@ public class ListCourtHearingTransformerTest {
     }
 
     @Test
+    void shouldClearPreResolvedRoomForDateRangeCaseWhenNoEnforcementAutoSlotAvailable() {
+        // PCF's generic, business-type-agnostic OUCODE ref-data lookup may already have resolved a
+        // court room before this ever reaches Progression - that room must NOT be trusted for an
+        // ENF_AUTO case unless a genuine ENF_AUTO slot was confirmed, otherwise Listing's legacy
+        // auto-allocate pipeline (blind to business type) would book it into an unrelated session.
+        when(listingService.findAvailableHearingSlot(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        final UUID preResolvedRoomId = randomUUID();
+        final List<ListHearingRequest> listHearingRequest = List.of(ListHearingRequest.listHearingRequest()
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCenterId)
+                        .withCode("B01LY00")
+                        .withName("Court Name")
+                        .withRoomId(preResolvedRoomId)
+                        .build())
+                .withListedStartDateTime(listedStartDateTime)
+                .withListedEndDateTime(listedStartDateTime.plusDays(365))
+                .withEstimateMinutes(15)
+                .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantOffences(List.of(offenceId))
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build());
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        assertThat(hearing.getCourtCentre().getRoomId(), nullValue());
+        // unrelated courtCentre fields must still be preserved
+        assertThat(hearing.getCourtCentre().getId(), is(courtCenterId));
+        assertThat(hearing.getCourtCentre().getName(), is("Court Name"));
+    }
+
+    @Test
     void shouldNotSearchForASlotWhenCaseIsNotOtherType() {
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
                 earliestStartDateTime, listedStartDateTime.plusDays(365));
