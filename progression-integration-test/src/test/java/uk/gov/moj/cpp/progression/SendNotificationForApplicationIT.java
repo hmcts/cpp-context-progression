@@ -128,7 +128,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendNotificationWhenApplicationCreated() throws Exception {
+    void shouldSendNotificationWhenApplicationCreated() throws Exception {
         givenDefendantIsRepresentedByDefenceOrganisation(respondentDefendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
@@ -143,7 +143,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendPublicEventWhenApplicationCreatedWithWelshTranslationRequired() throws Exception {
+    void shouldSendPublicEventWhenApplicationCreatedWithWelshTranslationRequired() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
@@ -157,7 +157,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldOnlyNotifyProsecutorForCivilProceedingsApplicationWhenLinkedCaseHasExParteOffence() throws Exception {
+    void shouldOnlyNotifyProsecutorForCivilProceedingsApplicationWhenLinkedCaseHasExParteOffence() throws Exception {
 
         final String materialIdOne = randomUUID().toString();
         final String materialIdTwo = randomUUID().toString();
@@ -190,7 +190,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldOnlyNotifyProsecutorForExParteCivilApplicationWithDefenceOrganisation() throws Exception {
+    void shouldOnlyNotifyProsecutorForExParteCivilApplicationWithDefenceOrganisation() throws Exception {
 
         final String materialIdOne = randomUUID().toString();
         final String materialIdTwo = randomUUID().toString();
