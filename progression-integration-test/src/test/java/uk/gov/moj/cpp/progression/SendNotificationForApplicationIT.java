@@ -190,7 +190,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldOnlyNotifyProsecutorForCivilProceedingsApplicationWithDefenceOrganisationAssociatedWhenLinkedCaseHasExParteOffence() throws Exception {
+    public void shouldOnlyNotifyProsecutorForExParteCivilApplicationWithDefenceOrganisation() throws Exception {
 
         final String materialIdOne = randomUUID().toString();
         final String materialIdTwo = randomUUID().toString();
