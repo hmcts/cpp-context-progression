@@ -304,12 +304,22 @@ public class ListCourtHearingTransformer {
                 ? resolveEnforcementSlot(jsonEnvelope, listHearingRequest, listOfProsecutionCase, expectedListingStartDateTime)
                 : Optional.empty();
 
+        // ENF_AUTO (date-range) OTHER-type cases must not fall back to PCF's generic OUCODE-resolved
+        // room when no Enforcement (Auto) slot is confirmed - that room has no relation to whether an
+        // ENF_AUTO session actually exists there, and would otherwise let Listing's business-type-blind
+        // legacy auto-allocate pipeline book it into an unrelated (e.g. NCFL) session instead of Unallocated.
+        final boolean isUnconfirmedEnforcementAutoCase = availableSlot.isEmpty()
+                && isOtherTypeCase(listOfProsecutionCase)
+                && nonNull(listHearingRequest.getListedEndDateTime());
+
         final CourtCentre courtCentre = availableSlot
                 .map(slot -> CourtCentre.courtCentre()
                         .withValuesFrom(listHearingRequest.getCourtCentre())
                         .withRoomId(UUID.fromString(slot.courtRoomId()))
                         .build())
-                .orElseGet(listHearingRequest::getCourtCentre);
+                .orElseGet(() -> isUnconfirmedEnforcementAutoCase && nonNull(listHearingRequest.getCourtCentre())
+                        ? CourtCentre.courtCentre().withValuesFrom(listHearingRequest.getCourtCentre()).withRoomId(null).build()
+                        : listHearingRequest.getCourtCentre());
         final ZonedDateTime listedStartDateTime = availableSlot
                 .map(AvailableHearingSlot::hearingStartTime)
                 .orElseGet(listHearingRequest::getListedStartDateTime);
@@ -341,14 +351,16 @@ public class ListCourtHearingTransformer {
     }
 
     /**
-     * OTHER-type cases (initiationCode "O") submitted as a date range (business type "ENF_AUTO")
-     * have no pre-assigned court room - find one by searching Listing's existing hearing-slots
-     * search across the whole listedStartDateTime-to-listedEndDateTime span in one call. Single-date
-     * ("ENF") submissions are left exactly as submitted - no search is performed for them. Returns
-     * empty if there's nothing to search (no court centre/date, or not a date-range submission) or
-     * no slot is available - the case is left exactly as submitted, which Listing's own unchanged
-     * allocation logic already treats as "not a candidate" (no pre-assigned room), landing it in
-     * Unallocated.
+     * OTHER-type cases (initiationCode "O") submitted as a date range (business type "ENF_AUTO") must
+     * be allocated only to a genuinely confirmed ENF_AUTO session - find one by searching Listing's
+     * existing hearing-slots search across the whole listedStartDateTime-to-listedEndDateTime span in
+     * one call. PCF may already have resolved a court room for the submitted OUCODE via its generic,
+     * business-type-agnostic reference-data lookup, but that room must not be trusted here: the caller
+     * (buildHearingListingNeeds) discards it when this method returns empty for a date-range case, so
+     * the hearing lands in Unallocated rather than being silently booked into an unrelated business
+     * type by Listing's legacy auto-allocate pipeline. Single-date ("ENF") submissions are left exactly
+     * as submitted - no search is performed for them; that business type is assigned via manual UI
+     * allocation, not this API-driven search.
      */
     private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
                                                                    final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
