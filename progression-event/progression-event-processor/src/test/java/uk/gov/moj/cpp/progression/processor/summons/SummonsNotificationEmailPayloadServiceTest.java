@@ -111,6 +111,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
     private static final String SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID = randomUUID().toString();
     private static final String SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID = randomUUID().toString();
+    private static final String SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID = randomUUID().toString();
     private static final String SUMMONS_REJECTED_TEMPLATE_ID = randomUUID().toString();
 
     private static final String PROPERTY_CASE_REFERENCE = "caseReference";
@@ -140,7 +141,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         
         final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), BOOLEAN.next(),
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SJP_REFERRAL);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SJP_REFERRAL, false);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -166,7 +167,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, null, defendantIds, defendant, emptyList(), BOOLEAN.next(),
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -180,7 +181,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, "", defendantIds, defendant, emptyList(), BOOLEAN.next(),
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -219,7 +220,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(),
-                sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
+                sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -250,7 +251,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         final EmailChannel result = optionalResult.get();
@@ -287,7 +288,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         final EmailChannel result = optionalResult.get();
@@ -324,7 +325,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant,
-                emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
+                emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         final EmailChannel result = optionalResult.get();
@@ -362,7 +363,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant,
-                emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
+                emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         final EmailChannel result = optionalResult.get();
@@ -470,7 +471,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
 
         final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, newArrayList(), sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         final EmailChannel result = optionalResult.get();
@@ -527,6 +528,63 @@ public class SummonsNotificationEmailPayloadServiceTest {
     }
 
     @Test
+    public void shouldBuildEmailNotificationForCaseSummonsWhenNotSuppressedAndExParteTrue() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
+        final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
+        final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
+        final boolean sendForRemotePrinting = true;
+
+        when(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
+                summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, newArrayList(), sendForRemotePrinting,
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, true);
+
+        assertThat(optionalResult.isPresent(), is(true));
+        final EmailChannel result = optionalResult.get();
+        assertThat(result.getTemplateId(), is(fromString(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID)));
+        assertThat(result.getMaterialUrl(), is(nullValue()));
+        assertThat(result.getSendToAddress(), is(EMAIL_ADDRESS));
+        assertThat(result.getPersonalisation(), is(notNullValue()));
+        final Map<String, Object> additionalProperties = result.getPersonalisation().getAdditionalProperties();
+        assertThat(additionalProperties, is(notNullValue()));
+        assertThat(additionalProperties.entrySet(), hasSize(5));
+        assertThat(additionalProperties.get(PROPERTY_CASE_REFERENCE), is(CASE_URN));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_DETAILS), is(format("%s %s %s, %s", DEFENDANT_FIRST_NAME, DEFENDANT_MIDDLE_NAME, DEFENDANT_LAST_NAME, PROSECUTION_AUTHORITY_REFERENCE)));
+        assertThat(additionalProperties.get(PROPERTY_COURT_LOCATION), is(COURT_NAME));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_DATE), is("27 Oct 2013"));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_TIME), is(HEARING_TIME));
+
+        verify(applicationParameters).getSummonsApprovedAndNotSuppressedTemplateId();
+        verifyNoInteractions(materialUrlGenerator);
+    }
+
+    @Test
+    public void shouldBuildEmailNotificationForCaseSummonsWhenSuppressedAndExParteTrue() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
+        final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
+        final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
+        final boolean sendForRemotePrinting = false;
+
+        when(applicationParameters.getSummonsApprovedExParteTrueTemplateId()).thenReturn(SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
+                summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, newArrayList(), sendForRemotePrinting,
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, true);
+
+        assertThat(optionalResult.isPresent(), is(true));
+        final EmailChannel result = optionalResult.get();
+        assertThat(result.getTemplateId(), is(fromString(SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID)));
+        assertThat(result.getMaterialUrl(), is(nullValue()));
+        assertThat(result.getSendToAddress(), is(EMAIL_ADDRESS));
+
+        verify(applicationParameters).getSummonsApprovedExParteTrueTemplateId();
+        verifyNoInteractions(materialUrlGenerator);
+    }
+
+    @Test
     public void shouldBuildOnlyOneEmailNotificationWithAllDefendantDetailsForCaseSummonsWhenNotSuppressedAndCaseHasMultipleDefendants() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCaseWithMultipleDefendants();
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID, DEFENDANT_ID_2, DEFENDANT_ID_3);
@@ -540,7 +598,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //email notification not generated for first defendant
         Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(false));
         assertThat(defendantDetails, hasSize(1));
@@ -552,7 +610,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //email notification not generated for second defendant
         optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(false));
         assertThat(defendantDetails, hasSize(2));
@@ -564,7 +622,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //combined email notification generated for third/last defendant
         optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         assertThat(defendantDetails, hasSize(3));
@@ -608,7 +666,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //email notification generated for first defendant
         Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         assertThat(defendantDetails, hasSize(0));
@@ -621,7 +679,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //email notification generated for second defendant
         optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         assertThat(defendantDetails, hasSize(0));
@@ -634,7 +692,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         //email notification generated for third defendant
         optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
-                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED, false);
 
         assertThat(optionalResult.isPresent(), is(true));
         assertThat(defendantDetails, hasSize(0));

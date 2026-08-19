@@ -236,17 +236,6 @@ public class HearingUpdatedEventProcessor {
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
     }
 
-    @Handles("public.events.listing.hearing-days-without-court-centre-corrected")
-    public void handlerHearingChangedToProbationCaseWorker(final JsonEnvelope event) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("public.events.listing.hearing-days-without-court-centre-corrected event received with  {}", event.toObfuscatedDebugString());
-        }
-
-        sender.send(envelop(event.payloadAsJsonObject())
-                .withName("progression.command.correct-hearing-days-without-court-centre")
-                .withMetadataFrom(event));
-    }
-
     @Handles("progression.event.all-hearing-offences-updated-v2")
     public void handleAllHearingOffenceUpdated(final JsonEnvelope event) {
         if (LOGGER.isDebugEnabled()) {

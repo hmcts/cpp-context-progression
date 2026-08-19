@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script that runs, liquibase, deploys wars and runs integration tests
-
+#
 CONTEXT_NAME=progression
 
 FRAMEWORK_LIBRARIES_VERSION=$(mvn help:evaluate -Dexpression=framework-libraries.version -q -DforceStdout)
