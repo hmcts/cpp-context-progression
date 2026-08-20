@@ -178,4 +178,47 @@ public class UsersAndGroupsStub {
                         .withBody(body)));
     }
 
+    public static final String PERMISSIONS_QUERY = BASE_QUERY + "/permissions";
+    public static final String PERMISSIONS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.permissions+json";
+
+    /**
+     * Default stub for the usersgroups.permissions query, returning no permissions. Registered in
+     * {@code defaultStubs()} so that every command that now consults this query (e.g. the
+     * initiate-court-proceedings-for-application hearing-type validation) behaves as "no locked
+     * mapping" unless a test overrides it with {@link #stubLockedHearingTypePermission}.
+     */
+    public static void stubEmptyPermissionsQuery() {
+        stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
+                        .withBody(Json.createObjectBuilder()
+                                .add("permissions", Json.createArrayBuilder())
+                                .build().toString())));
+    }
+
+    /**
+     * Stubs the usersgroups.permissions query to return a single active HearingType permission
+     * mapping the given application type ({@code source}) to the allowed hearing type ({@code target}).
+     */
+    public static void stubHearingTypePermission(final String source, final String target) {
+        final String body = Json.createObjectBuilder()
+                .add("permissions", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("permissionId", randomUUID().toString())
+                                .add("object", "HearingType")
+                                .add("action", "Locked")
+                                .add("active", true)
+                                .add("source", source)
+                                .add("target", target)))
+                .build().toString();
+
+        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY)));
+        stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
+                        .withBody(body)));
+    }
+
 }
