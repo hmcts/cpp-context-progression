@@ -41,6 +41,7 @@ class ApplicationParametersTest {
     private static final String CASE_ATA_GLANCE_URI = "prosecution-casefile/case-at-a-glance/";
     private static final String SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID = "summons-suppressed-id";
     private static final String SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID = "summons-not-suppressed-id";
+    private static final String SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID = "summons-ex-parte-true-id";
     private static final String SUMMONS_REJECTED_TEMPLATE_ID = "summons-rejected-id";
     private static final String STATDEC_SEND_APPOINTMENT_LETTER_TEMPLATE_ID = "statdec-appointment-id";
     private static final String ONLINE_GUILTY_PLEA_COURT_HEARING_ENGLISH_ID = "guilty-court-english-id";
@@ -84,6 +85,7 @@ class ApplicationParametersTest {
         setField(applicationParameters, "caseAtaGlanceURI", CASE_ATA_GLANCE_URI);
         setField(applicationParameters, "summonsApprovedAndSuppressedTemplateId", SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
         setField(applicationParameters, "summonsApprovedAndNotSuppressedTemplateId", SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
+        setField(applicationParameters, "summonsApprovedExParteTrueTemplateId", SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID);
         setField(applicationParameters, "summonsRejectedTemplateId", SUMMONS_REJECTED_TEMPLATE_ID);
         setField(applicationParameters, "statDecSendAppointmentLetterTemplateId", STATDEC_SEND_APPOINTMENT_LETTER_TEMPLATE_ID);
         setField(applicationParameters, "onlineGuiltyPleaCourtHearingEnglishTemplateId", ONLINE_GUILTY_PLEA_COURT_HEARING_ENGLISH_ID);
@@ -196,6 +198,11 @@ class ApplicationParametersTest {
     @Test
     void shouldReturnSummonsApprovedAndNotSuppressedTemplateId() {
         assertThat(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId(), is(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID));
+    }
+
+    @Test
+    void shouldReturnSummonsApprovedExParteTrueTemplateId() {
+        assertThat(applicationParameters.getSummonsApprovedExParteTrueTemplateId(), is(SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID));
     }
 
     @Test

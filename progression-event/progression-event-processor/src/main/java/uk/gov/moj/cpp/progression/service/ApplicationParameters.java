@@ -122,6 +122,10 @@ public class ApplicationParameters {
     private String summonsApprovedAndNotSuppressedTemplateId;
 
     @Inject
+    @Value(key = "summons_approved_ex_parte_true_template_id")
+    private String summonsApprovedExParteTrueTemplateId;
+
+    @Inject
     @Value(key = "summons_rejected_template_id")
     private String summonsRejectedTemplateId;
 
@@ -282,6 +286,10 @@ public class ApplicationParameters {
 
     public String getSummonsApprovedAndNotSuppressedTemplateId() {
         return summonsApprovedAndNotSuppressedTemplateId;
+    }
+
+    public String getSummonsApprovedExParteTrueTemplateId() {
+        return summonsApprovedExParteTrueTemplateId;
     }
 
     public String getSummonsRejectedTemplateId() {
