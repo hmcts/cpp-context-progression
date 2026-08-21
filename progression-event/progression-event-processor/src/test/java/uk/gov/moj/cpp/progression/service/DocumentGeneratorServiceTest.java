@@ -33,7 +33,7 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.event.nows.order.Address;
 import uk.gov.moj.cpp.progression.event.nows.order.Cases;
 import uk.gov.moj.cpp.progression.event.nows.order.Defendant;

@@ -51,7 +51,7 @@ import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 
 import java.time.ZonedDateTime;

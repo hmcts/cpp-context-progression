@@ -113,10 +113,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.progression.listing.domain.ListedCase;
+import uk.gov.moj.cpp.progression.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import java.io.IOException;
@@ -2168,9 +2168,9 @@ public class ReportsTransformerTest {
     private static Hearing getHearingFromListing(final UUID hearingId, final UUID seedingHearingId, final UUID defendantId, final UUID offenceId) {
         return Hearing.hearing().withId(hearingId)
                 .withListedCases(singletonList(ListedCase.listedCase()
-                        .withDefendants(singletonList(uk.gov.moj.cpp.listing.domain.Defendant.defendant()
+                        .withDefendants(singletonList(uk.gov.moj.cpp.progression.listing.domain.Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(singletonList(uk.gov.moj.cpp.listing.domain.Offence.offence()
+                                .withOffences(singletonList(uk.gov.moj.cpp.progression.listing.domain.Offence.offence()
                                         .withId(offenceId)
                                         .withSeedingHearing(Optional.of(SeedingHearing.seedingHearing()
                                                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
