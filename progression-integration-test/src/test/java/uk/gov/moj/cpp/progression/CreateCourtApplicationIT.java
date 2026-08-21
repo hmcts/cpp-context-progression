@@ -174,10 +174,9 @@ public class CreateCourtApplicationIT extends AbstractIT {
 
         assertThat(response.getStatusCode(), is(SC_BAD_REQUEST));
 
+        stubHearingTypePermission(standaloneApplicationTypeId, "8cdfd3da-8900-42ca-9835-9f29d1e03cd6");
         response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
                 "applications/progression.initiate-court-proceedings-for-standalone-application.json");
-
-        stubHearingTypePermission(standaloneApplicationTypeId, "8cdfd3da-8900-42ca-9835-9f29d1e03cd6");
 
         assertThat(response.getStatusCode(), is(SC_ACCEPTED));
     }
