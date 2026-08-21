@@ -11,7 +11,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.289-SNAPSHOT</version>
+    <version>17.0.289-PEG-3347-N-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -88,7 +88,8 @@
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
 
-        <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency>
+        <!-- <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency> -->
+        <mireportdata.version>17.0.116-PEG-3347-N-SNAPSHOT</mireportdata.version>
         <dbunit-maven-plugin.version>1.0-beta-3</dbunit-maven-plugin.version>
         <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
         <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
@@ -150,11 +151,11 @@
                 <artifactId>stream-transformation-tool-anonymise</artifactId>
                 <version>${stream-transformation-tool.version}</version>
             </dependency>
-            <dependency>
+            <!-- <dependency>
                 <groupId>uk.gov.moj.cpp.core.domain</groupId>
                 <artifactId>mireportdata-cc-dependency</artifactId>
                 <version>${mireportdata-cc-dependency}</version>
-            </dependency>
+            </dependency> -->
             <dependency>
                 <groupId>uk.gov.justice.json</groupId>
                 <artifactId>json-transformer-jolt</artifactId>

@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.0.289-SNAPSHOT</version>
+        <version>17.0.289-PEG-3347-N-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-listener</artifactId>
     <packaging>war</packaging>
@@ -36,6 +36,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
@@ -62,11 +67,21 @@
             <artifactId>json-smart</artifactId>
         </dependency>
 
+        <!-- MI schema contract: JSON schemas only, no compiled bytecode.
+             Decouples progression from MI's framework version. -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
+            <artifactId>mireportdata-progression-event-listener</artifactId>
+            <version>${mireportdata.version}</version>
+            <classifier>schema-resources</classifier>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
-            <!-- MI schema contract validation tests jar dependency-->
+            <!-- MI schema contract validation tests jar dependency - replaced by schema-resources classifier
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -94,6 +109,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 
