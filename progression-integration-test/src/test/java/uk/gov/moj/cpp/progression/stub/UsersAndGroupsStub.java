@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -213,12 +214,21 @@ public class UsersAndGroupsStub {
                                 .add("target", target)))
                 .build().toString();
 
-        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY)));
+        removeHearingTypePermission(source);
         stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("HearingType"))
+                .withQueryParam("source", equalTo(source))
+                .atPriority(1)
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
                         .withBody(body)));
+    }
+
+    public static void removeHearingTypePermission(final String source) {
+        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("HearingType"))
+                .withQueryParam("source", equalTo(source)));
     }
 
 }
