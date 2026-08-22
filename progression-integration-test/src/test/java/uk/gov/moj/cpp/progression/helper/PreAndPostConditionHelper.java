@@ -398,6 +398,25 @@ public class PreAndPostConditionHelper {
 
     }
 
+    /**
+     * Civil fees are separate event streams keyed by feeId. A fixed feeId reused across every test
+     * run accumulates real history in the persistent event store, causing a version-mismatch once
+     * that stream already exists from a previous run. Callers must generate a fresh feeId per run.
+     */
+    public static Response initiateCourtProceedingsWithCivilFees(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
+                                                    final String materialIdTwo, final String referralId,
+                                                    final String caseUrn,
+                                                    final String listedStartDateTime, final String earliestStartDateTime, final String dob,
+                                                    final String feeIdOne, final String feeIdTwo) {
+        final String payload = getInitiateCourtProceedingsJsonFromResource(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob)
+                .replace("RANDOM_FEE_ID_ONE", feeIdOne)
+                .replace("RANDOM_FEE_ID_TWO", feeIdTwo);
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                payload);
+
+    }
+
     public static Response initiateCourtProceedings(final String resourceLocation, final String caseId, final String defendantId, final String defendantId2, final String materialIdOne,
                                                     final String materialIdTwo, final String referralId,
                                                     final String caseUrn,
@@ -919,7 +938,9 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_REFERRAL_ID", referralId)
                 .replace("LISTED_START_DATE_TIME", listedStartDateTime)
                 .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
-                .replace("DOB", dob);
+                .replace("DOB", dob)
+                .replace("AUTO_FEE_ID_ONE", randomUUID().toString())
+                .replace("AUTO_FEE_ID_TWO", randomUUID().toString());
 
     }
 
