@@ -69,6 +69,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
@@ -904,6 +905,12 @@ public class ApplicationAggregate implements Aggregate {
                 .withApplicationId(courtApplicationId)
                 .withHearingId(this.initiateCourtApplicationProceedings.getCourtHearing().getId())
                 .withSeedingHearingId(seedingHearingId)
+                .build()));
+    }
+
+    public Stream<Object> deleteCourtApplicationByBdf(final UUID courtApplicationId) {
+        return apply(Stream.of(CourtApplicationDeletedBdf.courtApplicationDeletedBdf()
+                .withApplicationId(courtApplicationId)
                 .build()));
     }
 
