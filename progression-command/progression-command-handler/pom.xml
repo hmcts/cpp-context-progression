@@ -3,11 +3,10 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-        <version>17.0.281-CHD-2306-SNAPSHOT</version>
+        <version>17.0.291-CHD-2306-SNAPSHOT</version>
     </parent>
     <artifactId>progression-command-handler</artifactId>
     <packaging>war</packaging>
-
 
     <properties>
         <cpp.service-component>COMMAND_HANDLER</cpp.service-component>
