@@ -8,7 +8,6 @@
     <artifactId>progression-command-handler</artifactId>
     <packaging>war</packaging>
 
-
     <properties>
         <cpp.service-component>COMMAND_HANDLER</cpp.service-component>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
