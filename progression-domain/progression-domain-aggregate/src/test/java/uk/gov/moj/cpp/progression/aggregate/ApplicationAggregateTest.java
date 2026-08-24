@@ -65,6 +65,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -1665,6 +1666,17 @@ public class ApplicationAggregateTest {
         assertThat(event.getApplicationId(), is(courtApplicationId));
         assertThat(event.getSeedingHearingId(), is(seedingHearingId));
         assertThat(event.getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldDeleteCourtApplicationByBdf() {
+        final UUID courtApplicationId = randomUUID();
+
+        final List<Object> eventStream = aggregate.deleteCourtApplicationByBdf(courtApplicationId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationDeletedBdf event = (CourtApplicationDeletedBdf) eventStream.get(0);
+        assertThat(event.getApplicationId(), is(courtApplicationId));
     }
 
     @Test
