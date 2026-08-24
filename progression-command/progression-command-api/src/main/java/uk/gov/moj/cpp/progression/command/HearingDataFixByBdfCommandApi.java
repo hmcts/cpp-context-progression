@@ -58,6 +58,19 @@ public class HearingDataFixByBdfCommandApi {
                 .withMetadataFrom(envelope));
     }
 
+    @Handles("progression.command.remove-application-bdf")
+    public void removeApplication(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.court-application-deleted-bdf'
+         * event to delete a court application created by mistake.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.handler.remove-application-bdf")
+                .withMetadataFrom(envelope));
+    }
+
     @Handles("progression.command.remove-duplicate-application-bdf")
     public void removeDuplicateApplication(final JsonEnvelope envelope) {
         /**

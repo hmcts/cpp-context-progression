@@ -43,6 +43,18 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     }
 
     @Test
+    public void shouldRaiseCommandToRemoveApplication() throws Exception {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                metadataWithDefaults().withName("progression.command.remove-application-bdf"),
+                Json.createObjectBuilder()
+                        .build()
+        );
+
+        commandApi.removeApplication(jsonEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+    }
+
+    @Test
     public void shouldRaiseCommandToRemoveDuplicateApplications() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.command.handler.remove-duplicate-application-bdf"),
