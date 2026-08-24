@@ -75,6 +75,12 @@
             <version>${mireportdata.version}</version>
             <classifier>schema-resources</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
