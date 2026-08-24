@@ -140,6 +140,21 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- MI schema contract: JSON schemas only, no compiled bytecode.
+             Decouples progression from MI's framework version. -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
+            <artifactId>mireportdata-progression-event-listener</artifactId>
+            <version>${mireportdata.version}</version>
+            <classifier>schema-resources</classifier>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>uk.co.jemos.podam</groupId>
             <artifactId>podam</artifactId>
@@ -450,6 +465,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- MI schema contract: processor-tests replaced by schema-resources classifier
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -477,6 +493,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
