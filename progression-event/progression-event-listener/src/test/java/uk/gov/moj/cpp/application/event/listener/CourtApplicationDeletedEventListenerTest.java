@@ -2,9 +2,12 @@ package uk.gov.moj.cpp.application.event.listener;
 
 
 import static java.util.UUID.randomUUID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationHearingDeleted;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
@@ -38,6 +41,9 @@ public class CourtApplicationDeletedEventListenerTest {
     @Mock
     private Envelope<CourtApplicationHearingDeleted> envelope;
 
+    @Mock
+    private Envelope<CourtApplicationDeletedBdf> bdfEnvelope;
+
     @InjectMocks
     private CourtApplicationDeletedEventListener courtApplicationDeletedEventListener;
 
@@ -61,6 +67,23 @@ public class CourtApplicationDeletedEventListenerTest {
         verify(courtApplicationRepository).removeByApplicationId(applicationId);
         verify(hearingRepository).removeByHearingId(hearingId);
 
+    }
+
+    @Test
+    public void shouldProcessCourtApplicationDeletedByBdfEvent() {
+        final UUID applicationId = randomUUID();
+
+        when(bdfEnvelope.payload()).thenReturn(CourtApplicationDeletedBdf.courtApplicationDeletedBdf()
+                .withApplicationId(applicationId)
+                .build()
+        );
+
+        courtApplicationDeletedEventListener.processCourtApplicationDeletedByBdfEvent(bdfEnvelope);
+
+        verify(hearingApplicationRepository).removeByApplicationId(applicationId);
+        verify(courtApplicationCaseRepository).removeByApplicationId(applicationId);
+        verify(courtApplicationRepository).removeByApplicationId(applicationId);
+        verify(hearingRepository, never()).removeByHearingId(any());
     }
 
 }
