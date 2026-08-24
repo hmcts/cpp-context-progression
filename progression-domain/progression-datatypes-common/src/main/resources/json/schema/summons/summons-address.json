@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/summons/summons-address.json",
+  "description": "The address rendered in a Summons document",
+  "type": "object",
+  "properties": {
+    "line1": {
+	  "type": "string"
+	},
+	"line1Welsh": {
+	  "type": "string"
+	},
+	"line2": {
+	  "type": "string"
+	},
+	"line2Welsh": {
+	  "type": "string"
+	},
+	"line3": {
+	  "type": "string"
+	},
+	"line3Welsh": {
+	  "type": "string"
+	},
+	"line4": {
+	  "type": "string"
+	},
+	"line4Welsh": {
+	  "type": "string"
+	},
+	"line5": {
+	  "type": "string"
+	},
+	"line5Welsh": {
+	  "type": "string"
+	},
+	"postCode": {
+	  "type": "string"
+	}
+  },
+  "required": [
+    "line1"
+  ],
+  "additionalProperties": false
+}
