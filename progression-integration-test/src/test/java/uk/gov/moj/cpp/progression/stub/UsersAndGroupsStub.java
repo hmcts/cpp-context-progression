@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -13,6 +14,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
@@ -174,6 +176,58 @@ public class UsersAndGroupsStub {
                         .withHeader(ID, userId)
                         .withHeader(CONTENT_TYPE, "application/json")
                         .withBody(body)));
+    }
+
+    public static final String PERMISSIONS_QUERY = BASE_QUERY + "/permissions";
+    public static final String PERMISSIONS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.permissions+json";
+
+    /**
+     * Default stub for the usersgroups.permissions query, returning no permissions. Registered in
+     * {@code defaultStubs()} so that every command that now consults this query (e.g. the
+     * initiate-court-proceedings-for-application hearing-type validation) behaves as "no locked
+     * mapping" unless a test overrides it with {@link #stubLockedHearingTypePermission}.
+     */
+    public static void stubEmptyPermissionsQuery() {
+        stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
+                        .withBody(createObjectBuilder()
+                                .add("permissions", createArrayBuilder())
+                                .build().toString())));
+    }
+
+    /**
+     * Stubs the usersgroups.permissions query to return a single active HearingType permission
+     * mapping the given application type ({@code source}) to the allowed hearing type ({@code target}).
+     */
+    public static void stubHearingTypePermission(final String source, final String target) {
+        final String body = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("permissionId", randomUUID().toString())
+                                .add("object", "HearingType")
+                                .add("action", "Locked")
+                                .add("active", true)
+                                .add("source", source)
+                                .add("target", target)))
+                .build().toString();
+
+        removeHearingTypePermission(source);
+        stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("HearingType"))
+                .withQueryParam("source", equalTo(source))
+                .atPriority(1)
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
+                        .withBody(body)));
+    }
+
+    public static void removeHearingTypePermission(final String source) {
+        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("HearingType"))
+                .withQueryParam("source", equalTo(source)));
     }
 
 }

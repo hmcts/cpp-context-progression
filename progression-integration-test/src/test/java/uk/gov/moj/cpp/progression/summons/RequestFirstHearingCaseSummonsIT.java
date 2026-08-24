@@ -85,6 +85,7 @@ import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -147,6 +148,17 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         prosecutorEmailAddress = randomAlphanumeric(20) + "@random.com";
 
         initialiseDefendantDetails();
+    }
+
+    @Test
+    public void shouldGenerateSummonsPayloadForFirstHearingWhenSuppressedAndExParteTrue() throws IOException {
+        final String summonsCode = "M";
+        final String summonsType = "MCA";
+        final String templateName = "MCA";
+        final boolean isWelsh = false;
+
+        initiateCourtProceedings(getPayloadForInitiatingCivilExParteCourtProceedings(summonsCode, isWelsh));
+        verifySummonsGeneratedOnHearingConfirmedForExParte(defendantId1, offenceId1, isWelsh, summonsType, templateName);
     }
 
     @MethodSource("firstHearingSummonsSpecifications")
@@ -367,6 +379,48 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     }
 
+    private void verifySummonsGeneratedOnHearingConfirmedForExParte(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName) {
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId,
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[?(@.id == '" + defendantId + "')].offences[0]", hasSize(greaterThanOrEqualTo(1))),
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + defendantId + "')].hearingIds[0]", hasSize(greaterThanOrEqualTo(1))));
+
+        sendPublicEventToConfirmHearingForInitiatedCase(hearingId, defendantId, offenceId, caseId, isWelsh);
+
+        verifyDocumentAddedToCdes(defendantId, 1);
+
+        final String defendantTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + templateName;
+        verifyTemplatePayloadValues(true, defendantTemplateName, summonsType, prosecutorCost, personalService, caseUrn, getFirstName(defendantId), getMiddleName(defendantId), getLastName(defendantId));
+
+        final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
+        sendEventToConfirmMaterialAdded(materialId);
+
+        // Ex parte true: email is sent without material URL attachment (no letter, no materialUrl in email)
+        final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn);
+        verifyEmailNotificationIsRaisedWithoutAttachment(expectedEmailDetails);
+    }
+
+    private String getPayloadForInitiatingCivilExParteCourtProceedings(final String summonsCode, final boolean isWelsh) {
+        final String defendantDateOfBirth = getSubjectDateOfBirth(false);
+
+        return getPayload("progression.command.initiate-court-proceedings-first-hearing-summons-exparte.json")
+                .replaceAll("CASE_ID", caseId)
+                .replace("CASE_REFERENCE", caseUrn)
+                .replace("SUMMONS_CODE", summonsCode)
+                .replaceAll("DEFENDANT_ID", defendantId1)
+                .replaceAll("OFFENCE_ID", offenceId1)
+                .replace("DEFENDANT_DOB", defendantDateOfBirth)
+                .replace("LISTED_START_DATE_TIME", FIRST_HEARING_START_TIME.toString())
+                .replace("EARLIEST_START_DATE_TIME", FIRST_HEARING_START_TIME.toString())
+                .replace("PERSONAL_SERVICE", Boolean.toString(personalService))
+                .replace("PROSECUTOR_EMAIL", prosecutorEmailAddress)
+                .replaceAll("COURT_CENTRE_ID", isWelsh ? ReferenceDataStub.WELSH_COURT_ID : ReferenceDataStub.ENGLISH_COURT_ID)
+                .replace("FIRST_NAME", getFirstName(defendantId1))
+                .replace("MIDDLE_NAME", getMiddleName(defendantId1))
+                .replace("LAST_NAME", getLastName(defendantId1))
+                .replace("PROSECUTION_AUTHORITY_REFERENCE", defendant1ProsecutionAuthorityReference);
+    }
+
     private void initialiseDefendantDetails() {
         defendantId1 = randomUUID().toString();
         offenceId1 = randomUUID().toString();
@@ -424,3 +478,4 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     }
 
 }
+

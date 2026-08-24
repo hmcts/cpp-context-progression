@@ -283,7 +283,7 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    void shouldNotSendHearingNotifications_NoNotificationSentToAllRelevantParties_WhenCivilCaseExparteTrue() {
+    void sendHearingNotifications_EmailToDefendants_WhenCivilCaseExparteTrue() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -319,7 +319,11 @@ public class HearingNotificationHelperTest {
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
-        verifyNoInteractions(notificationService);
+        verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+
+        final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
+        verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+
         verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }

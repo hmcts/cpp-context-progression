@@ -12,7 +12,7 @@ import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.summons.ReferralSummonsDocumentContent.referralSummonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsAddressee.summonsAddressee;
 import static uk.gov.justice.core.courts.summons.SummonsDefendant.summonsDefendant;
-import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
+import static uk.gov.justice.core.courts.summons.SummonsDocument.summonsDocument;
 import static uk.gov.justice.core.courts.summons.SummonsOffence.summonsOffence;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.getSummonsCode;
@@ -40,7 +40,7 @@ import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.ReferralSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
 import uk.gov.justice.core.courts.summons.SummonsDefendant;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails;
 import uk.gov.justice.core.courts.summons.SummonsOffence;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
@@ -75,7 +75,7 @@ public class CaseDefendantSummonsService {
 
     private static final String SOW_REF_VALUE = "MoJ";
 
-    public SummonsDocumentContent generateSummonsPayloadForDefendant(final JsonEnvelope jsonEnvelope,
+    public SummonsDocument generateSummonsPayloadForDefendant(final JsonEnvelope jsonEnvelope,
                                                                      final SummonsDataPrepared summonsDataPrepared,
                                                                      final ProsecutionCase prosecutionCaseQueried,
                                                                      final Defendant defendantQueried,
@@ -84,7 +84,7 @@ public class CaseDefendantSummonsService {
                                                                      final Optional<LjaDetails> optionalLjaDetails,
                                                                      final SummonsProsecutor summonsProsecutor) {
 
-        final SummonsDocumentContent.Builder summonsDocumentContent = summonsDocumentContent();
+        final SummonsDocument.Builder summonsDocumentContent = summonsDocument();
 
         final SummonsType summonsRequired = defendantRequest.getSummonsRequired();
         summonsDocumentContent.withSubTemplateName(summonsRequired.name());
@@ -126,6 +126,10 @@ public class CaseDefendantSummonsService {
             summonsDocumentContent.withProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), false));
             summonsDocumentContent.withWelshProsecutorCosts(getProsecutorCosts(summonsApprovedOutcome.getProsecutorCost(), true));
             summonsDocumentContent.withPersonalService(summonsApprovedOutcome.getPersonalService());
+
+            if(FIRST_HEARING == summonsRequired && Boolean.TRUE.equals(summonsDataPrepared.getIsSummonsAmended())) {
+                summonsDocumentContent.withAmendedDate(LocalDate.now());
+            }
         }
         summonsDocumentContent.withStatementOfFacts(emptyIfBlank(prosecutionCaseQueried.getStatementOfFacts()));
         summonsDocumentContent.withStatementOfFactsWelsh(emptyIfBlank(prosecutionCaseQueried.getStatementOfFactsWelsh()));

@@ -112,6 +112,13 @@ public class CourtlistQueryViewTest {
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertThat(actual, is(expected));
+
+        final JsonObject defendant = actual.getJsonArray("hearingDates").getJsonObject(0)
+                .getJsonArray("courtRooms").getJsonObject(0)
+                .getJsonArray("timeslots").getJsonObject(0)
+                .getJsonArray("hearings").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0);
+        assertThat(defendant.getString("pncId"), is("1234567"));
     }
 
     @Test
@@ -585,6 +592,7 @@ public class CourtlistQueryViewTest {
                                 .withDateOfBirth(LocalDate.of(1990, 1, 15))
                                 .build())
                         .build())
+                .withPncId("PNC-RESP-001")
                 .withMasterDefendantId(randomUUID())
                 .build();
         final CourtApplicationParty party = CourtApplicationParty.courtApplicationParty()
@@ -593,6 +601,7 @@ public class CourtlistQueryViewTest {
         final JsonObject result = invokePrivateMethod("buildCourtApplicationParty", new Class<?>[]{CourtApplicationParty.class}, party);
         assertThat(result.getString("name"), is("John Doe"));
         assertThat(result.getString("dateOfBirth"), is("15 Jan 1990"));
+        assertThat(result.getString("pncId"), is("PNC-RESP-001"));
     }
 
     @Test
@@ -601,6 +610,7 @@ public class CourtlistQueryViewTest {
                 .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation().withName("Acme Ltd").build())
                         .build())
+                .withPncId("PNC-RESP-ORG-001")
                 .withMasterDefendantId(randomUUID())
                 .build();
         final CourtApplicationParty party = CourtApplicationParty.courtApplicationParty()
@@ -608,6 +618,7 @@ public class CourtlistQueryViewTest {
                 .build();
         final JsonObject result = invokePrivateMethod("buildCourtApplicationParty", new Class<?>[]{CourtApplicationParty.class}, party);
         assertThat(result.getString("name"), is("Acme Ltd"));
+        assertThat(result.getString("pncId"), is("PNC-RESP-ORG-001"));
     }
 
     @Test
@@ -710,6 +721,7 @@ public class CourtlistQueryViewTest {
         when(personDefendant.getArrestSummonsNumber()).thenReturn("APPLICANT-ASN-001");
         final MasterDefendant masterDefendant = mock(MasterDefendant.class);
         when(masterDefendant.getPersonDefendant()).thenReturn(personDefendant);
+        when(masterDefendant.getPncId()).thenReturn("APPLICANT-PNC-001");
         final CourtApplicationParty applicant = mock(CourtApplicationParty.class);
         when(applicant.getMasterDefendant()).thenReturn(masterDefendant);
         final CourtApplication courtApplication = mock(CourtApplication.class);
@@ -721,6 +733,7 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("dateOfBirth"), is("5 Jul 1988"));
         assertThat(result.getString("asn"), is("APPLICANT-ASN-001"));
         assertThat(result.getString("gender"), is("MALE"));
+        assertThat(result.getString("pncId"), is("APPLICANT-PNC-001"));
     }
 
     @Test
@@ -732,6 +745,7 @@ public class CourtlistQueryViewTest {
         final MasterDefendant masterDefendant = mock(MasterDefendant.class);
         when(masterDefendant.getPersonDefendant()).thenReturn(null);
         when(masterDefendant.getLegalEntityDefendant()).thenReturn(legalEntityDefendant);
+        when(masterDefendant.getPncId()).thenReturn("APPLICANT-ORG-PNC-001");
         final CourtApplicationParty applicant = mock(CourtApplicationParty.class);
         when(applicant.getMasterDefendant()).thenReturn(masterDefendant);
         final CourtApplication courtApplication = CourtApplication.courtApplication()
@@ -748,6 +762,7 @@ public class CourtlistQueryViewTest {
         assertThat(result.containsKey("nationality"), is(false));
         assertThat(result.containsKey("asn"), is(false));
         assertThat(result.containsKey("gender"), is(false));
+        assertThat(result.getString("pncId"), is("APPLICANT-ORG-PNC-001"));
     }
 
     @Test
@@ -814,9 +829,42 @@ public class CourtlistQueryViewTest {
                 hearingFromListing, courtApplication, hearing, offencesForApplications);
         assertThat(result.containsKey("id"), is(true));
         assertThat(result.getString("asn"), is("Arrest456"));
+        assertThat(result.getString("pncId"), is("PNC-APP-001"));
         assertThat(result.containsKey("offences"), is(true));
         assertThat(result.getJsonArray("offences").size(), is(2));
         assertThat(result.containsKey("defenceOrganization"), is(true));
+    }
+
+    @Test
+    public void buildDefendantFromCourtApplication_shouldSurfacePncIdForLegalEntitySubject() throws Exception {
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation().withName("Acme Ltd").build())
+                        .build())
+                .withPncId("PNC-SUBJ-ORG-001")
+                .build();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .withMasterDefendant(masterDefendant)
+                        .build())
+                .withDefendantASN("SUBJ-ASN-001")
+                .build();
+        final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
+        final JsonObject hearingFromListing = createObjectBuilder()
+                .add("defendants", createArrayBuilder().build())
+                .build();
+
+        final JsonObject result = invokePrivateMethod("buildDefendantFromCourtApplication",
+                new Class<?>[]{JsonObject.class, CourtApplication.class, Hearing.class, List.class},
+                hearingFromListing, courtApplication, hearing, emptyList());
+
+        // Legal-entity subject has no personDefendant, so the person block is skipped; pncId must still surface.
+        assertThat(result.getString("pncId"), is("PNC-SUBJ-ORG-001"));
+        assertThat(result.getString("asn"), is("SUBJ-ASN-001"));
+        assertThat(result.containsKey("id"), is(false));
     }
 
     @Test

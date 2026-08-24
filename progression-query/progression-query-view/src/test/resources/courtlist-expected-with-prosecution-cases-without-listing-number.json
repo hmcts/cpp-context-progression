@@ -67,6 +67,7 @@
                       ],
                       "gender": "MALE",
                       "asn": "arrest123",
+                      "pncId": "1234567",
                       "defenceOrganization": "associated defence organisation name",
                       "prosecutionCounsels": [
                         {

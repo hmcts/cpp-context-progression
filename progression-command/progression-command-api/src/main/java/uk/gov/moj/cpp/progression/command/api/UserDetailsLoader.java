@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command.api;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -9,6 +10,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -20,11 +22,13 @@ import uk.gov.moj.cpp.progression.command.api.vo.UserOrganisationDetails;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 
 public class UserDetailsLoader {
@@ -36,6 +40,8 @@ public class UserDetailsLoader {
     public static final String TARGET = "target";
     public static final String OBJECT = "object";
     public static final String ACTION = "action";
+    public static final String ACTIVE = "active";
+    public static final String HEARING_TYPE = "HearingType";
     public static final String ORGANISATION_ID = "organisationId";
     public static final String ORGANISATION_NAME = "organisationName";
     public static final String USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP = "User id Not Supplied for the UserGroups look up";
@@ -68,7 +74,7 @@ public class UserDetailsLoader {
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
         final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
 
-            if (!response.payload().containsKey(PERMISSIONS)) {
+        if (!response.payload().containsKey(PERMISSIONS)) {
             return Collections.emptyList();
         }
         final JsonArray permissionsJsonArray = response.payload().getJsonArray(PERMISSIONS);
@@ -78,7 +84,7 @@ public class UserDetailsLoader {
         }
 
         return permissionsJsonArray.stream()
-                .map(p -> (JsonObject)p)
+                .map(p -> (JsonObject) p)
                 .map(permission ->
                         Permission.permission()
                                 .withAction(JsonObjects.getString(permission, ACTION).orElse(null))
@@ -89,8 +95,49 @@ public class UserDetailsLoader {
                 ).collect(Collectors.toList());
     }
 
+    public static List<UUID> getAllowedHearingTypes(final Metadata metadata, final Requester requester, final String applicationTypeId) {
+        final JsonObject request = createObjectBuilder()
+                .add(OBJECT, HEARING_TYPE)
+                .add(SOURCE, applicationTypeId)
+                .build();
+        final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.permissions");
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, request);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        final JsonObject payload = response.payload();
+        if (isNull(payload) || !payload.containsKey(PERMISSIONS)) {
+            return Collections.emptyList();
+        }
+        final JsonArray permissionsJsonArray = payload.getJsonArray(PERMISSIONS);
+        if (isNull(permissionsJsonArray)) {
+            return Collections.emptyList();
+        }
+
+        return permissionsJsonArray.stream()
+                .map(p -> (JsonObject) p)
+                .filter(UserDetailsLoader::isActive)
+                .map(permission -> getNullableUUID(permission, TARGET))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private static boolean isActive(final JsonObject permission) {
+        if (!permission.containsKey(ACTIVE)) {
+            return false;
+        }
+        final JsonValue value = permission.get(ACTIVE);
+        if (value.getValueType() == JsonValue.ValueType.TRUE) {
+            return true;
+        }
+        if (value.getValueType() == JsonValue.ValueType.STRING) {
+            return Boolean.parseBoolean(((JsonString) value).getString());
+        }
+        return false;
+    }
+
     private static UUID getNullableUUID(final JsonObject permission, final String attribute) {
-        final String uuidString = JsonObjects.getString( permission, attribute).orElse(null);
+        final String uuidString = JsonObjects.getString(permission, attribute).orElse(null);
         if (nonNull(uuidString)) {
             return fromString(uuidString);
         } else {
@@ -109,7 +156,7 @@ public class UserDetailsLoader {
         final JsonEnvelope usersAndGroupsRequestEnvelope = envelopeFrom(requestEnvelope.metadata(), requestEnvelope.payload());
         final Envelope<JsonObject> response = requester.requestAsAdmin(usersAndGroupsRequestEnvelope, JsonObject.class);
         final JsonObject organisationDetails = response.payload();
-        if(nonNull(organisationDetails) && organisationDetails.containsKey(ORGANISATION_ID)) {
+        if (nonNull(organisationDetails) && organisationDetails.containsKey(ORGANISATION_ID)) {
             return new UserOrganisationDetails(fromString(organisationDetails.getString(ORGANISATION_ID)),
                     organisationDetails.getString(ORGANISATION_NAME));
         }
@@ -122,7 +169,7 @@ public class UserDetailsLoader {
                 .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
         final UserOrganisationDetails organisationDetailsForUser = getOrganisationDetailsForUser(query, requester, userId);
         final List<Permission> permissions = getPermissions(query.metadata(), requester, query.payloadAsJsonObject().getString(DEFENDANT_ID));
-        if(permissions.isEmpty()) {
+        if (permissions.isEmpty()) {
             return false;
         }
 

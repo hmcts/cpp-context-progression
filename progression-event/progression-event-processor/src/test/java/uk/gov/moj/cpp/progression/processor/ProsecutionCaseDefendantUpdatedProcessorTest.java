@@ -448,11 +448,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
-        final String testCPSEmail = "abc@xyz.com";
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
-
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
                         .withId(randomUUID())
@@ -466,7 +461,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         verify(notificationService, times(1)).sendCPSNotification(any(), any());
     }
 
-
     @Test
     public void shouldSendUpdateDefendantToApplication_whenApplicationSummariesExists() {
         final UUID PROSECUTOR_ID = randomUUID();
@@ -479,8 +473,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
         when(jsonObjectConverter.convert(any(), eq(ProsecutionCaseDefendantUpdated.class))).thenReturn(inputEvent);
         when(objectToJsonObjectConverter.convert(Mockito.any(DefendantUpdate.class))).thenReturn(payload);
-        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
-        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithApplicationSummaries()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -510,7 +502,8 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
         when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
-        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(
+                createObjectBuilder().add("cpsFlag", true).build()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
@@ -536,9 +529,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, asList(hearingId));
 
         when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
-        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
         when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
-        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithoutHearings()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -625,7 +616,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(inputEvent);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataNonCPSProsecutorResponse()));
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithoutHearings()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
@@ -651,9 +642,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, asList(hearingId));
 
         when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
-        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
         when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
-        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithoutFutureHearings()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -734,11 +723,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
-
-        final String testCPSEmail = "abc@xyz.com";
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
