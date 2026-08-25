@@ -66,9 +66,6 @@
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
         </dependency>
-
-        <!-- MI schema contract: JSON schemas only, no compiled bytecode.
-             Decouples progression from MI's framework version. -->
         <dependency>
             <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
             <artifactId>mireportdata-progression-event-listener</artifactId>
@@ -85,38 +82,5 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-            <!-- MI schema contract validation tests jar dependency - replaced by schema-resources classifier
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <artifactId>mireportdata-progression-event-listener</artifactId>
-                                    <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
-                                    <version>RELEASE</version>
-                                    <classifier>listener-tests</classifier>
-                                    <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/test-classes
-                                    </outputDirectory>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-        </plugins>
-    </build>
 
 </project>
