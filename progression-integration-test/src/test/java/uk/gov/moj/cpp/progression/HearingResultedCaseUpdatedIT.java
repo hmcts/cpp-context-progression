@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -161,16 +162,24 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, reopenGrantShareEnvelope);
 
         // Prove the reopen share was processed (fixture keeps FINAL offence JRs with isNewAmendment=false).
-        pollForHearing(hearingId,
+        final String hearingPayload = pollForHearing(hearingId,
                 withJsonPath("$.hearing.courtApplications[0].id", is(applicationId)),
                 withJsonPath("$.hearing.courtApplications[0].type.code", is("MC80524")),
                 withJsonPath("$.hearing.courtApplications[0].judicialResults[0].label", is("Granted")));
+        assertThat(getJsonObject(hearingPayload).getJsonObject("hearing")
+                        .getJsonArray("courtApplications").getJsonObject(0).getString("id"),
+                equalTo(applicationId));
 
-        pollProsecutionCasesProgressionFor(caseId,
+        final String casePayload = pollProsecutionCasesProgressionFor(caseId,
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo(ACTIVE.getDescription())),
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(false)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(false)));
+        final JsonObject prosecutionCase = getJsonObject(casePayload).getJsonObject("prosecutionCase");
+        assertThat(prosecutionCase.getString("caseStatus"), equalTo(ACTIVE.getDescription()));
+        assertThat(prosecutionCase.getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(false));
+        assertThat(prosecutionCase.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(false));
     }
 
 
