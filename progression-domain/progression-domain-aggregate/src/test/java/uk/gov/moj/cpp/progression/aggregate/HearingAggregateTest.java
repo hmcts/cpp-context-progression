@@ -1952,6 +1952,46 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldAddNewApplicationToHearingWhenExistingApplicationsListIsImmutable() {
+        final UUID hearingId = randomUUID();
+        final UUID existingApplicationId = randomUUID();
+        final UUID newApplicationId = randomUUID();
+        final ZonedDateTime sittingDay = ZonedDateTime.now();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withCourtApplications(List.of(CourtApplication.courtApplication()
+                                .withId(existingApplicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+
+        final List<Object> events = hearingAggregate.updateAllocationFields(UpdateHearingForAllocationFields.updateHearingForAllocationFields()
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .withHearingLanguage(HearingLanguage.WELSH)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
+                .withCourtApplication(CourtApplication.courtApplication()
+                        .withId(newApplicationId)
+                        .withApplicationReference("B")
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .build())
+                .build()
+        ).collect(toList());
+
+        final List<CourtApplication> courtApplications = ((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications();
+        assertThat(courtApplications.size(), is(2));
+        assertThat(courtApplications.stream().anyMatch(app -> app.getId().equals(existingApplicationId)), is(true));
+        assertThat(courtApplications.stream().anyMatch(app -> app.getId().equals(newApplicationId)), is(true));
+    }
+
+    @Test
     public void shouldUpdateApplicationToHearingHasApplicationsAndRaiseProbationEvent() {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
