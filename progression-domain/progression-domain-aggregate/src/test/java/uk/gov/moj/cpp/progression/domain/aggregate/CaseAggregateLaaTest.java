@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -443,7 +444,7 @@ public class CaseAggregateLaaTest {
                 .build();
 
         List<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
-        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
         this.caseAggregate.apply(eventList);
 
@@ -481,7 +482,8 @@ public class CaseAggregateLaaTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
-        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
+
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
         this.caseAggregate.apply(eventList);
 
@@ -519,7 +521,7 @@ public class CaseAggregateLaaTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
-        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
     }
 

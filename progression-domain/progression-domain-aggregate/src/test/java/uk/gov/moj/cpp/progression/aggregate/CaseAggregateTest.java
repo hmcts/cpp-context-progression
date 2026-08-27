@@ -3454,12 +3454,11 @@ class CaseAggregateTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() );
 
-        try {
-            LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.filter(o -> o.getClass().getName().endsWith("LaaDefendantProceedingConcludedChanged")).findFirst().get();
-            assert(false);
-        } catch (NoSuchElementException e) {
-            // expect not to find it
-        }
+        assertFalse(
+                eventList.anyMatch(
+                        event -> event instanceof LaaDefendantProceedingConcludedChanged
+                )
+        );
 
     }
 
