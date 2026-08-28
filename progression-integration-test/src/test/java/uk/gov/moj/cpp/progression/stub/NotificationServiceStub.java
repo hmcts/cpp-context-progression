@@ -152,6 +152,18 @@ public class NotificationServiceStub {
         });
     }
 
+    public static void verifyNoLetterNotificationIsRaised() {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
+        });
+    }
+
     public static void stubCotrFormServedNotificationCms() {
         stubFor(post(urlPathEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND))
                 .withRequestBody(containing(COTR_FORM_SERVED))

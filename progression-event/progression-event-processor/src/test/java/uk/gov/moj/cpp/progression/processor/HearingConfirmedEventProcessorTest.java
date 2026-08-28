@@ -1669,6 +1669,127 @@ public class HearingConfirmedEventProcessorTest {
         verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), any(UUID.class));
     }
 
+    /**
+     * Story (changes/2026-08-bulk-suppress-nows-edts-hearing-notices) AC3 — for a bulk CIVIL
+     * case (group proceedings where at least one prosecution case is civil), the next-hearing
+     * notice must be neither generated nor sent via GOV.UK Notify, even when the event asks for
+     * it (sendNotificationToParties=true). Uses the new isBulkCivilCase(confirmedHearing) helper
+     * — NOT the pre-existing isBulkCase(confirmedHearing) alone, which only checks
+     * isGroupProceedings and is not civil-scoped (group proceedings can be criminal too — see
+     * the sibling test below) — to guard sendHearingNotificationsToDefenceAndProsecutor(), since
+     * that single call is what both generates the document
+     * (documentGeneratorService.generateNonNowDocument) and conditionally dispatches it.
+     */
+    @Test
+    public void shouldNotGenerateOrSendHearingNoticeForBulkCivilCaseEvenWhenNotificationRequested() {
+        final UUID hearingId = randomUUID();
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withIsGroupProceedings(true)
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                        .withId(randomUUID())
+                        .withIsCivil(true)
+                        .withIsGroupMaster(true)
+                        .build()))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .build()))
+                .build();
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(hearingConfirmed.getSendNotificationToParties()).thenReturn(true);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+
+        eventProcessor.processEvent(envelope);
+
+        verify(progressionService, never()).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(hearingNotificationHelper, never()).sendHearingNotificationsToRelevantParties(any(), any());
+    }
+
+    /**
+     * Scope guard (gap:85-equivalent for this repo) — group proceedings (isGroupProceedings) is
+     * NOT civil-only. A criminal bulk/group hearing must still get its hearing notice generated
+     * and sent exactly as today; only a CIVIL group proceeding is suppressed.
+     */
+    @Test
+    public void shouldStillGenerateAndSendHearingNoticeForCriminalBulkCase() {
+        final UUID hearingId = randomUUID();
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withIsGroupProceedings(true)
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build())
+                .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                        .withId(randomUUID())
+                        .withIsCivil(false)
+                        .withIsGroupMaster(true)
+                        .withDefendants(singletonList(createConfirmedDefendant(randomUUID(), randomUUID())))
+                        .build()))
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .build()))
+                .build();
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(hearingConfirmed.getSendNotificationToParties()).thenReturn(true);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn("e4648583-eb0f-438e-aab5-5eff29f3f7b4");
+
+        eventProcessor.processEvent(envelope);
+
+        verify(hearingNotificationHelper, times(1)).sendHearingNotificationsToRelevantParties(any(), any());
+    }
+
     @Test
     public void shouldNotSendPostalNotificationForStandaloneApplicationsWithHearingTypeWarrants(){
         final UUID applicationId = randomUUID();

@@ -290,11 +290,22 @@ public class HearingConfirmedEventProcessor {
 
         }
 
-        if (sendNotificationToParties) {
+        if (sendNotificationToParties && !isBulkCivilCase(confirmedHearing)) {
             sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing, hearingInProgression);
+        } else if (isBulkCivilCase(confirmedHearing)) {
+            LOGGER.info("Hearing notice not generated or sent for bulk civil HearingId {} — generation and GOV.UK Notify dispatch are both suppressed for a civil group proceeding", confirmedHearing.getId());
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
+    }
+
+    private boolean isBulkCivilCase(final ConfirmedHearing confirmedHearing) {
+        if (!isBulkCase(confirmedHearing)) {
+            return false;
+        }
+        return isNotEmpty(confirmedHearing.getProsecutionCases()) &&
+                confirmedHearing.getProsecutionCases().stream()
+                        .anyMatch(prosecutionCase -> nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil());
     }
 
     private void sendApplicationNotification(final JsonEnvelope jsonEnvelope, final String hearingTypeId, final Hearing hearing,
