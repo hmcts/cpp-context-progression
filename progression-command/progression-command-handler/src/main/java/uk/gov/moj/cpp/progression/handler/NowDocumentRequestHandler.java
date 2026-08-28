@@ -64,11 +64,6 @@ public class NowDocumentRequestHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
-    /**
-     * A bulk civil case (isCivil combined with isGroupMaster/isGroupMember — never the group
-     * flags alone) does not generate or dispatch NOW/EDT/hearing-notice documents; the entered
-     * result is still stored via the normal hearing-result handling, unaffected by this check.
-     */
     private boolean isBulkCivilCase(final NowDocumentRequest nowDocumentRequest) {
         if (isNull(nowDocumentRequest.getCases()) || nowDocumentRequest.getCases().isEmpty()) {
             return false;

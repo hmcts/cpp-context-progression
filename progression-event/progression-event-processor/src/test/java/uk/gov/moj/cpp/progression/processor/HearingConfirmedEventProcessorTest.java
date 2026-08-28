@@ -1669,17 +1669,6 @@ public class HearingConfirmedEventProcessorTest {
         verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), any(UUID.class));
     }
 
-    /**
-     * Story (changes/2026-08-bulk-suppress-nows-edts-hearing-notices) AC3 — for a bulk CIVIL
-     * case (group proceedings where at least one prosecution case is civil), the next-hearing
-     * notice must be neither generated nor sent via GOV.UK Notify, even when the event asks for
-     * it (sendNotificationToParties=true). Uses the new isBulkCivilCase(confirmedHearing) helper
-     * — NOT the pre-existing isBulkCase(confirmedHearing) alone, which only checks
-     * isGroupProceedings and is not civil-scoped (group proceedings can be criminal too — see
-     * the sibling test below) — to guard sendHearingNotificationsToDefenceAndProsecutor(), since
-     * that single call is what both generates the document
-     * (documentGeneratorService.generateNonNowDocument) and conditionally dispatches it.
-     */
     @Test
     public void shouldNotGenerateOrSendHearingNoticeForBulkCivilCaseEvenWhenNotificationRequested() {
         final UUID hearingId = randomUUID();
@@ -1731,11 +1720,6 @@ public class HearingConfirmedEventProcessorTest {
         verify(hearingNotificationHelper, never()).sendHearingNotificationsToRelevantParties(any(), any());
     }
 
-    /**
-     * Scope guard (gap:85-equivalent for this repo) — group proceedings (isGroupProceedings) is
-     * NOT civil-only. A criminal bulk/group hearing must still get its hearing notice generated
-     * and sent exactly as today; only a CIVIL group proceeding is suppressed.
-     */
     @Test
     public void shouldStillGenerateAndSendHearingNoticeForCriminalBulkCase() {
         final UUID hearingId = randomUUID();
