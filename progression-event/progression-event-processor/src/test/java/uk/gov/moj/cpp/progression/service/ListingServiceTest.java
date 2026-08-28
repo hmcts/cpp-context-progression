@@ -483,7 +483,11 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void shouldSkipSlotStartTimesWithZeroCountAndAlwaysUseSessionStartTime() {
+    public void shouldUseEarliestSlotStartTimeRegardlessOfItsBookedCount() {
+        // slotStartTimes[].count is the amount ALREADY BOOKED in that hour window, not a measure
+        // of remaining availability (Courtscheduler exposes no per-bucket capacity field at all) -
+        // once the session-level availableSlots confirms genuine capacity, the earliest bucket is
+        // used regardless of its own count.
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
         final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
         final UUID courtRoomId = randomUUID();
@@ -525,9 +529,51 @@ public class ListingServiceTest {
 
         assertTrue(result.isPresent());
         assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
-        // first entry has count 0, must be skipped in favour of the second (count 3);
-        // its sessionStartTime is used, not its hearingStartTime
-        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-21T10:00:00.000Z")));
+        // earliest entry (09:00) is used even though its own count is 0 and a later entry has a
+        // non-zero count - count is booked occupancy, not availability, so it must not gate selection
+        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-21T09:00:00.000Z")));
+    }
+
+    @Test
+    public void shouldFindAvailableSlotForFullyOpenSessionWithZeroBookingsInEveryBucket() {
+        // Reproduces the live QA bug exactly: a fully-open ENF_AUTO session (available_slot=20,
+        // max_slot=20, zero existing bookings) has count=0 in EVERY slotStartTimes bucket, since
+        // count reflects bookings, not availability. The old count>0 filter rejected this session
+        // outright despite it having full capacity, sending the case to Unallocated. Must now match.
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+
+        final JsonObject response = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 20)
+                                .add("maxSlots", 20)
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-09-01T10:00:00.000Z")
+                                                .add("sessionEndTime", "2026-09-01T11:00:00.000Z")
+                                                .add("count", 0))
+                                        .add(createObjectBuilder()
+                                                .add("sessionStartTime", "2026-09-01T11:00:00.000Z")
+                                                .add("sessionEndTime", "2026-09-01T12:00:00.000Z")
+                                                .add("count", 0))))
+                        .build())
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-09-01"), java.time.LocalDate.parse("2026-09-06"));
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
+        assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-09-01T10:00:00.000Z")));
     }
 
     @Test
@@ -602,6 +648,63 @@ public class ListingServiceTest {
                 envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"));
 
         assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void shouldIncludeHearingStartTimeInSearchPayloadWhenExactTimeOverloadIsUsed() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+        final UUID courtRoomId = randomUUID();
+        final ZonedDateTime exactStartTime = ZonedDateTime.parse("2026-08-20T09:05:01.001Z");
+
+        final JsonObject response = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("courtRoomId", courtRoomId.toString())
+                                .add("availableSlots", 1)
+                                .add("slotStartTimes", Json.createArrayBuilder()
+                                        .add(createObjectBuilder().add("sessionStartTime", "2026-08-20T09:00:00.000Z").add("count", 1))))
+                        .build())
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        final ArgumentCaptor<Envelope> requestEnvelopeCaptor = ArgumentCaptor.forClass(Envelope.class);
+        when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
+
+        final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), exactStartTime);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
+        final JsonObject sentPayload = (JsonObject) requestEnvelopeCaptor.getValue().payload();
+        assertThat(sentPayload.getString("hearingStartTime"), is(exactStartTime.toString()));
+    }
+
+    @Test
+    public void shouldNotIncludeHearingStartTimeInSearchPayloadWhenSixArgOverloadIsUsed() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+
+        final JsonObject fullyBookedPage = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("availableSlots", 0).add("slotStartTimes", Json.createArrayBuilder())))
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        final ArgumentCaptor<Envelope> requestEnvelopeCaptor = ArgumentCaptor.forClass(Envelope.class);
+        when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
+
+        listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"));
+
+        final JsonObject sentPayload = (JsonObject) requestEnvelopeCaptor.getValue().payload();
+        assertFalse(sentPayload.containsKey("hearingStartTime"));
     }
 
     @Test
