@@ -1,24 +1,20 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +23,6 @@ public class SearchCourtApplicationsIT extends AbstractIT {
 
     private static final String JSON_RESULTS_DEFENDANT_PATH = "$.searchResults[0].defendantName";
     private static final String JSON_RESULTS_PROSECUTOR_PATH = "$.searchResults[0].prosecutor";
-
-    private final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
 
     private static CourtApplicationRandomValues randomValues;
     private static String applicationId;
@@ -59,15 +53,15 @@ public class SearchCourtApplicationsIT extends AbstractIT {
 
     @Test
     public void shouldGetApplicationByReferenceNumber() {
-        final JsonPath message = retrieveMessageAsJsonPath(consumerForCourtApplicationCreated, isJson(Matchers.allOf(
-                        withJsonPath("$.courtApplication.id", CoreMatchers.is(applicationId))
-                )
-        ));
-        assertThat(message, notNullValue());
-        final String applicationReferenceNumber = message.getString("courtApplication.applicationReference");
+        // Prefer viewstore over JMS: avoids timing out on a noisy public.progression.court-application-created topic.
+        final String applicationPayload = pollForCourtApplication(applicationId,
+                withJsonPath("$.courtApplication.id", CoreMatchers.is(applicationId)),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()));
+        final String applicationReferenceNumber = JsonPath.from(applicationPayload)
+                .getString("courtApplication.applicationReference");
+        assertThat(applicationReferenceNumber, notNullValue());
         verifyCasesByCaseUrn(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))});
     }
 
 
 }
-

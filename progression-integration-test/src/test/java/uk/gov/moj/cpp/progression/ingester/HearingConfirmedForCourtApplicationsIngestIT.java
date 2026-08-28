@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingResultedCaseUpdatedVerificationHelper.verifyInitialElasticSearchCase;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
@@ -123,7 +124,8 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId,
+                "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
 
         final JsonObject publicListingHearingConfirmedEventPayload = getHearingJsonObject("public.listing.hearing-confirmed-case-reopen.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
