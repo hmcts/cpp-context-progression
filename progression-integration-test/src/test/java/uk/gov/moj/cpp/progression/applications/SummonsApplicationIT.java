@@ -12,21 +12,14 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.setupSjpProsecutionCaseQueryStub;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SummonsApplicationIT extends AbstractIT {
-
-    @BeforeEach
-    void resetPermissionsStub() {
-        stubEmptyPermissionsQuery();
-    }
 
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {

@@ -12,6 +12,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -58,11 +59,11 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId,
+                "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName));
@@ -81,7 +82,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId,
+                "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
