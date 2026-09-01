@@ -10,22 +10,30 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.setupSjpProsecutionCaseQueryStub;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SummonsApplicationIT extends AbstractIT {
+
+    @BeforeEach
+    void resetPermissionsStub() {
+        stubEmptyPermissionsQuery();
+    }
 
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {
         final String applicationId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         setupSjpProsecutionCaseQueryStub(caseId, randomUUID().toString());
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -52,7 +60,7 @@ public class SummonsApplicationIT extends AbstractIT {
         final String caseId = randomUUID().toString();
         final String hearingId = randomUUID().toString();
         setupSjpProsecutionCaseQueryStub(caseId, randomUUID().toString());
-        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-summons-stand-alone-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-summons-stand-alone-application.json"));
 
         final Matcher[] applicationMatchersForInitate = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -69,7 +77,7 @@ public class SummonsApplicationIT extends AbstractIT {
 
         pollForCourtApplication(applicationId, applicationMatchersForInitate);
 
-        updateCourtApplication(applicationId, "", caseId, "", hearingId, "applications/progression.edit-court-proceedings-for-summons-application.json");
+        assertThatRequestIsAccepted(updateCourtApplication(applicationId, "", caseId, "", hearingId, "applications/progression.edit-court-proceedings-for-summons-application.json"));
 
         final Matcher[] applicationMatchersForUpdate = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -96,7 +104,7 @@ public class SummonsApplicationIT extends AbstractIT {
     @Test
     public void shouldCreateStandaloneApplicationWithSummons() throws Exception {
         final String applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-summons-stand-alone-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-summons-stand-alone-application.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -118,7 +126,7 @@ public class SummonsApplicationIT extends AbstractIT {
         final String applicationId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         setupSjpProsecutionCaseQueryStub(caseId, randomUUID().toString());
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -136,7 +144,7 @@ public class SummonsApplicationIT extends AbstractIT {
         final String caseId = randomUUID().toString();
         final String prosecutionAuthorityReference = randomUUID().toString();
         setupSjpProsecutionCaseQueryStub(caseId, prosecutionAuthorityReference);
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -148,7 +156,7 @@ public class SummonsApplicationIT extends AbstractIT {
         );
 
         applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json"));
 
         final Matcher[] newApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),

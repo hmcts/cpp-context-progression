@@ -71,7 +71,10 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        final Matcher[] initialMatchers = {withJsonPath("$.caseStatus", equalTo("ACTIVE"))};
+        final Matcher[] initialMatchers = {
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.caseStatus", equalTo("ACTIVE"))
+        };
 
         final Optional<JsonObject> initialElasticSearchCaseResponseJsonObject = findBy(initialMatchers);
 
@@ -83,7 +86,10 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         sendEventToMessageQueue();
 
-        final Matcher[] postMatchers = {withJsonPath("$.caseStatus", equalTo("INACTIVE"))};
+        final Matcher[] postMatchers = {
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.caseStatus", equalTo("INACTIVE"))
+        };
         final Optional<JsonObject> updatedElasticSearchCaseResponseJsonObject = findBy(postMatchers);
 
         assertTrue(updatedElasticSearchCaseResponseJsonObject.isPresent());

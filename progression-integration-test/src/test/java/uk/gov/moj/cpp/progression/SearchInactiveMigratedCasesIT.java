@@ -11,9 +11,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollIn
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+
+import io.restassured.path.json.JsonPath;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -61,6 +63,12 @@ public class SearchInactiveMigratedCasesIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationSourceSystemName", is(xhibit))
         );
 
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, inactiveMigratedCaseMatchers));
+
+        final String masterDefendantId = JsonPath.from(pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.prosecutionCase.id", is(caseId))))
+                .getString("prosecutionCase.defendants[0].masterDefendantId");
+
         final List<Matcher<? super ReadContext>> inactiveMigratedCaseSearchMatchers = newArrayList(
                 withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.id", is(caseId)),
 
@@ -68,11 +76,8 @@ public class SearchInactiveMigratedCasesIT extends AbstractIT {
 
                 withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.migrationSourceSystem.migrationSourceSystemName", is(xhibit)),
 
-                withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.defendants[0].masterDefendantId", is(defendantId))
+                withJsonPath("$.inactiveMigratedCaseSummaries[0].inactiveCaseSummary.defendants[0].masterDefendantId", is(masterDefendantId))
         );
-
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, inactiveMigratedCaseMatchers));
-
 
         pollInactiveProsecutionCasesProgressionFor(caseId, inactiveMigratedCaseSearchMatchers.toArray(new Matcher[0]));
 
