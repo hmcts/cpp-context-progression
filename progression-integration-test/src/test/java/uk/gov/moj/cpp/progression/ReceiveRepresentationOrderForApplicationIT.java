@@ -1,12 +1,14 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static io.smallrye.common.constraint.Assert.assertTrue;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
@@ -21,7 +23,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHe
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrderForApplication;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
@@ -40,11 +43,10 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.Poller;
 
+import io.restassured.path.json.JsonPath;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -58,15 +60,8 @@ import org.junit.jupiter.api.Test;
 
 public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
 
-    private final Poller poller = new Poller();
-
-    private static final String PUBLIC_APPLICATION_ORGANISATION_CHANGED = "public.progression.application-organisation-changed";
-    private static final String PUBLIC_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_APPLICATION_OFFENCES_UPDATED = "public.progression.application-offences-updated";
-    private static final String PUBLIC_ASSOCIATE_DEFENCE_ORGANISATION = "public.progression.defence-organisation-for-laa-associated";
-    private static final String PUBLIC_ASSOCIATE_DEFENCE_ORGANISATION_FOR_LAA = "public.progression.defendant-laa-contract-associated";
-    private static final String PUBLIC_DISASSOCIATE_DEFENCE_ORGANISATION_FOR_LAA = "public.progression.defence-organisation-for-laa-disassociated";
     private static final String PROGRESSION_APPLICATION_OFFENCES_UPDATED_FOR_HEARING = "progression.event.application-laa-reference-updated-for-hearing";
     private static final String PROGRESSION_APPLICATION_REPORDER_UPDATED_FOR_HEARING = "progression.event.application-rep-order-updated-for-hearing";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -128,13 +123,8 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
         pollHearingWithStatusInitialised(hearingId);
 
-        intiateCourtProceedingForApplicationUpdateForRepOrder(applicationId, subjectId, offenceId, caseId, defendantId, applicationReference, laaContractNumber, "applications/progression.initiate-court-proceedings-for-application-reporder.json");
+        assertThatRequestIsAccepted(intiateCourtProceedingForApplicationUpdateForRepOrder(applicationId, subjectId, offenceId, caseId, defendantId, applicationReference, laaContractNumber, "applications/progression.initiate-court-proceedings-for-application-reporder.json"));
         pollForApplication(applicationId);
-
-        final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_APPLICATION_ORGANISATION_CHANGED).getMessageConsumerClient();
-        final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationChangedDefence = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_CASE_DEFENDANT_CHANGED).getMessageConsumerClient();
-        final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationLAAAssociated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_ASSOCIATE_DEFENCE_ORGANISATION_FOR_LAA).getMessageConsumerClient();
-        final JmsMessageConsumerClient messageConsumerClientPublicForOrganisationDisassociated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_DISASSOCIATE_DEFENCE_ORGANISATION_FOR_LAA).getMessageConsumerClient();
 
         final JmsMessageConsumerClient messageConsumerClientPublicForLAAReferenceChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_APPLICATION_OFFENCES_UPDATED).getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerClientPublicForLAAReferenceChangedDefence = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
@@ -148,24 +138,43 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
 
         //Verify
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, getApplicationMatchers());
-        verifyInMessagingQueueForApplication(messageConsumerClientPublicForLAAReferenceChanged);
-        verifyInMessagingQueueForApplication(messageConsumerClientPublicForLAAReferenceChangedDefence);
-        verifyInMessagingQueue(messageConsumerClientPrivateForLaaReferenceUpdatedForHearing);
-        verifyInMessagingQueue(messageConsumerClientPrivateForRepOrcerUpdatedForHearing);
+        verifyApplicationOffencesUpdatedInMessagingQueue(messageConsumerClientPublicForLAAReferenceChanged);
+        verifyDefendantOffencesChangedInMessagingQueue(messageConsumerClientPublicForLAAReferenceChangedDefence);
+        verifyApplicationEventInMessagingQueue(messageConsumerClientPrivateForLaaReferenceUpdatedForHearing);
+        verifyApplicationEventInMessagingQueue(messageConsumerClientPrivateForRepOrcerUpdatedForHearing);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, buildProsecutionCaseLaaMatchers()));
     }
 
     private List<Matcher<? super ReadContext>> buildProsecutionCaseLaaMatchers() {
         return newArrayList(
                     withJsonPath("$.prosecutionCase.defendants[*].legalAidStatus", hasItem(equalTo("Pending"))),
-                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo("AS145197659"))),
+                    withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.applicationReference", hasItem(equalTo(applicationReference))),
                     withJsonPath("$.prosecutionCase.defendants[*].offences[*].laaApplnReference.offenceLevelStatus", hasItem(equalTo("Pending")))
             );
     }
 
-    private void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);
-        assertTrue(message.isPresent());
+    private void verifyApplicationEventInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer, isJson(allOf(
+                withJsonPath("$.applicationId", is(applicationId))
+        )));
+        assertThat(message, notNullValue());
+    }
+
+    private void verifyApplicationOffencesUpdatedInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer, isJson(allOf(
+                withJsonPath("$.applicationId", is(applicationId)),
+                withJsonPath("$.offenceId", is(offenceId)),
+                withJsonPath("$.subjectId", is(subjectId))
+        )));
+        assertThat(message, notNullValue());
+    }
+
+    private void verifyDefendantOffencesChangedInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer, isJson(allOf(
+                withJsonPath("$.updatedOffences[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.updatedOffences[0].defendantId", is(defendantId))
+        )));
+        assertThat(message, notNullValue());
     }
 
     @SafeVarargs
@@ -176,10 +185,6 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
                 matchers);
     }
 
-    private void verifyInMessagingQueueForApplication(final JmsMessageConsumerClient jmsMessageConsumerClient) {
-        final Optional<JsonObject> message = poller.pollUntilFound(() -> retrieveMessageBody(jmsMessageConsumerClient));
-        assertThat(message.isPresent(), is(true));
-    }
 
     private Matcher[] getApplicationMatchers() {
         final List<Matcher> matchers = newArrayList(withJsonPath("$.courtApplication.id", is(applicationId)),
