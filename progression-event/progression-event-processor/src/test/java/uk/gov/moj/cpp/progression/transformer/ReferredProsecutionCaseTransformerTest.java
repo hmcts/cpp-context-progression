@@ -31,6 +31,7 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
@@ -62,7 +63,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -153,15 +153,15 @@ public class ReferredProsecutionCaseTransformerTest {
     //Offence
 
     private static JsonObject getNationalityObject() {
-        return Json.createObjectBuilder().add(NATIONALITY_CODE, "N12").add(NATIONALITY, "UK").build();
+        return createObjectBuilder().add(NATIONALITY_CODE, "N12").add(NATIONALITY, "UK").build();
     }
 
     private static JsonObject getProsecutor() {
-        return Json.createObjectBuilder().add(PROSECUTOR, "TFL").build();
+        return createObjectBuilder().add(PROSECUTOR, "TFL").build();
     }
 
     private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
+        return createObjectBuilder().add(LEGISLATION, "E12")
                 .add(LEGISLATION_WELSH, "123")
                 .add(OFFENCE_TITLE, "title-of-offence")
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")
@@ -170,7 +170,7 @@ public class ReferredProsecutionCaseTransformerTest {
     }
 
     private static JsonObject getEthnicityObject() {
-        return Json.createObjectBuilder().add(ETHNICITY_CODE, "E12").add(ETHNICITY, "British").build();
+        return createObjectBuilder().add(ETHNICITY_CODE, "E12").add(ETHNICITY, "British").build();
     }
 
     @Test
