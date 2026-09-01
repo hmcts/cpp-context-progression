@@ -12,6 +12,7 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollCourtApplicationForLaa;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForApplicationShortId;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
 
@@ -35,7 +36,7 @@ public class CourtAppealApplicationIT extends AbstractIT {
         final String applicationId = randomUUID().toString();
         final String applicationShortId = randomUUID().toString().replace("-", "").substring(0, 8);
         stubForApplicationShortId(applicationShortId, applicationId);
-        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -70,7 +71,7 @@ public class CourtAppealApplicationIT extends AbstractIT {
     @Test
     public void shouldCreateStandAloneApplicationForCourtAppeal() throws Exception {
         final String applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json"));
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -90,7 +91,7 @@ public class CourtAppealApplicationIT extends AbstractIT {
     @Test
     public void shouldGertApplicationStatusByApplicationIds() throws Exception {
         final String applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json");
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json"));
         pollForCourtApplication(applicationId, withJsonPath("$.courtApplication.id", is(applicationId)));
 
         final String response = pollForApplicationStatus(applicationId);

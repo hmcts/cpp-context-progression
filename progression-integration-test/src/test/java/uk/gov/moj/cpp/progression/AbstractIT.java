@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,15 @@ public class AbstractIT {
             LOGGER.error("Failure during set up of integration test", e);
             throw e;
         }
+    }
+
+    /**
+     * Hearing-type Locked stubs from individual tests (e.g. CreateCourtApplicationIT) must not
+     * leak into later ITs in the same JVM.
+     */
+    @BeforeEach
+    void resetPermissionsStubBeforeEachTest() {
+        stubEmptyPermissionsQuery();
     }
 
     private static void setUpElasticSearch() {
