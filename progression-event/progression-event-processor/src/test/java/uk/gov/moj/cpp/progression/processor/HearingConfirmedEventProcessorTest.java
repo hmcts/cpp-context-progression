@@ -98,6 +98,7 @@ import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -124,6 +125,8 @@ import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
 public class HearingConfirmedEventProcessorTest {
+
+    private static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION = "progression.command.send-notification-for-auto-application";
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -1633,5 +1636,55 @@ public class HearingConfirmedEventProcessorTest {
         verify(sender, times(1)).send(captor.capture());
         verify(logger,times(0)).info("Sending notification as hearing type is not: Application or Trial");
 
+    }
+
+    @Test
+    public void shouldNotSendPostalNotificationForStandaloneApplicationsWhenHearingIsPastDated() {
+        processHearingConfirmedForStandaloneApplication(new UtcClock().now().minusDays(1));
+
+        verify(enveloper, never()).withMetadataFrom(any(), eq(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION));
+    }
+
+    @Test
+    public void shouldSendPostalNotificationForStandaloneApplicationsWhenHearingIsToday() {
+        processHearingConfirmedForStandaloneApplication(new UtcClock().now());
+
+        verify(enveloper).withMetadataFrom(any(), eq(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION));
+    }
+
+    private void processHearingConfirmedForStandaloneApplication(final ZonedDateTime sittingDay) {
+        final UUID applicationId = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withIsGroupProceedings(true)
+                .withCourtApplicationIds(List.of(applicationId))
+                .withType(HearingType.hearingType().withDescription("Plea").withId(hearingTypeId).build())
+                .build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withCourtApplications(List.of(CourtApplication.courtApplication().withId(applicationId).build()))
+                .build();
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                        .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtApplications(List.of(CourtApplication.courtApplication().withId(applicationId).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                        .withType(HearingType.hearingType().withId(hearingTypeId).withDescription("Plea").build())
+                        .build());
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+
+        eventProcessor.processEvent(envelope);
     }
 }
