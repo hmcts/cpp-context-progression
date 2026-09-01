@@ -627,8 +627,16 @@ public class ListCourtHearingTransformerTest {
     }
 
     @Test
-    void shouldLeaveSingleDateEnforcementCaseUnchanged() {
-        // no listedEndDateTime - single-date ("ENF"/hearingDetails) submission - no search is performed
+    void shouldResolveEnforcementSlotForSingleDateOtherTypeCase() {
+        // no listedEndDateTime - single-date ("ENF"/hearingDetails) submission - searches the exact
+        // requested date/time for business type "ENF" (distinct from the date-range "ENF_AUTO" search).
+        final UUID resolvedRoomId = randomUUID();
+        // the matched session's own reported time is coarser/different from the exact request - proves
+        // it gets discarded in favour of the originally-requested exact time (see assertion below).
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"),
+                eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime)))
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), listedStartDateTime.withHour(0).withMinute(0))));
+
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(listedStartDateTime, null);
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
@@ -638,8 +646,29 @@ public class ListCourtHearingTransformerTest {
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
 
-        verifyNoInteractions(listingService);
         final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        assertThat(hearing.getCourtCentre().getRoomId(), is(resolvedRoomId));
+        // exact originally-requested time is preserved, not the matched session-window's own time
+        assertThat(hearing.getListedStartDateTime(), is(listedStartDateTime));
+    }
+
+    @Test
+    void shouldLeaveSingleDateEnforcementCaseUnallocatedWhenNoSlotAvailable() {
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"),
+                eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime)))
+                .thenReturn(Optional.empty());
+
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(listedStartDateTime, null);
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(getOtherTypeProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
+
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        // Unallocated - no business-type-blind fallback to whatever room PCF's generic lookup resolved
         assertThat(hearing.getCourtCentre().getRoomId(), nullValue());
         assertThat(hearing.getListedStartDateTime(), is(listedStartDateTime));
     }

@@ -88,6 +88,7 @@ public class ListCourtHearingTransformer {
     private ListingService listingService;
 
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
+    private static final String ENFORCEMENT_BUSINESS_TYPE = "ENF";
     private static final String ENFORCEMENT_AUTO_BUSINESS_TYPE = "ENF_AUTO";
     private static final String PANEL_ADULT = "ADULT";
     private static final String PANEL_YOUTH = "YOUTH";
@@ -304,20 +305,21 @@ public class ListCourtHearingTransformer {
                 ? resolveEnforcementSlot(jsonEnvelope, listHearingRequest, listOfProsecutionCase, expectedListingStartDateTime)
                 : Optional.empty();
 
-        // ENF_AUTO (date-range) OTHER-type cases must not fall back to PCF's generic OUCODE-resolved
-        // room when no Enforcement (Auto) slot is confirmed - that room has no relation to whether an
-        // ENF_AUTO session actually exists there, and would otherwise let Listing's business-type-blind
-        // legacy auto-allocate pipeline book it into an unrelated (e.g. NCFL) session instead of Unallocated.
-        final boolean isUnconfirmedEnforcementAutoCase = availableSlot.isEmpty()
+        // Enforcement OTHER-type cases (single-date "ENF" or date-range "ENF_AUTO") must not fall
+        // back to PCF's generic OUCODE-resolved room when no Enforcement slot is confirmed - that
+        // room has no relation to whether an Enforcement session actually exists there, and would
+        // otherwise let Listing's business-type-blind legacy auto-allocate pipeline book it into an
+        // unrelated (e.g. NCFL) session instead of Unallocated.
+        final boolean isUnconfirmedEnforcementCase = availableSlot.isEmpty()
                 && isOtherTypeCase(listOfProsecutionCase)
-                && nonNull(listHearingRequest.getListedEndDateTime());
+                && (nonNull(listHearingRequest.getListedEndDateTime()) || nonNull(listHearingRequest.getListedStartDateTime()));
 
         final CourtCentre courtCentre = availableSlot
                 .map(slot -> CourtCentre.courtCentre()
                         .withValuesFrom(listHearingRequest.getCourtCentre())
                         .withRoomId(UUID.fromString(slot.courtRoomId()))
                         .build())
-                .orElseGet(() -> isUnconfirmedEnforcementAutoCase && nonNull(listHearingRequest.getCourtCentre())
+                .orElseGet(() -> isUnconfirmedEnforcementCase && nonNull(listHearingRequest.getCourtCentre())
                         ? CourtCentre.courtCentre().withValuesFrom(listHearingRequest.getCourtCentre()).withRoomId(null).build()
                         : listHearingRequest.getCourtCentre());
         final ZonedDateTime listedStartDateTime = availableSlot
@@ -351,40 +353,61 @@ public class ListCourtHearingTransformer {
     }
 
     /**
-     * OTHER-type cases (initiationCode "O") submitted as a date range (business type "ENF_AUTO") must
-     * be allocated only to a genuinely confirmed ENF_AUTO session - find one by searching Listing's
-     * existing hearing-slots search across the whole listedStartDateTime-to-listedEndDateTime span in
-     * one call. PCF may already have resolved a court room for the submitted OUCODE via its generic,
-     * business-type-agnostic reference-data lookup, but that room must not be trusted here: the caller
-     * (buildHearingListingNeeds) discards it when this method returns empty for a date-range case, so
-     * the hearing lands in Unallocated rather than being silently booked into an unrelated business
-     * type by Listing's legacy auto-allocate pipeline. Single-date ("ENF") submissions are left exactly
-     * as submitted - no search is performed for them; that business type is assigned via manual UI
-     * allocation, not this API-driven search.
+     * OTHER-type cases (initiationCode "O") must be allocated only to a genuinely confirmed
+     * Enforcement session - find one by searching Listing's hearing-slots search. PCF may already
+     * have resolved a court room for the submitted OUCODE via its generic, business-type-agnostic
+     * reference-data lookup, but that room must not be trusted here: the caller
+     * (buildHearingListingNeeds) discards it when this method returns empty, so the hearing lands
+     * in Unallocated rather than being silently booked into an unrelated business type by Listing's
+     * legacy auto-allocate pipeline.
+     *
+     * <p>Two submission shapes, two business types: a date range (business type "ENF_AUTO") searches
+     * the whole listedStartDateTime-to-listedEndDateTime span for the first available slot on any
+     * day/time within it. A single specific dateOfHearing+timeOfHearing (business type "ENF") searches
+     * only that one day, constrained to a session that genuinely covers that exact time - the found
+     * slot's own room is used, but the hearing keeps its originally-requested exact time rather than
+     * whatever time the matched session-window itself reports (that's just the availability check).
      */
     private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
                                                                    final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
-        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
-        if (isNull(endDateTime)) {
-            return Optional.empty();
-        }
         if (isNull(listHearingRequest.getCourtCentre()) || isNull(listHearingRequest.getCourtCentre().getCode())) {
             return Optional.empty();
         }
-        final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime())
-                ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
-        if (isNull(startDateTime)) {
-            return Optional.empty();
-        }
+        final String ouCode = listHearingRequest.getCourtCentre().getCode();
         final String panel = resolvePanel(expectedListingStartDateTime, listOfProsecutionCase);
 
+        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
+        if (nonNull(endDateTime)) {
+            final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime())
+                    ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
+            if (isNull(startDateTime)) {
+                return Optional.empty();
+            }
+            return listingService.findAvailableHearingSlot(
+                    jsonEnvelope,
+                    ouCode,
+                    ENFORCEMENT_AUTO_BUSINESS_TYPE,
+                    panel,
+                    startDateTime.toLocalDate(),
+                    endDateTime.toLocalDate());
+        }
+
+        final ZonedDateTime exactStartDateTime = listHearingRequest.getListedStartDateTime();
+        if (isNull(exactStartDateTime)) {
+            return Optional.empty();
+        }
         return listingService.findAvailableHearingSlot(
-                jsonEnvelope,
-                listHearingRequest.getCourtCentre().getCode(),
-                ENFORCEMENT_AUTO_BUSINESS_TYPE,
-                panel,
-                startDateTime.toLocalDate(),
-                endDateTime.toLocalDate());
+                        jsonEnvelope,
+                        ouCode,
+                        ENFORCEMENT_BUSINESS_TYPE,
+                        panel,
+                        exactStartDateTime.toLocalDate(),
+                        exactStartDateTime.toLocalDate(),
+                        exactStartDateTime)
+                // The matched session only proves a genuinely-available Enforcement slot exists at
+                // this exact time and which room it's in - the hearing keeps its originally-requested
+                // exact time rather than the session-window's own (coarser) reported start time.
+                .map(slot -> new AvailableHearingSlot(slot.courtRoomId(), exactStartDateTime));
     }
 
     /**
