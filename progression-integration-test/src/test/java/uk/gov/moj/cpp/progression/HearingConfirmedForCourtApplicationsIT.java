@@ -15,7 +15,9 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -48,6 +50,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     @BeforeEach
     public void setUp() {
         userId = randomUUID().toString();
+        stubEmptyPermissionsQuery();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
 
@@ -59,10 +62,11 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
 
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId,
                 "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",
@@ -82,10 +86,11 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
 
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId,
                 "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelopeHearingConfirmed = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",

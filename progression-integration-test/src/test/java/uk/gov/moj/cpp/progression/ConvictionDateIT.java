@@ -21,14 +21,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusResulted;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
+import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
 @SuppressWarnings("squid:S1607")
 public class ConvictionDateIT extends AbstractIT {
@@ -53,6 +57,7 @@ public class ConvictionDateIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
+        stubEmptyPermissionsQuery();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         userId = randomUUID().toString();
@@ -65,7 +70,10 @@ public class ConvictionDateIT extends AbstractIT {
     public void shouldUpdateCourtApplication() throws Exception {
         // given
         final String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+        stubEmptyPermissionsQuery();
+        assertThatRequestIsAccepted(addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(),
+                new CourtApplicationsHelper.CourtApplicationRandomValues(),
+                "progression.command.create-standalone-court-application.json"));
         pollForApplication(courtApplicationId);
 
         helper = new ConvictionDateHelper(null, null, courtApplicationId);

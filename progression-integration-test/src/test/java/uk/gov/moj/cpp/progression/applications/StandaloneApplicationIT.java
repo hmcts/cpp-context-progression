@@ -11,13 +11,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.moj.cpp.progression.AbstractIT;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 
-public class StandaloneApplicationIT extends AbstractIT {
+public class StandaloneApplicationIT extends ApplicationsIT {
 
     @Test
     public void shouldInitiateCourtProceedingsForCourtHearing() throws Exception {

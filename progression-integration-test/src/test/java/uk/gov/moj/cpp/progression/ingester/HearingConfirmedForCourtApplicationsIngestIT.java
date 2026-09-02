@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -67,7 +68,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() throws IOException {
-
+        stubEmptyPermissionsQuery();
         userId = randomUUID().toString();
 
         elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
@@ -124,7 +125,8 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
 
-        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId,
+        stubEmptyPermissionsQuery();
+        assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, caseId,
                 "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json"));
         pollForApplication(applicationId);
 

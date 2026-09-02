@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.api;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -68,6 +69,37 @@ public class UserDetailsLoaderTest {
         final JsonObject jsonObjectPayload = createObjectBuilder().build();
         final List<Permission> permissions = getPermissions(jsonObjectPayload);
         assertThat(permissions.size(),is(0));
+    }
+
+    @Test
+    public void shouldIgnoreNonHearingTypePermissionsWhenResolvingAllowedHearingTypes() {
+        final String applicationTypeId = randomUUID().toString();
+        final String allowedHearingTypeId = randomUUID().toString();
+        final JsonObject permissionsPayload = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("object", "defenceClientId")
+                                .add("action", "View")
+                                .add("active", true)
+                                .add("source", randomUUID().toString())
+                                .add("target", randomUUID().toString()))
+                        .add(createObjectBuilder()
+                                .add("object", "HearingType")
+                                .add("action", "Locked")
+                                .add("active", true)
+                                .add("source", applicationTypeId)
+                                .add("target", allowedHearingTypeId)))
+                .build();
+
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, permissionsPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final List<java.util.UUID> allowedHearingTypes = UserDetailsLoader.getAllowedHearingTypes(
+                metadata, requester, applicationTypeId);
+
+        assertThat(allowedHearingTypes.size(), is(1));
+        assertThat(allowedHearingTypes.get(0), is(fromString(allowedHearingTypeId)));
     }
 
     private List<Permission> getPermissions(final JsonObject jsonObjectPayload){

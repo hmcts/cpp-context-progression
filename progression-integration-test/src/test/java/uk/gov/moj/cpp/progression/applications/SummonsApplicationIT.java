@@ -12,14 +12,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.setupSjpProsecutionCaseQueryStub;
-
-import uk.gov.moj.cpp.progression.AbstractIT;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-public class SummonsApplicationIT extends AbstractIT {
+public class SummonsApplicationIT extends ApplicationsIT {
 
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {
@@ -53,6 +52,7 @@ public class SummonsApplicationIT extends AbstractIT {
         final String caseId = randomUUID().toString();
         final String hearingId = randomUUID().toString();
         setupSjpProsecutionCaseQueryStub(caseId, randomUUID().toString());
+        stubEmptyPermissionsQuery();
         assertThatRequestIsAccepted(initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-summons-stand-alone-application.json"));
 
         final Matcher[] applicationMatchersForInitate = {

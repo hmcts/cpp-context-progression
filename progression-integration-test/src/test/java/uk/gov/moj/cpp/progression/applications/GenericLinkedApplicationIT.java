@@ -11,12 +11,10 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 
-import uk.gov.moj.cpp.progression.AbstractIT;
-
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 
-public class GenericLinkedApplicationIT extends AbstractIT {
+public class GenericLinkedApplicationIT extends ApplicationsIT {
 
     @Test
     public void shouldInitiateCourtProceedingsForProsecutionCases() throws Exception {

@@ -118,6 +118,8 @@ public class UserDetailsLoader {
         return permissionsJsonArray.stream()
                 .map(p -> (JsonObject) p)
                 .filter(UserDetailsLoader::isActive)
+                .filter(permission -> HEARING_TYPE.equals(JsonObjects.getString(permission, OBJECT).orElse(null)))
+                .filter(permission -> applicationTypeId.equals(JsonObjects.getString(permission, SOURCE).orElse(null)))
                 .map(permission -> getNullableUUID(permission, TARGET))
                 .filter(Objects::nonNull)
                 .toList();

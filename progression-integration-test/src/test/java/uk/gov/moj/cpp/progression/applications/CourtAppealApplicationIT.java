@@ -17,7 +17,6 @@ import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForApplicationSho
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.nio.charset.Charset;
 
@@ -29,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-public class CourtAppealApplicationIT extends AbstractIT {
+public class CourtAppealApplicationIT extends ApplicationsIT {
 
     @Test
     public void shouldCreateLinkedApplicationForCourtAppeal() throws Exception {

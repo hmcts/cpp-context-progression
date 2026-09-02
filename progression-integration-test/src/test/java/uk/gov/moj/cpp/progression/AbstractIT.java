@@ -88,7 +88,7 @@ public class AbstractIT {
      * leak into later ITs in the same JVM.
      */
     @BeforeEach
-    void resetPermissionsStubBeforeEachTest() {
+    protected void resetPermissionsStubBeforeEachTest() {
         stubEmptyPermissionsQuery();
     }
 

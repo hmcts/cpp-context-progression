@@ -32,6 +32,7 @@ public class InitiateCourtApplicationProceedingsCommandApi {
 
     private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{11}$");
     private static final String LINK_TYPE = "linkType";
+    private static final String BOX_HEARING = "boxHearing";
     public static final String COURT_APPLICATION = "courtApplication";
 
     @Inject
@@ -57,6 +58,10 @@ public class InitiateCourtApplicationProceedingsCommandApi {
         final JsonObject payload = command.payloadAsJsonObject();
         final JsonObject courtApplication = payload.getJsonObject(COURT_APPLICATION);
         if (!standaloneApplication(courtApplication)) {
+            return;
+        }
+
+        if (payload.containsKey(BOX_HEARING)) {
             return;
         }
 

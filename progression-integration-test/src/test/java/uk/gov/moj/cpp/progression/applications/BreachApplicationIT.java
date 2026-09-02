@@ -14,13 +14,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.cpp.progression.AbstractIT;
-
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class BreachApplicationIT extends AbstractIT {
+public class BreachApplicationIT extends ApplicationsIT {
 
     @BeforeAll
     public static void setUpClass() {

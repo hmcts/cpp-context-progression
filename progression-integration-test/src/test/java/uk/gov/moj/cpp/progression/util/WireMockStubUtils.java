@@ -16,6 +16,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.clearPermissionsQueryStubs;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class WireMockStubUtils {
@@ -63,6 +64,7 @@ public class WireMockStubUtils {
     }
 
     public static void stubUserGroupDefenceClientPermission(final String responsePayLoad) {
+        clearPermissionsQueryStubs();
         stubFor(get(urlPathEqualTo(format("/usersgroups-service/query/api/rest/usersgroups/permissions")))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
