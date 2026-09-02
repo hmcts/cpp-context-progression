@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
@@ -11,6 +12,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -19,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -54,6 +57,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated";
     private static final String HEARING_RESULTED_AMENDMENT_DELETED_FIXTURE = "public.events.hearing.hearing-resulted-amendment-deleted.json";
+    private static final String HEARING_RESULTED_REOPEN_GRANT_FIXTURE = "public.events.hearing.hearing-resulted-reopen-grant.json";
 
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
@@ -136,6 +140,48 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         equalTo(false)));
     }
 
+    @Test
+    public void shouldReactivateCaseToActiveWhenReopenApplicationGranted() throws Exception {
+        final String applicationId = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope initialFinalShareEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId),
+                getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
+                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, initialFinalShareEnvelope);
+
+        pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+
+        // Reopen reactivation only needs courtApplications on the hearing-resulted payload
+        // (prosecution-cases-resulted-v2 → update-case). No pre-created application required.
+        final JsonEnvelope reopenGrantShareEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId),
+                getHearingReopenGrantJsonObject(caseId, hearingId, defendantId, applicationId, newCourtCentreId,
+                        bailStatusCode, bailStatusDescription, bailStatusId));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, reopenGrantShareEnvelope);
+
+        // Prove the reopen share was processed (fixture keeps FINAL offence JRs with isNewAmendment=false).
+        final String hearingPayload = pollForHearing(hearingId,
+                withJsonPath("$.hearing.courtApplications[0].id", is(applicationId)),
+                withJsonPath("$.hearing.courtApplications[0].type.code", is("MC80524")),
+                withJsonPath("$.hearing.courtApplications[0].judicialResults[0].label", is("Granted")));
+        assertThat(getJsonObject(hearingPayload).getJsonObject("hearing")
+                        .getJsonArray("courtApplications").getJsonObject(0).getString("id"),
+                equalTo(applicationId));
+
+        final String casePayload = pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo(ACTIVE.getDescription())),
+                withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(false)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(false)));
+        final JsonObject prosecutionCase = getJsonObject(casePayload).getJsonObject("prosecutionCase");
+        assertThat(prosecutionCase.getString("caseStatus"), equalTo(ACTIVE.getDescription()));
+        assertThat(prosecutionCase.getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(false));
+        assertThat(prosecutionCase.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(false));
+    }
+
 
     @Test
     public void shouldNotUpdateCaseAfterHearingIsResulted() throws Exception {
@@ -186,6 +232,23 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].defendantCaseJudicialResults[0].label", equalTo("defendants")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].judicialResults[0].label", equalTo("judicialResults-offence"))
         };
+    }
+
+    private JsonObject getHearingReopenGrantJsonObject(final String caseId, final String hearingId,
+                                                       final String defendantId, final String applicationId,
+                                                       final String courtCentreId, final String bailStatusCode,
+                                                       final String bailStatusDescription, final String bailStatusId) {
+        return stringToJsonObjectConverter.convert(
+                getPayload(HEARING_RESULTED_REOPEN_GRANT_FIXTURE)
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("APPLICATION_ID", applicationId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("BAIL_STATUS_ID", bailStatusId)
+                        .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
+                        .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
+        );
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,

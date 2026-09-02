@@ -1,0 +1,311 @@
+{
+  "isReshare": true,
+  "hearingDay": "2015-01-12",
+  "hearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2015-01-12T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "a",
+      "welshName": "a",
+      "roomId": "00000000-0000-0000-0000-000000000000",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "judiciary": [
+      {
+        "judicialId": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "RECORDER"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutingAuthority": {
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962"
+          },
+          "summonsRequired": false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true
+        },
+        "type": {
+          "id": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+          "code": "MC80524",
+          "type": "Application to reopen case",
+          "typeWelsh": "Cais i ailagor achos",
+          "legislation": "In accordance with section 142 of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 142 Deddf Llysoedd Ynadon 1980.",
+          "categoryCode": "CO",
+          "linkType": "SJP",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "hearingCode": "APN",
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": false,
+          "commrOfOathFlag": false,
+          "courtOfAppealFlag": false,
+          "courtExtractAvlFlag": true,
+          "prosecutorThirdPartyFlag": true,
+          "spiOutApplicableFlag": true,
+          "offenceActiveOrder": "OFFENCE",
+          "exParte": false,
+          "contestedFeeApplicable": false,
+          "initialFeeApplicable": false
+        },
+        "applicationReceivedDate": "2020-06-01",
+        "applicationReference": "REOPEN-REF-001",
+        "applicationStatus": "FINALISED",
+        "id": "APPLICATION_ID",
+        "courtApplicationCases": [
+          {
+            "prosecutionCaseId": "CASE_ID",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+              "prosecutionAuthorityCode": "a",
+              "caseURN": "a"
+            },
+            "isSJP": false,
+            "caseStatus": "INACTIVE"
+          }
+        ],
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "FINAL",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "09a9b535-904b-4de4-a473-f3087c33bba7",
+            "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "label": "Granted",
+            "lastSharedDateTime": "2024-11-05",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-11-05",
+            "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 98500,
+            "resultText": "G - Granted",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "09a9b535-904b-4de4-a473-f3087c33bba7",
+            "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ]
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+          "prosecutionAuthorityCode": "a",
+          "caseURN": "a"
+        },
+        "originatingOrganisation": "a",
+        "initiationCode": "J",
+        "caseStatus": "INACTIVE",
+        "statementOfFacts": "a",
+        "statementOfFactsWelsh": "a",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+            "prosecutionCaseId": "CASE_ID",
+            "proceedingsConcluded": true,
+            "numberOfPreviousConvictionsCited": 0,
+            "prosecutionAuthorityReference": "a",
+            "witnessStatement": "a",
+            "witnessStatementWelsh": "a",
+            "mitigation": "a",
+            "mitigationWelsh": "a",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a",
+                "modeOfTrial": "a",
+                "wording": "a",
+                "wordingWelsh": "a",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "dateOfInformation": "2018-01-01",
+                "orderIndex": 0,
+                "count": 0,
+                "proceedingsConcluded": true,
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "isNewAmendment": false,
+                    "amendmentDate": "1000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "1000-01-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "1000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "terminatesOffenceProceedings": false,
+                    "lifeDuration": false,
+                    "rollUpPrompts": false,
+                    "publishedForNows": false,
+                    "publishedAsAPrompt": false,
+                    "excludedFromResults": false,
+                    "alwaysPublished": false,
+                    "urgent": false,
+                    "d20": false,
+                    "resultText": "resultText",
+                    "judicialResultPrompts": [
+                      {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                        "label": "a",
+                        "welshLabel": "a",
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a",
+                        "courtExtract": "Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "title": "DR",
+                "firstName": "samba",
+                "middleName": "a",
+                "lastName": "ramba",
+                "dateOfBirth": "2018-01-01",
+                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH171717B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "perceivedBirthYear": 0,
+              "driverNumber": "a",
+              "arrestSummonsNumber": "a",
+              "bailStatus": {
+                "id": "BAIL_STATUS_ID",
+                "code": "BAIL_STATUS_CODE",
+                "description": "BAIL_STATUS_DESCRIPTION"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "hasSharedResults": true
+  },
+  "sharedTime": "2016-06-01T10:00:00Z"
+}
