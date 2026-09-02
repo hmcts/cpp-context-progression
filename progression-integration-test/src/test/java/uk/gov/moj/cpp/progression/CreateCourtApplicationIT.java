@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.removeHearingTypePermission;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubHearingTypePermission;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -180,19 +181,23 @@ public class CreateCourtApplicationIT extends AbstractIT {
 
         // Allowed hearing type for this application type differs from the one in the fixture,
         // so the initiate-court-proceedings-for-application command must be rejected.
-        stubHearingTypePermission(standaloneApplicationTypeId, randomUUID().toString());
+        try {
+            stubHearingTypePermission(standaloneApplicationTypeId, randomUUID().toString());
 
-        Response response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
-                "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+            Response response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
+                    "applications/progression.initiate-court-proceedings-for-standalone-application.json");
 
-        assertThat(response.getStatusCode(), is(SC_BAD_REQUEST));
+            assertThat(response.getStatusCode(), is(SC_BAD_REQUEST));
 
-        stubHearingTypePermission(standaloneApplicationTypeId, "8cdfd3da-8900-42ca-9835-9f29d1e03cd6");
+            stubHearingTypePermission(standaloneApplicationTypeId, "8cdfd3da-8900-42ca-9835-9f29d1e03cd6");
 
-        response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
-                "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+            response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
+                    "applications/progression.initiate-court-proceedings-for-standalone-application.json");
 
-        assertThat(response.getStatusCode(), is(SC_ACCEPTED));
+            assertThat(response.getStatusCode(), is(SC_ACCEPTED));
+        } finally {
+            removeHearingTypePermission(standaloneApplicationTypeId);
+        }
     }
 
     private void verifyCourtApplicationCreatedEventPublished(final String applicationId) {
