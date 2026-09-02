@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.anyOf;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithCivilFees;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCaseCivilFeesFor;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
@@ -48,6 +48,8 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
+    private String feeIdOne;
+    private String feeIdTwo;
     private static final String INITIAL_COURT_PROCEEDINGS = "ingestion/progression.command.initiate-court-proceedings.json";
     @BeforeEach
     public void setup() {
@@ -60,6 +62,8 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
+        feeIdOne = UUID.randomUUID().toString();
+        feeIdTwo = UUID.randomUUID().toString();
         deleteAndCreateIndex();
     }
 
@@ -68,11 +72,11 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
 
         final String caseUrn = generateUrn();
         //given
-        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        initiateCourtProceedingsWithCivilFees(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB, feeIdOne, feeIdTwo);
 
-        final String feeIds = "3034e172-99d3-4970-bc5e-fd95dd62c9d7"+','+ "3034e172-99d3-4970-bc5e-fd95dd62c9d6";
+        final String feeIds = feeIdOne + ',' + feeIdTwo;
 
-        List<Matcher<? super ReadContext>> matchers = getCivilFeeMatchers();
+        List<Matcher<? super ReadContext>> matchers = getCivilFeeMatchers(feeIdOne, feeIdTwo);
         pollProsecutionCaseCivilFeesFor(feeIds, matchers.toArray(new Matcher[7]));
 
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
@@ -95,13 +99,13 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         verifyCaseDefendant(inputProsecutionCase, outputCase,false);
     }
 
-    private static List<Matcher<? super ReadContext>> getCivilFeeMatchers() {
+    private static List<Matcher<? super ReadContext>> getCivilFeeMatchers(final String feeIdOne, final String feeIdTwo) {
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.civilFees.size()", is(2)),
-                withJsonPath("$.civilFees.[0].feeId", anyOf(is("3034e172-99d3-4970-bc5e-fd95dd62c9d6"), is("3034e172-99d3-4970-bc5e-fd95dd62c9d7"))),
+                withJsonPath("$.civilFees.[0].feeId", anyOf(is(feeIdOne), is(feeIdTwo))),
                 withJsonPath("$.civilFees.[0].feeType", anyOf(is("INITIAL"), is("CONTESTED"))),
                 withJsonPath("$.civilFees.[0].feeStatus", is("OUTSTANDING")),
-                withJsonPath("$.civilFees.[1].feeId", anyOf(is("3034e172-99d3-4970-bc5e-fd95dd62c9d6"), is("3034e172-99d3-4970-bc5e-fd95dd62c9d7"))),
+                withJsonPath("$.civilFees.[1].feeId", anyOf(is(feeIdOne), is(feeIdTwo))),
                 withJsonPath("$.civilFees.[1].feeType", anyOf(is("CONTESTED"), is("INITIAL"))),
                 withJsonPath("$.civilFees.[1].feeStatus", is("OUTSTANDING"))
         );
@@ -134,5 +138,4 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         return parse(prosecutionCaseEvent);
     }
 }
-
 

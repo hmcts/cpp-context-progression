@@ -13,12 +13,12 @@
         ],
         "civilFees": [
           {
-            "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d6",
+            "feeId": "RANDOM_FEE_ID_ONE",
             "feeType": "INITIAL",
             "feeStatus": "OUTSTANDING"
           },
           {
-            "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d7",
+            "feeId": "RANDOM_FEE_ID_TWO",
             "feeType": "CONTESTED",
             "feeStatus": "OUTSTANDING"
           }

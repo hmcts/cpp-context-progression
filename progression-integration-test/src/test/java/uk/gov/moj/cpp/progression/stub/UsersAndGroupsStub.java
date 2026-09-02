@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.stub;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.listAllStubMappings;
 import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -183,13 +184,23 @@ public class UsersAndGroupsStub {
     public static final String PERMISSIONS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.permissions+json";
 
     /**
+     * Clears every WireMock mapping for {@link #PERMISSIONS_QUERY}. Use before registering a
+     * test-specific permissions response so stubs do not leak across ITs.
+     */
+    public static void clearPermissionsQueryStubs() {
+        removePermissionsQueryStubs();
+    }
+
+    /**
      * Default stub for the usersgroups.permissions query, returning no permissions. Registered in
      * {@code defaultStubs()} so that every command that now consults this query (e.g. the
      * initiate-court-proceedings-for-application hearing-type validation) behaves as "no locked
-     * mapping" unless a test overrides it with {@link #stubLockedHearingTypePermission}.
+     * mapping" unless a test overrides it with {@link #stubHearingTypePermission}.
      */
     public static void stubEmptyPermissionsQuery() {
+        removePermissionsQueryStubs();
         stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .atPriority(1)
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
@@ -214,7 +225,7 @@ public class UsersAndGroupsStub {
                                 .add("target", target)))
                 .build().toString();
 
-        removeHearingTypePermission(source);
+        removePermissionsQueryStubs();
         stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
                 .withQueryParam("object", equalTo("HearingType"))
                 .withQueryParam("source", equalTo(source))
@@ -229,6 +240,30 @@ public class UsersAndGroupsStub {
         removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY))
                 .withQueryParam("object", equalTo("HearingType"))
                 .withQueryParam("source", equalTo(source)));
+    }
+
+    /**
+     * {@code removeStub} only drops a single mapping; ITs register multiple stubs on the shared
+     * permissions query URL (defaultStubs, {@link #stubEmptyPermissionsQuery},
+     * {@link #stubHearingTypePermission}, defence-client helpers). Clear them all before re-stubbing.
+     */
+    private static void removePermissionsQueryStubs() {
+        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY)));
+        while (hasPermissionsQueryStub()) {
+            listAllStubMappings().getMappings().stream()
+                    .filter(UsersAndGroupsStub::isPermissionsQueryStub)
+                    .findFirst()
+                    .ifPresent(mapping -> removeStub(mapping));
+        }
+    }
+
+    private static boolean hasPermissionsQueryStub() {
+        return listAllStubMappings().getMappings().stream().anyMatch(UsersAndGroupsStub::isPermissionsQueryStub);
+    }
+
+    private static boolean isPermissionsQueryStub(final com.github.tomakehurst.wiremock.stubbing.StubMapping mapping) {
+        return mapping.getRequest().getUrlPath() != null
+                && PERMISSIONS_QUERY.equals(mapping.getRequest().getUrlPath());
     }
 
 }
