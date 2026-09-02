@@ -292,7 +292,6 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
         final JsonEnvelope commandEnvelope = buildStandaloneBoxHearingEnvelope(applicationTypeId);
 
         stubHasPermission(true);
-        stubPermissions(allowedHearingTypePermissions(applicationTypeId, randomUUID().toString()));
 
         initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
 
