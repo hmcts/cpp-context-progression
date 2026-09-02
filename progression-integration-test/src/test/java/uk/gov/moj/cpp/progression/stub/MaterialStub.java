@@ -90,4 +90,15 @@ public class MaterialStub {
             return true;
         });
     }
+
+    public static void verifyMaterialNotCreated() {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(com.github.tomakehurst.wiremock.client.WireMock.exactly(0), postRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
+        });
+    }
 }

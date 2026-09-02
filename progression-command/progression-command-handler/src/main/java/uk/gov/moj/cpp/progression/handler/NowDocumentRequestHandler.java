@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.RecordNowsDocumentFailed;
 import uk.gov.justice.core.courts.RecordNowsDocumentSent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
@@ -16,6 +19,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
 import java.util.UUID;
@@ -46,6 +50,11 @@ public class NowDocumentRequestHandler {
         final UUID materialId = nowDocumentRequest.getMaterialId();
         final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
+        if (isBulkCivilCase(nowDocumentRequest)) {
+            LOGGER.info("Skipping NOW/EDT document generation for bulk civil case, materialId {}", materialId);
+            return;
+        }
+
         final EventStream eventStream = eventSource.getStreamById(nowDocumentRequest.getMaterialId());
 
         final MaterialAggregate materialAggregate = aggregateService.get(eventStream, MaterialAggregate.class);
@@ -53,6 +62,23 @@ public class NowDocumentRequestHandler {
         final Stream<Object> events = materialAggregate.createNowDocumentRequest(materialId, nowDocumentRequest, userId);
 
         appendEventsToStream(envelope, eventStream, events);
+    }
+
+    private boolean isBulkCivilCase(final NowDocumentRequest nowDocumentRequest) {
+        if (isNull(nowDocumentRequest.getCases()) || nowDocumentRequest.getCases().isEmpty()) {
+            return false;
+        }
+        final UUID caseId = nowDocumentRequest.getCases().get(0);
+        final EventStream caseEventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate caseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
+        final ProsecutionCase prosecutionCase = caseAggregate.getProsecutionCase();
+        if (isNull(prosecutionCase)) {
+            return false;
+        }
+        final boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        final boolean isGroupMaster = nonNull(prosecutionCase.getIsGroupMaster()) && prosecutionCase.getIsGroupMaster();
+        final boolean isGroupMember = nonNull(prosecutionCase.getIsGroupMember()) && prosecutionCase.getIsGroupMember();
+        return isCivil && (isGroupMaster || isGroupMember);
     }
 
     @Handles("progression.command.record-nows-document-sent")
