@@ -49,6 +49,7 @@ import static uk.gov.justice.progression.courts.CaseRetentionLengthCalculated.ca
 import static uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated;
 import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
+import static uk.gov.moj.cpp.progression.aggregate.helper.CaseReactivationOnApplicationGrantHelper.shouldReactivateCase;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
@@ -109,6 +110,7 @@ import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -834,6 +836,30 @@ public class CaseAggregate implements Aggregate {
                 defendantProceedingConcluded.put(defendant.getProsecutionCaseId(), newDefendantProceedingsConcludedMap);
             }
         }
+    }
+
+    private void clearOffenceConclusionMemoryForCase(final ProsecutionCase prosecutionCase) {
+        ofNullable(prosecutionCase.getDefendants()).orElse(emptyList()).forEach(defendant -> {
+            defendantOffencesResultedOffenceLevel.remove(defendant.getId());
+            offenceProceedingConcluded.remove(defendant.getId());
+            updateDefendantProceedingConcluded(defendant, false);
+        });
+    }
+
+    private List<uk.gov.justice.core.courts.Defendant> forceProceedingsNotConcluded(
+            final List<uk.gov.justice.core.courts.Defendant> defendants) {
+        return ofNullable(defendants).orElse(emptyList()).stream()
+                .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant()
+                        .withValuesFrom(defendant)
+                        .withProceedingsConcluded(false)
+                        .withOffences(ofNullable(defendant.getOffences()).orElse(emptyList()).stream()
+                                .map(offence -> uk.gov.justice.core.courts.Offence.offence()
+                                        .withValuesFrom(offence)
+                                        .withProceedingsConcluded(false)
+                                        .build())
+                                .toList())
+                        .build())
+                .toList();
     }
 
     private uk.gov.justice.core.courts.Defendant updateDefendantFrom(final DefendantUpdate defendantUpdate) {
@@ -1725,10 +1751,27 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults,
                                      final CourtCentre courtCentre, final UUID hearingId, final List<HearingDay> hearingDays, final String hearingType,
                                      final JurisdictionType jurisdictionType, final Boolean isBoxHearing, final List<String> remitResultIds) {
+        return updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingDays, hearingType,
+                jurisdictionType, isBoxHearing, remitResultIds, emptyList());
+    }
+
+    /**
+     * Same as {@link #updateCase(ProsecutionCase, List, CourtCentre, UUID, List, String, JurisdictionType, Boolean, List)}
+     * with optional court applications used for narrow case-reactivation hooks (e.g. reopen + grant).
+     */
+    public Stream<Object> updateCase(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults,
+                                     final CourtCentre courtCentre, final UUID hearingId, final List<HearingDay> hearingDays, final String hearingType,
+                                     final JurisdictionType jurisdictionType, final Boolean isBoxHearing, final List<String> remitResultIds,
+                                     final List<CourtApplication> courtApplications) {
 
         LOGGER.debug(" ProsecutionCase is being updated ");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (!"EJECTED".equalsIgnoreCase(caseStatus)) {
+            final boolean reactivateCase = shouldReactivateCase(prosecutionCase.getId(), courtApplications);
+            if (reactivateCase) {
+                clearOffenceConclusionMemoryForCase(prosecutionCase);
+            }
+
             final List<uk.gov.justice.core.courts.Defendant> defendantListForProceedingsConcludedEventTrigger = new ArrayList<>();
             final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsForProceedingsConcludedEvent = new ArrayList<>();
 
@@ -1751,9 +1794,25 @@ public class CaseAggregate implements Aggregate {
                         .build());
             }
 
-            final String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
+            if (reactivateCase) {
+                // Payload may still carry FINAL offence JRs; clear again so remembered conclusions do not force INACTIVE.
+                clearOffenceConclusionMemoryForCase(prosecutionCase);
+            }
+
+            String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
+            if (reactivateCase) {
+                updatedCaseStatus = ofNullable(previousNotInactiveCaseStatus).orElse(ACTIVE.getDescription());
+            }
+
+            List<uk.gov.justice.core.courts.Defendant> defendantsForEvent =
+                    updateDefendantWithProceedingsConcludedStatusAndOriginalListingNumbers(prosecutionCase);
+            if (reactivateCase) {
+                defendantsForEvent = forceProceedingsNotConcluded(defendantsForEvent);
+                clearOffenceConclusionMemoryForCase(prosecutionCase);
+            }
+
             final ProsecutionCase updatedProsecutionCase = toUpdatedProsecutionCase(prosecutionCase,
-                    updateDefendantWithProceedingsConcludedStatusAndOriginalListingNumbers(prosecutionCase),
+                    defendantsForEvent,
                     updatedCaseStatus);
 
             streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated()

@@ -8,6 +8,7 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.UpdateListingNumberToProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.progression.courts.IncreaseListingNumberToProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -58,11 +59,14 @@ public class UpdateCaseHandler {
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final List<DefendantJudicialResult> defendantJudicialResults = isNotEmpty(hearingUpdate.getDefendantJudicialResults()) ? hearingUpdate.getDefendantJudicialResults() : emptyList();
+        final List<CourtApplication> courtApplications =
+                isNotEmpty(hearingUpdate.getCourtApplications()) ? hearingUpdate.getCourtApplications() : emptyList();
 
         final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(),
                 defendantJudicialResults, hearingUpdate.getCourtCentre(),
                 hearingUpdate.getHearingId(), hearingUpdate.getHearingDays(), hearingUpdate.getHearingType(),
-                hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds());
+                hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds(),
+                courtApplications);
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
 

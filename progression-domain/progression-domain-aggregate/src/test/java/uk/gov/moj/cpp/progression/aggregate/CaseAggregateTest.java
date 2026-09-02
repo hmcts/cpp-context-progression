@@ -85,6 +85,9 @@ import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -179,6 +182,8 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationTypeConstants;
+import uk.gov.moj.cpp.progression.aggregate.helper.ResultConstants;
 import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.domain.CaseToUnlink;
@@ -886,6 +891,112 @@ class CaseAggregateTest {
 
         assertCaseStatus(amendmentEvent, caseId, ACTIVE);
         assertThat(getProceedingsConcludedStatus(defendantId, amendmentEvent.getProsecutionCase()), is(false));
+    }
+
+    @Test
+    public void shouldReactivateCaseToActiveWhenReopenApplicationGranted() {
+        final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        final List<Defendant> defendantsWithFinalResult = singletonList(getDefendant(caseId, defendantId, offenceId, true, 5));
+        final ProsecutionCase prosecutionCaseInitial = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(defendantsWithFinalResult)
+                .withId(caseId)
+                .build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCaseInitial, emptyList());
+
+        final Stream<Object> initialShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseInitial, emptyList(), courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()),
+                hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated initialShareEvent =
+                (HearingResultedCaseUpdated) initialShareEvents.collect(toList()).get(0);
+        assertCaseStatus(initialShareEvent, caseId, INACTIVE);
+        caseAggregate.apply(initialShareEvent);
+
+        // Grant-only reopen share: offences still carry FINAL JRs (as on hearing payload) but no new offence results
+        final uk.gov.justice.core.courts.Offence offenceStillFinal = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId)
+                .withListingNumber(5)
+                .withProceedingsConcluded(true)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(FINAL)
+                        .withIsNewAmendment(false)
+                        .build()))
+                .build();
+        final Defendant defendantOnReopenShare = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(singletonList(offenceStillFinal))
+                .build();
+        final ProsecutionCase prosecutionCaseOnReopen = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(singletonList(defendantOnReopenShare))
+                .withId(caseId)
+                .withCaseStatus(INACTIVE.getDescription())
+                .build();
+
+        final CourtApplication reopenGranted = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withCode(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID)
+                        .build())
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withProsecutionCaseId(caseId)
+                        .build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withJudicialResultTypeId(ResultConstants.G)
+                        .withRootJudicialResultTypeId(ResultConstants.G)
+                        .withCategory(FINAL)
+                        .build()))
+                .build();
+
+        final Stream<Object> reopenShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseOnReopen, emptyList(), courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()),
+                hearingType, CROWN, Boolean.FALSE, emptyList(), singletonList(reopenGranted));
+        final HearingResultedCaseUpdated reopenShareEvent =
+                (HearingResultedCaseUpdated) reopenShareEvents.collect(toList()).stream()
+                        .filter(HearingResultedCaseUpdated.class::isInstance)
+                        .findFirst()
+                        .orElseThrow();
+        assertCaseStatus(reopenShareEvent, caseId, ACTIVE);
+        assertThat(getProceedingsConcludedStatus(defendantId, reopenShareEvent.getProsecutionCase()), is(false));
+        caseAggregate.apply(reopenShareEvent);
+
+        // Subsequent share without FINAL JRs / new amendments must stay ACTIVE (memory cleared)
+        final uk.gov.justice.core.courts.Offence offenceWithoutResults = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId)
+                .withListingNumber(5)
+                .withProceedingsConcluded(false)
+                .withJudicialResults(emptyList())
+                .build();
+        final Defendant defendantSubsequentShare = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(singletonList(offenceWithoutResults))
+                .build();
+        final ProsecutionCase prosecutionCaseSubsequent = prosecutionCase()
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withDefendants(singletonList(defendantSubsequentShare))
+                .withId(caseId)
+                .withCaseStatus(ACTIVE.getDescription())
+                .build();
+
+        final Stream<Object> subsequentShareEvents = this.caseAggregate.updateCase(
+                prosecutionCaseSubsequent, emptyList(), courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()),
+                hearingType, CROWN, Boolean.FALSE, emptyList());
+        final HearingResultedCaseUpdated subsequentShareEvent =
+                (HearingResultedCaseUpdated) subsequentShareEvents.collect(toList()).get(0);
+        assertCaseStatus(subsequentShareEvent, caseId, ACTIVE);
     }
 
     @Test
