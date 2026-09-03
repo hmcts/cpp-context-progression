@@ -5,7 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -37,6 +37,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
@@ -107,7 +108,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -664,8 +664,7 @@ public class HearingConfirmedEventProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearing);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(Json.
-                createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
+        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
 
@@ -858,8 +857,7 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(Json.
-                createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
+        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
 
@@ -1493,9 +1491,9 @@ public class HearingConfirmedEventProcessorTest {
     private JsonObject createProsecutionCaseJson(final UUID offenceId, final UUID defendantId, final UUID caseId) {
         return createObjectBuilder()
                 .add("id", caseId.toString())
-                .add("defendants", Json.createArrayBuilder().add(createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString())
-                                .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
+                                .add("offences", createArrayBuilder().add(createObjectBuilder()
                                                 .add("id", offenceId.toString())
                                                 .build())
                                         .build())

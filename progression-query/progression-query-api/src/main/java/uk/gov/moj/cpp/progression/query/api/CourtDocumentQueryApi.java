@@ -7,7 +7,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -222,7 +222,7 @@ public class CourtDocumentQueryApi {
     }
 
     private JsonObject getEnrichedQueryPayload(final JsonEnvelope query, final UUID defendantId) {
-        final JsonObjectBuilder enrichedQueryDocumentBuilder = uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder(query.payloadAsJsonObject());
+        final JsonObjectBuilder enrichedQueryDocumentBuilder = createObjectBuilder(query.payloadAsJsonObject());
         enrichedQueryDocumentBuilder.add(DEFENDANT_ID, defendantId.toString());
         return enrichedQueryDocumentBuilder.build();
     }

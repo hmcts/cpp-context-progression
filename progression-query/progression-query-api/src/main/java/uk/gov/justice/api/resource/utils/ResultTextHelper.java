@@ -8,10 +8,10 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createValue;
 import static javax.json.JsonValue.ValueType.STRING;
 import static uk.gov.justice.api.resource.utils.ResultPromptValueHelper.getValue;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.dto.ResultDefinitionPrompt;
 import uk.gov.justice.api.resource.dto.ResultPrompt;
@@ -100,7 +100,7 @@ public class ResultTextHelper {
                 .withPromptRef(resultPrompt.getPromptRef())
                 .withType(resultPrompt.getType())
                 .withLabel(resultPrompt.getLabel())
-                .withValue(createValue(value))
+                .withValue(JsonObjects.getProvider().createValue(value))
                 .build();
     }
 

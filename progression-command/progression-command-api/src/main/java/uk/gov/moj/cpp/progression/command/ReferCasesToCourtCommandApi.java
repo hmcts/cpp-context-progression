@@ -3,7 +3,9 @@ package uk.gov.moj.cpp.progression.command;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -22,7 +24,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -70,7 +71,7 @@ public class ReferCasesToCourtCommandApi {
     }
 
     private JsonArray getUpdatedProsecutionCases(final JsonArray originProsecutionCases, final JsonEnvelope envelope) {
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        final JsonArrayBuilder builder = createArrayBuilder();
         originProsecutionCases.forEach(jsonValue -> {
             final JsonObject jsonObject = (JsonObject) jsonValue;
             builder.add(addProperty(jsonObject, PROSECUTION_CASE_IDENTIFIER, getUpdatedCaseIdentifier(jsonObject.getJsonObject(PROSECUTION_CASE_IDENTIFIER), envelope)));
@@ -91,7 +92,7 @@ public class ReferCasesToCourtCommandApi {
     }
 
     private static JsonObjectBuilder createObjectBuilder(final JsonObject origin) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
             builder.add(entry.getKey(), entry.getValue());
         }
