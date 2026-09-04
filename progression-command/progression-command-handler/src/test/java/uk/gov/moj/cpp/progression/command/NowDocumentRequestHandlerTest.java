@@ -7,7 +7,10 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -45,6 +48,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.handler.NowDocumentRequestHandler;
 
@@ -76,6 +80,12 @@ public class NowDocumentRequestHandlerTest {
 
     @Mock
     private AggregateService aggregateService;
+
+    @Mock
+    private EventStream caseEventStream;
+
+    @Mock
+    private CaseAggregate caseAggregate;
 
     @InjectMocks
     private NowDocumentRequestHandler nowDocumentRequestHandler;
@@ -244,6 +254,89 @@ public class NowDocumentRequestHandlerTest {
                 )
         );
 
+    }
+
+    @Test
+    public void shouldSkipDocumentGenerationForBulkCivilCaseWhenGroupMaster() throws Exception {
+        final UUID caseId = randomUUID();
+        stubCaseAggregate(caseId, true, true, false);
+
+        nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelopeWithCase(caseId));
+
+        verify(aggregateService, never()).get(any(), eq(MaterialAggregate.class));
+        Mockito.verifyNoInteractions(eventStream);
+    }
+
+    @Test
+    public void shouldSkipDocumentGenerationForBulkCivilCaseWhenGroupMember() throws Exception {
+        final UUID caseId = randomUUID();
+        stubCaseAggregate(caseId, true, false, true);
+
+        nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelopeWithCase(caseId));
+
+        verify(aggregateService, never()).get(any(), eq(MaterialAggregate.class));
+        Mockito.verifyNoInteractions(eventStream);
+    }
+
+    @Test
+    public void shouldNotSkipDocumentGenerationForCriminalGroupCase() throws Exception {
+        final UUID caseId = randomUUID();
+        stubCaseAggregate(caseId, false, true, false);
+        when(eventSource.getStreamById(MATERIAL_ID)).thenReturn(eventStream);
+
+        final MaterialAggregate materialAggregate = new MaterialAggregate();
+        when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
+
+        nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelopeWithCase(caseId));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope().withMetadataOf(metadata().withName("progression.event.now-document-requested"))));
+    }
+
+    @Test
+    public void shouldNotSkipDocumentGenerationForCivilNonGroupCase() throws Exception {
+        final UUID caseId = randomUUID();
+        stubCaseAggregate(caseId, true, false, false);
+        when(eventSource.getStreamById(MATERIAL_ID)).thenReturn(eventStream);
+
+        final MaterialAggregate materialAggregate = new MaterialAggregate();
+        when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
+
+        nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelopeWithCase(caseId));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope().withMetadataOf(metadata().withName("progression.event.now-document-requested"))));
+    }
+
+    private void stubCaseAggregate(final UUID caseId, final boolean isCivil, final boolean isGroupMaster, final boolean isGroupMember) {
+        final uk.gov.justice.core.courts.ProsecutionCase prosecutionCase = uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withIsCivil(isCivil)
+                .withIsGroupMaster(isGroupMaster)
+                .withIsGroupMember(isGroupMember)
+                .build();
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.getProsecutionCase()).thenReturn(prosecutionCase);
+    }
+
+    private Envelope<NowDocumentRequest> buildEnvelopeWithCase(final UUID caseId) {
+        final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
+                .withMaterialId(MATERIAL_ID)
+                .withCases(Collections.singletonList(caseId))
+                .withNowContent(NowDocumentContent.nowDocumentContent()
+                        .withCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
+                                .withIsCps(false)
+                                .build()))
+                        .withOrderingCourt(OrderCourt.orderCourt()
+                                .withWelshCourtCentre(false)
+                                .build())
+                        .build())
+                .build();
+
+        return envelope(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME, nowDocumentRequest);
     }
 
     private Envelope<NowDocumentRequest> buildEnvelope() {

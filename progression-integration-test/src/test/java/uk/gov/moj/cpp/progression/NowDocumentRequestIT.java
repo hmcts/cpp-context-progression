@@ -18,26 +18,35 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
+import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialNotCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterNotificationIsRaised;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.NowsRequestHelper;
+import uk.gov.moj.cpp.progression.util.Pair;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -132,6 +141,37 @@ public class NowDocumentRequestIT extends AbstractIT {
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+    }
+
+    @Test
+    public void shouldSkipDocumentGenerationForBulkCivilCase() throws IOException, JSONException {
+        final UUID masterCaseId = randomUUID();
+        final Map<UUID, Pair<UUID, UUID>> caseDefendantOffence = new HashMap<>();
+        caseDefendantOffence.put(masterCaseId, new Pair<>(randomUUID(), randomUUID()));
+
+        initiateCourtProceedingsForGroupCases(masterCaseId, caseDefendantOffence,
+                ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").plusDays(1).toString(),
+                ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString(),
+                randomUUID().toString(), randomUUID().toString(), "Croydon Magistrate's Court");
+
+        pollProsecutionCasesProgressionFor(masterCaseId.toString(),
+                withJsonPath("$.prosecutionCase.isCivil", is(true)),
+                withJsonPath("$.prosecutionCase.isGroupMember", is(true)));
+
+        final String payload = prepareAddNowNonFinancialDocumentRequestForBulkCivilCasePayload(masterCaseId);
+        nowsRequestHelper.makeNowsRequestAndVerify(null, payload);
+
+        verifyMaterialNotCreated();
+        verifyNoLetterNotificationIsRaised();
+    }
+
+    private String prepareAddNowNonFinancialDocumentRequestForBulkCivilCasePayload(final UUID caseId) {
+        String body = getPayload("progression.add-non-financial-now-document-request-bulk-civil-case.json");
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%CASE_ID%", caseId.toString());
+        return body;
     }
 
     private void sendPublicEventForMaterialAdded() {
