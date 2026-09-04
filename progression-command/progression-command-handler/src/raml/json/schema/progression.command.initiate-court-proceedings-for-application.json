@@ -34,6 +34,14 @@
     },
     "issueDate": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "parentApplicationLinkType": {
+      "description": "The link type of the parent application, where this application is linked to another",
+      "type": "string"
+    },
+    "parentApplicationTypeId": {
+      "description": "The identifier of the parent application's type, where this application is linked to another",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "required": [

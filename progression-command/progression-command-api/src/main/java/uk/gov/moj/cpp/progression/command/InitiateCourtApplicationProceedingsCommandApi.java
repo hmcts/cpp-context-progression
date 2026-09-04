@@ -8,6 +8,7 @@ import static uk.gov.justice.core.courts.LinkType.STANDALONE;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.command.api.UserDetailsLoader.getAllowedHearingTypes;
+import static uk.gov.moj.cpp.progression.command.api.UserDetailsLoader.getAllowedParentApplications;
 import static uk.gov.moj.cpp.progression.command.api.UserDetailsLoader.isUserHasPermissionForApplicationTypeCode;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -27,12 +28,16 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
+
 @ServiceComponent(COMMAND_API)
 public class InitiateCourtApplicationProceedingsCommandApi {
 
     private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{11}$");
     private static final String LINK_TYPE = "linkType";
     public static final String COURT_APPLICATION = "courtApplication";
+    public static final String PARENT_APPLICATION_TYPE = "parentApplicationType";
+    private static final String PARENT_APPLICATION_TYPE_ID = "parentApplicationTypeId";
 
     @Inject
     private Sender sender;
@@ -87,10 +92,33 @@ public class InitiateCourtApplicationProceedingsCommandApi {
             throw new BadRequestException("Entered URN is not valid!");
         }
         validateDefaultHearingType(command);
+        validateCreateChildApplicationPermission(command);
+    }
+
+    private void validateCreateChildApplicationPermission(final JsonEnvelope command) {
+        final JsonObject courtApplication = command.payloadAsJsonObject().getJsonObject(COURT_APPLICATION);
+
+        if (!courtApplication.containsKey(PARENT_APPLICATION_TYPE_ID) || !standaloneParentApplication(courtApplication)) {
+            return;
+        }
+
+        final String applicationTypeId = courtApplication.getString(PARENT_APPLICATION_TYPE_ID);
+        final boolean allowedToCreateChildApplication = getAllowedParentApplications(command.metadata(), requester, applicationTypeId);
+
+        if (!allowedToCreateChildApplication) {
+                throw new ForbiddenRequestException("User does not have permission to create a child application for this parent application!");
+        }
     }
 
     private boolean standaloneApplication(final JsonObject courtApplication) {
         return STANDALONE.toString().equals(courtApplication.getJsonObject("type").getString(LINK_TYPE));
+    }
+
+    private boolean standaloneParentApplication(final JsonObject courtApplication) {
+
+        final String applicationType = courtApplication.getString(PARENT_APPLICATION_TYPE, StringUtils.EMPTY);
+
+        return STANDALONE.toString().equals(applicationType);
     }
 
     private boolean isNotValidUrn(final String applicationReference) {

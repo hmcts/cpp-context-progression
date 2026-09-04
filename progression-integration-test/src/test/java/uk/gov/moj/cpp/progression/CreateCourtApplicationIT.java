@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -19,8 +20,12 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.Charset.defaultCharset;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.removeHearingTypePermission;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.removeParentApplicationPermission;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubHearingTypePermission;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubParentApplicationPermission;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -30,6 +35,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import com.google.common.io.Resources;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -184,6 +190,41 @@ public class CreateCourtApplicationIT extends AbstractIT {
         } finally {
             removeHearingTypePermission(standaloneApplicationTypeId);
         }
+    }
+
+    @Test
+    public void shouldRejectChildApplicationWhenUserHasNoPermissionToCreateChildApplication() throws Exception {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final String parentApplicationId = randomUUID().toString();
+
+        final Response rejectedResponse = initiateCourtProceedingsForCourtApplication(
+                childApplicationPayload(randomUUID().toString(), parentApplicationId, parentApplicationTypeId));
+
+        assertThat(rejectedResponse.getStatusCode(), is(SC_FORBIDDEN));
+    }
+
+    @Test
+    public void shouldCreateChildApplicationWhenUserHasPermissionToCreateChildApplication() throws Exception {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final String parentApplicationId = randomUUID().toString();
+
+        try {
+            stubParentApplicationPermission(parentApplicationTypeId, randomUUID().toString());
+
+            final Response acceptedResponse = initiateCourtProceedingsForCourtApplication(
+                    childApplicationPayload(randomUUID().toString(), parentApplicationId, parentApplicationTypeId));
+
+            assertThat(acceptedResponse.getStatusCode(), is(SC_ACCEPTED));
+        } finally {
+            removeParentApplicationPermission(parentApplicationTypeId);
+        }
+    }
+
+    private String childApplicationPayload(final String applicationId, final String parentApplicationId, final String parentApplicationTypeId) throws Exception {
+        return Resources.toString(getResource("applications/progression.initiate-court-proceedings-for-child-application.json"), defaultCharset())
+                .replace("APPLICATION_ID", applicationId)
+                .replace("PARENT_APPLICATION_ID", parentApplicationId)
+                .replace("PARENT_APPLICATION_TYPE_ID", parentApplicationTypeId);
     }
 
     private void verifyCourtApplicationCreatedEventPublished(final String applicationId) {

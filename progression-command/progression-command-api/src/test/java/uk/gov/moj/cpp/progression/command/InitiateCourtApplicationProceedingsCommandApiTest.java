@@ -206,6 +206,39 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
     }
 
     @Test
+    public void shouldInitiateCourtProceedingsForCourtApplicationWhenParentApplicationLinkTypeAndTypeIdAreProvided() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final JsonObject payload = createObjectBuilder()
+                .add("courtApplication", createObjectBuilder()
+                        .add("id", randomUUID().toString())
+                        .add("type", createObjectBuilder()
+                                .add("id", randomUUID().toString())
+                                .add("code", "anyCode")
+                                .add("linkType", "STANDALONE"))
+                        .build())
+                .add("parentApplicationLinkType", "LINKED")
+                .add("parentApplicationTypeId", parentApplicationTypeId)
+                .build();
+
+        final JsonEnvelope commandEnvelope = buildEnvelope(payload);
+
+        stubHasPermission(true);
+        stubEmptyPermissions();
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final DefaultEnvelope newCommand = envelopeCaptor.getValue();
+
+        assertThat(newCommand.metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+        assertThat(newCommand.payload(), equalTo(payload));
+        final JsonObject newCommandPayload = (JsonObject) newCommand.payload();
+        assertThat(newCommandPayload.getString("parentApplicationLinkType"), is("LINKED"));
+        assertThat(newCommandPayload.getString("parentApplicationTypeId"), is(parentApplicationTypeId));
+    }
+
+    @Test
     public void shouldEditCourtProceedingsForCourtApplication() {
         final JsonEnvelope commandEnvelope = buildEnvelope();
 
@@ -319,6 +352,121 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
         verify(sender, times(1)).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    @Test
+    public void shouldSendCommandWhenChildApplicationCreationIsPermitted() {
+        final String childApplicationTypeId = randomUUID().toString();
+        final String parentApplicationId = randomUUID().toString();
+        final String parentApplicationTypeId = randomUUID().toString();
+        final JsonEnvelope commandEnvelope = buildChildApplicationEnvelope(childApplicationTypeId, parentApplicationId,
+                "STANDALONE", parentApplicationTypeId);
+
+        stubHasPermission(true);
+        stubPermissions(parentApplicationPermissions(parentApplicationTypeId, true));
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    @Test
+    public void shouldThrowForbiddenWhenNoActiveParentApplicationPermissionExists() {
+        final String childApplicationTypeId = randomUUID().toString();
+        final String parentApplicationTypeId = randomUUID().toString();
+        final JsonEnvelope commandEnvelope = buildChildApplicationEnvelope(childApplicationTypeId, randomUUID().toString(),
+                "STANDALONE", parentApplicationTypeId);
+
+        stubHasPermission(true);
+        stubEmptyPermissions();
+
+        assertThrows(ForbiddenRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
+    }
+
+    @Test
+    public void shouldThrowForbiddenWhenParentApplicationPermissionIsInactive() {
+        final String childApplicationTypeId = randomUUID().toString();
+        final String parentApplicationTypeId = randomUUID().toString();
+        final JsonEnvelope commandEnvelope = buildChildApplicationEnvelope(childApplicationTypeId, randomUUID().toString(),
+                "STANDALONE", parentApplicationTypeId);
+
+        stubHasPermission(true);
+        stubPermissions(parentApplicationPermissions(parentApplicationTypeId, false));
+
+        assertThrows(ForbiddenRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
+    }
+
+    @Test
+    public void shouldNotEnforceChildApplicationPermissionWhenParentApplicationIsNotStandalone() {
+        final String childApplicationTypeId = randomUUID().toString();
+        final JsonEnvelope commandEnvelope = buildChildApplicationEnvelope(childApplicationTypeId, randomUUID().toString(),
+                "LINKED", randomUUID().toString());
+
+        stubHasPermission(true);
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    @Test
+    public void shouldNotEnforceChildApplicationPermissionWhenParentApplicationTypeAbsent() {
+        final String childApplicationTypeId = randomUUID().toString();
+        final JsonEnvelope commandEnvelope = buildChildApplicationEnvelope(childApplicationTypeId, randomUUID().toString(),
+                null, null);
+
+        stubHasPermission(true);
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    @Test
+    public void shouldNotEnforceChildApplicationPermissionWhenParentApplicationTypeIdAbsent() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+
+        stubHasPermission(true);
+        stubEmptyPermissions();
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    private JsonEnvelope buildChildApplicationEnvelope(final String childApplicationTypeId, final String parentApplicationId,
+                                                         final String parentApplicationType, final String parentApplicationTypeId) {
+        final JsonObjectBuilder courtApplication = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("type", createObjectBuilder()
+                        .add("id", childApplicationTypeId)
+                        .add("code", "anyCode")
+                        .add("linkType", "LINKED"))
+                .add("parentApplicationId", parentApplicationId);
+        if (parentApplicationType != null) {
+            courtApplication.add("parentApplicationType", parentApplicationType);
+        }
+        if (parentApplicationTypeId != null) {
+            courtApplication.add("parentApplicationTypeId", parentApplicationTypeId);
+        }
+        final JsonObject payload = createObjectBuilder().add("courtApplication", courtApplication).build();
+        return buildEnvelope(payload);
+    }
+
+    private JsonObject parentApplicationPermissions(final String source, final boolean active) {
+        return createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("object", "ParentApplication")
+                                .add("action", "Create")
+                                .add("active", active)
+                                .add("source", source)
+                                .add("target", randomUUID().toString())))
+                .build();
     }
 
     private JsonEnvelope buildStandaloneEnvelope(final String applicationTypeId, final String hearingTypeId) {

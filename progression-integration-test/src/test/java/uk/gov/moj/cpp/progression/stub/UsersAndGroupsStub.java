@@ -230,4 +230,33 @@ public class UsersAndGroupsStub {
                 .withQueryParam("source", equalTo(source)));
     }
 
+    public static void stubParentApplicationPermission(final String source, final String target) {
+        final String body = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("permissionId", randomUUID().toString())
+                                .add("object", "ParentApplication")
+                                .add("action", "Create")
+                                .add("active", true)
+                                .add("source", source)
+                                .add("target", target)))
+                .build().toString();
+
+        removeParentApplicationPermission(source);
+        stubFor(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("ParentApplication"))
+                .withQueryParam("source", equalTo(source))
+                .atPriority(1)
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
+                        .withBody(body)));
+    }
+
+    public static void removeParentApplicationPermission(final String source) {
+        removeStub(get(urlPathEqualTo(PERMISSIONS_QUERY))
+                .withQueryParam("object", equalTo("ParentApplication"))
+                .withQueryParam("source", equalTo(source)));
+    }
+
 }
