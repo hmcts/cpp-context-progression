@@ -3,7 +3,7 @@
   <parent>
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.104.300-SNAPSHOT</version>
+    <version>17.104.300-CHD-2771-SNAPSHOT</version>
   </parent>
   <artifactId>progression-domain</artifactId>
   <packaging>pom</packaging>
