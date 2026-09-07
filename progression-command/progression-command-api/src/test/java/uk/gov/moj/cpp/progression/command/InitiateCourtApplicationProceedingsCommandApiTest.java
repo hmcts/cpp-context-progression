@@ -447,14 +447,16 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
                         .add("code", "anyCode")
                         .add("linkType", "LINKED"))
                 .add("parentApplicationId", parentApplicationId);
+
+        final JsonObjectBuilder  payloadBuilder = createObjectBuilder().add("courtApplication", courtApplication);
         if (parentApplicationType != null) {
-            courtApplication.add("parentApplicationLinkType", parentApplicationType);
+            payloadBuilder.add("parentApplicationLinkType", parentApplicationType);
         }
         if (parentApplicationTypeId != null) {
-            courtApplication.add("parentApplicationTypeId", parentApplicationTypeId);
+            payloadBuilder.add("parentApplicationTypeId", parentApplicationTypeId);
         }
-        final JsonObject payload = createObjectBuilder().add("courtApplication", courtApplication).build();
-        return buildEnvelope(payload);
+
+        return buildEnvelope(payloadBuilder.build());
     }
 
     private JsonObject parentApplicationPermissions(final String source, final boolean active) {
