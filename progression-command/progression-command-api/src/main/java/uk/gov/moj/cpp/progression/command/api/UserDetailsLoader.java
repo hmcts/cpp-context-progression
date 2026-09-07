@@ -42,12 +42,13 @@ public class UserDetailsLoader {
     public static final String ACTION = "action";
     public static final String ACTIVE = "active";
     public static final String HEARING_TYPE = "HearingType";
+    public static final String PARENT_APPLICATION = "Application";
     public static final String ORGANISATION_ID = "organisationId";
     public static final String ORGANISATION_NAME = "organisationName";
     public static final String USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP = "User id Not Supplied for the UserGroups look up";
     private static final String DEFENDANT_ID = "defendantId";
     private static final String ACCESS_TO_STANDALONE_APPLICATION = "Access to Standalone Application";
-
+    private static final String CREATE_CHILD_APPLICATION = "CreateChildApplication";
 
     public static boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final Requester requester, final String applicationTypeCode) {
         final JsonObject getOrganisationForUserRequest = createObjectBuilder()
@@ -120,6 +121,31 @@ public class UserDetailsLoader {
                 .map(permission -> getNullableUUID(permission, TARGET))
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    public static boolean getAllowedParentApplications(final Metadata metadata, final Requester requester, final String applicationTypeId) {
+        final JsonObject request = createObjectBuilder()
+                .add(OBJECT, PARENT_APPLICATION)
+                .add(ACTION, CREATE_CHILD_APPLICATION)
+                .add(SOURCE, applicationTypeId)
+                .build();
+        final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.permissions");
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, request);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        final JsonObject payload = response.payload();
+        if (isNull(payload) || !payload.containsKey(PERMISSIONS)) {
+            return false;
+        }
+        final JsonArray permissionsJsonArray = payload.getJsonArray(PERMISSIONS);
+        if (isNull(permissionsJsonArray)) {
+            return false;
+        }
+
+        return permissionsJsonArray.stream()
+                .map(p -> (JsonObject) p)
+                .anyMatch(UserDetailsLoader::isActive);
     }
 
     private static boolean isActive(final JsonObject permission) {
