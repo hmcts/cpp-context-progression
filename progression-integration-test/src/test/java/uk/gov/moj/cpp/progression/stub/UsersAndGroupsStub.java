@@ -14,14 +14,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.List;
 
-import javax.json.Json;
-
 import org.apache.http.HttpHeaders;
-
 public class UsersAndGroupsStub {
 
     public static final String BASE_QUERY = "/usersgroups-service/query/api/rest/usersgroups";
@@ -131,7 +130,7 @@ public class UsersAndGroupsStub {
 
 
     public static void stubGetOrganisationDetailForLAAContractNumberAsEmpty(final String laaContractNumber) {
-        String body = Json.createObjectBuilder().build().toString();
+        String body = createObjectBuilder().build().toString();
 
         stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
@@ -193,8 +192,8 @@ public class UsersAndGroupsStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, PERMISSIONS_QUERY_MEDIA_TYPE)
-                        .withBody(Json.createObjectBuilder()
-                                .add("permissions", Json.createArrayBuilder())
+                        .withBody(createObjectBuilder()
+                                .add("permissions", createArrayBuilder())
                                 .build().toString())));
     }
 
@@ -203,9 +202,9 @@ public class UsersAndGroupsStub {
      * mapping the given application type ({@code source}) to the allowed hearing type ({@code target}).
      */
     public static void stubHearingTypePermission(final String source, final String target) {
-        final String body = Json.createObjectBuilder()
-                .add("permissions", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        final String body = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("permissionId", randomUUID().toString())
                                 .add("object", "HearingType")
                                 .add("action", "Locked")

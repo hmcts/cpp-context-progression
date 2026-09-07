@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -18,8 +19,6 @@ import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +73,7 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("secondClassLetter", false)
                                 .add("isNotificationApi", false)
                                 .add("isCps", false)
-                                .add("emailNotifications", Json.createArrayBuilder()
+                                .add("emailNotifications", createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("sendToAddress", "sendToAddress")
                                                 .build())

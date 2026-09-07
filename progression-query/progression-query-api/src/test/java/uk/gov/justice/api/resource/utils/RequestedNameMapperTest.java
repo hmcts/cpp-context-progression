@@ -5,14 +5,13 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 public class RequestedNameMapperTest {
 
     private static final String REQUESTED_NAME = "requestedName";
@@ -46,7 +45,7 @@ public class RequestedNameMapperTest {
 
 
     private JsonObject createJudiciaryWithRequestedName() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add(REQUESTED_NAME, REQUESTED_NAME);
         judiciaryBuilder.add(SURNAME, SURNAME);
         judiciaryBuilder.add(TITLE_SUFFIX, TITLE_SUFFIX);
@@ -56,7 +55,7 @@ public class RequestedNameMapperTest {
     }
 
     private JsonObject createJudiciaryWithoutRequestedName() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add(SURNAME, SURNAME);
         judiciaryBuilder.add(TITLE_SUFFIX, TITLE_SUFFIX);
         judiciaryBuilder.add(TITLE_JUDICIAL_PREFIX, TITLE_JUDICIAL_PREFIX);
