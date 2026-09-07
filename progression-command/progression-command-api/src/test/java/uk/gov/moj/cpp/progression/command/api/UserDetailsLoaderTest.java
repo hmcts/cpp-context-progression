@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -31,6 +32,8 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,6 +54,9 @@ public class UserDetailsLoaderTest {
 
     @Mock
     private Enveloper enveloper;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> requestEnvelopeCaptor;
 
     @Test
     public void shouldReturnAllPermissionForDefendant() {
@@ -264,6 +270,21 @@ public class UserDetailsLoaderTest {
         final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
 
         assertThat(allowed, is(true));
+    }
+
+    @Test
+    public void shouldRequestApplicationObjectWithCreateChildApplicationActionForGetAllowedParentApplications() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, parentApplicationPermissions(true, randomUUID().toString()));
+        when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), any())).thenReturn(envelope);
+
+        UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        final JsonObject sentRequest = requestEnvelopeCaptor.getValue().payloadAsJsonObject();
+        assertThat(sentRequest.getString("object"), is("Application"));
+        assertThat(sentRequest.getString("action"), is("CreateChildApplication"));
+        assertThat(sentRequest.getString("source"), is(parentApplicationTypeId));
     }
 
     @Test
