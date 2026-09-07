@@ -4,7 +4,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -51,7 +50,7 @@ public class UserDetailsLoader {
 
 
     public static boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final Requester requester, final String applicationTypeCode) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder()
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder()
                 .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
                 .add(OBJECT, applicationTypeCode)
                 .build();
@@ -69,7 +68,7 @@ public class UserDetailsLoader {
 
 
     public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
+        final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(ACTION, "Upload").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
         final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.permissions");
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
@@ -97,7 +96,7 @@ public class UserDetailsLoader {
     }
 
     public static List<UUID> getAllowedHearingTypes(final Metadata metadata, final Requester requester, final String applicationTypeId) {
-        final JsonObject request = Json.createObjectBuilder()
+        final JsonObject request = createObjectBuilder()
                 .add(OBJECT, HEARING_TYPE)
                 .add(SOURCE, applicationTypeId)
                 .build();
