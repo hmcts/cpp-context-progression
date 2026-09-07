@@ -326,6 +326,27 @@ public class ListCourtHearingTransformer {
                 .map(AvailableHearingSlot::hearingStartTime)
                 .orElseGet(listHearingRequest::getListedStartDateTime);
 
+        // A confirmed Enforcement slot must be listed into the exact court_schedule row the
+        // read-only search validated (via courtScheduleId), not merely handed to Listing as a
+        // courtRoomId+time pair. Listing's own allocation-candidate path re-derives a room+time
+        // match by re-searching Courtscheduler's atomic search-and-book endpoint, which hardcodes
+        // its own business-type allow-list (defaults to "NCFL" for non-police) with no awareness
+        // of ENF/ENF_AUTO - it would silently rebook into an unrelated NCFL session overlapping
+        // the same room/time instead of the Enforcement session actually found. Passing the exact
+        // courtScheduleId as a bookedSlot makes Listing list directly into that known session
+        // (HearingDaysEnrichmentService.enrichByBookedSlotsIfPresent -> CourtScheduleEnrichmentService's
+        // direct-listing case), bypassing that business-type-blind re-search entirely.
+        final List<RotaSlot> bookedSlots = availableSlot
+                .filter(slot -> nonNull(slot.courtScheduleId()))
+                .map(slot -> List.of(RotaSlot.rotaSlot()
+                        .withCourtScheduleId(slot.courtScheduleId())
+                        .withCourtCentreId(listHearingRequest.getCourtCentre().getId().toString())
+                        .withRoomId(slot.courtRoomId())
+                        .withStartTime(listedStartDateTime)
+                        .withDuration(listHearingRequest.getEstimateMinutes())
+                        .build()))
+                .orElseGet(listHearingRequest::getBookedSlots);
+
         return HearingListingNeeds.hearingListingNeeds()
                 .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
                 .withListedStartDateTime(listedStartDateTime)
@@ -343,7 +364,7 @@ public class ListCourtHearingTransformer {
                 .withIsGroupProceedings(isGroupProceedings)
                 .withNumberOfGroupCases(isNotEmpty(prosecutionCases) ? prosecutionCases.size() : null)
                 .withWeekCommencingDate(listHearingRequest.getWeekCommencingDate())
-                .withBookedSlots(listHearingRequest.getBookedSlots())
+                .withBookedSlots(bookedSlots)
                 .withBookingType(listHearingRequest.getBookingType())
                 .withJudiciary(listHearingRequest.getJudiciary())
                 .withNonDefaultDays(listHearingRequest.getNonDefaultDays())
@@ -407,7 +428,7 @@ public class ListCourtHearingTransformer {
                 // The matched session only proves a genuinely-available Enforcement slot exists at
                 // this exact time and which room it's in - the hearing keeps its originally-requested
                 // exact time rather than the session-window's own (coarser) reported start time.
-                .map(slot -> new AvailableHearingSlot(slot.courtRoomId(), exactStartDateTime));
+                .map(slot -> new AvailableHearingSlot(slot.courtRoomId(), exactStartDateTime, slot.courtScheduleId()));
     }
 
     /**
