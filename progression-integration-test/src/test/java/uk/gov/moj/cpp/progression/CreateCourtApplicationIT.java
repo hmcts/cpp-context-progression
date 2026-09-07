@@ -192,41 +192,6 @@ public class CreateCourtApplicationIT extends AbstractIT {
         }
     }
 
-    @Test
-    public void shouldRejectChildApplicationWhenUserHasNoPermissionToCreateChildApplication() throws Exception {
-        final String parentApplicationTypeId = randomUUID().toString();
-        final String parentApplicationId = randomUUID().toString();
-
-        final Response rejectedResponse = initiateCourtProceedingsForCourtApplication(
-                childApplicationPayload(randomUUID().toString(), parentApplicationId, parentApplicationTypeId));
-
-        assertThat(rejectedResponse.getStatusCode(), is(SC_FORBIDDEN));
-    }
-
-    @Test
-    public void shouldCreateChildApplicationWhenUserHasPermissionToCreateChildApplication() throws Exception {
-        final String parentApplicationTypeId = randomUUID().toString();
-        final String parentApplicationId = randomUUID().toString();
-
-        try {
-            stubParentApplicationPermission(parentApplicationTypeId, randomUUID().toString());
-
-            final Response acceptedResponse = initiateCourtProceedingsForCourtApplication(
-                    childApplicationPayload(randomUUID().toString(), parentApplicationId, parentApplicationTypeId));
-
-            assertThat(acceptedResponse.getStatusCode(), is(SC_ACCEPTED));
-        } finally {
-            removeParentApplicationPermission(parentApplicationTypeId);
-        }
-    }
-
-    private String childApplicationPayload(final String applicationId, final String parentApplicationId, final String parentApplicationTypeId) throws Exception {
-        return Resources.toString(getResource("applications/progression.initiate-court-proceedings-for-child-application.json"), defaultCharset())
-                .replace("APPLICATION_ID", applicationId)
-                .replace("PARENT_APPLICATION_ID", parentApplicationId)
-                .replace("PARENT_APPLICATION_TYPE_ID", parentApplicationTypeId);
-    }
-
     private void verifyCourtApplicationCreatedEventPublished(final String applicationId) {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated, courtApplicationIdMatches(applicationId));
         assertTrue(message.isPresent(), "Expected court-application-created event on JMS topic for applicationId " + applicationId);

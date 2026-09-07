@@ -448,7 +448,7 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
                         .add("linkType", "LINKED"))
                 .add("parentApplicationId", parentApplicationId);
         if (parentApplicationType != null) {
-            courtApplication.add("parentApplicationType", parentApplicationType);
+            courtApplication.add("parentApplicationLinkType", parentApplicationType);
         }
         if (parentApplicationTypeId != null) {
             courtApplication.add("parentApplicationTypeId", parentApplicationTypeId);

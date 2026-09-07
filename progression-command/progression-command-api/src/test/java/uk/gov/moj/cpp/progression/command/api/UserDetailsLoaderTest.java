@@ -2,10 +2,13 @@ package uk.gov.moj.cpp.progression.command.api;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -21,7 +24,9 @@ import uk.gov.moj.cpp.progression.command.api.vo.UserOrganisationDetails;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.util.List;
+import java.util.UUID;
 
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -247,6 +252,172 @@ public class UserDetailsLoaderTest {
         when(requester.request(any(), any())).thenReturn(envelope);
         final boolean isUserHasPermissionForApplicationTypeCode = userDetailsLoader.isUserHasPermissionForApplicationTypeCode(metadata, requester, applicationTypeCode);
         assertThat(isUserHasPermissionForApplicationTypeCode, is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForGetAllowedParentApplicationsWhenActivePermissionMatches() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, parentApplicationPermissions(true, randomUUID().toString()));
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForGetAllowedParentApplicationsWhenAtLeastOneOfMultiplePermissionsIsActive() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, parentApplicationPermissions(false, randomUUID().toString(), true, randomUUID().toString()));
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForGetAllowedParentApplicationsWhenActiveFlagIsStringTrue() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final JsonObject permissionsPayload = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("object", "ParentApplication")
+                                .add("action", "Create")
+                                .add("active", "true")
+                                .add("source", parentApplicationTypeId)
+                                .add("target", randomUUID().toString())))
+                .build();
+        final Envelope envelope = Envelope.envelopeFrom(metadata, permissionsPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForGetAllowedParentApplicationsWhenNoPermissionIsActive() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, parentApplicationPermissions(false, randomUUID().toString()));
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseForGetAllowedParentApplicationsWhenActiveFlagMissing() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final JsonObject permissionsPayload = createObjectBuilder()
+                .add("permissions", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("object", "ParentApplication")
+                                .add("action", "Create")
+                                .add("source", parentApplicationTypeId)
+                                .add("target", randomUUID().toString())))
+                .build();
+        final Envelope envelope = Envelope.envelopeFrom(metadata, permissionsPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseForGetAllowedParentApplicationsWhenPermissionsKeyMissing() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, createObjectBuilder().build());
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseForGetAllowedParentApplicationsWhenPermissionsArrayIsEmpty() {
+        final String parentApplicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final JsonObject permissionsPayload = createObjectBuilder().add("permissions", createArrayBuilder()).build();
+        final Envelope envelope = Envelope.envelopeFrom(metadata, permissionsPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final boolean allowed = UserDetailsLoader.getAllowedParentApplications(metadata, requester, parentApplicationTypeId);
+
+        assertThat(allowed, is(false));
+    }
+
+    @Test
+    public void shouldReturnAllowedHearingTypesOnlyForActivePermissions() {
+        final String applicationTypeId = randomUUID().toString();
+        final UUID activeHearingType1 = randomUUID();
+        final UUID activeHearingType2 = randomUUID();
+        final UUID inactiveHearingType = randomUUID();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+
+        final JsonArrayBuilder permissions = createArrayBuilder()
+                .add(hearingTypePermission(applicationTypeId, activeHearingType1.toString(), true))
+                .add(hearingTypePermission(applicationTypeId, inactiveHearingType.toString(), false))
+                .add(hearingTypePermission(applicationTypeId, activeHearingType2.toString(), true));
+        final JsonObject permissionsPayload = createObjectBuilder().add("permissions", permissions).build();
+        final Envelope envelope = Envelope.envelopeFrom(metadata, permissionsPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final List<UUID> allowedHearingTypes = UserDetailsLoader.getAllowedHearingTypes(metadata, requester, applicationTypeId);
+
+        assertThat(allowedHearingTypes, containsInAnyOrder(activeHearingType1, activeHearingType2));
+    }
+
+    @Test
+    public void shouldReturnEmptyListForGetAllowedHearingTypesWhenPermissionsKeyMissing() {
+        final String applicationTypeId = randomUUID().toString();
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, createObjectBuilder().build());
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final List<UUID> allowedHearingTypes = UserDetailsLoader.getAllowedHearingTypes(metadata, requester, applicationTypeId);
+
+        assertThat(allowedHearingTypes, empty());
+    }
+
+    private JsonObject hearingTypePermission(final String source, final String target, final boolean active) {
+        return createObjectBuilder()
+                .add("object", "HearingType")
+                .add("action", "Locked")
+                .add("active", active)
+                .add("source", source)
+                .add("target", target)
+                .build();
+    }
+
+    private JsonObject parentApplicationPermissions(final boolean firstActive, final String firstTarget, final Object... rest) {
+        final JsonArrayBuilder permissions = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("object", "ParentApplication")
+                        .add("action", "Create")
+                        .add("active", firstActive)
+                        .add("source", firstTarget)
+                        .add("target", randomUUID().toString()));
+        for (int i = 0; i < rest.length; i += 2) {
+            final boolean active = (boolean) rest[i];
+            final String target = (String) rest[i + 1];
+            permissions.add(createObjectBuilder()
+                    .add("object", "ParentApplication")
+                    .add("action", "Create")
+                    .add("active", active)
+                    .add("source", target)
+                    .add("target", randomUUID().toString()));
+        }
+        return createObjectBuilder().add("permissions", permissions).build();
     }
 
 }

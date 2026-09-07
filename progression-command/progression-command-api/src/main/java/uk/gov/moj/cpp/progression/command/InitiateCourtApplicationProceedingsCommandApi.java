@@ -36,7 +36,7 @@ public class InitiateCourtApplicationProceedingsCommandApi {
     private static final Pattern URN_PATTERN = Pattern.compile("^[A-Z0-9]{11}$");
     private static final String LINK_TYPE = "linkType";
     public static final String COURT_APPLICATION = "courtApplication";
-    public static final String PARENT_APPLICATION_TYPE = "parentApplicationType";
+    public static final String PARENT_APPLICATION_TYPE = "parentApplicationLinkType";
     private static final String PARENT_APPLICATION_TYPE_ID = "parentApplicationTypeId";
 
     @Inject
