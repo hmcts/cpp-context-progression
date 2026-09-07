@@ -6,8 +6,8 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
@@ -23,6 +23,7 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
@@ -57,6 +58,7 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOO
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMAIL_ADDRESS;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.processor.CourtApplicationProcessor.PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
@@ -104,6 +106,8 @@ import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.progression.query.laa.HearingSummary;
+import uk.gov.justice.progression.query.laa.HearingType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -135,13 +139,13 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -219,6 +223,15 @@ public class CourtApplicationProcessorTest {
                 Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH),
                 Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION)
         );
+    }
+
+    @BeforeEach
+    public void stubHearingShapingPassThrough() {
+        // progressionService is mocked here; the application flows now call shapeHearingForListing before
+        // building the hearing commands. These tests verify processor wiring (not the shaping itself, which
+        // is covered by ProgressionServiceTest + HearingOffenceFilterTest), so pass the hearing through unchanged.
+        lenient().when(progressionService.shapeHearingForListing(any(), any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -793,6 +806,207 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andHearingFound_shouldSendAmendSummonsDataCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .withProsecutorCost("£100.00")
+                        .withProsecutorEmailAddress("test@test.com")
+                        .build())
+                .build();
+
+        final JsonObject hearingsPayload = createObjectBuilder()
+                .add("hearings", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", hearingId.toString()).build())
+                        .build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.of(hearingsPayload));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        assertThat(captor.getValue().metadata().name(), is("progression.command.amend-summons-data"));
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andNoHearingFound_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.empty());
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_whenSummonsAmended_andHearingsArrayEmpty_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.FIRST_HEARING)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        final JsonObject hearingsPayload = createObjectBuilder()
+                .add("hearings", createArrayBuilder().build())
+                .build();
+
+        when(progressionService.getCaseHearings(prosecutionCaseId.toString())).thenReturn(Optional.of(hearingsPayload));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andBreachHearingFound_shouldSendAmendSummonsDataCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID breachHearingId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .withProsecutorCost("£100.00")
+                        .withProsecutorEmailAddress("test@test.com")
+                        .build())
+                .build();
+
+        final HearingType breachHearingType = HearingType.hearingType()
+                .withId(UUID.fromString("136dfc3a-a874-32ce-8493-e50849590b49"))
+                .build();
+        final HearingSummary breachHearingSummary = HearingSummary.hearingSummary()
+                .withHearingId(breachHearingId)
+                .withHearingType(breachHearingType)
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.of(singletonList(breachHearingSummary)));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        assertThat(captor.getValue().metadata().name(), is("progression.command.amend-summons-data"));
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andNoBreachHearingFound_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        final HearingType nonBreachHearingType = HearingType.hearingType()
+                .withId(randomUUID())
+                .build();
+        final HearingSummary nonBreachHearingSummary = HearingSummary.hearingSummary()
+                .withHearingId(randomUUID())
+                .withHearingType(nonBreachHearingType)
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.of(singletonList(nonBreachHearingSummary)));
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void courtApplicationSummonsApproved_withLinkedLinkType_whenSummonsAmended_andNoHearingsForApplication_shouldNotSendAnyCommand() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationSummonsApproved courtApplicationSummonsApproved = courtApplicationSummonsApproved()
+                .withApplicationId(applicationId)
+                .withLinkType(LinkType.LINKED)
+                .withCaseIds(singletonList(prosecutionCaseId))
+                .withIsSummonsAmended(true)
+                .withSummonsApprovedOutcome(summonsApprovedOutcome()
+                        .withSummonsSuppressed(false)
+                        .withPersonalService(false)
+                        .build())
+                .build();
+
+        when(progressionService.getHearingsForApplication(applicationId))
+                .thenReturn(Optional.empty());
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationSummonsApproved);
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-summons-approved");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.courtApplicationSummonsApproved(event);
+
+        verify(sender, never()).send(any());
+    }
+
+    @Test
     public void courtApplicationSummonsRejected_withLinkedLinkType_shouldNotSendPublicEventButShouldNotify() {
         final UUID applicationId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
@@ -1339,8 +1553,6 @@ public class CourtApplicationProcessorTest {
                                                 .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
                                 ))).build()));
 
-
-
         //When
         courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
 
@@ -1368,6 +1580,38 @@ public class CourtApplicationProcessorTest {
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
         verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
+    }
+
+    @Test
+    public void shouldNotListProsecutionCaseWhenApplicationReferredToCourtHearingHasOnlyConcludedOffences() throws IOException {
+        final UUID applicationId = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        // flip the application offence to concluded -> application hearing: the active case must NOT be listed
+        final String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset())
+                .replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                .replace("\"proceedingsConcluded\": false", "\"proceedingsConcluded\": true");
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, stringToJsonObjectConverter.convert(inputPayload));
+
+        //When
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        //Then - no prosecution case is attached to the hearing, and none leaks into the listing payload
+        final ArgumentCaptor<Hearing> hearingCaptor = forClass(Hearing.class);
+        verify(progressionService).linkApplicationToHearing(any(JsonEnvelope.class), hearingCaptor.capture(), eq(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingCaptor.getValue().getProsecutionCases(), Matchers.nullValue());
+
+        final ArgumentCaptor<ListCourtHearing> listCaptor = forClass(ListCourtHearing.class);
+        verify(listingService).listCourtHearing(any(), listCaptor.capture());
+        // the listing payload carries no prosecution case to list (the application's courtApplicationCase
+        // reference may still hold the caseId, but the case must not appear under hearings[].prosecutionCases)
+        assertThat(objectToJsonObjectConverter.convert(listCaptor.getValue()).toString(), isJson(withoutJsonPath("$.hearings[0].prosecutionCases")));
     }
 
     @Test
@@ -1458,7 +1702,7 @@ public class CourtApplicationProcessorTest {
 
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToExistingHearing.class)).thenReturn(applicationReferredToExistingHearing);
         when(progressionService.getHearing(event, hearingId.toString())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().
-                add("prosecutionCases", Json.createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
+                add("prosecutionCases", createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
 
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -1516,7 +1760,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1562,7 +1806,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1610,7 +1854,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         //When
@@ -1772,7 +2016,7 @@ public class CourtApplicationProcessorTest {
         when(sjpService.getProsecutionCase(event, caseId)).thenReturn(sjpCase);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -1836,7 +2080,7 @@ public class CourtApplicationProcessorTest {
                 .build());
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -1868,7 +2112,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                (createObjectBuilder().add("prosecutionCase", createObjectBuilder().build
                         ()).build()));
 
         courtApplicationProcessor.processCourtApplicationInitiated(event);
@@ -2371,7 +2615,7 @@ public class CourtApplicationProcessorTest {
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
-        return Json.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }
@@ -2567,6 +2811,84 @@ public class CourtApplicationProcessorTest {
                 new Customization("hearing.id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearing.courtApplications[0].id", (o1, o2) -> o1 != null && o2 != null)
         );
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnFalseWhenAllOffencesConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(true).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenAnyOffenceNotConcluded() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(List.of(
+                        Offence.offence().withProceedingsConcluded(true).build(),
+                        Offence.offence().withProceedingsConcluded(false).build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldTreatNullProceedingsConcludedAsActive() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withOffences(singletonList(Offence.offence().build()))
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToActiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToInactiveCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToClosedCaseStatusWhenNoOffences() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("CLOSED")
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(false));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldFallBackToCaseStatusWhenOffencesEmpty() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase()
+                .withCaseStatus("ACTIVE")
+                .withOffences(List.<Offence>of())
+                .build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
+    }
+
+    @Test
+    public void isActiveCaseByOffenceStatusShouldReturnTrueWhenNoOffencesAndCaseStatusNull() {
+        final CourtApplicationCase courtApplicationCase = courtApplicationCase().build();
+
+        assertThat(courtApplicationProcessor.isActiveCaseByOffenceStatus(courtApplicationCase), is(true));
     }
 
     private MetadataBuilder getMetadata(final String eventName) {

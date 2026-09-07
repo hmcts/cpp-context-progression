@@ -12,8 +12,8 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.containsAny;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -66,7 +66,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -120,6 +119,7 @@ public class CourtlistQueryView {
     private static final String GENDER = "gender";
     private static final String DEFENCE_ORGANIZATION = "defenceOrganization";
     private static final String ASN = "asn";
+    private static final String PNC_ID = "pncId";
     private static final String OFFENCE_CODE = "offenceCode";
     private static final String OFFENCE_TITLE = "offenceTitle";
     private static final String OFFENCE_WORDING = "offenceWording";
@@ -165,7 +165,7 @@ public class CourtlistQueryView {
             }
             return envelopeFrom(query.metadata(), documentPayload);
         }
-        return envelopeFrom(query.metadata(), Json.createObjectBuilder().build());
+        return envelopeFrom(query.metadata(), createObjectBuilder().build());
     }
 
     @Handles("progression.search.prison.court.list")
@@ -412,6 +412,7 @@ public class CourtlistQueryView {
     }
 
     private void addMasterDefendantToPartyBuilder(final MasterDefendant masterDefendant, final JsonObjectBuilder partyBuilder) {
+        ofNullable(masterDefendant.getPncId()).ifPresent(pncId -> partyBuilder.add(PNC_ID, pncId));
         if (masterDefendant.getPersonDefendant() != null
             && masterDefendant.getPersonDefendant().getPersonDetails() != null) {
             final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
@@ -430,6 +431,7 @@ public class CourtlistQueryView {
 
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
+            ofNullable(masterDefendant.getPncId()).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
                 final PersonDefendant pd = masterDefendant.getPersonDefendant();
                 final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
@@ -521,7 +523,7 @@ public class CourtlistQueryView {
                     .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
-                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         addOffenceInformation(offenceBuilder, offence);
@@ -532,7 +534,7 @@ public class CourtlistQueryView {
                     .map(CourtOrderOffence::getOffence)
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
-                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         addOffenceInformation(offenceBuilder, offence);
@@ -544,7 +546,7 @@ public class CourtlistQueryView {
 
     private JsonObject buildDefendantFromCourtApplication(JsonObject hearingFromListing, final CourtApplication courtApplication, final Hearing hearing, final List<UUID> offencesForApplications) {
 
-        final JsonObjectBuilder defendantBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder defendantBuilder = createObjectBuilder();
         final JsonArrayBuilder offencesArray = createArrayBuilder();
         final List<UUID> caseIdList = new ArrayList<>();
 
@@ -560,7 +562,7 @@ public class CourtlistQueryView {
                     .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
-                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         offencesArray.add(offenceBuilder.build());
@@ -575,7 +577,7 @@ public class CourtlistQueryView {
                     .map(CourtOrderOffence::getOffence)
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
-                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         offencesArray.add(offenceBuilder.build());
@@ -586,7 +588,7 @@ public class CourtlistQueryView {
         if (nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant())) {
             final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
 
-            final JsonObjectBuilder defendantFromListingBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder defendantFromListingBuilder = createObjectBuilder();
             if (isNotEmpty(hearingFromListing.getJsonArray(DEFENDANTS))) {
                 hearingFromListing.getJsonArray(DEFENDANTS)
                         .stream()
@@ -623,6 +625,7 @@ public class CourtlistQueryView {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
         }
+        ofNullable(masterDefendant).map(MasterDefendant::getPncId).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
         ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add(ASN, asn));
         //TODO not sure about defenceOrganization
         defendantBuilder.add(DEFENCE_ORGANIZATION, "-");
@@ -639,6 +642,8 @@ public class CourtlistQueryView {
     private JsonObject enrichDefendant(final JsonObject defendantFromListing, final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
         final JsonObjectBuilder defendantJsonBuilder = createObjectBuilder();
         defendantFromListing.forEach((name, value) -> defendantJsonBuilder.add(name, value));
+
+        ofNullable(defendant.getPncId()).ifPresent(pncId -> defendantJsonBuilder.add(PNC_ID, pncId));
 
         final PersonDefendant personDefendant = defendant.getPersonDefendant();
         if (nonNull(personDefendant)) {
@@ -666,7 +671,7 @@ public class CourtlistQueryView {
                     defendant.getOffences()
                             .forEach(offence -> {
                                 if (offence.getId().equals(offenceId)) {
-                                    final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                                    final JsonObjectBuilder offenceBuilder = createObjectBuilder();
 
                                     if (nonNull(offencesFromHearing)) {
                                         offencesFromHearing.forEach(offence1 -> {
@@ -815,7 +820,7 @@ public class CourtlistQueryView {
     }
 
     private JsonObject buildCounsel(final String firstName, final String middleName, final String lastName) {
-        final JsonObjectBuilder counsel = Json.createObjectBuilder();
+        final JsonObjectBuilder counsel = createObjectBuilder();
         ofNullable(firstName).ifPresent(fn -> counsel.add(FIRST_NAME, fn));
         ofNullable(middleName).ifPresent(mn -> counsel.add(MIDDLE_NAME, mn));
         ofNullable(lastName).ifPresent(ln -> counsel.add(LAST_NAME, ln));

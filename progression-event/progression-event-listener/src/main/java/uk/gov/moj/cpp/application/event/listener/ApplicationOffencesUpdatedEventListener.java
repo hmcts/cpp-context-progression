@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.application.event.listener;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.getPersistedCourtApplication;

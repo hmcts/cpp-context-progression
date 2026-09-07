@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCPSCivilProsecutionCaseToCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCivilProsecutionCaseToCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -38,6 +40,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
@@ -323,7 +326,84 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         };
         getHearingForDefendant(hearingId, hearingMatchers);
 
-        verifyEmailNotificationIsRaisedWithoutAttachment(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
+        verifyEmailNotificationIsRaisedWithoutAttachment(asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
+    }
+
+    @Test
+    public void testReceiveRepresentationWithAssociationOnCPSCivilCase_SendCPSNotification() throws Exception {
+        final String courtCentreId = randomUUID().toString();
+        final String courtCentreName = "Lavender Hill Magistrate's Court";
+        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
+
+        addCPSCivilProsecutionCaseToCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        pollHearingWithStatusInitialised(hearingId);
+
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
+        assertInMessagingQueueForDefendantOffenceUpdated();
+        assertInMessagingQueueForDefendantLegalAidStatusUpdated();
+        assertInMessagingQueueForAssociationLockedForLAA();
+        assertMessageForDefenceAssociation(defendantId, organisationId, laaContractNumber);
+
+        verifyEmailNotificationIsRaisedWithoutAttachment(asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
+    }
+
+    @Test
+    public void testReceiveRepresentationWithAssociationOnNonCPSCriminalCase_DoesNotSendCPSNotification() throws Exception {
+        final String courtCentreId = randomUUID().toString();
+        final String courtCentreName = "Lavender Hill Magistrate's Court";
+        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
+        stubQueryProsecutorData("/restResource/referencedata.query.prosecutor-noncps.json", randomUUID());
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        pollHearingWithStatusInitialised(hearingId);
+
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
+        assertInMessagingQueueForDefendantOffenceUpdated();
+        assertInMessagingQueueForDefendantLegalAidStatusUpdated();
+        assertInMessagingQueueForAssociationLockedForLAA();
+        assertMessageForDefenceAssociation(defendantId, organisationId, laaContractNumber);
+
+        verifyNoEmailNotificationIsRaised();
+    }
+
+    @Test
+    public void testReceiveRepresentationWithAssociationOnNonCPSCivilCase_DoesNotSendCPSNotification() throws Exception {
+        final String courtCentreId = randomUUID().toString();
+        final String courtCentreName = "Lavender Hill Magistrate's Court";
+        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
+        stubQueryProsecutorData("/restResource/referencedata.query.prosecutor-noncps.json", randomUUID());
+
+        addCivilProsecutionCaseToCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        pollHearingWithStatusInitialised(hearingId);
+
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
+        assertInMessagingQueueForDefendantOffenceUpdated();
+        assertInMessagingQueueForDefendantLegalAidStatusUpdated();
+        assertInMessagingQueueForAssociationLockedForLAA();
+        assertMessageForDefenceAssociation(defendantId, organisationId, laaContractNumber);
+
+        verifyNoEmailNotificationIsRaised();
     }
 
     private void assertInMessagingQueueForLAAContractAssociation(String defendantId, String laaContractNumber, boolean isAssociation) {

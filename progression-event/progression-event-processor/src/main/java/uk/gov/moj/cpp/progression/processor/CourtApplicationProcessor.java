@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -11,16 +12,18 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.HearingDay.hearingDay;
 import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
+import static uk.gov.justice.core.courts.LinkType.FIRST_HEARING;
 import static uk.gov.justice.core.courts.LinkType.LINKED;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected.publicProgressionCourtApplicationSummonsRejected;
@@ -46,6 +49,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
@@ -78,6 +82,8 @@ import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.query.laa.HearingSummary;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -115,7 +121,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -127,7 +132,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String OLD_APPLICATION_ID = "oldApplicationId";
@@ -146,21 +150,24 @@ public class CourtApplicationProcessor {
     private static final String REMOVE_DEFENDANT_CUSTODIAL_ESTABLISHMENT_FROM_CASE = "progression.command.remove-defendant-custodial-establishment-from-case";
     private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
     private static final UUID APPLICATION_HEARING_TYPE_ID = fromString("3449743b-95d6-4836-8941-57f588b52068");
+    private static final UUID BREACH_HEARING_TYPE_ID = fromString("136dfc3a-a874-32ce-8493-e50849590b49");
     private static final String APPLICATION = "Application";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED = "public.progression.court-application-summons-rejected";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED = "public.progression.hearing-resulted-application-updated";
-
+    private static final String PROGRESSION_COMMAND_AMEND_SUMMONS_DATA = "progression.command.amend-summons-data";
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
-    public static final String HEARING_ID = "hearingId";
+    private static final String HEARING_ID = "hearingId";
+    private static final String HEARINGS = "hearings";
     public static final String PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING = "public.progression.breach-applications-to-be-added-to-hearing";
     public static final String INACTIVE = "INACTIVE";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_APPLICATION_DEFENDANT = "progression.command.update.hearing.application.defendant";
     public static final String PUBLIC_PROGRESSION_DEFENDANT_ADDRESS_CHANGED = "public.progression.defendant-address-changed";
 
     private static final String PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED = "public.progression.event.application-proceedings-edited";
+    public static final String SUMMONS_APPROVED_OUTCOME = "summonsApprovedOutcome";
 
     @Inject
     private ListingService listingService;
@@ -296,7 +303,7 @@ public class CourtApplicationProcessor {
     public void processCourtApplicationInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
 
-        if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
+        if (TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationProceedingsInitiated.getOldApplicationId());
@@ -545,7 +552,9 @@ public class CourtApplicationProcessor {
             hearingBuilder.withIsVirtualBoxHearing(true);
         }
 
-        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearingBuilder.build()).build();
+        final Hearing hearing = progressionService.shapeHearingForListing(hearingBuilder.build(), jsonEnvelope);
+
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
         progressionService.linkApplicationToHearing(jsonEnvelope, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
@@ -580,7 +589,7 @@ public class CourtApplicationProcessor {
 
         final List<ProsecutionCase> prosecutionCases = getProsecutionCases(event, application);
 
-        final Hearing hearing = hearing()
+        final Hearing rawHearing = hearing()
                 .withProsecutionCases(prosecutionCases)
                 .withId(courtHearing.getId())
                 .withHearingDays(singletonList(hearingDay()
@@ -596,6 +605,8 @@ public class CourtApplicationProcessor {
                 .withSpecialRequirements(courtHearing.getSpecialRequirements())
                 .build();
 
+        final Hearing hearing = progressionService.shapeHearingForListing(rawHearing, event);
+
         final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
 
         progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
@@ -606,7 +617,12 @@ public class CourtApplicationProcessor {
         // then update application status - hearing initiated in the Listing hence applicationStatus == UN_ALLOCATED
         progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
 
-        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
+        // build the listing needs from the filtered hearing so the application/prosecutionCases sent to
+        // listing match the shaped hearing (e.g. an application hearing carries no prosecution case)
+        final List<CourtApplication> filteredCourtApplications = hearingInitiate.getHearing().getCourtApplications();
+        final CourtApplication listingApplication = isNotEmpty(filteredCourtApplications) ? filteredCourtApplications.get(0) : application;
+        final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(),
+                listingApplication, hearingInitiate.getHearing().getProsecutionCases());
         // then list hearing
         listingService.listCourtHearing(event, listCourtHearing);
     }
@@ -615,21 +631,108 @@ public class CourtApplicationProcessor {
     public void courtApplicationSummonsApproved(final JsonEnvelope event) {
 
         final CourtApplicationSummonsApproved courtApplicationSummonsApproved = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationSummonsApproved.class);
+        final UUID caseId = courtApplicationSummonsApproved.getCaseIds().get(0);
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Processing event for court-application-summons-approved with application id: {} - Link Type: {}", courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getLinkType());
+            LOGGER.info("Processing event for court-application-summons-approved with caseId : {} - applicationId: {} - Link Type: {} - isAmended: {}",
+                    caseId,
+                    courtApplicationSummonsApproved.getApplicationId(),
+                    courtApplicationSummonsApproved.getLinkType(),
+                    courtApplicationSummonsApproved.getIsSummonsAmended());
         }
 
-        if (courtApplicationSummonsApproved.getLinkType() == LinkType.FIRST_HEARING) {
+        if (shouldReGenerateSummonsDocument(courtApplicationSummonsApproved)) {
+
+            final Optional<UUID> hearingId = getHearingIdForSummonGeneration(courtApplicationSummonsApproved);
+
+            if (hearingId.isPresent()) {
+                LOGGER.info("Firing summons amendment requested for caseId : {}, applicationId : {}, linkType : {} - summonsApprovedOutcome: {}", caseId, courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getLinkType(), courtApplicationSummonsApproved.getSummonsApprovedOutcome());
+                final JsonObject amendmentRequestPayload = createObjectBuilder()
+                        .add(HEARING_ID, hearingId.get().toString())
+                        .add(SUMMONS_APPROVED_OUTCOME, objectToJsonObjectConverter.convert(courtApplicationSummonsApproved.getSummonsApprovedOutcome()))
+                        .build();
+
+                sender.send(envelop(amendmentRequestPayload).withName(PROGRESSION_COMMAND_AMEND_SUMMONS_DATA).withMetadataFrom(event));
+            } else {
+                LOGGER.warn("No first/breach hearing found for caseId : {}, applicationId : {}, linkType : {}", caseId, courtApplicationSummonsApproved.getApplicationId(), courtApplicationSummonsApproved.getLinkType());
+            }
+        } else if (isFirstHearing(courtApplicationSummonsApproved)) {
             final PublicProgressionCourtApplicationSummonsApproved summonsApprovedPublicEventPayload = PublicProgressionCourtApplicationSummonsApproved.publicProgressionCourtApplicationSummonsApproved()
                     .withSummonsApprovedOutcome(courtApplicationSummonsApproved.getSummonsApprovedOutcome())
                     .withId(courtApplicationSummonsApproved.getApplicationId())
-                    .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
+                    .withProsecutionCaseId(caseId)
                     .build();
 
             sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
         }
+    }
 
+    private Optional<UUID> getHearingIdForSummonGeneration(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
+        if (isFirstHearing(courtApplicationSummonsApproved)) {
+            final UUID caseId = courtApplicationSummonsApproved.getCaseIds().get(0);
+            return getFirstHearingId(caseId);
+        } else if (isLinkedHearing(courtApplicationSummonsApproved)) {
+            final UUID applicationId = courtApplicationSummonsApproved.getApplicationId();
+            return getBreachHearingId(applicationId);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static boolean shouldReGenerateSummonsDocument(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
+        return (isFirstHearing(courtApplicationSummonsApproved) || isLinkedHearing(courtApplicationSummonsApproved)) && isAmendment(courtApplicationSummonsApproved);
+    }
+
+    private static boolean isAmendment(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
+        return isTrue(courtApplicationSummonsApproved.getIsSummonsAmended());
+    }
+
+    private static boolean isFirstHearing(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
+        return courtApplicationSummonsApproved.getLinkType() == FIRST_HEARING;
+    }
+
+    private static boolean isLinkedHearing(final CourtApplicationSummonsApproved courtApplicationSummonsApproved) {
+        return courtApplicationSummonsApproved.getLinkType() == LINKED;
+    }
+
+    private Optional<UUID> getBreachHearingId(final UUID applicationId) {
+        final Optional<List<HearingSummary>> applicationHearings = progressionService.getHearingsForApplication(applicationId);
+
+        if (applicationHearings.isPresent()) {
+            final Optional<HearingSummary> breachHearing = applicationHearings.get().stream()
+                    .filter(h -> nonNull(h.getHearingType()) && BREACH_HEARING_TYPE_ID.equals(h.getHearingType().getId()))
+                    .findFirst();
+
+            if (breachHearing.isPresent()) {
+                LOGGER.info("Found breachHearing {} for the application : {}", breachHearing.get().getHearingId(), applicationId);
+                return ofNullable(breachHearing.get().getHearingId());
+            }
+        }
+
+        LOGGER.warn("breachHearing Not found for the application : {}", applicationId);
+
+        return Optional.empty();
+    }
+
+    private Optional<UUID> getFirstHearingId(final UUID caseId) {
+        final Optional<JsonObject> caseHearingsResponse = progressionService.getCaseHearings(caseId.toString());
+
+        if (caseHearingsResponse.isPresent()) {
+            final Optional<Hearings> firstHearings = caseHearingsResponse.get().getJsonArray(HEARINGS).
+                    getValuesAs(JsonObject.class).stream().map(hearing ->
+                            jsonObjectToObjectConverter.convert(hearing, Hearings.class)).findFirst();
+
+            if (firstHearings.isPresent()) {
+                final Hearings hearings = firstHearings.get();
+
+                LOGGER.info("Found first hearing {} for the case : {}", hearings.getId(), caseId);
+                return ofNullable(hearings.getId());
+            }
+        }
+
+        LOGGER.warn("Not found first hearing for the case : {}", caseId);
+
+        return Optional.empty();
     }
 
     @Handles("progression.event.court-application-summons-rejected")
@@ -643,7 +746,7 @@ public class CourtApplicationProcessor {
             LOGGER.info("Processing event for court-application-summons-rejected with application id: {} - Link Type: {}", courtApplication.getId(), linkType);
         }
 
-        if (linkType == LinkType.FIRST_HEARING) {
+        if (linkType == FIRST_HEARING) {
             final PublicProgressionCourtApplicationSummonsRejected summonsRejectedPublicEventPayload = publicProgressionCourtApplicationSummonsRejected()
                     .withId(courtApplication.getId())
                     .withProsecutionCaseId(courtApplicationSummonsRejected.getCaseIds().get(0))
@@ -732,7 +835,7 @@ public class CourtApplicationProcessor {
                 final Hearing updatedHearing = updateHearingWithApplication(event, hearing, courtApplication);
                 progressionService.linkApplicationsToHearing(event, updatedHearing, singletonList(courtApplication.getId()), SENT_FOR_LISTING);
 
-                final JsonArrayBuilder prosecutionCasesBuilder = Json.createArrayBuilder();
+                final JsonArrayBuilder prosecutionCasesBuilder = createArrayBuilder();
                 final Stream<ProsecutionCase> prosecutionCaseStream = ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty);
                 prosecutionCaseStream.map(prosecutionCase -> objectToJsonObjectConverter.convert(prosecutionCase)).forEach(prosecutionCasesBuilder::add);
                 final JsonObjectBuilder hearingExtendedPayloadBuilder = createObjectBuilder()
@@ -874,7 +977,7 @@ public class CourtApplicationProcessor {
     private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
-        if (isAllActiveCases(courtApplicationCases)) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases)) {
             ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(courtApplicationCase -> {
                 final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
                 if (prosecutionCaseDetailById.isPresent()) {
@@ -917,7 +1020,7 @@ public class CourtApplicationProcessor {
                 .map(this::updatedDefendant)
                 .filter(defendant -> isNotEmpty(defendant.getOffences()))
                 .collect(toList());
-        if (courtApplication != null && (courtApplication.getCourtCivilApplication() != null && courtApplication.getCourtCivilApplication().getIsCivil())) {
+        if (isCivil(courtApplication)) {
             final CivilFees initialFees = CivilFees.civilFees()
                     .withFeeType(FeeType.INITIAL)
                     .withFeeId(randomUUID())
@@ -940,6 +1043,13 @@ public class CourtApplicationProcessor {
                     .withDefendants(defendantList).build();
         }
         return prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendantList).build();
+    }
+
+    private static boolean isCivil(final CourtApplication courtApplication) {
+        return ofNullable(courtApplication)
+                .map(CourtApplication::getCourtCivilApplication)
+                .map(CourtCivilApplication::getIsCivil)
+                .orElse(false);
     }
 
     private Defendant updatedDefendant(final Defendant defendant) {
@@ -966,14 +1076,26 @@ public class CourtApplicationProcessor {
 
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
-        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+        return t -> map.putIfAbsent(keyExtractor.apply(t), TRUE) == null;
     }
 
-    private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
-        return courtApplicationCases
-                .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
-                        && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
-                        && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+    /**
+     * Determines whether every court application case is active, based on its offences' proceedings
+     * status. A case with offences is INACTIVE only when all its offences have
+     * {@code proceedingsConcluded == true}, otherwise it is ACTIVE. A case with no offences falls
+     * back to the {@code caseStatus} check.
+     */
+    private boolean isAllActiveCasesByOffenceStatus(final Stream<CourtApplicationCase> courtApplicationCases) {
+        return courtApplicationCases.allMatch(this::isActiveCaseByOffenceStatus);
+    }
+
+    // package-private for unit testing
+    boolean isActiveCaseByOffenceStatus(final CourtApplicationCase courtApplicationCase) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase.getOffences().stream()
+                    .anyMatch(offence -> !TRUE.equals(offence.getProceedingsConcluded()));
+        }
+        return !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()) && !"CLOSED".equalsIgnoreCase(courtApplicationCase.getCaseStatus());
     }
 
     private Optional<ProsecutionCase> findFirstProsecutionCaseForMasterDefendant(final Hearing hearing, final UUID masterDefendantId) {
@@ -1043,7 +1165,7 @@ public class CourtApplicationProcessor {
 
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
 
-        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
+        if (isAllActiveCasesByOffenceStatus(courtApplicationCases) && isNotEmpty(hearing.getProsecutionCases())) {
             final List<CourtApplicationCase> courtApplicationCasesForWhichWeNeedToCreateHearing = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .filter(courtApplicationCase -> hearing.getProsecutionCases().stream().noneMatch(prosecutionCase -> courtApplicationCase.getProsecutionCaseId().equals(prosecutionCase.getId())))
                     .collect(toList());
