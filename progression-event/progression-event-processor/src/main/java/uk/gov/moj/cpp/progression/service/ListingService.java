@@ -241,12 +241,13 @@ public class ListingService {
      */
     private static Optional<AvailableHearingSlot> toAvailableHearingSlot(final JsonObject hearingSlot) {
         final String courtRoomId = hearingSlot.getString("courtRoomId");
+        final String courtScheduleId = hearingSlot.getString("courtScheduleId", null);
         final JsonArray slotStartTimes = hearingSlot.getJsonArray("slotStartTimes");
         if (slotStartTimes == null || slotStartTimes.isEmpty()) {
             return empty();
         }
         final JsonObject earliestSlotStartTime = slotStartTimes.getJsonObject(0);
-        return Optional.of(new AvailableHearingSlot(courtRoomId, ZonedDateTime.parse(earliestSlotStartTime.getString("sessionStartTime"))));
+        return Optional.of(new AvailableHearingSlot(courtRoomId, ZonedDateTime.parse(earliestSlotStartTime.getString("sessionStartTime")), courtScheduleId));
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {

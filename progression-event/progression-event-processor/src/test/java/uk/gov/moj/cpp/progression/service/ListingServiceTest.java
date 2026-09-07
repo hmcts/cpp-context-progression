@@ -456,6 +456,7 @@ public class ListingServiceTest {
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
         final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
         final UUID courtRoomId = randomUUID();
+        final UUID courtScheduleId = randomUUID();
 
         final JsonObject response = createObjectBuilder()
                 .add("results", 1)
@@ -463,6 +464,7 @@ public class ListingServiceTest {
                 .add("hearingSlots", Json.createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("courtRoomId", courtRoomId.toString())
+                                .add("courtScheduleId", courtScheduleId.toString())
                                 .add("availableSlots", 3)
                                 .add("slotStartTimes", Json.createArrayBuilder()
                                         .add(createObjectBuilder().add("sessionStartTime", "2026-08-20T09:00:00.000Z").add("count", 3))))
@@ -480,6 +482,9 @@ public class ListingServiceTest {
         assertTrue(result.isPresent());
         assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
         assertThat(result.get().hearingStartTime(), is(ZonedDateTime.parse("2026-08-20T09:00:00.000Z")));
+        // courtScheduleId must be carried through so the caller can list directly into this exact
+        // confirmed session instead of re-deriving it via a business-type-blind atomic re-search
+        assertThat(result.get().courtScheduleId(), is(courtScheduleId.toString()));
     }
 
     @Test

@@ -605,8 +605,9 @@ public class ListCourtHearingTransformerTest {
     void shouldResolveEnforcementSlotForOtherTypeDateRangeCase() {
         final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
         final UUID resolvedRoomId = randomUUID();
+        final UUID resolvedCourtScheduleId = randomUUID();
         when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("ADULT"), any(), any()))
-                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime)));
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime, resolvedCourtScheduleId.toString())));
 
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
                 earliestStartDateTime, listedStartDateTime.plusDays(365));
@@ -624,6 +625,14 @@ public class ListCourtHearingTransformerTest {
         // unrelated courtCentre fields must be preserved, not just the resolved roomId
         assertThat(hearing.getCourtCentre().getId(), is(courtCenterId));
         assertThat(hearing.getCourtCentre().getName(), is("Court Name"));
+        // the confirmed courtScheduleId must be forwarded as a bookedSlot so Listing lists directly
+        // into this exact session instead of re-searching Courtscheduler's business-type-blind
+        // atomic search-and-book endpoint (which would silently rebook into an unrelated NCFL session)
+        assertThat(hearing.getBookedSlots().size(), is(1));
+        assertThat(hearing.getBookedSlots().get(0).getCourtScheduleId(), is(resolvedCourtScheduleId.toString()));
+        assertThat(hearing.getBookedSlots().get(0).getRoomId(), is(resolvedRoomId.toString()));
+        assertThat(hearing.getBookedSlots().get(0).getCourtCentreId(), is(courtCenterId.toString()));
+        assertThat(hearing.getBookedSlots().get(0).getStartTime(), is(resolvedStartTime));
     }
 
     @Test
@@ -631,11 +640,12 @@ public class ListCourtHearingTransformerTest {
         // no listedEndDateTime - single-date ("ENF"/hearingDetails) submission - searches the exact
         // requested date/time for business type "ENF" (distinct from the date-range "ENF_AUTO" search).
         final UUID resolvedRoomId = randomUUID();
+        final UUID resolvedCourtScheduleId = randomUUID();
         // the matched session's own reported time is coarser/different from the exact request - proves
         // it gets discarded in favour of the originally-requested exact time (see assertion below).
         when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"),
                 eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime)))
-                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), listedStartDateTime.withHour(0).withMinute(0))));
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), listedStartDateTime.withHour(0).withMinute(0), resolvedCourtScheduleId.toString())));
 
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(listedStartDateTime, null);
 
@@ -650,6 +660,11 @@ public class ListCourtHearingTransformerTest {
         assertThat(hearing.getCourtCentre().getRoomId(), is(resolvedRoomId));
         // exact originally-requested time is preserved, not the matched session-window's own time
         assertThat(hearing.getListedStartDateTime(), is(listedStartDateTime));
+        // bookedSlot's startTime reflects the exact requested time too (same field used to list
+        // into the confirmed session), and carries the confirmed courtScheduleId
+        assertThat(hearing.getBookedSlots().size(), is(1));
+        assertThat(hearing.getBookedSlots().get(0).getCourtScheduleId(), is(resolvedCourtScheduleId.toString()));
+        assertThat(hearing.getBookedSlots().get(0).getStartTime(), is(listedStartDateTime));
     }
 
     @Test
@@ -678,7 +693,7 @@ public class ListCourtHearingTransformerTest {
         final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
         final UUID resolvedRoomId = randomUUID();
         when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("YOUTH"), any(), any()))
-                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime)));
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime, randomUUID().toString())));
 
         final ProsecutionCase otherTypeYouthCase = ProsecutionCase.prosecutionCase()
                 .withValuesFrom(getProsecutionCase(LocalDate.now().minusYears(15)))
