@@ -96,7 +96,7 @@ public class InitiateCourtApplicationProceedingsCommandApi {
     }
 
     private void validateCreateChildApplicationPermission(final JsonEnvelope command) {
-        final JsonObject courtApplication = command.payloadAsJsonObject().getJsonObject(COURT_APPLICATION);
+        final JsonObject courtApplication = command.payloadAsJsonObject();
 
         if (!courtApplication.containsKey(PARENT_APPLICATION_TYPE_ID) || !standaloneParentApplication(courtApplication)) {
             return;
