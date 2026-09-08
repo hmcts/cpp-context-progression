@@ -53,8 +53,7 @@ public class SummonsRejectedServiceTest {
     public static Stream<Arguments> applicationTypesNotInterested() {
         return Stream.of(
                 // summons template type
-                Arguments.of(SummonsTemplateType.PARENT_GENERIC_CASE),
-                Arguments.of(SummonsTemplateType.NOT_APPLICABLE)
+                Arguments.of(SummonsTemplateType.PARENT_GENERIC_CASE)
         );
     }
 
@@ -73,7 +72,8 @@ public class SummonsRejectedServiceTest {
         return Stream.of(
                 // summons template type, personal defendant
                 Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_PERSON),
-                Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY)
+                Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
+                Arguments.of(SummonsTemplateType.NOT_APPLICABLE, PartyType.INDIVIDUAL)
                 );
     }
 

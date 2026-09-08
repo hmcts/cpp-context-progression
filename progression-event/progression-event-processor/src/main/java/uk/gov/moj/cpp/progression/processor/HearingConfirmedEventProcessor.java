@@ -8,7 +8,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -230,8 +230,10 @@ public class HearingConfirmedEventProcessor {
 
             final SeedingHearing seedingHearing = hearingInProgression.getSeedingHearing();
 
+            // hearingInProgression used for the prosecution-case order: an existing hearing's own
+            // cases must stay first in the payload
             final Initiate hearingInitiate = Initiate.initiate()
-                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing))
+                    .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing, hearingInProgression))
                     .build();
 
             List<ProsecutionCase> deltaProsecutionCases = Collections.emptyList();
@@ -298,13 +300,21 @@ public class HearingConfirmedEventProcessor {
                                              final ZonedDateTime hearingStartDateTime, final List<CourtApplication> courtApplications) {
         boolean isWarrantHearingType = WARRANT_OF_FURTHER_DETENTION_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
         boolean isPCBHearingType = PRE_CHARGE_BAIL_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
+        boolean isPastDatedHearing = isPastDatedHearing(hearingStartDateTime);
 
-        if (!isWarrantHearingType && !isPCBHearingType) {
+        if (!isWarrantHearingType && !isPCBHearingType && !isPastDatedHearing) {
             LOGGER.info("Sending notification as hearing type is not : Warrant of Further Detention or Pre-Charge Bail");
             courtApplications.forEach(courtApplication ->
                     sendNotification(jsonEnvelope, hearing, hearingStartDateTime, courtApplication)
             );
+        } else {
+            LOGGER.info("Notification is not sent for HearingId {} with start date time {}. warrantOfFurtherDetention: {}, preChargeBail: {}, pastDatedHearing: {}",
+                    hearing.getId(), hearingStartDateTime, isWarrantHearingType, isPCBHearingType, isPastDatedHearing);
         }
+    }
+
+    private boolean isPastDatedHearing(final ZonedDateTime hearingStartDateTime) {
+        return hearingStartDateTime.toLocalDate().isBefore(LocalDate.now());
     }
 
     private void sendNotification(final JsonEnvelope jsonEnvelope,
@@ -574,12 +584,19 @@ public class HearingConfirmedEventProcessor {
 
         LOGGER.info(" hearing initiate with payload {}", jsonEnvelope.toObfuscatedDebugString());
 
-        final Initiate hearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
+        final Initiate incomingHearingInitiate = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), Initiate.class);
 
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(hearingInitiate)));
-        if (isNotEmpty(hearingInitiate.getHearing().getProsecutionCases())) {
+        // Preserving variant: the enriched hearing comes from a confirmed (possibly next/adjourned)
+        // hearing whose case offences pre-exist independently of the application and must not be dropped.
+        final Initiate filteredHearingInitiate = Initiate.initiate()
+                .withValuesFrom(incomingHearingInitiate)
+                .withHearing(progressionService.shapeExistingHearingForListing(incomingHearingInitiate.getHearing(), jsonEnvelope))
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, HEARING_INITIATE_COMMAND).apply(objectToJsonObjectConverter.convert(filteredHearingInitiate)));
+        if (isNotEmpty(filteredHearingInitiate.getHearing().getProsecutionCases())) {
             final List<ProsecutionCasesReferredToCourt> prosecutionCasesReferredToCourts = ProsecutionCasesReferredToCourtTransformer
-                    .transform(hearingInitiate, null);
+                    .transform(filteredHearingInitiate, null);
 
             prosecutionCasesReferredToCourts.forEach(prosecutionCasesReferredToCourt -> {
                 final JsonObject prosecutionCasesReferredToCourtJson = objectToJsonObjectConverter.convert(prosecutionCasesReferredToCourt);
@@ -591,10 +608,10 @@ public class HearingConfirmedEventProcessor {
 
                 sender.send(caseReferToCourt);
             });
-            progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, hearingInitiate);
+            progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, filteredHearingInitiate);
         } else {
-            LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", hearingInitiate.getHearing().getId());
-            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
+            LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", filteredHearingInitiate.getHearing().getId());
+            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, filteredHearingInitiate.getHearing().getId());
         }
     }
 

@@ -6,7 +6,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
@@ -295,10 +295,15 @@ public class CourtProceedingsInitiatedProcessor {
     }
 
     private boolean isNewCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase) {
+        if (pCase.getMigrationSourceSystem() != null
+                && pCase.getMigrationSourceSystem().getMigrationSourceSystemName() != null) {
+            return true;
+        }
+
         String prosecutionAuthorityReference = pCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
         String caseURN = pCase.getProsecutionCaseIdentifier().getCaseURN();
 
-        return getCaseByReference(jsonEnvelope, pCase,prosecutionAuthorityReference) &&  getCaseByReference(jsonEnvelope, pCase,caseURN) ;
+        return getCaseByReference(jsonEnvelope, pCase, prosecutionAuthorityReference) && getCaseByReference(jsonEnvelope, pCase, caseURN);
     }
 
     private boolean getCaseByReference(final JsonEnvelope jsonEnvelope, final ProsecutionCase pCase, final String reference) {

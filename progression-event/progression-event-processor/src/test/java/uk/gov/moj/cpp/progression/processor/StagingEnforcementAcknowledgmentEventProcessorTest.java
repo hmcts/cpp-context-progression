@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -18,7 +20,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -63,18 +64,18 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
         final String requestId = UUID.randomUUID().toString();
         final String materialId_1 = UUID.randomUUID().toString();
         final String materialId_2 = UUID.randomUUID().toString();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("accountNumber", 1234)
+                .add("acknowledgement", createObjectBuilder().add("accountNumber", 1234)
                         .build())
                 .add("requestId", requestId).build();
         when(envelope.metadata()).thenReturn(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("public.stagingenforcement.enforce-financial-imposition-acknowledgement").build());
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        final JsonArray jsonResponseArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("requestId", requestId).add("materialId", materialId_1).add("payload", "").build())
-                .add(Json.createObjectBuilder().add("requestId", requestId).add("materialId", materialId_2).add("payload", "").build())
+        final JsonArray jsonResponseArray = createArrayBuilder()
+                .add(createObjectBuilder().add("requestId", requestId).add("materialId", materialId_1).add("payload", "").build())
+                .add(createObjectBuilder().add("requestId", requestId).add("materialId", materialId_2).add("payload", "").build())
                 .build();
-        JsonObject jsonObject = Json.createObjectBuilder().add("nowDocumentRequests", jsonResponseArray).build();
+        JsonObject jsonObject = createObjectBuilder().add("nowDocumentRequests", jsonResponseArray).build();
         when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
         eventProcessor.processAcknowledgement(envelope);
@@ -87,18 +88,18 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
         final String requestId = UUID.randomUUID().toString();
         final String materialId_1 = UUID.randomUUID().toString();
         final String materialId_2 = UUID.randomUUID().toString();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("errorCode", "ERR1234").add("errorMessage", "post code is invalid")
+                .add("acknowledgement", createObjectBuilder().add("errorCode", "ERR1234").add("errorMessage", "post code is invalid")
                         .build())
                 .add("requestId", requestId).build();
         when(envelope.metadata()).thenReturn(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("public.stagingenforcement.enforce-financial-imposition-acknowledgement").build());
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        final JsonArray jsonResponseArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("requestId", requestId).add("materialId", materialId_1).add("payload", "").build())
-                .add(Json.createObjectBuilder().add("requestId", requestId).add("materialId", materialId_2).add("payload", "").build())
+        final JsonArray jsonResponseArray = createArrayBuilder()
+                .add(createObjectBuilder().add("requestId", requestId).add("materialId", materialId_1).add("payload", "").build())
+                .add(createObjectBuilder().add("requestId", requestId).add("materialId", materialId_2).add("payload", "").build())
                 .build();
-        JsonObject jsonObject = Json.createObjectBuilder().add("nowDocumentRequests", jsonResponseArray).build();
+        JsonObject jsonObject = createObjectBuilder().add("nowDocumentRequests", jsonResponseArray).build();
         when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
         eventProcessor.processAcknowledgement(envelope);
@@ -109,15 +110,15 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
     @Test
     public void shouldNotProcessEnforcementAcknowledgementWhenNoMaterialsForRequestId() {
         final String requestId = UUID.randomUUID().toString();
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("accountNumber", 1234)
+                .add("acknowledgement", createObjectBuilder().add("accountNumber", 1234)
                         .build())
                 .add("requestId", requestId).build();
         when(envelope.metadata()).thenReturn(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("public.stagingenforcement.enforce-financial-imposition-acknowledgement").build());
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
-        JsonObject jsonObject = Json.createObjectBuilder().add("nowDocumentRequests", Json.createArrayBuilder().build()).build();
+        JsonObject jsonObject = createObjectBuilder().add("nowDocumentRequests", createArrayBuilder().build()).build();
         when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
 

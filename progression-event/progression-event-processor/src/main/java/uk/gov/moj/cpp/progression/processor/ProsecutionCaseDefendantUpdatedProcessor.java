@@ -4,14 +4,16 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -53,7 +55,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -72,6 +73,10 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedProcessor.class.getCanonicalName());
     private static final String HEARING_ID = "hearingId";
     private static final String CPS_FLAG = "cpsFlag";
+    private static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final String CPS_EMAIL_ADDRESS = "cpsEmailAddress";
+    private static final String CPS_MC_EMAIL_ADDRESS = "cpsMcEmailAddress";
+    private static final String CPS_CC_EMAIL_ADDRESS = "cpsCcEmailAddress";
     public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION = "progression.command.update-matched-defendant-custodial-information";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION = "progression.command.update-defendant-custodial-information-for-application";
@@ -133,15 +138,14 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
         final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, defendant.getProsecutionCaseId().toString());
 
-
         if (nonNull(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId()) && nonNull(prosecutionCaseDefendantUpdated.getUpdatedOrganisation())) {
             final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
             final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
             if (prosecutorDetails.isPresent()) {
-                final JsonObject prosecutorsJsonObject = prosecutorDetails.get();
-                final boolean isCpsProsecutor = prosecutorsJsonObject.getBoolean(CPS_FLAG, false);
+                final boolean isCpsProsecutor = prosecutorDetails.get().getBoolean(CPS_FLAG, false);
                 if (isCpsProsecutor) {
-                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
+                    final boolean isCivil = isCivilCase(prosecutionCaseOptional);
+                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION, prosecutorDetails.get(), isCivil);
                 }
             }
         }
@@ -155,7 +159,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
                     final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
-                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = Json.createObjectBuilder();
+                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = createObjectBuilder();
                     if(nonNull(applicationId) && nonNull(linkedApplicationJsonObject.getJsonArray(HEARING_IDS))){
                         updateDefendantAddressOnApplicationBuilder
                                 .add(APPLICATION_ID, applicationId)
@@ -172,11 +176,11 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     private void handleUpdateDefendantCustodialInformationForApplication(JsonEnvelope jsonEnvelope, DefendantUpdate defendant, Optional<JsonObject> prosecutionCaseOptional) {
         prosecutionCaseOptional.ifPresent(prosecutionCaseJson -> {
-            final String caseStatus = prosecutionCaseJson.getJsonObject("prosecutionCase").getString("caseStatus", null);
+            final String caseStatus = prosecutionCaseJson.getJsonObject(PROSECUTION_CASE).getString("caseStatus", null);
             if (prosecutionCaseJson.containsKey("linkedApplicationsSummary") && caseStatus.equalsIgnoreCase(CaseStatusEnum.ACTIVE.name())) {
                 prosecutionCaseJson.getJsonArray("linkedApplicationsSummary").forEach(linkedApplicationSummaryJson -> {
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
-                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = Json.createObjectBuilder();
+                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = createObjectBuilder();
                     final String subjectId = linkedApplicationJsonObject.getString("subjectId", null);
                     if (nonNull(subjectId) && nonNull(defendant.getMasterDefendantId()) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
                         updateCustodialInformationForApplicationBuilder.add(APPLICATION_ID, linkedApplicationJsonObject.getString(APPLICATION_ID));
@@ -213,15 +217,24 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, fromString(jsonEnvelope.payloadAsJsonObject().getString(HEARING_ID)));
     }
 
+    private boolean isCivilCase(final Optional<JsonObject> prosecutionCaseOptional) {
+        if (prosecutionCaseOptional.isEmpty()) {
+            return false;
+        }
+        final JsonObject prosecutionCaseJson = prosecutionCaseOptional.get().getJsonObject(PROSECUTION_CASE);
+        if (prosecutionCaseJson == null) {
+            return false;
+        }
+        return prosecutionCaseJson.getBoolean("isCivil", false);
+    }
 
-    private void sendDefendantAssociationCPSNotification(final JsonEnvelope jsonEnvelope, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated, final Optional<JsonObject> prosecutionCaseOptional, final EmailTemplateType templateType) {
+    private void sendDefendantAssociationCPSNotification(final JsonEnvelope jsonEnvelope, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated, final Optional<JsonObject> prosecutionCaseOptional, final EmailTemplateType templateType, final JsonObject cpsProsecutor, final boolean isCivil) {
         final String caseId = prosecutionCaseDefendantUpdated.getDefendant().getProsecutionCaseId().toString();
         final Optional<HearingVO> hearingVO = getHearingDetails(prosecutionCaseOptional);
         final boolean isHearingPresent = hearingVO.isPresent() && hearingVO.get().getHearingDate() != null;
 
         if (isHearingPresent) {
-            populateCPSNotificationAndSendEmail(jsonEnvelope, prosecutionCaseDefendantUpdated,
-                    hearingVO.get(), templateType);
+            populateCPSNotificationAndSendEmail(jsonEnvelope, prosecutionCaseDefendantUpdated, hearingVO.get(), templateType, cpsProsecutor, isCivil);
         } else {
             LOGGER.info("Future hearing is not found for the case : {}", caseId);
         }
@@ -236,7 +249,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             final JsonObject hearingAtAGlanceJsonObject = prosecutionCaseOptional.get().getJsonObject("hearingsAtAGlance");
             final GetHearingsAtAGlance hearingAtAGlance = jsonObjectToObjectConverter.convert(hearingAtAGlanceJsonObject, GetHearingsAtAGlance.class);
 
-            if (CollectionUtils.isEmpty(hearingAtAGlance.getHearings())) {
+            if (hearingAtAGlance == null || CollectionUtils.isEmpty(hearingAtAGlance.getHearings())) {
                 return hearingVO;
             }
 
@@ -246,13 +259,13 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             if (resultMap.isPresent()) {
                 LOGGER.info("Found result hearing {} with earliest date : {}", resultMap.get().getKey(), resultMap.get().getValue());
                 final LocalDate localHearingDate = resultMap.get().getValue().toLocalDate();
-                return getHearingVO(localHearingDate.format(DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue())), futureHearings, resultMap);
+                return getHearingVO(localHearingDate.format(DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue())), futureHearings, resultMap, hearingAtAGlance.getLatestHearingJurisdictionType());
             }
         }
         return hearingVO;
     }
 
-    private Optional<HearingVO> getHearingVO(final String hearingDate, List<Hearings> futureHearings, final Optional<Map.Entry<UUID, ZonedDateTime>> resultMap) {
+    private Optional<HearingVO> getHearingVO(final String hearingDate, List<Hearings> futureHearings, final Optional<Map.Entry<UUID, ZonedDateTime>> resultMap, final JurisdictionType latestHearingJurisdictionType) {
         final List<Hearings> resultHearing = futureHearings.stream()
                 .filter(hearing -> hearing.getId().equals(resultMap.get().getKey()))
                 .collect(Collectors.toList());
@@ -264,6 +277,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                 .hearingDate(hearingDate)
                 .courtCenterId(courtCentreId)
                 .courtName(courtName)
+                .latestHearingJurisdictionType(latestHearingJurisdictionType)
                 .build());
     }
 
@@ -311,9 +325,9 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private void populateCPSNotificationAndSendEmail(final JsonEnvelope jsonEnvelope, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated,
-                                                     final HearingVO hearingVO, final EmailTemplateType templateType) {
+                                                     final HearingVO hearingVO, final EmailTemplateType templateType, final JsonObject cpsProsecutor, final boolean isCivil) {
 
-        final Optional<String> cpsEmailAddress = getCPSEmail(jsonEnvelope, hearingVO.getCourtCenterId());
+        final Optional<String> cpsEmailAddress = getCPSEmail(jsonEnvelope, hearingVO, cpsProsecutor, isCivil);
         final UpdatedOrganisation updatedOrganisation = prosecutionCaseDefendantUpdated.getUpdatedOrganisation();
         final String caseUrn = prosecutionCaseDefendantUpdated.getCaseUrn();
 
@@ -347,22 +361,28 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         }
     }
 
-
-    private Optional<String> getCPSEmail(final JsonEnvelope jsonEnvelope, final UUID courtCentreId) {
-
-        Optional<String> cpsEmail = Optional.empty();
-
-        final Optional<JsonObject> organisationUnitJsonOptional = referenceDataService
-                .getOrganisationUnitById(courtCentreId, jsonEnvelope, requester);
-
-        if (organisationUnitJsonOptional.isPresent()) {
-            cpsEmail = Optional.ofNullable(organisationUnitJsonOptional.get().getString("cpsEmailAddress", null));
-            if (cpsEmail.isPresent()) {
-                LOGGER.info("Found CPS email: {}", cpsEmail);
+    private Optional<String> getCPSEmail(final JsonEnvelope jsonEnvelope, final HearingVO hearingVO, final JsonObject cpsProsecutor, final boolean isCivil) {
+        if (isCivil) {
+            final String emailKey = JurisdictionType.MAGISTRATES.equals(hearingVO.getLatestHearingJurisdictionType())
+                    ? CPS_MC_EMAIL_ADDRESS
+                    : CPS_CC_EMAIL_ADDRESS;
+            final String prosecutorCpsEmail = cpsProsecutor.getString(emailKey, null);
+            if (prosecutorCpsEmail != null && !prosecutorCpsEmail.isBlank()) {
+                LOGGER.info("Found CPS email from prosecutor: {}", prosecutorCpsEmail);
+                return Optional.of(prosecutorCpsEmail);
             }
-            return cpsEmail;
+            return Optional.empty();
+        } else {
+            final Optional<JsonObject> organisationUnit = referenceDataService.getOrganisationUnitById(hearingVO.getCourtCenterId(), jsonEnvelope, requester);
+            if (organisationUnit.isPresent()) {
+                final String cpsEmail = organisationUnit.get().getString(CPS_EMAIL_ADDRESS, null);
+                if (cpsEmail != null && !cpsEmail.isBlank()) {
+                    LOGGER.info("Found CPS email from organisation unit: {}", cpsEmail);
+                    return Optional.of(cpsEmail);
+                }
+            }
+            return Optional.empty();
         }
-        return cpsEmail;
     }
 
     private Optional<DefendantVO> getDefendantDetails(final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated) {
@@ -425,14 +445,14 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private void updateMatchedDefendantCustodialInformation(final JsonEnvelope jsonEnvelope, final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested, final JsonObject matchedCases) {
-        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = createObjectBuilder();
         final String matchedCaseIdString = matchedCases.getString(CASE_ID);
         updateMatchedDefendantCustodialInformationBuilder.add(CASE_ID, matchedCaseIdString);
         updateMatchedDefendantCustodialInformationBuilder.add(MASTER_DEFENDANT_ID, matchedCases.getString(MATCHED_MASTER_DEFENDANT_ID));
         if (nonNull(defendantCustodialInformationUpdateRequested.getCustodialEstablishment())) {
             updateMatchedDefendantCustodialInformationBuilder.add(CUSTODIAL_ESTABLISHMENT, objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested.getCustodialEstablishment()));
         }
-        final JsonArrayBuilder defendantsArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder defendantsArrayBuilder = createArrayBuilder();
         matchedCases.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class).stream()
                 .filter(defendant -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(defendant.getString(MASTER_DEFENDANT_ID)))
                 .filter(defendant -> shouldAvoidSameCaseSameDefendantId(matchedCaseIdString, defendant.getString("id"), defendantCustodialInformationUpdateRequested))

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -195,7 +194,7 @@ public class HearingNotificationHelperTest {
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(TEMPLATE_ID);
         jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
-                objectToJsonObjectConverter.convert(Json.createObjectBuilder().build()));
+                objectToJsonObjectConverter.convert(createObjectBuilder().build()));
 
     }
 
@@ -284,7 +283,7 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    void shouldNotSendHearingNotifications_NoNotificationSentToAllRelevantParties_WhenCivilCaseExparteTrue() {
+    void sendHearingNotifications_EmailToDefendants_WhenCivilCaseExparteTrue() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -320,7 +319,11 @@ public class HearingNotificationHelperTest {
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
-        verifyNoInteractions(notificationService);
+        verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+
+        final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
+        verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+
         verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }

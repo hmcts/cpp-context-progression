@@ -5,7 +5,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 
@@ -337,14 +337,12 @@ public class HearingNotificationHelper {
         final UUID notificationId = randomUUID();
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
 
-        if(shouldSendTheNotifications(prosecutionCase, defendant)) {
-            if (isNotEmpty(prosecutorEmail)) {
-                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
-                sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
-            } else {
-                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
-                notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
-            }
+        if (isNotEmpty(prosecutorEmail)) {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
+            sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
+        } else {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
         }
     }
 

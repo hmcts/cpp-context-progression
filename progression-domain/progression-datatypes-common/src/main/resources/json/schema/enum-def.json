@@ -66,6 +66,16 @@
         "CONFIRMED",
         "RESULTED"
       ]
+    },
+    "applicationSource": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/application-source.json",
+      "type": "string",
+      "enum": [
+        "HOME",
+        "CAAG",
+        "MH",
+        "UNKNOWN"
+      ]
     }
   }
 }
