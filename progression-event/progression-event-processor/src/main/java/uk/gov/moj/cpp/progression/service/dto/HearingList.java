@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.service.dto;
 
-import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
 
 import java.util.List;
 

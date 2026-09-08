@@ -35,7 +35,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.client.MaterialClient;
 import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;

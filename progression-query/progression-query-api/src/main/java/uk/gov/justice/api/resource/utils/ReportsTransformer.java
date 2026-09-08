@@ -83,7 +83,7 @@ import uk.gov.justice.progression.courts.exract.ProsecutionCounsels;
 import uk.gov.justice.progression.courts.exract.PublishingCourt;
 import uk.gov.justice.progression.courts.exract.Representation;
 import uk.gov.justice.progression.courts.exract.RespondentRepresentation;
-import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
