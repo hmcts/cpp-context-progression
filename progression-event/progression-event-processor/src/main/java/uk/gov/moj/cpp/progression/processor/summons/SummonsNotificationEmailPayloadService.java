@@ -18,7 +18,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingDateException;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
