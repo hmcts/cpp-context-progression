@@ -206,7 +206,7 @@ public class HearingToHearingListingNeedsTransformer {
         if (hearingListingNeedsMap.containsKey(key)) {
             hearingListingNeeds = hearingListingNeedsMap.get(key);
         } else {
-            hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary(), prosecutionCase.getIsGroupMaster());
+            hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary(), hearing.getIsGroupProceedings(), hearing.getNumberOfGroupCases());
             hearingListingNeedsMap.put(key, hearingListingNeeds);
         }
 
@@ -249,7 +249,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         final String key = getKey(bookingReferenceCourtScheduleIdMap, nextHearing, bookingReference);
 
-        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries, false), courtApplication, prosecutionCases, seedingHearing);
+        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries, false, null), courtApplication, prosecutionCases, seedingHearing);
 
         if (hearingListingNeedsMap.containsKey(key)) {
             if (isNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
@@ -258,6 +258,8 @@ public class HearingToHearingListingNeedsTransformer {
             } else if (nonNull(hearingListingNeedsMap.get(key).getCourtApplications())
                     && isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
                 hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+            } else {
+                logger.info("Either the application is already present in the hearingListingNeeds or the application is not new. Hence not adding the application to the hearingListingNeeds");
             }
         } else {
             hearingListingNeedsMap.put(key, hearingListingNeeds);
@@ -382,7 +384,7 @@ public class HearingToHearingListingNeedsTransformer {
         return offenceInNeeds;
     }
 
-    private HearingListingNeeds createHearingListingNeeds(final NextHearing nextHearing, final List<JudicialRole> judiciaries, final Boolean isGroupProceedings) {
+    private HearingListingNeeds createHearingListingNeeds(final NextHearing nextHearing, final List<JudicialRole> judiciaries, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         WeekCommencingDate weekCommencingDate = null;
         if (nonNull(nextHearing.getWeekCommencingDate())) {
             weekCommencingDate = WeekCommencingDate.weekCommencingDate()
@@ -415,6 +417,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         if(TRUE.equals(isGroupProceedings)) {
             hearingListingNeedsBuilder.withIsGroupProceedings(TRUE);
+            hearingListingNeedsBuilder.withNumberOfGroupCases(numberOfGroupCases);
         }
         return hearingListingNeedsBuilder.build();
     }

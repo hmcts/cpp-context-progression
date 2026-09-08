@@ -7,8 +7,8 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -68,7 +68,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -155,8 +154,8 @@ public class CotrEventsProcessorTest {
 
     private static JsonObject getReviewNotes(final UUID id1, final UUID id2) {
 
-        final JsonObject reviewNotes = createObjectBuilder()
-                .add("reviewNotes", Json.createArrayBuilder()
+        return createObjectBuilder()
+                .add("reviewNotes", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add(ID, id1.toString())
                                 .add(REVIEW_NOTE_TYPE, "CASE_PROGRESSION")
@@ -177,20 +176,18 @@ public class CotrEventsProcessorTest {
                                 .build())
                         .build())
                 .build();
-
-        return reviewNotes;
     }
 
     private static JsonObject buildCotrDetails() {
         final ZonedDateTime hearingDay = ZonedDateTime.now();
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add(ID, String.valueOf(randomUUID()))
                 .add("hearingDay", String.valueOf(hearingDay))
                 .add("hearingId", String.valueOf(randomUUID()))
                 .add("isArchived", false)
                 .add("isProsecutionServed", false)
-                .add("cotrDefendants", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("cotrDefendants", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("dateOfBirth", String.valueOf(LocalDate.now()))
                                 .add("defenceFormData", "defenceFormData")
                                 .add("defendantNumber", 1)
@@ -200,8 +197,8 @@ public class CotrEventsProcessorTest {
                                 .add("lastName", "lastName")
                                 .add("servedBy", "servedBy")
                                 .add("servedOn", "servedOn")
-                                .add("defenceAdditionalInfo", Json.createArrayBuilder()
-                                        .add(Json.createObjectBuilder()
+                                .add("defenceAdditionalInfo", createArrayBuilder()
+                                        .add(createObjectBuilder()
                                                 .add("addedBy", String.valueOf(randomUUID()))
                                                 .add("addedByName", "addedByName")
                                                 .add("addedOn", String.valueOf(LocalDate.now()))
@@ -766,7 +763,7 @@ public class CotrEventsProcessorTest {
     private JsonEnvelope getEnvelope(final String name) {
         return envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(name).build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     private String generateHearingData() {
@@ -781,14 +778,14 @@ public class CotrEventsProcessorTest {
     }
 
     private Optional<JsonObject> createCotrDetails() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("cotrDetails", createArrayBuilder().add(buildCotrDetails())
                         .add(buildCotrDetails())).build();
         return Optional.ofNullable(payload);
     }
 
     private Optional<JsonObject> createNoCotrDetails() {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("cotrDetails", createArrayBuilder().build()).build();
         return Optional.ofNullable(payload);
 

@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.MaterialBulkQueryView;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.UUID;
@@ -22,6 +21,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class CaseMaterialApiTest {
@@ -38,12 +39,12 @@ class CaseMaterialApiTest {
         final UUID metadataId = UUID.randomUUID();
         final String metadataName = "progression.query.material-content-bulk";
 
-        final JsonArray materialIdsArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
-                .add(Json.createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
+        final JsonArray materialIdsArray = createArrayBuilder()
+                .add(createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
+                .add(createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialIds", materialIdsArray)
                 .build();
 
@@ -77,12 +78,12 @@ class CaseMaterialApiTest {
         final UUID materialId1 = UUID.fromString("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
         final UUID materialId2 = UUID.fromString("f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c");
 
-        final JsonArray materialIdsArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("materialId", materialId1.toString()))
-                .add(Json.createObjectBuilder().add("materialId", materialId2.toString()))
+        final JsonArray materialIdsArray = createArrayBuilder()
+                .add(createObjectBuilder().add("materialId", materialId1.toString()))
+                .add(createObjectBuilder().add("materialId", materialId2.toString()))
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialIds", materialIdsArray)
                 .build();
 
@@ -91,14 +92,14 @@ class CaseMaterialApiTest {
                 payload
         );
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("materialIds", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("materialIds", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("materialId", materialId1.toString())
                                 .add("courtDocumentId", UUID.randomUUID().toString())
                                 .add("caseId", UUID.randomUUID().toString())
                                 .add("caseUrn", "39GD1116822"))
-                        .add(Json.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("materialId", materialId2.toString())
                                 .add("courtDocumentId", UUID.randomUUID().toString())
                                 .add("caseId", UUID.randomUUID().toString())
@@ -134,9 +135,9 @@ class CaseMaterialApiTest {
     @Test
     void shouldHandleEmptyMaterialIdsArray() {
         // Given
-        final JsonArray emptyMaterialIdsArray = Json.createArrayBuilder().build();
+        final JsonArray emptyMaterialIdsArray = createArrayBuilder().build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialIds", emptyMaterialIdsArray)
                 .build();
 
@@ -145,8 +146,8 @@ class CaseMaterialApiTest {
                 payload
         );
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("materialIds", Json.createArrayBuilder().build())
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("materialIds", createArrayBuilder().build())
                 .build();
 
         final JsonEnvelope expectedResponse = envelopeFrom(
@@ -168,9 +169,9 @@ class CaseMaterialApiTest {
     @Test
     void shouldDelegateToMaterialBulkQueryView() {
         // Given
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("materialIds", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
+        final JsonObject payload = createObjectBuilder()
+                .add("materialIds", createArrayBuilder()
+                        .add(createObjectBuilder().add("materialId", UUID.randomUUID().toString()))
                         .build())
                 .build();
 
@@ -194,11 +195,11 @@ class CaseMaterialApiTest {
         // Given
         final UUID materialId = UUID.fromString("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
 
-        final JsonArray materialIdsArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("materialId", materialId.toString()))
+        final JsonArray materialIdsArray = createArrayBuilder()
+                .add(createObjectBuilder().add("materialId", materialId.toString()))
                 .build();
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("materialIds", materialIdsArray)
                 .build();
 
@@ -207,9 +208,9 @@ class CaseMaterialApiTest {
                 payload
         );
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("materialIds", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("materialIds", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("materialId", materialId.toString())
                                 .add("courtDocumentId", UUID.randomUUID().toString())
                                 .add("caseId", UUID.randomUUID().toString())
