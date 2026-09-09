@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-viewstore</artifactId>
-        <version>17.103.297-PEG-3295-SNAPSHOT</version>
+        <version>17.103.298-PEG-3295-SNAPSHOT</version>
     </parent>
 
     <artifactId>progression-viewstore-liquibase</artifactId>
