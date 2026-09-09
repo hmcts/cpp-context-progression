@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.deleteRelatedReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
@@ -27,6 +28,8 @@ import java.util.List;
 
 import javax.json.JsonObject;
 
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -134,7 +137,9 @@ public class LinkCasesIT extends AbstractIT {
         //shouldMergeIntoSameCaseMultipleTimes..
         mergeCase(prosecutionCaseId_2, caseUrn_3, mergeCasePayloadJson);
 
-        splitCase(prosecutionCaseId_1, caseUrn_1 + "/1", caseUrn_1 + "/2", splitCasesPayloadJson);
+        final Response splitResponse = splitCase(prosecutionCaseId_1, caseUrn_1 + "/1", caseUrn_1 + "/2", splitCasesPayloadJson);
+
+        assertThat(splitResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     @Test
