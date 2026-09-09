@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_FAILED;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -29,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -95,7 +95,7 @@ public class NowsDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private JsonObject documentAvailablePayload(final UUID payloadFileServiceId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("payloadFileServiceId", payloadFileServiceId.toString())
                 .add("templateIdentifier", templateIdentifier)
                 .add("conversionFormat", "pdf")
@@ -109,7 +109,7 @@ public class NowsDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private JsonObject documentFailedPayload(final UUID payloadFileServiceId, final String templateIdentifier, final String reportId) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("payloadFileServiceId", payloadFileServiceId.toString())
                 .add("templateIdentifier", templateIdentifier)
                 .add("conversionFormat", "pdf")
@@ -122,7 +122,7 @@ public class NowsDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId, String name) {
-        return metadataFrom(Json.createObjectBuilder()
+        return metadataFrom(createObjectBuilder()
                 .add(ORIGINATOR, courtCentreId.toString())
                 .add(ID, randomUUID().toString())
                 .add(HeaderConstants.USER_ID, userId)

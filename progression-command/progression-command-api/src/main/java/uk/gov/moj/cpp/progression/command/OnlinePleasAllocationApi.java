@@ -4,13 +4,12 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 import java.time.LocalDate;
 
 import javax.inject.Inject;
@@ -50,7 +49,7 @@ public class OnlinePleasAllocationApi {
 
     private JsonObject buildWrappedPayload(final JsonObject payload) {
         if (!getString(payload, TRIGGER_DATE).isPresent()) {
-            return JsonObjects.createObjectBuilder(payload).add(TRIGGER_DATE, LocalDate.now().toString()).build();
+            return createObjectBuilder(payload).add(TRIGGER_DATE, LocalDate.now().toString()).build();
         }
 
         return payload;
