@@ -1100,6 +1100,46 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRetainApplicationCaseStatusWhenUpdatedProsecutionCaseHasNullCaseStatus() {
+        final UUID caseId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.INTERMEDIARY)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build()))
+                .build();
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now(), referenceResultIds).collect(toList());
+
+        final ApplicationsResulted applicationsResulted = (ApplicationsResulted) events.stream()
+                .filter(ApplicationsResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        assertNull(applicationsResulted.getHearing().getProsecutionCases().get(0).getCaseStatus());
+        assertEquals("ACTIVE",
+                applicationsResulted.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getCaseStatus());
+    }
+
+    @Test
     public void shouldNotGenerateNextHearingWhenCaseInactiveWithAutoApplication() throws IOException{
         final UUID hearingId = randomUUID();
 

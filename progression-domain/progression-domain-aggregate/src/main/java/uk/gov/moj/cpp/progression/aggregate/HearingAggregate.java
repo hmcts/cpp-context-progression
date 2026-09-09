@@ -3042,7 +3042,7 @@ public class HearingAggregate implements Aggregate {
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         final Map<UUID, String> caseStatusByProsecutionCaseId = ofNullable(updatedProsecutionCases).map(Collection::stream).orElseGet(Stream::empty)
-                .filter(prosecutionCase -> nonNull(prosecutionCase.getId()))
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getId()) && nonNull(prosecutionCase.getCaseStatus()))
                 .collect(Collectors.toMap(ProsecutionCase::getId, ProsecutionCase::getCaseStatus, (existing, replacement) -> replacement));
 
         final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
