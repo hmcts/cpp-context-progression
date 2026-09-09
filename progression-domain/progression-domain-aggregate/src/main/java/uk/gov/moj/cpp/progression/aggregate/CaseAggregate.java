@@ -51,24 +51,7 @@ import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getCivilOffence;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getExparteValueFromRefDataOffenceJsonObject;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestrictionAndExparteValue;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndexAndExparteValue;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.*;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
@@ -351,6 +334,15 @@ public class CaseAggregate implements Aggregate {
      */
     private final Map<UUID, Map<UUID, Boolean>> defendantProceedingConcluded = new HashMap<>();
 
+    /**
+     * Tracks, per prosecution case, whether the last {@code laa-defendant-proceeding-concluded-changed}
+     * notification sent to LAA reported the whole case as concluded (all LAA-referenced offences of all
+     * defendants FINAL and concluded). This lets {@link #updateCase} detect the reverse transition - a
+     * previously fully-concluded case that is reopened by a later amendment/reshare - so LAA can be told
+     * the case is no longer concluded, not just when it newly becomes concluded.
+     */
+    private final Map<UUID, Boolean> laaCaseProceedingConcluded = new HashMap<>();
+
 
     //hearing collections
     private final Set<UUID> hearingIds = new HashSet<>();
@@ -525,6 +517,8 @@ public class CaseAggregate implements Aggregate {
                                 e.getDefendants().forEach(
                                         defendant ->
                                                 this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences()));
+                                this.laaCaseProceedingConcluded.put(e.getProsecutionCaseId(),
+                                        e.getDefendants().stream().allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded())));
                             }
                         }
                 ),
@@ -1742,20 +1736,31 @@ public class CaseAggregate implements Aggregate {
                     defendantListForProceedingsConcludedEventTrigger.add(updatedDefendant);
                 }
             });
-
-            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
-                final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
-                streamBuilder.add(laaDefendantProceedingConcludedChanged()
-                        .withDefendants(defendantListForProceedingsConcludedEventTrigger)
-                        .withHearingId(resultedHearingId)
-                        .withProsecutionCaseId(prosecutionCase.getId())
-                        .build());
-            }
-
             final String updatedCaseStatus = getUpdatedCaseStatus(prosecutionCase);
             final ProsecutionCase updatedProsecutionCase = toUpdatedProsecutionCase(prosecutionCase,
                     updateDefendantWithProceedingsConcludedStatusAndOriginalListingNumbers(prosecutionCase),
                     updatedCaseStatus);
+
+            // LAA notification: only once every LAA-referenced offence of every defendant on the case
+            // is concluded (Gate B), OR when a case previously reported to LAA as fully concluded is
+            // reopened by a later amendment/reshare - so LAA is told both when the case concludes and
+            // when it no longer does. Evaluated against updatedProsecutionCase (not the raw
+            // prosecutionCase argument) because proceedingsConcluded on the incoming/raw offences is
+            // not yet computed - it is null on a first-time result - which meant this gate could never
+            // open for a genuine single-hearing conclusion; updatedProsecutionCase carries the
+            // correctly recomputed proceedingsConcluded flags for every offence.
+            if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
+                final boolean isAllConcludedForLaaNow = isAllDefendantProceedingConcludedLaa(updatedProsecutionCase, defendantListForProceedingsConcludedEventTrigger);
+                final boolean wasAllConcludedForLaaBefore = TRUE.equals(laaCaseProceedingConcluded.get(prosecutionCase.getId()));
+                if (isAllConcludedForLaaNow != wasAllConcludedForLaaBefore) {
+                    final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
+                    streamBuilder.add(laaDefendantProceedingConcludedChanged()
+                            .withDefendants(defendantListForProceedingsConcludedEventTrigger)//listOfDefendantsWithLaaRepresentation)
+                            .withHearingId(resultedHearingId)
+                            .withProsecutionCaseId(prosecutionCase.getId())
+                            .build());
+                }
+            }
 
             streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated()
                     .withProsecutionCase(updatedProsecutionCase)
