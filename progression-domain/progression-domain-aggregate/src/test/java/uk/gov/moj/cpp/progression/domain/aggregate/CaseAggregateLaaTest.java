@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -170,17 +171,13 @@ public class CaseAggregateLaaTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(1));
 
-        final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
-        assertThat(laaDefendantProceedingConcludedChangedEvent.getClass(), is(equalTo(LaaDefendantProceedingConcludedChanged.class)));
-        assertThat(((LaaDefendantProceedingConcludedChanged) laaDefendantProceedingConcludedChangedEvent).getHearingId(), is(hearingId));
-
-        assertThat(eventStream.get(1).getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        assert(!(eventStream.get(0) instanceof LaaDefendantProceedingConcludedChanged));
     }
 
     @Test
-    public void shouldSendLaaConcludedEventWithPrevResultedOffencesWhenCurrentHearingIsNotResulted() {
+    public void shouldNotSendLaaConcludedEventWithPrevResultedOffencesWhenCurrentHearingIsNotResulted() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId1 = randomUUID();
@@ -243,14 +240,12 @@ public class CaseAggregateLaaTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()),  "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
-        final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
-        assertThat(laaDefendantProceedingConcludedChangedEvent.getClass(), is(equalTo(LaaDefendantProceedingConcludedChanged.class)));
-        assertThat(((LaaDefendantProceedingConcludedChanged) laaDefendantProceedingConcludedChangedEvent).getDefendants().get(0).getOffences(), contains(offence1));
-    }
+        assertThat(eventStream.size(), is(1));
+        assert(!(eventStream.get(0) instanceof LaaDefendantProceedingConcludedChanged));
+        }
 
     @Test
-    public void shouldSendLaaConcludedEventWithCurrentOffencesWhenCurrentHearingIsNotResultedAndThereAreNoPrevResultedOffences() {
+    public void shouldNotSendLaaConcludedEventWithCurrentOffencesWhenCurrentHearingIsNotResultedAndThereAreNoPrevResultedOffences() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId1 = randomUUID();
@@ -311,10 +306,8 @@ public class CaseAggregateLaaTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
-        final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
-        assertThat(laaDefendantProceedingConcludedChangedEvent.getClass(), is(equalTo(LaaDefendantProceedingConcludedChanged.class)));
-        assertThat(((LaaDefendantProceedingConcludedChanged) laaDefendantProceedingConcludedChangedEvent).getDefendants().get(0).getOffences(), contains(offence2));
+        assertThat(eventStream.size(), is(1));
+        assert(!(eventStream.get(0) instanceof LaaDefendantProceedingConcludedChanged));
     }
 
     @Test
@@ -330,19 +323,19 @@ public class CaseAggregateLaaTest {
 
         final Offence offence1 = offence()
                 .withId(offenceId1)
-                .withProceedingsConcluded(false)
+                .withProceedingsConcluded(true)
                 .withLaaApplnReference(laaReference().withApplicationReference("off1").build())
                 .build();
         final Offence offence2 = offence()
                 .withId(offenceId2)
-                .withProceedingsConcluded(false)
+                .withProceedingsConcluded(true)
                 .withLaaApplnReference(laaReference().withApplicationReference("off2").build())
                 .build();
         final ProsecutionCase initialProsecutionCase = prosecutionCase()
                 .withId(caseId)
                 .withDefendants(singletonList(defendant()
                         .withId(defendantId)
-                        .withProceedingsConcluded(false)
+                        .withProceedingsConcluded(true)
                         .withProsecutionCaseId(caseId)
                         .withOffences(asList(
                                 offence1,
@@ -358,7 +351,7 @@ public class CaseAggregateLaaTest {
         this.caseAggregate.apply(laaDefendantProceedingConcludedChanged()
                 .withDefendants(singletonList(defendant()
                         .withId(defendantId)
-                        .withProceedingsConcluded(false)
+                        .withProceedingsConcluded(true)
                         .withProsecutionCaseId(caseId)
                         .withOffences(singletonList(offence1))
                         .build()))
@@ -390,13 +383,8 @@ public class CaseAggregateLaaTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, randomUUID(), List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
-        final Object laaDefendantProceedingConcludedChangedEvent = eventStream.get(0);
-        assertThat(laaDefendantProceedingConcludedChangedEvent.getClass(), is(equalTo(LaaDefendantProceedingConcludedChanged.class)));
-        assertThat(((LaaDefendantProceedingConcludedChanged) laaDefendantProceedingConcludedChangedEvent).getDefendants().get(0).getOffences(),
-                hasItem(allOf(
-                        hasProperty("id", is(offenceId2)),
-                        hasProperty("proceedingsConcluded", is(true)))));
+        assertThat(eventStream.size(), is(1));
+        assert(!(eventStream.get(0) instanceof LaaDefendantProceedingConcludedChanged));
     }
 
     @Test
@@ -459,11 +447,7 @@ public class CaseAggregateLaaTest {
                 .build();
 
         List<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
-        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
         this.caseAggregate.apply(eventList);
 
@@ -501,11 +485,8 @@ public class CaseAggregateLaaTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
-        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
 
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
         this.caseAggregate.apply(eventList);
 
@@ -543,14 +524,7 @@ public class CaseAggregateLaaTest {
 
         eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
 
-        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(true));
-
-
-
+        assertFalse(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged);
 
     }
 
@@ -615,11 +589,7 @@ public class CaseAggregateLaaTest {
                 .build();
 
         List<Object> eventList = this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
-        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
 
         this.caseAggregate.apply(eventList);
 
@@ -658,11 +628,7 @@ public class CaseAggregateLaaTest {
 
         eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
 
         this.caseAggregate.apply(eventList);
 
@@ -701,11 +667,7 @@ public class CaseAggregateLaaTest {
 
         eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
-
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
-        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assert(!(eventList.get(0) instanceof LaaDefendantProceedingConcludedChanged));
 
         this.caseAggregate.apply(eventList);
 
@@ -744,7 +706,7 @@ public class CaseAggregateLaaTest {
 
         eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
+        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
 
         assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
         assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
@@ -753,6 +715,187 @@ public class CaseAggregateLaaTest {
 
     }
 
+
+    @Test
+    public void shouldSendLaaConcludedEventWhenPreviouslyConcludedCaseIsReopenedByAmendment() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String hearingType = "Trial";
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withName("Court Name").withCode("code")
+                .withRoomId(randomUUID()).withRoomName("roomName").build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        this.caseAggregate.apply(prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build());
+
+        // Step 1: BOTH offences resulted FINAL -> case fully concluded, LAA event expected
+        Defendant updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        ProsecutionCase updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("Active")
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        List<DefendantJudicialResult> defendantJudicialResults = asList(
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(JudicialResult.judicialResult().withOrderedDate(LocalDate.now())
+                                .withOffenceId(offenceId1).withJudicialResultId(randomUUID()).withCategory(FINAL).build()).build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(JudicialResult.judicialResult().withOrderedDate(LocalDate.now())
+                                .withOffenceId(offenceId2).withJudicialResultId(randomUUID()).withCategory(FINAL).build()).build());
+
+        List<Object> eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        assertThat(eventList.stream().anyMatch(e -> e instanceof LaaDefendantProceedingConcludedChanged), is(true));
+        final HearingResultedCaseUpdated step1CaseUpdated = eventList.stream()
+                .filter(e -> e instanceof HearingResultedCaseUpdated).map(e -> (HearingResultedCaseUpdated) e).findFirst().orElseThrow();
+        assertThat(step1CaseUpdated.getProsecutionCase().getCaseStatus(), is("INACTIVE"));
+
+        this.caseAggregate.apply(eventList);
+
+        // Step 2: AMEND offence1's result back to a non-final (interim) category -> case should reopen
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(false)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(ANCILLARY).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("Inactive")
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult().withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1).withJudicialResultId(randomUUID()).withCategory(ANCILLARY).build()).build());
+
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        final HearingResultedCaseUpdated step2CaseUpdated = eventList.stream()
+                .filter(e -> e instanceof HearingResultedCaseUpdated).map(e -> (HearingResultedCaseUpdated) e).findFirst().orElseThrow();
+        assertThat(step2CaseUpdated.getProsecutionCase().getCaseStatus(), is("ACTIVE"));
+
+        final LaaDefendantProceedingConcludedChanged reopenedEvent = eventList.stream()
+                .filter(e -> e instanceof LaaDefendantProceedingConcludedChanged).map(e -> (LaaDefendantProceedingConcludedChanged) e).findFirst().orElseThrow();
+        assertThat(reopenedEvent.getDefendants().get(0).getProceedingsConcluded(), is(false));
+    }
+
+    @Test
+    public void shouldSendLaaConcludedEventOnFirstTimeFinalResultEvenWhenRawOffenceProceedingsConcludedIsNull() {
+        // Reproduces remotelog.txt: single defendant, single LAA-referenced offence, resulted FINAL
+        // for the first time. The incoming ProsecutionCase argument (as built from the raw
+        // public.hearing.resulted payload) carries offence.proceedingsConcluded == null - it has not
+        // been computed yet - even though the offence already carries the FINAL judicial result. The
+        // whole-case LAA gate must not depend on that raw, not-yet-computed flag.
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = UUID.fromString("350360cc-d954-4421-86f1-340ddad257f8");
+        final UUID offenceId = UUID.fromString("f77592ac-c008-49aa-a9b2-8b098a4b8c40");
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        final Defendant seedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence()
+                        .withId(offenceId)
+                        .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                        .build()))
+                .build();
+        final ProsecutionCase seedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("ACTIVE")
+                .withDefendants(singletonList(seedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        this.caseAggregate.apply(prosecutionCaseCreated().withProsecutionCase(seedProsecutionCase).build());
+
+        // The offence already carries the FINAL judicial result (as HearingResultHelper stamps it),
+        // but proceedingsConcluded on the offence itself is left null - exactly like remotelog.txt.
+        final Defendant incomingDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence()
+                        .withId(offenceId)
+                        .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                        .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).withIsNewAmendment(true).build()))
+                        .build()))
+                .build();
+        final ProsecutionCase incomingProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("ACTIVE")
+                .withDefendants(singletonList(incomingDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOffenceId(offenceId)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(FINAL)
+                        .build())
+                .withMasterDefendantId(randomUUID())
+                .build());
+
+        final List<Object> eventList = this.caseAggregate.updateCase(incomingProsecutionCase, defendantJudicialResults, courtCentre, hearingId,
+                List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()), "Trial", MAGISTRATES, Boolean.FALSE, emptyList()).collect(toList());
+
+        final LaaDefendantProceedingConcludedChanged laaEvent = eventList.stream()
+                .filter(e -> e instanceof LaaDefendantProceedingConcludedChanged).map(e -> (LaaDefendantProceedingConcludedChanged) e).findFirst().orElseThrow();
+        assertThat(laaEvent.getDefendants().get(0).getProceedingsConcluded(), is(true));
+        assertThat(laaEvent.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
+    }
 
     public <T> T convertFromFile(final String url, final Class<T> clazz, String hearingId) throws IOException {
         final String content = readFileToString(new File(this.getClass().getClassLoader().getResource(url).getFile())).replace("HEARING_ID", hearingId);
