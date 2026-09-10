@@ -1741,14 +1741,11 @@ public class CaseAggregate implements Aggregate {
                     updateDefendantWithProceedingsConcludedStatusAndOriginalListingNumbers(prosecutionCase),
                     updatedCaseStatus);
 
-            // LAA notification: only once every LAA-referenced offence of every defendant on the case
-            // is concluded (Gate B), OR when a case previously reported to LAA as fully concluded is
-            // reopened by a later amendment/reshare - so LAA is told both when the case concludes and
-            // when it no longer does. Evaluated against updatedProsecutionCase (not the raw
-            // prosecutionCase argument) because proceedingsConcluded on the incoming/raw offences is
-            // not yet computed - it is null on a first-time result - which meant this gate could never
-            // open for a genuine single-hearing conclusion; updatedProsecutionCase carries the
-            // correctly recomputed proceedingsConcluded flags for every offence.
+            /*
+             * Notify LAA when all LAA-referenced offences are concluded, or when a previously
+             * concluded case is reopened through an amendment or reshare. Use the updated case
+             * because proceedingsConcluded is recalculated during the update.
+             */
             if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
                 final boolean isAllConcludedForLaaNow = isAllDefendantProceedingConcludedLaa(updatedProsecutionCase, defendantListForProceedingsConcludedEventTrigger);
                 final boolean wasAllConcludedForLaaBefore = TRUE.equals(laaCaseProceedingConcluded.get(prosecutionCase.getId()));
