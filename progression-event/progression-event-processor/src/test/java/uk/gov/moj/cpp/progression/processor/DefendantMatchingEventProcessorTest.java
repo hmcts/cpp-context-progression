@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +91,7 @@ public class DefendantMatchingEventProcessorTest {
                 .withDefendants(createDefendants(defendantId))
                 .build();
 
-        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+        final JsonObject incomingProsecutionCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
                 .build();
         final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
@@ -122,7 +122,7 @@ public class DefendantMatchingEventProcessorTest {
                 .withDefendants(createDefendants(defendantId))
                 .build();
 
-        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+        final JsonObject incomingProsecutionCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
                 .build();
         final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
@@ -166,7 +166,7 @@ public class DefendantMatchingEventProcessorTest {
                 .withDefendants(createDefendants(incomingDefendantId))
                 .build();
 
-        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+        final JsonObject incomingProsecutionCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
                 .build();
         final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
@@ -204,7 +204,7 @@ public class DefendantMatchingEventProcessorTest {
                 .withDefendants(createDefendants(incomingDefendantId))
                 .build();
 
-        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+        final JsonObject incomingProsecutionCaseJson = createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
                 .build();
         final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
@@ -243,7 +243,7 @@ public class DefendantMatchingEventProcessorTest {
     private JsonEnvelope getJsonEnvelope(final boolean isDeleted) {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-matched"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("defendantId", randomUUID().toString())
                         .add("hasDefendantAlreadyBeenDeleted", isDeleted)
                         .build());
@@ -252,7 +252,7 @@ public class DefendantMatchingEventProcessorTest {
     private JsonEnvelope getJsonEnvelopeForUnmatching(final String prosecutionCaseId, final String defendantId) {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-unmatched"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("defendantId", defendantId)
                         .add("prosecutionCaseId", prosecutionCaseId)
                         .build());
@@ -261,10 +261,10 @@ public class DefendantMatchingEventProcessorTest {
     private JsonEnvelope buildDefendantUnmatchedV2EventEnvelope(final String prosecutionCaseId, final String defendantId, final String masterDefendantId) {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-unmatched-v2"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("defendantId", defendantId)
                         .add("prosecutionCaseId", prosecutionCaseId)
-                        .add("defendant", Json.createObjectBuilder()
+                        .add("defendant", createObjectBuilder()
                                 .add("id", defendantId)
                                 .add("masterDefendantId", masterDefendantId)
                                 .build())

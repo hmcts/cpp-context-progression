@@ -22,6 +22,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.ApplicationDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
@@ -62,7 +63,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -208,7 +208,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -238,7 +238,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
 
         final ReceiveRepresentationOrderForApplicationOnApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrderOnApplication(STATUS_CODE, application.getId());
@@ -265,7 +265,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -308,7 +308,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
 
         final ReceiveRepresentationOrderForApplicationOnApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrderOnApplication(STATUS_CODE, application.getId());
@@ -352,7 +352,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
 
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -382,7 +382,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -410,7 +410,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -434,7 +434,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -460,7 +460,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
         final UUID organisationId = randomUUID();
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", organisationId.toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", organisationId.toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -484,7 +484,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -521,7 +521,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -563,7 +563,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -592,7 +592,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         ReceiveRepresentationOrderForApplication receiveRepresentationOrderForApplication = payloadForReceiveRepresentationOrder(STATUS_CODE, APPLICATION_ID, SUBJECT_ID, OFFENCE_ID);
@@ -622,7 +622,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -648,7 +648,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().add("organisationId", randomUUID().toString()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("organisationId", randomUUID().toString()).build();
         when(organisationService.getAssociatedOrganisationForApplication(any(), any())).thenReturn(jsonObjectPayload);
         applicationAggregate.createCourtApplication(courtApplication, null);
         final UUID organisationId = randomUUID();
@@ -667,7 +667,7 @@ public class ReceiveRepresentationOrderHandlerForApplicationTest {
     }
 
     private static JsonObject getLegalStatus(final UUID statusId, final String statusDescription, final String status) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("id", statusId.toString())
                 .add("statusDescription", statusDescription)
                 .add("defendantLevelStatus", status)
