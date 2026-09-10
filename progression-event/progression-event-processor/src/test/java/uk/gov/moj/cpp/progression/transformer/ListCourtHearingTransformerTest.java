@@ -714,6 +714,37 @@ public class ListCourtHearingTransformerTest {
     }
 
     @Test
+    void shouldFallBackToAdultPanelWhenNoYouthSlotAvailableForDateRangeCase() {
+        // Youth courtrooms are a subset of Adult ones, not a separate estate - Enforcement confirmed
+        // a Youth defendant should be allocated an Adult slot rather than left Unallocated when no
+        // Youth-panel slot exists in the requested date range.
+        final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-09-14T09:00:00Z");
+        final UUID resolvedRoomId = randomUUID();
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("YOUTH"), any(), any()))
+                .thenReturn(Optional.empty());
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("ADULT"), any(), any()))
+                .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime, randomUUID().toString())));
+
+        final ProsecutionCase otherTypeYouthCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase(LocalDate.now().minusYears(15)))
+                .withInitiationCode(InitiationCode.O)
+                .build();
+        final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
+                listedStartDateTime, listedStartDateTime.plusDays(365));
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(otherTypeYouthCase), listHearingRequest, UUID.randomUUID(), null);
+
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        assertThat(hearing.getCourtCentre().getRoomId(), is(resolvedRoomId));
+        assertThat(hearing.getListedStartDateTime(), is(resolvedStartTime));
+    }
+
+    @Test
     void shouldLeaveHearingUnresolvedWhenNoEnforcementSlotAvailable() {
         when(listingService.findAvailableHearingSlot(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Optional.empty());
