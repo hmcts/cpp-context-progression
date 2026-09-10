@@ -352,6 +352,74 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
+    public void shouldHandleHearingConfirmedWithCasesEventMessage_DoNotSendOnlinePleaWhenHearingDayIsInThePast() throws Exception {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withType(HearingType.hearingType()
+                        .withId(randomUUID())
+                        .withDescription("First hearing")
+                        .build())
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .build();
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        ProsecutionCase prosecutionCase = createProsecutionCase(offenceId, defendantId, caseId);
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(UUID.randomUUID())
+                        .build()))
+                .build();
+
+        final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(true);
+        when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        // Hearing day is in the past (e.g. a same-day-as-submission or already-passed Enforcement
+                        // hearingDetails.dateOfHearing, allowed per CIMD-4333 Scenario#1C/#1D) — must not blow up
+                        // getNumberOfWorkingDaysBetweenTodayAndHearingDay()'s Stream.limit(negative).
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().minusDays(3)).build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription("First hearing")
+                                .build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("caseUrn").build())
+                                .build()))
+                        .build());
+
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+
+        eventProcessor.processEvent(envelope);
+
+        verify(sender, times(2)).send(any());
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(documentGeneratorService, times(0)).generatePostalDocumentForOpa(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
     public void shouldHandleHearingConfirmedWithCasesEventMessage_DoNotSendOnlinePleaWhenOPAFeatureOFF() throws Exception {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();

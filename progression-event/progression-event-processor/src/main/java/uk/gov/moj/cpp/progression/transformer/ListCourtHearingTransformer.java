@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -404,27 +405,27 @@ public class ListCourtHearingTransformer {
             if (isNull(startDateTime)) {
                 return Optional.empty();
             }
-            return listingService.findAvailableHearingSlot(
+            return withAdultFallback(panel, searchPanel -> listingService.findAvailableHearingSlot(
                     jsonEnvelope,
                     ouCode,
                     ENFORCEMENT_AUTO_BUSINESS_TYPE,
-                    panel,
+                    searchPanel,
                     startDateTime.toLocalDate(),
-                    endDateTime.toLocalDate());
+                    endDateTime.toLocalDate()));
         }
 
         final ZonedDateTime exactStartDateTime = listHearingRequest.getListedStartDateTime();
         if (isNull(exactStartDateTime)) {
             return Optional.empty();
         }
-        return listingService.findAvailableHearingSlot(
+        return withAdultFallback(panel, searchPanel -> listingService.findAvailableHearingSlot(
                         jsonEnvelope,
                         ouCode,
                         ENFORCEMENT_BUSINESS_TYPE,
-                        panel,
+                        searchPanel,
                         exactStartDateTime.toLocalDate(),
                         exactStartDateTime.toLocalDate(),
-                        exactStartDateTime)
+                        exactStartDateTime))
                 // The matched session only proves a genuinely-available Enforcement slot exists at
                 // this exact time and which room it's in - the hearing keeps its originally-requested
                 // exact time rather than the session-window's own (coarser) reported start time.
@@ -444,6 +445,22 @@ public class ListCourtHearingTransformer {
                 .flatMap(Optional::stream)
                 .anyMatch(dateOfBirth -> calculateIsYouth(dateOfBirth, expectedListingStartDateTime));
         return anyDefendantIsYouth ? PANEL_YOUTH : PANEL_ADULT;
+    }
+
+    /**
+     * Youth courtrooms/sessions are a subset of Adult ones, not a separate estate - Enforcement
+     * business confirmed a Youth defendant can be allocated an Adult slot when no Youth-panel slot
+     * is available within the requested window, rather than being left Unallocated. {@code search}
+     * performs the actual (date-range vs exact-time) Listing lookup for whichever panel it's given,
+     * so this holds the one copy of the try-then-retry-as-Adult logic regardless of which of
+     * {@link ListingService}'s two {@code findAvailableHearingSlot} overloads the caller needs.
+     */
+    private Optional<AvailableHearingSlot> withAdultFallback(final String panel, final Function<String, Optional<AvailableHearingSlot>> search) {
+        final Optional<AvailableHearingSlot> slot = search.apply(panel);
+        if (slot.isPresent() || !PANEL_YOUTH.equals(panel)) {
+            return slot;
+        }
+        return search.apply(PANEL_ADULT);
     }
 
     private static boolean isOtherTypeCase(final List<ProsecutionCase> prosecutionCases) {
