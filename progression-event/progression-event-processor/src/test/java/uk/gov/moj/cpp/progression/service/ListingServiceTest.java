@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
@@ -149,11 +149,11 @@ public class ListingServiceTest {
         //given
         ListUnscheduledCourtHearing listCourtHearing = getListUnscheduledCourtHearing();
 
-        final JsonObject listCourtHearingJson = Json.createObjectBuilder().build();
+        final JsonObject listCourtHearingJson = createObjectBuilder().build();
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonEnvelope envelopeListCourtHearing = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING).build(),

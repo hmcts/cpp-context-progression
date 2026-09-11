@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -10,7 +11,6 @@ import uk.gov.moj.cpp.progression.query.CourtlistQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.CourtlistQueryService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -57,7 +57,7 @@ public class CourtlistQueryApi {
      * Ensures includeApplications is in the payload for listing. Uses optional query param when present, otherwise defaults to true.
      */
     private static JsonEnvelope ensureIncludeApplications(final JsonEnvelope query) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         final JsonObject payload = query.payloadAsJsonObject();
         payload.keySet().forEach(key -> builder.add(key, payload.get(key)));
         final boolean includeApplications = payload.containsKey(INCLUDE_APPLICATIONS)
