@@ -6,6 +6,10 @@
     "payloadFileServiceId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "payloadFileUri": {
+      "type": "string",
+      "format": "uri"
+    },
     "templateIdentifier": {
       "type": "string"
     },
@@ -52,11 +56,22 @@
   },
   "additionalProperties": false,
   "required": [
-    "payloadFileServiceId",
     "failedTime",
     "requestedTime",
     "templateIdentifier",
     "conversionFormat",
     "reason"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "payloadFileServiceId"
+      ]
+    },
+    {
+      "required": [
+        "payloadFileUri"
+      ]
+    }
   ]
 }
