@@ -41,7 +41,9 @@ import uk.gov.moj.cpp.progression.service.amp.service.HearingResultsDocumentSubs
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,6 +52,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
@@ -87,9 +90,6 @@ public class PrisonCourtRegisterEventProcessorTest {
     private Sender sender;
 
     @Mock
-    private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
-
-    @Mock
     HearingResultsDocumentSubscriptionPCRMapper hearingResultsDocumentSubscriptionPCRMapper;
     @Mock
     HearingResultsDocumentSubscriptionClient hearingResultsDocumentSubscriptionClient;
@@ -110,9 +110,13 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Captor
     private ArgumentCaptor<DocumentGenerationRequest> documentGenerationRequestArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<JsonObject> fileServiceArgumentCaptor;
+
     @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.prisonCourtRegisterEventProcessor,"prisonCourtRegisterPdfPayloadGenerator",new PrisonCourtRegisterPdfPayloadGenerator());
     }
 
     @Test
@@ -129,7 +133,7 @@ public class PrisonCourtRegisterEventProcessorTest {
                 .withHearingVenue(new PrisonCourtRegisterHearingVenue.Builder().withCourtHouse("liverpool Crown Court").build())
                 .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
                         .withName("defendant-name")
-                        .withDateOfBirth("dateOfBirth")
+                        .withDateOfBirth("1990-09-09")
                         .withProsecutionCasesOrApplications(
                                 singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
                         ).build())
@@ -152,11 +156,12 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
-        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(createObjectBuilder().build());
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
                 createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
+
+        verify(fileService).storePayload(fileServiceArgumentCaptor.capture(),anyString(), anyString());
 
         verify(systemDocGeneratorService).generateDocument(documentGenerationRequestArgumentCaptor.capture(), any(JsonEnvelope.class));
 
@@ -170,6 +175,10 @@ public class PrisonCourtRegisterEventProcessorTest {
         assertThat(documentGenerationRequest.getAdditionalInformation().size(), is(3));
 
         assertEquals("progression.command.record-prison-court-register-document-sent", envelopeArgumentCaptor.getValue().metadata().name());
+
+        var fileContent = fileServiceArgumentCaptor.getValue();
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        assertDoesNotThrow(() -> LocalDateTime.parse(fileContent.getString("registerDate"),dateTimeFormat));
     }
 
 
