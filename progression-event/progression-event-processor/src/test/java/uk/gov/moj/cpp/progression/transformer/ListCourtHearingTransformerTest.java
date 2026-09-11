@@ -4,7 +4,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
@@ -146,15 +147,15 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearingDescription", "British").build();
 
         when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder()
+                .thenReturn(Optional.of(createObjectBuilder()
                         .add("courts", createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .add(createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                                 .build())
                         .build()));
         when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
@@ -163,7 +164,7 @@ public class ListCourtHearingTransformerTest {
                         .withName("South Western (Lavender Hill)")
                         .withWelshName("welshName_Test").build());
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCase()), courtReferral.getSjpReferral(), courtReferral.getListHearingRequests(), UUID.randomUUID());
@@ -188,12 +189,12 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final CourtCentre courtCentre = createCourtCentre();
         when(progressionService.transformCourtCentre(any(), any())).thenReturn(courtCentre);
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         final NextHearing nextHearing = createNextHearing();
         final List<ListDefendantRequest> listDefendantRequests = List.of(ListDefendantRequest.listDefendantRequest()
@@ -244,7 +245,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCase()), courtHearingRequests.get(0), UUID.randomUUID());
@@ -278,7 +279,7 @@ public class ListCourtHearingTransformerTest {
         final SjpCourtReferral courtReferral = getCourtReferralWithPostCode(null);
         final JsonEnvelope envelopeReferral = createReferralEnvelope();
 
-        final JsonObject hearingDescription = Json.createObjectBuilder().add("hearingDescription", "British").build();
+        final JsonObject hearingDescription = createObjectBuilder().add("hearingDescription", "British").build();
 
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
 
@@ -290,7 +291,7 @@ public class ListCourtHearingTransformerTest {
                         .withWelshName("welshName_Test").build());
 
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         //When
         final ListCourtHearing actual = listCourtHearingTransformer
@@ -320,15 +321,15 @@ public class ListCourtHearingTransformerTest {
         final SjpCourtReferral courtReferral = getCourtReferralWithPostCode("");
         final JsonEnvelope envelopeReferral = createReferralEnvelope();
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearingDescription", "British").build();
 
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
 
         when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder()
+                .thenReturn(Optional.of(createObjectBuilder()
                         .add("courts", createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .add(createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                                 .build())
                         .build()));
         when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
@@ -338,7 +339,7 @@ public class ListCourtHearingTransformerTest {
                         .withWelshName("welshName_Test").build());
 
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing actual = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCaseWithPostCode("")), courtReferral.getSjpReferral(), courtReferral.getListHearingRequests(), UUID.randomUUID());
@@ -367,13 +368,13 @@ public class ListCourtHearingTransformerTest {
         final SjpCourtReferral courtReferral = getCourtReferralWithPostCode("xxxxxxxxx");
         final JsonEnvelope envelopeReferral = createReferralEnvelope();
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearingDescription", "British").build();
         final JsonObject payload = createPayloadForOrgUnits(randomUUID().toString());
         when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder()
+                .thenReturn(Optional.of(createObjectBuilder()
                         .add("courts", createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .add(createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                                 .build())
                         .build()));
         when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
@@ -383,7 +384,7 @@ public class ListCourtHearingTransformerTest {
                         .withWelshName("welshName_Test").build());
 
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         //When
         final ListCourtHearing actual = listCourtHearingTransformer
@@ -452,18 +453,18 @@ public class ListCourtHearingTransformerTest {
         final SjpCourtReferral courtReferral = getCourtReferralWithLegalDefendant();
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearingDescription", "British").build();
 
         when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+                .thenReturn(Optional.of(createObjectBuilder().add("reason", "reason for referral").build()));
 
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
-                .thenReturn(Optional.of(Json.createObjectBuilder()
+                .thenReturn(Optional.of(createObjectBuilder()
                         .add("courts", createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .add(createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
                                 .build())
                         .build()));
         when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
@@ -540,7 +541,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
@@ -578,7 +579,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCase(LocalDate.now().minusYears(15))), listHearingRequest, UUID.randomUUID(), null);
@@ -829,7 +830,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCase(LocalDate.now().minusYears(15))), listHearingRequest, UUID.randomUUID(), null);
@@ -877,7 +878,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral, List.of(getProsecutionCaseWithProsecutor()), courtHearingRequests.get(0), UUID.randomUUID());
@@ -925,7 +926,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral,
@@ -956,7 +957,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral,
@@ -980,7 +981,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral,
@@ -1031,7 +1032,7 @@ public class ListCourtHearingTransformerTest {
 
         final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
                 .transform(envelopeReferral,
@@ -1450,9 +1451,9 @@ public class ListCourtHearingTransformerTest {
     }
 
     private JsonObject createPayloadForOrgUnits(final String id) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("organisationunits", createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                        .add(createObjectBuilder()
                                 .add("id", id)
                                 .add("oucodeL3Name", "South Western (Lavender Hill)")
                                 .add("oucodeL3WelshName", "welshName_Test")
@@ -1464,7 +1465,7 @@ public class ListCourtHearingTransformerTest {
     private JsonEnvelope createReferralEnvelope() {
         return JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     private List<RotaSlot> createRotaSlot() {

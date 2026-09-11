@@ -24,6 +24,10 @@
     },
     "summonsApprovedOutcome": {
       "$ref": "http://justice.gov.uk/core/courts/summonsApprovedOutcome.json"
+    },
+    "isSummonsAmended" : {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

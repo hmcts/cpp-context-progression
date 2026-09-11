@@ -14,6 +14,7 @@ import static uk.gov.justice.api.resource.service.ReferenceDataService.FIELD_RES
 import static uk.gov.justice.api.resource.utils.FileUtil.jsonFromPath;
 import static uk.gov.justice.api.resource.utils.ResultAmendmentHelper.extractAmendmentsDueToSlipRule;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.api.resource.dto.AmendmentReason;
 import uk.gov.justice.api.resource.dto.AmendmentRecord;
 import uk.gov.justice.api.resource.dto.AmendmentType;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -77,7 +77,7 @@ public class ResultAmendmentHelperTest {
                                         .withAmendmentDate(ZonedDateTime.now())
                                         .withAmendmentReason(slipRuleAmendmentReason)
                                         .withResultPromptsRecord(List.of(ResultPrompt.prompt().withId(promptId)
-                                                .withPromptRef("promptRef").withLabel("End Date").withValue(Json.createValue("2024-03-21")).build()))
+                                                .withPromptRef("promptRef").withLabel("End Date").withValue(JsonObjects.getProvider().createValue("2024-03-21")).build()))
                                         .build(),
                                 AmendmentRecord.amendmentRecord()
                                         .withAmendmentDate(ZonedDateTime.now())

@@ -5,7 +5,7 @@
 	"properties": {
 		"summonsContent": {
 			"description": "The content of the summons",
-			"$ref": "http://justice.gov.uk/core/courts/summons/summons-document-content.json"
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-document.json"
 		}
 	},
 	"required": [

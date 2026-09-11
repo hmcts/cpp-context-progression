@@ -8,7 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -17,12 +16,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @SuppressWarnings({"squid:S1166"})
 public class ResultTextFlagBuilder {
 
     public JsonArray rebuildWithResultTextFlag(final JsonArray payload){
-        final JsonArrayBuilder response = Json.createArrayBuilder();
+        final JsonArrayBuilder response = createArrayBuilder();
         payload.stream().map(JsonObject.class::cast).map(this::rebuildObject).forEach(response::add);
         return response.build();
 

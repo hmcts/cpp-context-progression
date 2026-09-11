@@ -9,7 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -75,6 +75,23 @@ public class StubUtil {
                         .withHeader("Content-Type", "application/json")
                         .withBody(getPayload("stub-data/listing.courtlistpayload.json"))));
 
+    }
+
+    /**
+     * Overrides the static {@link #setupListingQueryStub()} stub so the listing court list payload references a
+     * specific (seeded) hearing, case and defendant. Used to drive end-to-end enrichment of the
+     * {@code /courtlistdata} response (e.g. ASN and pncId sourced from progression's own viewstore).
+     */
+    public static void setupListingCourtListPayloadStub(final String hearingId, final String caseId, final String defendantId) {
+        final String body = getPayload("stub-data/listing.courtlistdata-payload-template.json")
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("DEFENDANT_ID", defendantId);
+        stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)));
     }
 
     public static void setupForUshersMagistrateListQueryStub() {
