@@ -1,30 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import static java.time.ZoneOffset.UTC;
-import static java.util.UUID.fromString;
-import static java.util.UUID.nameUUIDFromBytes;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.util.FeatureStubUtil.setFeatureToggle;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
-
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider;
-import uk.gov.moj.cpp.progression.domain.constant.RegisterType;
-import uk.gov.moj.cpp.progression.helper.PrisonCourtRegisterDocumentRequestHelper;
-import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-
-import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
-
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -33,12 +8,41 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.fileservice.api.FileServiceException;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider;
+import uk.gov.moj.cpp.progression.domain.constant.RegisterType;
+import uk.gov.moj.cpp.progression.helper.PrisonCourtRegisterDocumentRequestHelper;
+import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
+import static java.time.ZoneOffset.UTC;
+import static java.util.UUID.fromString;
+import static java.util.UUID.nameUUIDFromBytes;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.FileDatastoreHelper.retrieveFileContentByFileId;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FeatureStubUtil.setFeatureToggle;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 
 public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
   private ProsecutionCaseUpdateDefendantHelper helper;
 
     @Test
-    public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
+    public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException, FileServiceException {
         setFeatureToggle("hearingResultsDocumentSubscriptionEnabled", false);
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
@@ -67,6 +71,9 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final String prisonCourtRegisterId = additionalInformationArray.getJSONObject(0).getString("propertyValue");
         prisonCourtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicAvailableEvent(USER_ID_VALUE_AS_ADMIN, prisonCourtRegisterStreamId, payloadFileServiceId, documentFileServiceId, prisonCourtRegisterId);
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterIsGenerated(courtCentreId, documentFileServiceId, prisonCourtRegisterId);
+        var fileContent = retrieveFileContentByFileId(payloadFileServiceId);
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        assertDoesNotThrow(() -> LocalDateTime.parse(fileContent.getString("registerDate"),dateTimeFormat));
 
         writeResponse = postCommand(getWriteUrl("/prison-court-register"),
                 "application/vnd.progression.add-prison-court-register+json",

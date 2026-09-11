@@ -5,11 +5,13 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
@@ -30,9 +32,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterWithoutApplicationPdfPayload.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%CURRENT_DATE%", registerDate)
         ));
     }
 
@@ -41,9 +45,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterWithoutOffencePdfPayload.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%CURRENT_DATE%", registerDate)
         ));
     }
     @Test
@@ -51,9 +57,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-application.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterPdfPayloadWithApplication.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%CURRENT_DATE%", registerDate)
         ));
     }
 
@@ -62,9 +70,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-application-2-result.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterPdfPayloadWithApplication2Results.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(1964,12,3),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%CURRENT_DATE%", registerDate)
         ));
     }
 
@@ -73,9 +83,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-application-no-result.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterPdfPayloadWithApplicationNoResult.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .replace("%CURRENT_DATE%", registerDate)
         ));
     }
 
@@ -84,8 +96,10 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload-min.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+        final var registerDate =  responseBody.getString("registerDate");
+        assertRegisteredDateGeneratedWithTime(registerDate);
         assertThat(responseBody.toString(), is(getPayload("prisonCourtRegisterPdfPayload-min.json")
-                .toString().replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .toString().replace("%CURRENT_DATE%", registerDate)
         ));
     }
 
@@ -94,7 +108,6 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-whitespaces.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
-
         assertThat(responseBody.toString(), isJson(allOf(
                 withJsonPath("$.cases[0].offences[0].results[0].resultText", is("IMP - description\nAbsolute discharge\n O10 17"))
         )));
@@ -114,4 +127,8 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
+    private void assertRegisteredDateGeneratedWithTime(String dateTime) {
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        assertDoesNotThrow(() -> LocalDateTime.parse(dateTime,dateTimeFormat));
+    }
 }

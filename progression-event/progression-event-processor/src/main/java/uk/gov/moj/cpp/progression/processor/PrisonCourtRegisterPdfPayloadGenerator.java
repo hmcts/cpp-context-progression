@@ -10,6 +10,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
     private static final String PROSECUTION_COUNSELS = "prosecutionCounsels";
     private static final DateTimeFormatter IN_DATE_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.STANDARD.getValue());
     private static final DateTimeFormatter OUT_DATE_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue());
+    private static final DateTimeFormatter OUT_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_TIME_INCLUSIVE.getValue());
     private static final String CJS_RESULT_CODE = "cjsResultCode";
     private static final String RESULT_CODE = "resultCode";
     private static final String RESULT_TEXT = "resultText";
@@ -50,7 +52,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         final JsonArrayBuilder casesArray = createArrayBuilder();
 
         ofNullable(jsonObject.getJsonObject("prisonCourtRegister")).ifPresent(prisonCourtRegisterRequest -> {
-            payloadForPdf.add("registerDate", LocalDate.now().format(OUT_DATE_FORMATTER));
+            payloadForPdf.add("registerDate", LocalDateTime.now().format(OUT_DATE_TIME_FORMATTER));
             ofNullable(prisonCourtRegisterRequest.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
                 payloadForPdf.add("ljaName", hearingVenue.getString("ljaName", DASH));
                 payloadForPdf.add("courtHouse", hearingVenue.getString("courtHouse", DASH));
