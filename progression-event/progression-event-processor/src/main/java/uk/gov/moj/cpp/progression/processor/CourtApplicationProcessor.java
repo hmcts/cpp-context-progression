@@ -8,6 +8,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -56,6 +57,7 @@ import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -1031,7 +1033,7 @@ public class CourtApplicationProcessor {
             final CivilFees contestedFees = CivilFees.civilFees()
                     .withFeeType(FeeType.CONTESTED)
                     .withFeeId(randomUUID())
-                    .withFeeStatus(courtApplication.getCourtApplicationPayment().getContestedFeeStatus())
+                    .withFeeStatus(requireNonNullElse(courtApplication.getCourtApplicationPayment().getContestedFeeStatus(), FeeStatus.NOT_APPLICABLE))
                     .withPaymentReference(courtApplication.getCourtApplicationPayment().getContestedPaymentReference())
                     .build();
             return prosecutionCase().withValuesFrom(prosecutionCase)
