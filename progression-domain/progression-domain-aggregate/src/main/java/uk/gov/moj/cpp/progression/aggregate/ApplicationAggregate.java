@@ -258,6 +258,13 @@ public class ApplicationAggregate implements Aggregate {
                     }
                 }),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
+                when(CourtFeeForCivilApplicationUpdated.class).apply(e -> {
+                    if (nonNull(this.courtApplication)) {
+                        setCourtApplication(courtApplication().withValuesFrom(this.courtApplication)
+                                .withCourtApplicationPayment(e.getCourtApplicationPayment())
+                                .build());
+                    }
+                }),
                 otherwiseDoNothing());
     }
 

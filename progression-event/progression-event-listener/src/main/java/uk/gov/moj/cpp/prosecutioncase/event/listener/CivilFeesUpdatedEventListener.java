@@ -44,6 +44,8 @@ public class CivilFeesUpdatedEventListener {
             civilFeeEntity.setPaymentReference(civilFeesUpdated.getPaymentReference());
             civilFeeEntity.setFeeType(FeeType.valueOf(civilFeesUpdated.getFeeType()));
             civilFeeRepository.save(civilFeeEntity);
+        } else {
+            LOGGER.warn("No CivilFeeEntity found for feeId {} - civil-fees-updated event dropped", civilFeesUpdated.getFeeId());
         }
     }
 

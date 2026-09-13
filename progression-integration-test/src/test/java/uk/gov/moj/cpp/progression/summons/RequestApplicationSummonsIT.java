@@ -41,6 +41,8 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyMaterialReq
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePayloadValues;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.core.courts.CourtApplicationPayment;
+import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.SummonsTemplateType;
@@ -53,6 +55,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.io.IOException;
@@ -67,6 +70,7 @@ import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -154,6 +158,54 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         if (isYouth && numberOfDocuments > 1) {
             verifyParentBreachSummonWhenNotSuppressed(summonsRequired, isWelsh, nowsMaterialRequestRecordedConsumer);
         }
+    }
+
+    // CAD-1619: editing the application's contested fee before summons approval was silently
+    // lost — ApplicationAggregate raised CourtFeeForCivilApplicationUpdated but never applied
+    // it to its own state, so approveSummons() (and the case created from it) carried the
+    // stale, pre-edit fee. This proves the edit now survives into the summons-approval event.
+    @Test
+    public void shouldCarryEditedContestedFeeIntoSummonsApprovalWhenApplicationEditedBeforeApproval() throws Exception {
+        final boolean summonsSuppressed = false;
+        final boolean isWelsh = false;
+
+        final Hearing hearing = givenApplicationInitiatedInBoxWork(SummonsTemplateType.BREACH, false, isWelsh);
+
+        final CourtApplicationPayment editedPayment = CourtApplicationPayment.courtApplicationPayment()
+                .withFeeStatus(FeeStatus.OUTSTANDING)
+                .withPaymentReference("INITIAL-REF")
+                .withContestedFeeStatus(FeeStatus.WAIVED)
+                .withContestedPaymentReference("CSUM3858712")
+                .build();
+        editCivilApplicationFeeBeforeSummonsApproval(applicationId, editedPayment);
+
+        final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
+        final JudicialResult summonsApprovedResult = getSummonsApprovedJudicialResult(summonsSuppressed);
+
+        final JsonObject hearingJO = OBJECT_TO_JSON_OBJECT_CONVERTER.convert(hearing);
+        final JsonObject summonsApprovedResultJO = OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsApprovedResult);
+        final JsonObject publicHearingResultedV2 = createPublicHearingResultedV2(hearingJO, summonsApprovedResultJO);
+        sendHearingResultedPayloadV2(publicHearingResultedV2);
+
+        final JsonPath message = retrieveMessageAsJsonPath(consumerForInitiateCourtHearingAfterSummonsApproved,
+                isJson(allOf(withJsonPath("$.application.id", is(applicationId)))));
+        assertThat(ofNullable(message).isPresent(), is(true));
+
+        assertThat(message.getString("application.courtApplicationPayment.contestedFeeStatus"), is(FeeStatus.WAIVED.toString()));
+        assertThat(message.getString("application.courtApplicationPayment.contestedPaymentReference"), is("CSUM3858712"));
+    }
+
+    private void editCivilApplicationFeeBeforeSummonsApproval(final String applicationId, final CourtApplicationPayment courtApplicationPayment) {
+        final JsonObject editFeePayload = createObjectBuilder()
+                .add("applicationId", applicationId)
+                .add("courtApplicationPayment", createObjectBuilder()
+                        .add("feeStatus", courtApplicationPayment.getFeeStatus().toString())
+                        .add("paymentReference", courtApplicationPayment.getPaymentReference())
+                        .add("contestedFeeStatus", courtApplicationPayment.getContestedFeeStatus().toString())
+                        .add("contestedPaymentReference", courtApplicationPayment.getContestedPaymentReference())
+                        .build())
+                .build();
+        ApplicationHelper.editCivilFeeForCivilCourtApplication(editFeePayload.toString());
     }
 
     private void verifyParentBreachSummonWhenNotSuppressed(final SummonsType summonsRequired, final boolean isWelsh, final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer) {

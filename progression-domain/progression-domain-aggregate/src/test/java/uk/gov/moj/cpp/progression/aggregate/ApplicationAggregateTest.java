@@ -51,6 +51,8 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationPayment;
+import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
@@ -69,12 +71,14 @@ import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
+import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -2069,6 +2073,84 @@ public class ApplicationAggregateTest {
         assertThat(events.size(), is(1));
         final CourtApplicationSummonsApproved approved = (CourtApplicationSummonsApproved) events.get(0);
         assertThat(approved.getIsSummonsAmended(), is(false));
+    }
+
+    // CAD-1619: CourtFeeForCivilApplicationUpdated was raised but never applied to the
+    // aggregate's own courtApplication state, so an edit made before summons approval was
+    // invisible to approveSummons()/createProsecutionCase(), which seed the case's contested
+    // fee from the aggregate's (stale) courtApplicationPayment.
+    @Test
+    public void shouldApplyCourtFeeForCivilApplicationUpdatedToCourtApplicationPayment() {
+        final UUID courtApplicationId = randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withValuesFrom(buildCourtapplicationWithOffenceUnderCourtOrder(courtApplicationId, randomUUID(), null))
+                .withCourtApplicationPayment(CourtApplicationPayment.courtApplicationPayment()
+                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                        .withPaymentReference("INITIAL-REF")
+                        .withContestedFeeStatus(FeeStatus.NOT_APPLICABLE)
+                        .withContestedPaymentReference(null)
+                        .build())
+                .build();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        final CourtApplicationPayment editedPayment = CourtApplicationPayment.courtApplicationPayment()
+                .withFeeStatus(FeeStatus.OUTSTANDING)
+                .withPaymentReference("INITIAL-REF")
+                .withContestedFeeStatus(FeeStatus.WAIVED)
+                .withContestedPaymentReference("CSUM3858712")
+                .build();
+
+        final List<Object> eventStream = aggregate.handleEditCourtFeeForCivilApplication(courtApplicationId, editedPayment).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(CourtFeeForCivilApplicationUpdated.class)));
+
+        // the fix: the aggregate's own courtApplication must reflect the edit immediately,
+        // not just the read-side viewstore
+        assertThat(aggregate.getCourtApplication().getCourtApplicationPayment().getContestedFeeStatus(), is(FeeStatus.WAIVED));
+        assertThat(aggregate.getCourtApplication().getCourtApplicationPayment().getContestedPaymentReference(), is("CSUM3858712"));
+        // unrelated application data must be untouched by the merge
+        assertThat(aggregate.getCourtApplication().getId(), is(courtApplicationId));
+        assertThat(aggregate.getCourtApplication().getType().getLinkType(), is(STANDALONE));
+    }
+
+    @Test
+    public void shouldCarryEditedContestedFeeIntoSummonsApprovalWhenApplicationEditedBeforeApproval() {
+        final UUID courtApplicationId = randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withValuesFrom(buildCourtapplicationWithOffenceUnderCourtOrder(courtApplicationId, randomUUID(), null))
+                .withCourtApplicationPayment(CourtApplicationPayment.courtApplicationPayment()
+                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                        .withContestedFeeStatus(FeeStatus.NOT_APPLICABLE)
+                        .build())
+                .build();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        // user edits the contested fee before approving summons
+        final CourtApplicationPayment editedPayment = CourtApplicationPayment.courtApplicationPayment()
+                .withFeeStatus(FeeStatus.OUTSTANDING)
+                .withContestedFeeStatus(FeeStatus.WAIVED)
+                .withContestedPaymentReference("CSUM3858712")
+                .build();
+        aggregate.handleEditCourtFeeForCivilApplication(courtApplicationId, editedPayment);
+
+        final List<Object> events = aggregate.approveSummons(SummonsApprovedOutcome.summonsApprovedOutcome().build()).collect(toList());
+
+        final InitiateCourtHearingAfterSummonsApproved initiateCourtHearingAfterSummonsApproved = events.stream()
+                .filter(InitiateCourtHearingAfterSummonsApproved.class::isInstance)
+                .map(InitiateCourtHearingAfterSummonsApproved.class::cast)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(initiateCourtHearingAfterSummonsApproved.getApplication().getCourtApplicationPayment().getContestedFeeStatus(), is(FeeStatus.WAIVED));
+        assertThat(initiateCourtHearingAfterSummonsApproved.getApplication().getCourtApplicationPayment().getContestedPaymentReference(), is("CSUM3858712"));
     }
 
     @Test
