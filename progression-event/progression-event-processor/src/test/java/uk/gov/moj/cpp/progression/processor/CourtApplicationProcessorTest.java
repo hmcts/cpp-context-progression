@@ -82,8 +82,11 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.CustodialEstablishment;
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
@@ -1580,6 +1583,106 @@ public class CourtApplicationProcessorTest {
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
         verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
+    }
+
+    @Test
+    public void shouldDefaultContestedFeeStatusToNotApplicableWhenCivilApplicationNeverSetIt() throws IOException {
+
+        final UUID applicationId = randomUUID();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset());
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                .replace("\"dueDate\": \"2020-11-04\",",
+                        "\"dueDate\": \"2020-11-04\","
+                                + "\"courtCivilApplication\": {\"isCivil\": true},"
+                                + "\"courtApplicationPayment\": {\"feeStatus\": \"OUTSTANDING\"},");
+
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase",
+                        createObjectBuilder().add("id", caseId_1)
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", false)))
+                                ))).build()));
+
+        //When
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        //Then
+        final ArgumentCaptor<ListCourtHearing> captor = forClass(ListCourtHearing.class);
+        verify(listingService).listCourtHearing(any(), captor.capture());
+        final ProsecutionCase prosecutionCase = captor.getValue().getHearings().get(0).getProsecutionCases().get(0);
+
+        assertThat(prosecutionCase.getIsCivil(), is(true));
+        final List<CivilFees> civilFees = prosecutionCase.getCivilFees();
+        assertThat(civilFees, hasSize(2));
+
+        final CivilFees initialFee = civilFees.stream().filter(fee -> fee.getFeeType() == FeeType.INITIAL).findFirst().orElseThrow();
+        assertThat(initialFee.getFeeStatus(), is(FeeStatus.OUTSTANDING));
+
+        final CivilFees contestedFee = civilFees.stream().filter(fee -> fee.getFeeType() == FeeType.CONTESTED).findFirst().orElseThrow();
+        assertThat(contestedFee.getFeeStatus(), is(FeeStatus.NOT_APPLICABLE));
+    }
+
+    @Test
+    public void shouldUseProvidedContestedFeeStatusForNormalCivilApplication() throws IOException {
+
+        final UUID applicationId = randomUUID();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset());
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                // normal case: the application's contestedFeeStatus IS set, so the fix's default
+                // must not override it
+                .replace("\"dueDate\": \"2020-11-04\",",
+                        "\"dueDate\": \"2020-11-04\","
+                                + "\"courtCivilApplication\": {\"isCivil\": true},"
+                                + "\"courtApplicationPayment\": {\"feeStatus\": \"OUTSTANDING\", \"contestedFeeStatus\": \"REDUCED\"},");
+
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase",
+                        createObjectBuilder().add("id", caseId_1)
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", false)))
+                                ))).build()));
+
+        //When
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        //Then
+        final ArgumentCaptor<ListCourtHearing> captor = forClass(ListCourtHearing.class);
+        verify(listingService).listCourtHearing(any(), captor.capture());
+        final ProsecutionCase prosecutionCase = captor.getValue().getHearings().get(0).getProsecutionCases().get(0);
+
+        assertThat(prosecutionCase.getIsCivil(), is(true));
+        final List<CivilFees> civilFees = prosecutionCase.getCivilFees();
+        assertThat(civilFees, hasSize(2));
+
+        final CivilFees initialFee = civilFees.stream().filter(fee -> fee.getFeeType() == FeeType.INITIAL).findFirst().orElseThrow();
+        assertThat(initialFee.getFeeStatus(), is(FeeStatus.OUTSTANDING));
+
+        final CivilFees contestedFee = civilFees.stream().filter(fee -> fee.getFeeType() == FeeType.CONTESTED).findFirst().orElseThrow();
+        assertThat(contestedFee.getFeeStatus(), is(FeeStatus.REDUCED));
     }
 
     @Test
