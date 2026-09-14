@@ -92,6 +92,12 @@ public class ListCourtHearingTransformer {
     private static final String ENFORCEMENT_AUTO_BUSINESS_TYPE = "ENF_AUTO";
     private static final String PANEL_ADULT = "ADULT";
     private static final String PANEL_YOUTH = "YOUTH";
+    // OUCode of the Enforcement prosecuting authority - the same value submitted as
+    // "prosecutingAuthority" on the original stagingcivil.other-case request, echoed back by PCF
+    // Reference Data onto ProsecutionCaseIdentifier.prosecutionAuthorityOUCode. Confirmed from a
+    // live case ("GAPGD00") - not yet signed off by whoever owns that reference data, so this
+    // value may need to change.
+    private static final String ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE = "GAPGD00";
 
     /**
      * Transform a CourtReferral to ListCourtHearing
@@ -301,7 +307,7 @@ public class ListCourtHearingTransformer {
         final ZonedDateTime expectedListingStartDateTime = calculateExpectedStartDate(listHearingRequest);
         final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
 
-        final Optional<AvailableHearingSlot> availableSlot = isOtherTypeCase(listOfProsecutionCase)
+        final Optional<AvailableHearingSlot> availableSlot = isEnforcementCase(listOfProsecutionCase)
                 ? resolveEnforcementSlot(jsonEnvelope, listHearingRequest, listOfProsecutionCase, expectedListingStartDateTime)
                 : Optional.empty();
 
@@ -311,7 +317,7 @@ public class ListCourtHearingTransformer {
         // otherwise let Listing's business-type-blind legacy auto-allocate pipeline book it into an
         // unrelated (e.g. NCFL) session instead of Unallocated.
         final boolean isUnconfirmedEnforcementCase = availableSlot.isEmpty()
-                && isOtherTypeCase(listOfProsecutionCase)
+                && isEnforcementCase(listOfProsecutionCase)
                 && (nonNull(listHearingRequest.getListedEndDateTime()) || nonNull(listHearingRequest.getListedStartDateTime()));
 
         final CourtCentre courtCentre = availableSlot
@@ -446,9 +452,20 @@ public class ListCourtHearingTransformer {
         return anyDefendantIsYouth ? PANEL_YOUTH : PANEL_ADULT;
     }
 
-    private static boolean isOtherTypeCase(final List<ProsecutionCase> prosecutionCases) {
+    /**
+     * InitiationCode.O ("other case") alone is not Enforcement-specific - the exact same code is
+     * used for every plain civil "other case" submission (see
+     * ProsecutionCaseToGroupProsecutionConverterForOthers in cpp-context-staging-prosecutors-civil,
+     * which hardcodes InitiationCode "O" regardless of prosecuting authority, since both share the
+     * same submission endpoint). Only cases PCF has resolved to the Enforcement prosecuting
+     * authority may be searched against the Enforcement-only "ENF"/"ENF_AUTO" business types -
+     * anything else (an ordinary civil "other case") must follow the normal civil listing path.
+     */
+    private static boolean isEnforcementCase(final List<ProsecutionCase> prosecutionCases) {
         return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
-                .allMatch(prosecutionCase -> InitiationCode.O.equals(prosecutionCase.getInitiationCode()));
+                .allMatch(prosecutionCase -> InitiationCode.O.equals(prosecutionCase.getInitiationCode())
+                        && nonNull(prosecutionCase.getProsecutionCaseIdentifier())
+                        && ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE.equals(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityOUCode()));
     }
 
     private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
