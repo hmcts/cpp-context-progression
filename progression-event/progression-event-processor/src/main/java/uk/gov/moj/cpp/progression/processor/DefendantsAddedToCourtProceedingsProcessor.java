@@ -38,7 +38,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.jobstore.api.ExecutionService;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
 import uk.gov.moj.cpp.jobstore.persistence.Priority;
-import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
 import uk.gov.moj.cpp.progression.HearingRequest;
 import uk.gov.moj.cpp.progression.enums.HearingRequestStatus;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
