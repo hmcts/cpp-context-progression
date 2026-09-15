@@ -4,6 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 
 import uk.gov.justice.progression.courts.DeleteApplicationForCase;
 import uk.gov.justice.progression.courts.DeleteCourtApplicationHearing;
+import uk.gov.justice.progression.courts.RemoveApplicationBdf;
 import uk.gov.justice.progression.courts.RemoveApplicationFromSeedingHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -66,6 +67,19 @@ public class DeleteApplicationCommandHandler {
         eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(envelope)));
     }
 
+
+    @Handles("progression.command.handler.remove-application-bdf")
+    public void handleRemoveApplicationByBdf(final Envelope<RemoveApplicationBdf> envelope) throws EventStreamException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(RECEIVED_WITH_PAYLOAD, "progression.command.handler.remove-application-bdf", envelope);
+        }
+
+        final UUID applicationId = envelope.payload().getApplicationId();
+        final EventStream eventStream = eventSource.getStreamById(applicationId);
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final Stream<Object> events = applicationAggregate.deleteCourtApplicationByBdf(applicationId);
+        eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(envelope)));
+    }
 
     @Handles("progression.command.remove-application-from-seedingHearing")
     public void handleRemoveApplicationFromSeedingHearing(Envelope<RemoveApplicationFromSeedingHearing> envelope) throws EventStreamException {
