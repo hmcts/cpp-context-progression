@@ -98,6 +98,8 @@ public class ListCourtHearingTransformerTest {
 
     final private String postcode = "CR11111";
     final private String prosecutingAuth = "CPS";
+    // Mirrors ListCourtHearingTransformer's private ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE constant.
+    final private String ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE = "GAPGD00";
     final private UUID prosecutionCaseId = UUID.randomUUID();
     final private UUID defendantId = UUID.randomUUID();
     final private UUID masterDefendantId = UUID.randomUUID();
@@ -699,6 +701,8 @@ public class ListCourtHearingTransformerTest {
         final ProsecutionCase otherTypeYouthCase = ProsecutionCase.prosecutionCase()
                 .withValuesFrom(getProsecutionCase(LocalDate.now().minusYears(15)))
                 .withInitiationCode(InitiationCode.O)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityOUCode(ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE).build())
                 .build();
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
                 listedStartDateTime, listedStartDateTime.plusDays(365));
@@ -712,6 +716,50 @@ public class ListCourtHearingTransformerTest {
 
         assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getRoomId(), is(resolvedRoomId));
         assertThat(listCourtHearing.getHearings().get(0).getListedStartDateTime(), is(resolvedStartTime));
+    }
+
+    @Test
+    void shouldNotQueryEnforcementBusinessTypesForPlainCivilOtherCase() {
+        // QA defect: InitiationCode.O alone was wrongly treated as "Enforcement" - a plain civil
+        // "other case" submission (non-Enforcement prosecuting authority) must never be searched
+        // against the Enforcement-only ENF/ENF_AUTO business types, and must keep whatever room PCF
+        // already resolved via its generic OUCODE lookup.
+        final UUID pcfResolvedRoomId = randomUUID();
+        final ProsecutionCase civilOtherCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase())
+                .withInitiationCode(InitiationCode.O)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityOUCode(prosecutingAuth).build())
+                .build();
+        final List<ListHearingRequest> listHearingRequest = List.of(ListHearingRequest.listHearingRequest()
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCenterId)
+                        .withCode("B01LY00")
+                        .withName("Court Name")
+                        .withRoomId(pcfResolvedRoomId)
+                        .build())
+                .withListedStartDateTime(listedStartDateTime)
+                .withListedEndDateTime(listedStartDateTime.plusDays(365))
+                .withEstimateMinutes(15)
+                .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantOffences(List.of(offenceId))
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build());
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, List.of(civilOtherCase), listHearingRequest, UUID.randomUUID(), null);
+
+        verifyNoInteractions(listingService);
+        final HearingListingNeeds hearing = listCourtHearing.getHearings().get(0);
+        assertThat(hearing.getCourtCentre().getRoomId(), is(pcfResolvedRoomId));
     }
 
     @Test
@@ -817,9 +865,14 @@ public class ListCourtHearingTransformerTest {
     }
 
     private ProsecutionCase getOtherTypeProsecutionCase() {
+        // InitiationCode.O alone isn't Enforcement-specific - it's shared with plain civil "other
+        // case" submissions - so the Enforcement slot search additionally requires the prosecuting
+        // authority PCF resolved this case to (see ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE).
         return ProsecutionCase.prosecutionCase()
                 .withValuesFrom(getProsecutionCase())
                 .withInitiationCode(InitiationCode.O)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityOUCode(ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE).build())
                 .build();
     }
 
