@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -163,21 +164,16 @@ public class ListingService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
-                                                                    final String ouCode,
-                                                                    final String businessType,
-                                                                    final String panel,
-                                                                    final LocalDate sessionStartDate,
-                                                                    final LocalDate sessionEndDate) {
-        return findAvailableHearingSlot(jsonEnvelope, ouCode, businessType, panel, sessionStartDate, sessionEndDate, null);
-    }
-
     /**
-     * As above, but additionally constrains the search to a session whose window contains
-     * {@code exactHearingStartDateTime} - Listing/Courtscheduler's own range-containment filter
-     * (wire param {@code hearingStartTime}, matched against the session's start/end time). Used
-     * for a single specific dateOfHearing+timeOfHearing submission, where the slot must genuinely
-     * cover that exact time rather than merely exist somewhere in the date range.
+     * Searches for an available Enforcement hearing slot. {@code courtRoomId}, when present,
+     * constrains the search to that one specific courtroom (Courtscheduler's {@code courtRoomId}
+     * filter) rather than any courtroom within {@code ouCode} - used when the caller already knows
+     * a genuinely-requested specific courtroom must be matched exactly, with no fallback to a
+     * different room. {@code exactHearingStartDateTime}, when present, additionally constrains the
+     * search to a session whose window contains it - Listing/Courtscheduler's own range-containment
+     * filter (wire param {@code hearingStartTime}, matched against the session's start/end time),
+     * used for a single specific dateOfHearing+timeOfHearing submission, where the slot must
+     * genuinely cover that exact time rather than merely exist somewhere in the date range.
      */
     public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
                                                                     final String ouCode,
@@ -185,6 +181,7 @@ public class ListingService {
                                                                     final String panel,
                                                                     final LocalDate sessionStartDate,
                                                                     final LocalDate sessionEndDate,
+                                                                    final String courtRoomId,
                                                                     final ZonedDateTime exactHearingStartDateTime) {
         int pageNumber = 1;
         while (true) {
@@ -197,13 +194,16 @@ public class ListingService {
                     .add("sessionEndDate", sessionEndDate.toString())
                     .add("pageSize", String.valueOf(HEARING_SLOTS_SEARCH_PAGE_SIZE))
                     .add("pageNumber", String.valueOf(pageNumber));
-            if (exactHearingStartDateTime != null) {
+            if (nonNull(courtRoomId)) {
+                jsonPayLoadBuilder.add("courtRoomId", courtRoomId);
+            }
+            if (nonNull(exactHearingStartDateTime)) {
                 jsonPayLoadBuilder.add("hearingStartTime", exactHearingStartDateTime.toString());
             }
             final JsonObject jsonPayLoad = jsonPayLoadBuilder.build();
             final JsonObject response = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), JsonObject.class).payload();
 
-            if (response == null || !response.containsKey("hearingSlots")) {
+            if (isNull(response) || !response.containsKey("hearingSlots")) {
                 return empty();
             }
 
