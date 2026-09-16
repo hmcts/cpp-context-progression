@@ -646,6 +646,24 @@ public class PreAndPostConditionHelper {
                 jsonPayload.toString());
     }
 
+    public static Response addProsecutionCaseToCrownCourtWithTwoDefendantsThreeOffencesEach(final String caseId, final String defendantId1, final String defendantId2) throws JSONException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId1, defendantId2, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), "progression.command.prosecution-case-refer-to-court-two-defendants-three-offences-each.json"));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON,
+                jsonPayload.toString());
+    }
+
+    public static Response addProsecutionCaseToCrownCourtWithTwoDefendantsTwoOffencesEach(final String caseId, final String defendantId1, final String defendantId2) throws JSONException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId1, defendantId2, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), "progression.command.prosecution-case-refer-to-court-two-defendants-two-offences-each.json"));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON,
+                jsonPayload.toString());
+    }
+
     public static Response addProsecutionCaseToCrownCourtWithTwoProsecutionCases(final String caseId1, final String caseId2, final String defendantId1, final String defendantId2) throws JSONException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId1, caseId2, defendantId1, defendantId2, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), "progression.command.prosecution-case-refer-to-court-two-cases-one-defendant.json"));
