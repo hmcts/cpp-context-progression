@@ -381,19 +381,24 @@ public class ListCourtHearingTransformer {
 
     /**
      * OTHER-type cases (initiationCode "O") must be allocated only to a genuinely confirmed
-     * Enforcement session - find one by searching Listing's hearing-slots search. PCF may already
-     * have resolved a court room for the submitted OUCODE via its generic, business-type-agnostic
-     * reference-data lookup, but that room must not be trusted here: the caller
-     * (buildHearingListingNeeds) discards it when this method returns empty, so the hearing lands
-     * in Unallocated rather than being silently booked into an unrelated business type by Listing's
-     * legacy auto-allocate pipeline.
+     * Enforcement session - find one by searching Listing's hearing-slots search.
+     *
+     * <p>The submitted courtHearingLocation OUCode tells us whether a specific courtroom was
+     * requested: PCF's reference-data enrichment (see
+     * ProsecutionCaseFileInitialHearingToCCHearingRequestConverter in cpp-context-prosecution-casefile)
+     * only resolves {@code courtCentre.roomId} when the OUCode's last two digits matched a genuine
+     * courtroom (i.e. did not end "00") - an OUCode with no courtroom digits (ends "00") leaves
+     * {@code roomId} null. Per the business rule: no specific courtroom (roomId null) -> search all
+     * courtrooms at that OU for the business type; a specific courtroom (roomId present) -> search
+     * ONLY that courtroom, with no fallback to a different room if it has no Enforcement slot.
      *
      * <p>Two submission shapes, two business types: a date range (business type "ENF_AUTO") searches
      * the whole listedStartDateTime-to-listedEndDateTime span for the first available slot on any
-     * day/time within it. A single specific dateOfHearing+timeOfHearing (business type "ENF") searches
-     * only that one day, constrained to a session that genuinely covers that exact time - the found
-     * slot's own room is used, but the hearing keeps its originally-requested exact time rather than
-     * whatever time the matched session-window itself reports (that's just the availability check).
+     * day/time within it (or, when a specific courtroom was requested, within that courtroom only).
+     * A single specific dateOfHearing+timeOfHearing (business type "ENF") searches only that one day,
+     * constrained to a session that genuinely covers that exact time - the found slot's own room is
+     * used, but the hearing keeps its originally-requested exact time rather than whatever time the
+     * matched session-window itself reports (that's just the availability check).
      */
     private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
                                                                    final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
@@ -402,6 +407,8 @@ public class ListCourtHearingTransformer {
         }
         final String ouCode = listHearingRequest.getCourtCentre().getCode();
         final String panel = resolvePanel(expectedListingStartDateTime, listOfProsecutionCase);
+        final UUID requestedCourtRoomId = listHearingRequest.getCourtCentre().getRoomId();
+        final String courtRoomId = nonNull(requestedCourtRoomId) ? requestedCourtRoomId.toString() : null;
 
         final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
         if (nonNull(endDateTime)) {
@@ -416,7 +423,9 @@ public class ListCourtHearingTransformer {
                     ENFORCEMENT_AUTO_BUSINESS_TYPE,
                     panel,
                     startDateTime.toLocalDate(),
-                    endDateTime.toLocalDate());
+                    endDateTime.toLocalDate(),
+                    courtRoomId,
+                    null);
         }
 
         final ZonedDateTime exactStartDateTime = listHearingRequest.getListedStartDateTime();
@@ -430,6 +439,7 @@ public class ListCourtHearingTransformer {
                         panel,
                         exactStartDateTime.toLocalDate(),
                         exactStartDateTime.toLocalDate(),
+                        courtRoomId,
                         exactStartDateTime)
                 // The matched session only proves a genuinely-available Enforcement slot exists at
                 // this exact time and which room it's in - the hearing keeps its originally-requested
