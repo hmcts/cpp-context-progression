@@ -335,13 +335,15 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, Map<UUID, Boolean>> defendantProceedingConcluded = new HashMap<>();
 
     /**
-     * Tracks, per prosecution case, whether the last {@code laa-defendant-proceeding-concluded-changed}
-     * notification sent to LAA reported the whole case as concluded (all LAA-referenced offences of all
-     * defendants FINAL and concluded). This lets {@link #updateCase} detect the reverse transition - a
-     * previously fully-concluded case that is reopened by a later amendment/reshare - so LAA can be told
-     * the case is no longer concluded, not just when it newly becomes concluded.
+     * Tracks, per prosecution case and defendant, whether the last
+     * {@code laa-defendant-proceeding-concluded-changed} notification sent to LAA reported that
+     * particular defendant as concluded (every one of their own offences proceedingsConcluded ==
+     * true). Each defendant is tracked independently of any other defendant on the case. This lets
+     * {@link #updateCase} detect the reverse transition too - a previously concluded defendant
+     * reopened by a later amendment/reshare - so LAA is told both when a defendant's proceedings
+     * conclude and when they no longer do.
      */
-    private final Map<UUID, Boolean> laaCaseProceedingConcluded = new HashMap<>();
+    private final Map<UUID, Map<UUID, Boolean>> laaDefendantProceedingConcluded = new HashMap<>();
 
 
     //hearing collections
@@ -517,8 +519,10 @@ public class CaseAggregate implements Aggregate {
                                 e.getDefendants().forEach(
                                         defendant ->
                                                 this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences()));
-                                this.laaCaseProceedingConcluded.put(e.getProsecutionCaseId(),
-                                        e.getDefendants().stream().allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded())));
+                                final Map<UUID, Boolean> caseLaaDefendantConcluded =
+                                        this.laaDefendantProceedingConcluded.computeIfAbsent(e.getProsecutionCaseId(), id -> new HashMap<>());
+                                e.getDefendants().forEach(defendant ->
+                                        caseLaaDefendantConcluded.put(defendant.getId(), TRUE.equals(defendant.getProceedingsConcluded())));
                             }
                         }
                 ),
@@ -1742,17 +1746,36 @@ public class CaseAggregate implements Aggregate {
                     updatedCaseStatus);
 
             /*
-             * Notify LAA when all LAA-referenced offences are concluded, or when a previously
-             * concluded case is reopened through an amendment or reshare. Use the updated case
-             * because proceedingsConcluded is recalculated during the update.
+             * Notify LAA at defendant level: a defendant's proceedings are concluded only when
+             * EVERY one of that defendant's own offenses has proceedingsConcluded == true - other
+             * defendants on the case are irrelevant to this decision. For each offense, prefer its
+             * state in updatedProsecutionCase (recalculated for this hearing); fall back to
+             * prosecutionCase (the raw incoming case) only for an offense not present in
+             * updatedProsecutionCase at all, so an offense untouched at this hearing is still counted
+             * rather than silently dropped. Fires when that per-defendant conclusion state change -
+             * newly concluded, or a previously concluded defendant reopened by a later amendment or
+             * reshare.
              */
             if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
-                final boolean isAllConcludedForLaaNow = isAllDefendantProceedingConcludedLaa(updatedProsecutionCase, defendantListForProceedingsConcludedEventTrigger);
-                final boolean wasAllConcludedForLaaBefore = TRUE.equals(laaCaseProceedingConcluded.get(prosecutionCase.getId()));
-                if (isAllConcludedForLaaNow != wasAllConcludedForLaaBefore) {
+                final Map<UUID, Boolean> previouslyNotifiedDefendants =
+                        laaDefendantProceedingConcluded.getOrDefault(prosecutionCase.getId(), Map.of());
+                final List<Defendant> defendantsToNotify = new ArrayList<>();
+
+                for (final Defendant candidate : defendantListForProceedingsConcludedEventTrigger) {
+                    final List<Offence> mergedOffences =
+                            getMergedOffencesForDefendant(candidate.getId(), prosecutionCase, updatedProsecutionCase);
+                    final boolean isDefendantConcludedForLaaNow = isNotEmpty(mergedOffences)
+                            && mergedOffences.stream().allMatch(offence -> TRUE.equals(offence.getProceedingsConcluded()));
+                    final boolean wasDefendantConcludedForLaaBefore = TRUE.equals(previouslyNotifiedDefendants.get(candidate.getId()));
+                    if (isDefendantConcludedForLaaNow != wasDefendantConcludedForLaaBefore) {
+                        defendantsToNotify.add(getDefendant(candidate, mergedOffences, isDefendantConcludedForLaaNow));
+                    }
+                }
+
+                if (isNotEmpty(defendantsToNotify)) {
                     final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
                     streamBuilder.add(laaDefendantProceedingConcludedChanged()
-                            .withDefendants(defendantListForProceedingsConcludedEventTrigger)//listOfDefendantsWithLaaRepresentation)
+                            .withDefendants(defendantsToNotify)
                             .withHearingId(resultedHearingId)
                             .withProsecutionCaseId(prosecutionCase.getId())
                             .build());
@@ -1775,7 +1798,7 @@ public class CaseAggregate implements Aggregate {
 
             }
 
-            //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
+            //Identify a list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
             if (nonNull(updatedProsecutionCase) && nonNull(updatedProsecutionCase.getDefendants())) {
                 updatedProsecutionCase.getDefendants().forEach(defendant -> {
                     if (Boolean.TRUE.equals(defendant.getProceedingsConcluded())) {
@@ -2022,6 +2045,28 @@ public class CaseAggregate implements Aggregate {
                 .findAny()
                 .map(uk.gov.justice.core.courts.Defendant::getOffences)
                 .orElse(emptyList());
+    }
+
+    /**
+     * All of a defendant's offences, merging updatedProsecutionCase (this hearing's recalculated
+     * state) with prosecutionCase (the raw incoming case). updatedProsecutionCase's version of an
+     * offence always wins; prosecutionCase is only consulted for an offence that isn't present in
+     * updatedProsecutionCase at all - e.g. one untouched by this hearing - so it's resolved from
+     * the case as received rather than treated as absent from the defendant altogether.
+     *
+     * @param defendantId          The defendant whose offences are being resolved
+     * @param prosecutionCase      The raw incoming case
+     * @param updatedProsecutionCase The case with proceedingsConcluded recalculated for this hearing
+     * @return every offence known for the defendant across both, each with a single resolved state
+     */
+    private List<Offence> getMergedOffencesForDefendant(final UUID defendantId, final ProsecutionCase prosecutionCase,
+                                                                                    final ProsecutionCase updatedProsecutionCase) {
+        final Map<UUID, Offence> mergedById = new HashMap<>();
+        getCurrentDefendantOffencesFromProsecutionCase(prosecutionCase, defendantId)
+                .forEach(offence -> mergedById.put(offence.getId(), offence));
+        getCurrentDefendantOffencesFromProsecutionCase(updatedProsecutionCase, defendantId)
+                .forEach(offence -> mergedById.put(offence.getId(), offence));
+        return new ArrayList<>(mergedById.values());
     }
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {

@@ -89,10 +89,6 @@ public class DefendantHelper {
                 .allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
     }
 
-    public static boolean isAllDefendantProceedingConcludedLaa(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
-        return isAllDefendantProceedingConcludedCommon(prosecutionCase, updatedDefendants, DefendantHelper::isConcludedForLaa);
-    }
-
     public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
         return isAllDefendantProceedingConcludedCommon(prosecutionCase, updatedDefendants, DefendantHelper::isConcluded);
     }
@@ -299,11 +295,6 @@ public class DefendantHelper {
 
 
         return isChanged;
-    }
-
-    public static boolean isConcludedForLaa(final Offence offence) {
-        return Boolean.TRUE.equals(offence.getProceedingsConcluded())
-                && isConcluded(offence);
     }
 
     public static boolean isConcluded(final Offence offence) {
