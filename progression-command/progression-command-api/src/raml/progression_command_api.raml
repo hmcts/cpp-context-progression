@@ -1309,6 +1309,29 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/hearing/{hearingId}/split:
+  uriParameters:
+    hearingId:
+      description: The hearing being split - the offences named in the request move off it onto a new hearing
+      type: string
+  post:
+      description:  |
+        Split hearing
+        ...
+        (mapping):
+            requestType: application/vnd.progression.split-hearing+json
+            name: progression.split-hearing
+        ...
+      body:
+        application/vnd.progression.split-hearing+json:
+            example:
+             !include json/progression.split-hearing.json
+            schema:
+             !include json/schema/progression.split-hearing.json
+      responses:
+            202:
+                description: OK
+
 /hearing/{hearingId}/defence-counsel:
   uriParameters:
     hearingId:
