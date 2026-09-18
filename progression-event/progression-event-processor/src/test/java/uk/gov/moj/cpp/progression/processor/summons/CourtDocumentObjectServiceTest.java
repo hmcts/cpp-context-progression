@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

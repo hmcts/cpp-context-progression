@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.progression.domain.pojo.Prompt;
 import uk.gov.moj.cpp.progression.query.view.service.DefendantService;
 
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;

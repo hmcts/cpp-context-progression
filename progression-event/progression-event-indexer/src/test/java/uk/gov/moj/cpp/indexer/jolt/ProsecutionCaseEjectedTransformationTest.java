@@ -11,8 +11,8 @@ import uk.gov.justice.json.jolt.JoltTransformer;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

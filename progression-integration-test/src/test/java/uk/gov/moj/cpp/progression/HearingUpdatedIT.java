@@ -12,8 +12,8 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.json.JsonObject;
+import jakarta.jms.JMSException;
+import jakarta.json.JsonObject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import com.google.common.io.Resources;

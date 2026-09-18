@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class PersonVerificationHelper {
 

@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -642,15 +642,27 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         assertThat(hearingListingNeedsList.size(), is(2));
 
-        final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
+        // The transformer groups by next hearing into a HashMap, so the order of the returned list
+        // is not defined. Only one of the two entries is the one the offence and the application
+        // share, so it is selected rather than assumed to be first.
+        final HearingListingNeeds sharedNextHearingNeeds = hearingListingNeedsList.stream()
+                .filter(needs -> nonNull(needs.getCourtApplications()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("no hearing listing needs carried a court application"));
+
+        final Defendant defendant1 = sharedNextHearingNeeds.getProsecutionCases().get(0).getDefendants().get(0);
         assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
 
         final Optional<JudicialResult> nextHearing = defendant1.getOffences().get(0).getJudicialResults().stream().filter(jr -> nonNull(jr.getNextHearing())).findFirst();
-        final Optional<JudicialResult> nextHearingOnApplication = hearingListingNeedsList.get(0).getCourtApplications().get(0).getJudicialResults().stream().filter(jr -> nonNull(jr.getNextHearing())).findFirst();
+        final Optional<JudicialResult> nextHearingOnApplication = sharedNextHearingNeeds.getCourtApplications().get(0).getJudicialResults().stream().filter(jr -> nonNull(jr.getNextHearing())).findFirst();
 
         assertThat(nextHearing.get().getNextHearing(), is(nextHearingOnApplication.get().getNextHearing()));
 
-        final Defendant defendant11 = hearingListingNeedsList.get(1).getProsecutionCases().get(0).getDefendants().get(0);
+        final HearingListingNeeds otherNeeds = hearingListingNeedsList.stream()
+                .filter(needs -> needs != sharedNextHearingNeeds)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected a second hearing listing needs entry"));
+        final Defendant defendant11 = otherNeeds.getProsecutionCases().get(0).getDefendants().get(0);
         assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
 
         final Optional<JudicialResult> nextHearing1 = defendant11.getOffences().get(0).getJudicialResults().stream().filter(jr -> nonNull(jr.getNextHearing())).findFirst();

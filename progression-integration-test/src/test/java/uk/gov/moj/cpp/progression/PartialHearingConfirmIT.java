@@ -19,7 +19,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;

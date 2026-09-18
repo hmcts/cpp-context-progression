@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MaterialIdMapping;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +53,6 @@ class MaterialBulkRepositoryTest {
         caseId1 = UUID.fromString("c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f");
         caseId2 = UUID.fromString("a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d");
     }
-
 
     @Test
     void shouldFindMaterialIdMappingsInBulk() {

@@ -6,10 +6,10 @@ import uk.gov.moj.cpp.progression.helper.HttpConnectionHelper;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;

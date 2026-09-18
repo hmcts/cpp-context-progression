@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.CoreMatchers;

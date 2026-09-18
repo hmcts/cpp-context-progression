@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.nio.charset.Charset;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matcher;

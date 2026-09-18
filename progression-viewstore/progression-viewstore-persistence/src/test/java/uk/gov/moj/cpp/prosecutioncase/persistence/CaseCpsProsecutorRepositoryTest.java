@@ -1,27 +1,28 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseCpsProsecutorRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {CaseCpsProsecutorRepository} class
  */
 
-@RunWith(CdiTestRunner.class)
 public class CaseCpsProsecutorRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final UUID ID = UUID.randomUUID();
 
@@ -29,12 +30,16 @@ public class CaseCpsProsecutorRepositoryTest {
 
     private static final String OLD_PROSECUTOR = "";
 
-    @Inject
     private CaseCpsProsecutorRepository caseCpsProsecutorRepository;
 
-    private CaseCpsProsecutorEntity caseCpsProsecutorEntity;
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        caseCpsProsecutorRepository = new CaseCpsProsecutorRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseCpsProsecutorRepository);
+    }
 
-    @Before
+    private CaseCpsProsecutorEntity caseCpsProsecutorEntity;
+    @BeforeEach
     public void setUp() {
         caseCpsProsecutorEntity = new CaseCpsProsecutorEntity(ID, PROSECUTOR, OLD_PROSECUTOR);
         caseCpsProsecutorRepository.save(caseCpsProsecutorEntity);

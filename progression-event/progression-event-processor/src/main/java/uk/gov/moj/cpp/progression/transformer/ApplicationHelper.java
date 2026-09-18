@@ -65,10 +65,10 @@ import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.VER
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"squid:MethodCyclomaticComplexity"})

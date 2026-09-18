@@ -10,7 +10,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 
 import java.io.IOException;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;

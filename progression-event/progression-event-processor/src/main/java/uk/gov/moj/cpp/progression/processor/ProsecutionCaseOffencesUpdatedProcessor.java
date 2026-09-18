@@ -11,7 +11,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655",})
 @ServiceComponent(EVENT_PROCESSOR)

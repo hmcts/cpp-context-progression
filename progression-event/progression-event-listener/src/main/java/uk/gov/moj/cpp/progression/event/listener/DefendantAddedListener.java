@@ -17,8 +17,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProse
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 /**
  * 

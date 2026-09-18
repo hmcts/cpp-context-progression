@@ -13,7 +13,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.stream.Stream;
 

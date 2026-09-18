@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
 import java.io.IOException;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;

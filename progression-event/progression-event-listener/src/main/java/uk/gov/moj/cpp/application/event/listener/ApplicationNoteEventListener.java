@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ApplicationNoteEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ApplicationNoteRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ApplicationNoteEventListener {

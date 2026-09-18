@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.test.matchers;
 
 import static org.hamcrest.CoreMatchers.is;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -92,15 +91,15 @@ public class BeanMatcher<T> extends BaseMatcher<T> {
             return false;
         }
 
-        Class<?> loadedProxyClazz;
+        final Class<?> loadedProxyClazz;
+        // DynamicType.Unloaded.close() stopped declaring IOException in byte-buddy 1.18, so
+        // catching it here no longer compiles. The resource is still closed by try-with-resources.
         try (DynamicType.Unloaded<T> unloaded = new ByteBuddy().subclass(clazz).method(ElementMatchers.any())
                 .intercept(InvocationHandlerAdapter.of((proxyArg, method, args) -> {
                     methodName = method.getName();
                     return method.invoke(item, args);
                 })).make()) {
             loadedProxyClazz = unloaded.load(clazz.getClassLoader()).getLoaded();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to create proxy for class: " + clazz.getName(), e);
         }
 
         try {

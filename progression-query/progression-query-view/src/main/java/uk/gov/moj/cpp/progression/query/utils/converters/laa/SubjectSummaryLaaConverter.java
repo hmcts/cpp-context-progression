@@ -13,7 +13,7 @@ import uk.gov.justice.progression.query.laa.SubjectSummary;
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 @SuppressWarnings("squid:S1168")
 public class SubjectSummaryLaaConverter extends LAAConverter {
 

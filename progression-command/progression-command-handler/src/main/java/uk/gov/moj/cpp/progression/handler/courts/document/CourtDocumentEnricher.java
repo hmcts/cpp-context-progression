@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class CourtDocumentEnricher {
 

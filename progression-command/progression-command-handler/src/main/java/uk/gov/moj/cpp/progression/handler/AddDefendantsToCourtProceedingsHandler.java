@@ -27,9 +27,9 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

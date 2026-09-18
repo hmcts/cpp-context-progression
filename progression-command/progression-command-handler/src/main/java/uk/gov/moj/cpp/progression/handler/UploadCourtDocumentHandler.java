@@ -18,8 +18,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.COMMAND_HANDLER)

@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.stream.Collectors.joining;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,11 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.ServerErrorException;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 

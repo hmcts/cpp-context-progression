@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.persistence.NoResultException;
 
 
 import static java.util.Objects.isNull;

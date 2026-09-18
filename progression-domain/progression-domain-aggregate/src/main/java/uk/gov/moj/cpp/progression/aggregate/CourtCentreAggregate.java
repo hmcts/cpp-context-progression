@@ -22,7 +22,7 @@ import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;

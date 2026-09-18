@@ -5,9 +5,9 @@ import static com.jayway.jsonpath.JsonPath.parse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.addressLines;
 
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.core.IsEqual;

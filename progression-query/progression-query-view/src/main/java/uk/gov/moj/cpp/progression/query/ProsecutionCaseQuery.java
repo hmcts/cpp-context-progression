@@ -85,12 +85,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.NoResultException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -615,6 +616,20 @@ public class ProsecutionCaseQuery {
     }
 
 
+    /**
+     * Transactional because it reads an entity and then walks a LAZY collection on it.
+     *
+     * DeltaSpike injected a request-scoped EntityManager, so a query view could traverse lazy
+     * associations after the read returned. The JPA migration uses a transaction-scoped
+     * {@code @PersistenceContext}, and the framework does not wrap QUERY_VIEW handlers in a
+     * transaction, so the session closes when findBy returns and getUserGroups() then throws
+     * LazyInitializationException - a 500 on the query, with the build and unit tests green.
+     *
+     * The annotation belongs here rather than on the repository: on the repository the transaction
+     * would commit when findBy returns and the entity would still be detached by the time this
+     * method iterates it.
+     */
+    @Transactional
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchByMaterialId(final JsonEnvelope envelope) {
 

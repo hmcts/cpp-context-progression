@@ -15,9 +15,9 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVer
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

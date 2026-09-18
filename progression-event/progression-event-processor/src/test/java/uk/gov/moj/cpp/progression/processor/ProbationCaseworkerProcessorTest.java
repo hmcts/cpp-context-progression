@@ -17,8 +17,8 @@ import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;

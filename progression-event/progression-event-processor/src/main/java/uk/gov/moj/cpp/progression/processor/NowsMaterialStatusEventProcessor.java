@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class NowsMaterialStatusEventProcessor {

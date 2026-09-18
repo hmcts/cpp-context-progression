@@ -6,7 +6,7 @@ import uk.gov.justice.services.common.converter.exception.ConverterException;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

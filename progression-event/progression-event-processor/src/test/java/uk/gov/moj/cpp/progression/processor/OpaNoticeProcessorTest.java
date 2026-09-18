@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;

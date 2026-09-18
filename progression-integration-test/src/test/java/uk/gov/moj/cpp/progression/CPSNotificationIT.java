@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.resetAllRequests;
 import static com.google.common.collect.Lists.newArrayList;

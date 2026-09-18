@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.progression.query.view.service.transformer;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

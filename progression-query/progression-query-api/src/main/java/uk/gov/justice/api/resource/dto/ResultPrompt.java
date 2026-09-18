@@ -3,7 +3,7 @@ package uk.gov.justice.api.resource.dto;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

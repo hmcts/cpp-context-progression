@@ -19,7 +19,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;

@@ -1,27 +1,32 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
 public class CourtDocumentMaterialRepositoryTest {
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
+
     private CourtDocumentMaterialRepository repository;
 
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        repository = new CourtDocumentMaterialRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(repository);
+    }
 
     @Test
     public void shouldFindByCourtDocumentId() {

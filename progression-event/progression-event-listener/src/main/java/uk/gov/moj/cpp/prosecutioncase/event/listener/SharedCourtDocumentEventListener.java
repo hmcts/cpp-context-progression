@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocument
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 

@@ -10,8 +10,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MaterialIdMapping;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MaterialBulkRepository;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import java.util.Arrays;
 import java.util.UUID;
 

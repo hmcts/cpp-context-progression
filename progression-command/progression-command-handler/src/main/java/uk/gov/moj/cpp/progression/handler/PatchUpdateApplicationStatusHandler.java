@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.isNull;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @SuppressWarnings("squid:S1160")
 @ServiceComponent(Component.COMMAND_HANDLER)

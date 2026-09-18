@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.jobstore.persistence.Priority;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;

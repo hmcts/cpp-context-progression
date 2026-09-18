@@ -24,8 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
 public class InitiateCourtApplicationProceedingsCommandApi {

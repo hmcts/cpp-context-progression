@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.bazaarvoice.jolt.Transform;
 import com.fasterxml.jackson.databind.ObjectMapper;

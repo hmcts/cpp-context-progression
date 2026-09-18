@@ -31,11 +31,11 @@ import uk.gov.moj.cpp.progression.query.view.UserGroupsUserDetails;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 @ServiceComponent(Component.QUERY_API)
 @SuppressWarnings({"squid:CallToDeprecatedMethod"})

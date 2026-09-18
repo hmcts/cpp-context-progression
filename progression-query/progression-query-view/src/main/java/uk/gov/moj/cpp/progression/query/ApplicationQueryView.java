@@ -74,9 +74,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.*;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.json.*;
+import jakarta.persistence.NoResultException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;

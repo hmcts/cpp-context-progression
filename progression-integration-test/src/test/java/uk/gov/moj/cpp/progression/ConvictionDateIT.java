@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.progression.util.ConvictionDateHelper;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;

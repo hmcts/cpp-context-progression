@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import static com.jayway.jsonpath.JsonPath.parse;

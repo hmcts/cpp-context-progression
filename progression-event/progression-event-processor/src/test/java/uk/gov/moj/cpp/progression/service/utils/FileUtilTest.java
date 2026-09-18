@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.http.client.utils.DateUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;

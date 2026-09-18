@@ -4,8 +4,8 @@ import uk.gov.justice.services.common.converter.Converter;
 
 import java.io.StringReader;
 
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 
 import com.google.common.base.Strings;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;

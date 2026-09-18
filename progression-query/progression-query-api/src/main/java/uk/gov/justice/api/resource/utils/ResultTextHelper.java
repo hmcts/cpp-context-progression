@@ -8,7 +8,7 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static javax.json.JsonValue.ValueType.STRING;
+import static jakarta.json.JsonValue.ValueType.STRING;
 import static uk.gov.justice.api.resource.utils.ResultPromptValueHelper.getValue;
 
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
 

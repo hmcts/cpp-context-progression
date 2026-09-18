@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -108,7 +110,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -128,12 +130,21 @@ public class HearingConfirmedEventProcessorTest {
 
     private static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION = "progression.command.send-notification-for-auto-application";
 
+    /**
+     * The instant every test in this class runs at. Both the hearings the tests build and the clock
+     * the processor reads come from here, so the two can never drift apart and the results do not
+     * depend on the time of day or the machine's zone.
+     */
+    private static final ZonedDateTime FIXED_NOW = ZonedDateTime.of(2026, 9, 18, 10, 30, 0, 0, UTC);
+
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+    @Mock
+    private UtcClock utcClock;
 
     @InjectMocks
     private HearingConfirmedEventProcessor eventProcessor;
@@ -208,6 +219,7 @@ public class HearingConfirmedEventProcessorTest {
     @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
+        lenient().when(utcClock.now()).thenReturn(FIXED_NOW);
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -249,7 +261,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType()
                                 .withId(randomUUID())
                                 .withDescription("Trial")
@@ -314,11 +326,12 @@ public class HearingConfirmedEventProcessorTest {
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(Optional.of(sampleJsonObject));
         final JsonObject sampleJsonObject2 = createObjectBuilder().add("isWelsh", false).build();
         when(referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, envelope, requester)).thenReturn(Optional.of(sampleJsonObject2));
-        when(calendarService.plusWorkingDays(LocalDate.now(), 11L, requester)).thenReturn(LocalDate.now().plusDays(60));
+        final LocalDate todayUtc = FIXED_NOW.toLocalDate();
+        when(calendarService.plusWorkingDays(todayUtc, 11L, requester)).thenReturn(todayUtc.plusDays(60));
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(40)).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW.plusDays(40)).build()))
                         .withType(HearingType.hearingType()
                                 .withId(randomUUID())
                                 .withDescription("First hearing")
@@ -391,7 +404,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType()
                                 .withId(randomUUID())
                                 .withDescription("Trial")
@@ -447,7 +460,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                                 .withIsCivil(true)
                                 .withDefendants(singletonList(Defendant.defendant()
@@ -478,7 +491,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                 .withType(HearingType.hearingType()
                         .withId(randomUUID())
                         .withDescription("Trial")
@@ -550,7 +563,7 @@ public class HearingConfirmedEventProcessorTest {
 
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                 .withType(HearingType.hearingType()
                         .withId(randomUUID())
                         .withDescription("Trial")
@@ -812,7 +825,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(hearingId)
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType().withId(randomUUID()).withDescription("Trial").build())
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                                 .withDefendants(singletonList(Defendant.defendant()
@@ -940,7 +953,7 @@ public class HearingConfirmedEventProcessorTest {
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                 .withType(HearingType.hearingType()
                         .withId(randomUUID())
                         .withDescription("Trial")
@@ -1002,7 +1015,7 @@ public class HearingConfirmedEventProcessorTest {
 
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                 .withType(HearingType.hearingType()
                         .withId(randomUUID())
                         .withDescription("Trial")
@@ -1148,7 +1161,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType()
                                 .withId(randomUUID())
                                 .withDescription("First hearing")
@@ -1217,7 +1230,7 @@ public class HearingConfirmedEventProcessorTest {
                                 .withCaseStatus("ACTIVE")
                                 .build()))
                         .build()))
-                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
                 .build();
@@ -1230,7 +1243,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                                 .withDefendants(singletonList(Defendant.defendant()
                                         .withId(randomUUID())
@@ -1251,7 +1264,7 @@ public class HearingConfirmedEventProcessorTest {
                                         .withCaseStatus("ACTIVE")
                                         .build()))
                                 .build()))
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
                         .withType(HearingType.hearingType().withId(randomUUID()). withDescription("Crime").build())
@@ -1361,7 +1374,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(hearingId)
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType().withId(randomUUID()).withDescription("First hearing").build())
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId)
                                 .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
@@ -1423,7 +1436,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType()
                                 .withId(randomUUID())
                                 .withDescription("First hearing")
@@ -1587,7 +1600,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType().withId(warrantHearingTypeId). withDescription("Warrant of Further Detention").build())
                         .build());
         when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
@@ -1624,7 +1637,7 @@ public class HearingConfirmedEventProcessorTest {
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(FIXED_NOW).build()))
                         .withType(HearingType.hearingType().withId(pcbHearingTypeId). withDescription("Pre-Charge Bail").build())
                         .build());
         when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
@@ -1640,14 +1653,14 @@ public class HearingConfirmedEventProcessorTest {
 
     @Test
     public void shouldNotSendPostalNotificationForStandaloneApplicationsWhenHearingIsPastDated() {
-        processHearingConfirmedForStandaloneApplication(new UtcClock().now().minusDays(1));
+        processHearingConfirmedForStandaloneApplication(FIXED_NOW.minusDays(1));
 
         verify(enveloper, never()).withMetadataFrom(any(), eq(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION));
     }
 
     @Test
     public void shouldSendPostalNotificationForStandaloneApplicationsWhenHearingIsToday() {
-        processHearingConfirmedForStandaloneApplication(new UtcClock().now());
+        processHearingConfirmedForStandaloneApplication(FIXED_NOW);
 
         verify(enveloper).withMetadataFrom(any(), eq(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION));
     }

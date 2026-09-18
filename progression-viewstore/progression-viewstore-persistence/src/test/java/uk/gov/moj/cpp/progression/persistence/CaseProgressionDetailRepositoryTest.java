@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.persistence;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -14,22 +16,23 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @deprecated This is deprecated for Release 2.4
  */
 @Deprecated
-@RunWith(CdiTestRunner.class)
 public class CaseProgressionDetailRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final String COURT_CENTER = "Liverpool";
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
@@ -41,11 +44,15 @@ public class CaseProgressionDetailRepositoryTest {
     public static final UUID MATERIAL_ID = UUID.randomUUID();
     private static LocalDate now;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
-    @Inject
     private CaseProgressionDetailRepository repository;
 
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        repository = new CaseProgressionDetailRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(repository);
+    }
 
-    @Before
+    @BeforeEach
     public void setup() {
         now = LocalDate.now();
         final CaseProgressionDetail caseProgressionDetailOne =
@@ -61,7 +68,6 @@ public class CaseProgressionDetailRepositoryTest {
         defendant.addDefendantBailDocument(defendantBailDocument);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
-
 
         final CaseProgressionDetail caseProgressionDetailTwo = createCaseProgressionDetail(
                 CASE_ID_TWO, CaseStatusEnum.READY_FOR_REVIEW, CASE_URN_TWO);
@@ -83,9 +89,7 @@ public class CaseProgressionDetailRepositoryTest {
         caseProgressionDetail.setStatus(status);
         return caseProgressionDetail;
     }
-
-
-    @After
+    @AfterEach
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
                 .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
@@ -121,11 +125,53 @@ public class CaseProgressionDetailRepositoryTest {
         assertThat(caseProgressionDetail.getCaseId(), equalTo(CASE_ID_ONE));
     }
 
-
     @Test
     public void shouldFindDefendantByProgressionId() throws Exception {
         final CaseProgressionDetail results = repository.findBy(CASE_ID_ONE);
         assertThat(results.getDefendants().size(), equalTo(1));
+    }
+
+    @Test
+    public void shouldFindTheCasesInAnyOfTheGivenStatuses() {
+        final List<CaseProgressionDetail> found =
+                repository.findByStatus(List.of(CaseStatusEnum.INCOMPLETE, CaseStatusEnum.READY_FOR_REVIEW));
+
+        assertThat(found.stream().map(CaseProgressionDetail::getCaseId).collect(toSet()),
+                equalTo(Set.of(CASE_ID_ONE, CASE_ID_TWO)));
+    }
+
+    @Test
+    public void shouldFindOnlyTheCasesInTheStatusAsked() {
+        final List<CaseProgressionDetail> found = repository.findByStatus(List.of(CaseStatusEnum.INCOMPLETE));
+
+        assertThat(found.stream().map(CaseProgressionDetail::getCaseId).toList(), equalTo(List.of(CASE_ID_ONE)));
+    }
+
+    @Test
+    public void shouldNarrowAStatusSearchToASingleCase() {
+        final List<CaseProgressionDetail> found = repository.findByStatusAndCaseID(
+                List.of(CaseStatusEnum.INCOMPLETE, CaseStatusEnum.READY_FOR_REVIEW), CASE_ID_TWO);
+
+        assertThat(found.stream().map(CaseProgressionDetail::getCaseId).toList(), equalTo(List.of(CASE_ID_TWO)));
+    }
+
+    @Test
+    public void shouldReturnNothingWhenTheCaseIsNotInAnyOfThoseStatuses() {
+        assertThat(repository.findByStatusAndCaseID(List.of(CaseStatusEnum.CLOSED), CASE_ID_ONE).size(),
+                equalTo(0));
+    }
+
+    @Test
+    public void shouldFindTheDefendantsOnACase() {
+        final List<Defendant> defendants = repository.findCaseDefendants(CASE_ID_ONE);
+
+        assertThat(defendants.size(), equalTo(1));
+        assertThat(defendants.get(0).getDefendantId(), equalTo(DEF_ID));
+    }
+
+    @Test
+    public void shouldReturnNoDefendantsForACaseThatHasNone() {
+        assertThat(repository.findCaseDefendants(CASE_ID_TWO).size(), equalTo(0));
     }
 
 }

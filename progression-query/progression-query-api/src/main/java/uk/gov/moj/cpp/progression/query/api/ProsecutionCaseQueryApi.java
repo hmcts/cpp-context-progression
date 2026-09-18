@@ -14,11 +14,11 @@ import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.JsonPath.parse;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,9 +11,9 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVer
 
 import java.util.Optional;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import net.minidev.json.JSONArray;

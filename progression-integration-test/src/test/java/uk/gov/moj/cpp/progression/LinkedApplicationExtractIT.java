@@ -26,8 +26,8 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.MockCourtApplication;
 
-import javax.jms.JMSException;
-import javax.json.JsonObject;
+import jakarta.jms.JMSException;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;

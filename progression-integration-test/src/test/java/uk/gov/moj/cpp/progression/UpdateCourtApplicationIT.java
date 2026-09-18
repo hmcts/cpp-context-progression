@@ -27,7 +27,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

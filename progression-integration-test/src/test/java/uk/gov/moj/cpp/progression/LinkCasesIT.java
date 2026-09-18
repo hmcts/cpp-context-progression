@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;

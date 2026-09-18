@@ -4,7 +4,7 @@ import uk.gov.justice.progression.query.laa.CourtCentre;
 
 import java.util.Objects;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 @SuppressWarnings("squid:S1168")
 public class CourtCentreConverter extends LAAConverter {
 

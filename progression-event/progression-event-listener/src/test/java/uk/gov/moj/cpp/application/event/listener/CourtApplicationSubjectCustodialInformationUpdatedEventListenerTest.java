@@ -26,7 +26,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;

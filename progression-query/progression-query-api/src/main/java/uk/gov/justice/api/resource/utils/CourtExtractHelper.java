@@ -16,12 +16,12 @@ import uk.gov.justice.progression.courts.exract.CourtApplications;
 import uk.gov.justice.progression.courts.exract.CourtOrderOffences;
 import uk.gov.justice.progression.courts.exract.CourtOrders;
 import uk.gov.justice.progression.courts.exract.Results;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.justice.listing.events.Hearing;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.listing.events.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -84,9 +84,9 @@ public class CourtExtractHelper {
                     .flatMap(listedCase -> listedCase.getDefendants().stream())
                     .filter(defendant -> defendant.getId().equals(defendantId) && nonNull(defendant.getOffences()))
                     .flatMap(defendant -> defendant.getOffences().stream())
-                    .filter(dOffence -> dOffence.getSeedingHearing().isPresent()
-                            && dOffence.getSeedingHearing().get().getJurisdictionType() == JurisdictionType.MAGISTRATES)
-                    .forEach(dOffence -> offenceSeedingHeadingMap.put(dOffence.getId(), dOffence.getSeedingHearing().get()));
+                    .filter(dOffence -> nonNull(dOffence.getSeedingHearing())
+                            && dOffence.getSeedingHearing().getJurisdictionType() == JurisdictionType.MAGISTRATES)
+                    .forEach(dOffence -> offenceSeedingHeadingMap.put(dOffence.getId(), dOffence.getSeedingHearing()));
         }
 
         return offenceSeedingHeadingMap;
@@ -102,10 +102,10 @@ public class CourtExtractHelper {
                     .flatMap(listedCase -> listedCase.getDefendants().stream())
                     .filter(defendant -> defendant.getId().equals(defendantId) && nonNull(defendant.getOffences()))
                     .flatMap(defendant -> defendant.getOffences().stream())
-                    .filter(dOffence -> dOffence.getSeedingHearing().isPresent()
-                            && dOffence.getSeedingHearing().get().getJurisdictionType() == JurisdictionType.MAGISTRATES)
+                    .filter(dOffence -> nonNull(dOffence.getSeedingHearing())
+                            && dOffence.getSeedingHearing().getJurisdictionType() == JurisdictionType.MAGISTRATES)
                     .forEach(dOffence -> {
-                        List<Offences> defendantOffences = getOffencesFromHearingForMatchingSeedingHearing(dOffence.getSeedingHearing().get().getSeedingHearingId(), defendantId, dOffence.getId(), hearingsList);
+                        List<Offences> defendantOffences = getOffencesFromHearingForMatchingSeedingHearing(dOffence.getSeedingHearing().getSeedingHearingId(), defendantId, dOffence.getId(), hearingsList);
                         offencesOfSeedingHeadingMap.addAll(defendantOffences);
                     });
         }

@@ -15,9 +15,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PressListOpaNoticeR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PublicListOpaNoticeRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ResultListOpaNoticeRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class OpaNoticeQueryView {

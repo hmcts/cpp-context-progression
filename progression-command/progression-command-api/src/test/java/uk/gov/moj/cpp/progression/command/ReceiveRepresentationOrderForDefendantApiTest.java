@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.progression.command.service.OrganisationService;
 
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

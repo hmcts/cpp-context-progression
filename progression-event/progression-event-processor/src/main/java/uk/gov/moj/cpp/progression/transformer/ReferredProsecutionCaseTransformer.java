@@ -50,8 +50,8 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655", "squid:S2259", "squid:S1067", "squid:S1854", "squid:S1135", "squid:S1481"})
 public class ReferredProsecutionCaseTransformer {

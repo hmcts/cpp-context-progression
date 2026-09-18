@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;

@@ -18,9 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import static com.google.common.collect.Lists.newArrayList;
 import com.google.common.io.Resources;
@@ -36,7 +36,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -135,7 +135,7 @@ public class PreAndPostConditionHelper {
     }
 
 
-    public static javax.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) {
+    public static jakarta.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) {
         final RestClient restClient = new RestClient();
         return restClient.postCommand(getWriteUrl(String.format("/laaReference/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
                 "application/vnd.progression.command.record-laareference-for-offence+json",
@@ -143,7 +143,7 @@ public class PreAndPostConditionHelper {
                 createHttpHeaders(userId));
     }
 
-    public static javax.ws.rs.core.Response receiveRepresentationOrder(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String laaContractNumber, final String userId) {
+    public static jakarta.ws.rs.core.Response receiveRepresentationOrder(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String laaContractNumber, final String userId) {
         final RestClient restClient = new RestClient();
         return restClient.postCommand(getWriteUrl(String.format("/representationOrder/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
                 "application/vnd.progression.command.receive-representationorder-for-defendant+json",
@@ -151,7 +151,7 @@ public class PreAndPostConditionHelper {
                 createHttpHeaders(userId));
     }
 
-    public static javax.ws.rs.core.Response receiveRepresentationOrderForApplication(final String applicationId, final String subjectId, final String offenceId, final String statusCode, final String laaContractNumber, final String applicationReference, final String userId) {
+    public static jakarta.ws.rs.core.Response receiveRepresentationOrderForApplication(final String applicationId, final String subjectId, final String offenceId, final String statusCode, final String laaContractNumber, final String applicationReference, final String userId) {
         final RestClient restClient = new RestClient();
         return restClient.postCommand(getWriteUrl(String.format("/representationOrder/applications/%s/subject/%s/offences/%s", applicationId, subjectId, offenceId)),
                 "application/vnd.progression.command.receive-representationorder-for-application+json",
@@ -1372,12 +1372,12 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", caseId, defendantId), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
-    public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId) {
+    public static jakarta.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId) {
         return getMaterialContentResponse("/material/" + materialId.toString() + "/content", userId, "application/vnd.progression.query.material-content+json");
 
     }
 
-    public static javax.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId, final UUID defendantId) {
+    public static jakarta.ws.rs.core.Response getMaterialContent(final UUID materialId, final UUID userId, final UUID defendantId) {
         return getMaterialContentResponse("/material/" + materialId.toString() + "/content?defendantId=" + defendantId, userId, "application/vnd.progression.query.material-content-for-defence+json");
 
     }

@@ -19,8 +19,8 @@ import uk.gov.moj.cpp.progression.query.HearingQueryView;
 import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.view.service.exception.ProgressionServiceException;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 
 public class ProgressionService {

@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
@@ -15,27 +16,33 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationR
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link HearingApplicationRepositoryTest} class
  */
 
-@RunWith(CdiTestRunner.class)
 public class HearingApplicationRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static UUID HEARING_ID;
     private static UUID RESULT_ID;
     private static UUID APPLICATION_ID;
 
-    @Inject
     private HearingApplicationRepository hearingApplicationRepository;
 
-    @Before
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        hearingApplicationRepository = new HearingApplicationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(hearingApplicationRepository);
+    }
+
+    @BeforeEach
     public void setUp() {
         //given
         HEARING_ID = randomUUID();

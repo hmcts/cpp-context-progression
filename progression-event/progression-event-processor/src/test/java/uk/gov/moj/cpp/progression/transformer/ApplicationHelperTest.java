@@ -7,7 +7,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
 
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;

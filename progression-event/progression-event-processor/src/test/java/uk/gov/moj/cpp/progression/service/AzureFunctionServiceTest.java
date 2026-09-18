@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.progression.helper.HttpConnectionHelper;
 
 import java.io.IOException;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 /**
  * @deprecated
  *

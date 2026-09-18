@@ -15,9 +15,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRep
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class RelatedReferenceQueryView {

@@ -30,7 +30,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class EmailService {
     private static final String URI_TO_MATERIAL = "defence/case/materials/%s/%s/defending?advocate=true";

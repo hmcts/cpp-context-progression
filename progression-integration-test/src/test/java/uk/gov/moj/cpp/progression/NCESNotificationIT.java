@@ -19,8 +19,8 @@ import uk.gov.moj.cpp.progression.test.TestTemplates;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

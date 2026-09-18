@@ -52,10 +52,10 @@ import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.VIC
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.WORDING;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.WORDING_WELSH;
 
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
 public class OffenceHelper {

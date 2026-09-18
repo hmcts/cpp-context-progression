@@ -1,12 +1,21 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
 
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface CpsSendNotificationRepository extends EntityRepository<CpsSendNotificationEntity, UUID> {
+@ApplicationScoped
+public class CpsSendNotificationRepository extends JpaEntityRepository<CpsSendNotificationEntity, UUID> {
+
+    public CpsSendNotificationRepository() {
+        super(CpsSendNotificationEntity.class);
+    }
+
+    @Override
+    protected UUID idOf(final CpsSendNotificationEntity entity) {
+        return entity.getCourtDocumentId();
+    }
 }

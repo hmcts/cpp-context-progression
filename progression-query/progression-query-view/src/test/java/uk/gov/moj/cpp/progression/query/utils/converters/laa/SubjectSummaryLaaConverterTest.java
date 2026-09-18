@@ -17,7 +17,7 @@ import uk.gov.justice.progression.query.laa.SubjectSummary;
 
 import java.time.LocalDate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

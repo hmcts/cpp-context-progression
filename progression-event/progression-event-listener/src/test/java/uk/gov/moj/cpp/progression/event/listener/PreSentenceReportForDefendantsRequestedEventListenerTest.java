@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsReq
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

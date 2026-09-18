@@ -26,7 +26,7 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

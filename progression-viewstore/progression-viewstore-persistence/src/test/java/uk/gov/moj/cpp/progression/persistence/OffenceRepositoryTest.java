@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
@@ -17,12 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
 import com.google.common.collect.Sets;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
@@ -30,8 +29,11 @@ import org.junit.runner.RunWith;
  */
 
 @Deprecated
-@RunWith(CdiTestRunner.class)
 public class OffenceRepositoryTest  {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final UUID OFFENCE_ID_ONE = randomUUID();
     private static final UUID OFFENCE_ID_TWO = randomUUID();
@@ -41,14 +43,21 @@ public class OffenceRepositoryTest  {
     private static final UUID CASE_ID_ONE = UUID.randomUUID();
     private static final UUID DEF_ID = UUID.randomUUID();
 
-    @Inject
     private OffenceRepository offenceRepository;
 
-    @Inject
     private CaseProgressionDetailRepository caseRepository;
 
-    @Inject
     private DefendantRepository defendantRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        offenceRepository = new OffenceRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(offenceRepository);
+        caseRepository = new CaseProgressionDetailRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
+        defendantRepository = new DefendantRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantRepository);
+    }
 
     @Test
     public void shouldFindOptionalBy() throws Exception {
@@ -70,6 +79,41 @@ public class OffenceRepositoryTest  {
         final List<UUID>  offenceIds = Arrays.asList(OFFENCE_ID_TWO,OFFENCE_ID_TWO,OFFENCE_ID_THREE);
         final long count = offenceDetails.stream().map(item -> offenceIds.contains(item)).count();
         assertTrue(count == 3);
+    }
+
+    /**
+     * Saves through the offence repository itself rather than letting the case cascade, which is the
+     * only way its own idOf runs - and idOf is what decides whether save() persists or merges.
+     */
+    @Test
+    public void shouldSaveAnOffenceDirectlyAndReadItBack() {
+        caseRepository.saveAndFlush(getCaseWithDefendantOffences());
+        final Defendant defendant = defendantRepository.findByDefendantId(DEF_ID);
+        final UUID offenceId = randomUUID();
+
+        final OffenceDetail offence = getOffenceDetail(offenceId, 4);
+        offence.setDefendant(defendant);
+        offenceRepository.saveAndFlush(offence);
+
+        assertEquals(offenceId, offenceRepository.findBy(offenceId).getId());
+    }
+
+    @Test
+    public void shouldUpdateRatherThanDuplicateWhenSavingAnOffenceThatAlreadyExists() {
+        caseRepository.saveAndFlush(getCaseWithDefendantOffences());
+        final Defendant defendant = defendantRepository.findByDefendantId(DEF_ID);
+        final UUID offenceId = randomUUID();
+
+        final OffenceDetail offence = getOffenceDetail(offenceId, 5);
+        offence.setDefendant(defendant);
+        offenceRepository.saveAndFlush(offence);
+        final Long countAfterFirstSave = offenceRepository.count();
+
+        final OffenceDetail again = getOffenceDetail(offenceId, 6);
+        again.setDefendant(defendant);
+        offenceRepository.saveAndFlush(again);
+
+        assertEquals(countAfterFirstSave, offenceRepository.count());
     }
 
     private CaseProgressionDetail getCaseWithDefendantOffences() {

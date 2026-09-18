@@ -5,23 +5,30 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.COTRDetailsEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDetailsRepository;
 
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
 public class COTRDetailsRepositoryTest {
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
+
     private COTRDetailsRepository cotrDetailsRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        cotrDetailsRepository = new COTRDetailsRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(cotrDetailsRepository);
+    }
 
     @Test
     public void shouldSaveAndReadCOTRDetails() {
@@ -76,7 +83,30 @@ public class COTRDetailsRepositoryTest {
         assertThat(entities.size(), is(1));
         assertThat(entities.get(0).getHearingId(), is(hearingId1));
 
+    }
 
+    private COTRDetailsEntity cotrFor(final UUID prosecutionCaseId) {
+        return new COTRDetailsEntity(randomUUID(), randomUUID(), prosecutionCaseId, false,
+                "prosecutionFormData", "caseProgressionReviewNote", "listingReviewNotes", "judgeReviewNotes");
+    }
+
+    @Test
+    public void shouldFindEveryCotrRecordedAgainstAProsecutionCase() {
+        final UUID prosecutionCaseId = randomUUID();
+        cotrDetailsRepository.saveAndFlush(cotrFor(prosecutionCaseId));
+        cotrDetailsRepository.saveAndFlush(cotrFor(prosecutionCaseId));
+        cotrDetailsRepository.saveAndFlush(cotrFor(randomUUID()));
+
+        final List<COTRDetailsEntity> found = cotrDetailsRepository.findByProsecutionCaseId(prosecutionCaseId);
+
+        assertThat(found.size(), equalTo(2));
+        assertThat(found.stream().map(COTRDetailsEntity::getProsecutionCaseId).distinct().toList(),
+                equalTo(List.of(prosecutionCaseId)));
+    }
+
+    @Test
+    public void shouldReturnNothingWhenTheProsecutionCaseHasNoCotr() {
+        assertThat(cotrDetailsRepository.findByProsecutionCaseId(randomUUID()).isEmpty(), equalTo(true));
     }
 
     private void verifyCOTRDetails(final COTRDetailsEntity actual, final COTRDetailsEntity expected) {

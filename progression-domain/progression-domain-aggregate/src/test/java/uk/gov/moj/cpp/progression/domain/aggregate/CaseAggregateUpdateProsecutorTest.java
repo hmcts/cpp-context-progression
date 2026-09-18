@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

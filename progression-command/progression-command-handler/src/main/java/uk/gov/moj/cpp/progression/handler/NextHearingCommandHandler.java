@@ -4,8 +4,8 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 
 
 import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 import uk.gov.justice.core.courts.MoveOffencesFromOldNextHearing;
 import uk.gov.justice.core.courts.MoveOffencesToNewNextHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;

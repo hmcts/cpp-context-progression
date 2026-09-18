@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 

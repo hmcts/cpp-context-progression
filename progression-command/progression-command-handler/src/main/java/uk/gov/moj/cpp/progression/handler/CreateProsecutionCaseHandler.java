@@ -24,8 +24,8 @@ import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 import java.util.List;
 import java.util.UUID;

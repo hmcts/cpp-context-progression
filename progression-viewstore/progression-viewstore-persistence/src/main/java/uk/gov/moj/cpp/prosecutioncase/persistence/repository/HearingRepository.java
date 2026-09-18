@@ -1,23 +1,36 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Modifying;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface HearingRepository extends EntityRepository<HearingEntity, UUID> {
+@ApplicationScoped
+public class HearingRepository extends JpaEntityRepository<HearingEntity, UUID> {
 
-    @Query("from HearingEntity h where h.hearingId in (:hearingIds)")
-     List<HearingEntity> findByHearingIds(@QueryParam("hearingIds") List<UUID> hearingIds);
+    public HearingRepository() {
+        super(HearingEntity.class);
+    }
 
-    @Modifying
-    @Query("delete from HearingEntity entity where entity.hearingId = :hearingId")
-    void removeByHearingId(@QueryParam("hearingId") UUID hearingId);
+    @Override
+    protected UUID idOf(final HearingEntity entity) {
+        return entity.getHearingId();
+    }
+
+    public List<HearingEntity> findByHearingIds(final List<UUID> hearingIds) {
+        return entityManager.createQuery(
+                        "select h from HearingEntity h where h.hearingId in (:hearingIds)", HearingEntity.class)
+                .setParameter("hearingIds", hearingIds)
+                .getResultList();
+    }
+
+    public void removeByHearingId(final UUID hearingId) {
+        entityManager.createQuery(
+                        "delete from HearingEntity entity where entity.hearingId = :hearingId")
+                .setParameter("hearingId", hearingId)
+                .executeUpdate();
+    }
 }

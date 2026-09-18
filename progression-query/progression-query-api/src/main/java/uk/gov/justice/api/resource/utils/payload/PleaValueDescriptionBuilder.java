@@ -10,8 +10,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

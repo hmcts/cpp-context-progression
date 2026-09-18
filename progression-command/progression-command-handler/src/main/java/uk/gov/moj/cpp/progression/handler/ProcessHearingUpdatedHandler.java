@@ -18,8 +18,8 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 @ServiceComponent(COMMAND_HANDLER)
 public class ProcessHearingUpdatedHandler {

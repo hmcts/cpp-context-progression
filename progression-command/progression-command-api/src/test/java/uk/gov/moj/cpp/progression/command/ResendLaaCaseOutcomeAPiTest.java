@@ -19,7 +19,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

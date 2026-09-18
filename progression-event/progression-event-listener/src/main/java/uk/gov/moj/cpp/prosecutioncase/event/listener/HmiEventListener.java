@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.HearingListingStatus;

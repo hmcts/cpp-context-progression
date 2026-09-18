@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 
 import java.util.List;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

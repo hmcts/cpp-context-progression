@@ -4,7 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.awaitility.Awaitility.waitAtMost;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_COMMAND;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.HEARING_RESPONSE_TYPE;

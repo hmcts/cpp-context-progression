@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.104.300-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-processor</artifactId>
     <packaging>war</packaging>
@@ -13,6 +13,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-domain-listing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>event-processor</artifactId>
@@ -26,29 +31,19 @@
             <artifactId>rest-client-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-domain-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.material</groupId>
-            <artifactId>material-client</artifactId>
-            <version>${material.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>uk.gov.justice.services</groupId>
-                    <artifactId>test-utils-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
@@ -116,8 +111,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -145,9 +140,13 @@
             <artifactId>podam</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Podam reaches for javax.xml.ws.Holder while manufacturing POJOs, so its tests need the
+             pre-Jakarta API on the test classpath. Test scope only, and nothing in this context's
+             production code touches JAX-WS. Removable once Podam no longer depends on it. -->
         <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>
+            <version>2.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -158,8 +157,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>test</scope>
-        </dependency>
+            </dependency>
         <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
@@ -169,20 +167,6 @@
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.listing</groupId>
-            <artifactId>listing-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>uk.gov.moj.cpp.core.domain</groupId>
-                    <artifactId>common-core-domain</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -225,18 +209,52 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <!--
+                      @{argLine} first, and it has to stay there. jacoco:prepare-agent publishes the
+                      -javaagent flag as the argLine property; an argLine set here without @{argLine}
+                      replaces it, the agent never attaches, and the module produces no jacoco.exec
+                      at all. This module has over two hundred test classes and was reporting zero
+                      coverage to Sonar because of it.
+                    -->
+                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>rest-client-generator-plugin</artifactId>
                 <dependencies>
+                    <!-- raml-parser needs the pre-EE9 javax.xml.bind.SchemaOutputResolver on the
+                         plugin classpath; without it the generator dies with NoClassDefFoundError -->
                     <dependency>
-                        <groupId>javax</groupId>
-                        <artifactId>javaee-api</artifactId>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${jakarta.xml.bind-api.raml.version}</version>
+                    </dependency>
+                    <!-- Jakarta JSON-P provider for the generator's build-time JSON processing;
+                         without it the plugin fails with "Provider org.eclipse.parsson.JsonProviderImpl not found" -->
+                    <dependency>
+                        <groupId>org.eclipse.parsson</groupId>
+                        <artifactId>parsson</artifactId>
+                        <version>${parsson.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.platform</groupId>
+                        <artifactId>jakarta.jakartaee-api</artifactId>
                         <version>${javaee-api.version}</version>
                     </dependency>
                     <dependency>
@@ -431,9 +449,23 @@
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>messaging-client-generator-plugin</artifactId>
                 <dependencies>
+                    <!-- raml-parser needs the pre-EE9 javax.xml.bind.SchemaOutputResolver on the
+                         plugin classpath; without it the generator dies with NoClassDefFoundError -->
                     <dependency>
-                        <groupId>javax</groupId>
-                        <artifactId>javaee-api</artifactId>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${jakarta.xml.bind-api.raml.version}</version>
+                    </dependency>
+                    <!-- Jakarta JSON-P provider for the generator's build-time JSON processing;
+                         without it the plugin fails with "Provider org.eclipse.parsson.JsonProviderImpl not found" -->
+                    <dependency>
+                        <groupId>org.eclipse.parsson</groupId>
+                        <artifactId>parsson</artifactId>
+                        <version>${parsson.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.platform</groupId>
+                        <artifactId>jakarta.jakartaee-api</artifactId>
                         <version>${javaee-api.version}</version>
                     </dependency>
                     <dependency>
@@ -461,6 +493,11 @@
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
+                            <!-- Same as the event-listener: the only RELEASED build of this MI
+                                 contract test-jar is javax and fails test discovery on the Jakarta
+                                 stack, and the only Jakarta builds are SNAPSHOTs. RELEASE is kept so
+                                 it resumes once mi-reportdata publishes a released Jakarta milestone. -->
+                            <skip>true</skip>
                             <artifactItems>
                                 <artifactItem>
                                     <artifactId>mireportdata-progression-event-listener</artifactId>
@@ -488,14 +525,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>uk.gov.moj.cpp.listing:listing-common</artifact>
-                                    <excludes>
-                                        <exclude>uk/gov/justice/core/courts/**</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                         </configuration>
                     </execution>
                 </executions>

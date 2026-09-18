@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.progression.query.view.service.transformer.Prompt4Transfor
 import uk.gov.moj.cpp.progression.query.view.service.transformer.Prompt5Transformer;
 import uk.gov.moj.cpp.progression.query.view.service.transformer.Prompt6Transformer;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;

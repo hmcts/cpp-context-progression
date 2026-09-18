@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.event.listener;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;

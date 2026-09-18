@@ -5,7 +5,7 @@ import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.services.transformer.BaseCourtApplicationTransformer;
 
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings("squid:S2629")
 public class CourtApplicationStatusUpdatedTransformer extends BaseCourtApplicationTransformer {

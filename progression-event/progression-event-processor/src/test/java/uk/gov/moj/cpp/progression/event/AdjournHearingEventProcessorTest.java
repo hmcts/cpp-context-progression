@@ -42,12 +42,13 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,7 +104,7 @@ public class AdjournHearingEventProcessorTest {
         final UUID previousHearingId = randomUUID();
         final UUID courtCentreId = randomUUID();
         final LocalDateTime localDateTime = LocalDateTime.now().truncatedTo(MILLIS);
-        final ZonedDateTime earliestStartDateTime = localDateTime.atZone(ZoneId.of("UTC")).truncatedTo(MILLIS);
+        final ZonedDateTime earliestStartDateTime = localDateTime.atZone(ZoneOffset.UTC).truncatedTo(MILLIS);
         final Integer estimatedMinutes = 100;
         final UUID judicialId = randomUUID();
         final UUID hearingTypeId = randomUUID();
