@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.command.cotr;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,7 +32,6 @@ import uk.gov.moj.cpp.progression.command.service.OrganisationService;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -300,8 +299,8 @@ public class CotrCommandApiTest {
     }
 
     private Envelope getAssociatedDefendantsEnvelope(final Metadata metadata, final String defendant1, final String defendant2){
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
-                .add(DEFENDANT_IDS, Json.createArrayBuilder()
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add(DEFENDANT_IDS, createArrayBuilder()
                         .add(defendant1)
                         .add(defendant2)
                 ).build();

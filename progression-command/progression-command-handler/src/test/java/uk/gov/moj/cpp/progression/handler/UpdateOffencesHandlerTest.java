@@ -22,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -71,7 +72,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -524,7 +524,7 @@ public class UpdateOffencesHandlerTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = createReader(new StringReader(referenceDataOffenceJsonString));
 
 
         final List<JsonObject> referencedataOffencesJsonObject = jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);

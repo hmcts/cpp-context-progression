@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

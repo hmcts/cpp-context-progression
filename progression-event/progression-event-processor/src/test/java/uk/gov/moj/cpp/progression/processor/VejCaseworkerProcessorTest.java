@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASES;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
@@ -24,7 +26,6 @@ import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 import java.io.IOException;
 import java.io.StringReader;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -93,7 +94,7 @@ public class VejCaseworkerProcessorTest {
 
         verify(restEasyClientService).post(eq(VEJ_HEARING_DETAILS_URL), envelopeArgumentCaptor.capture(), any());
         final String argumentCaptor = envelopeArgumentCaptor.getValue();
-        final JsonReader jsonReader = Json.createReader(new StringReader(argumentCaptor));
+        final JsonReader jsonReader = createReader(new StringReader(argumentCaptor));
         final JsonObject externalPayload = jsonReader.readObject();
         jsonReader.close();
         final JsonObject hearingObj = (JsonObject) externalPayload.get(HEARING);
@@ -106,7 +107,7 @@ public class VejCaseworkerProcessorTest {
     @Test
     public void shouldProcessVejHearingPopulatedToProbationCaseworkerNegative() throws IOException {
         final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("vep-non-hearing.json"), defaultCharset()));
-        final JsonObject payload = Json.createObjectBuilder().add("hearing", hearing).build();
+        final JsonObject payload = createObjectBuilder().add("hearing", hearing).build();
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.events.vej-hearing-populated-to-probation-caseworker"),
@@ -121,7 +122,7 @@ public class VejCaseworkerProcessorTest {
     @Test
     public void shouldProcessVejDeletedHearingPopulatedToProbationCaseworkerNegative() throws IOException {
         final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("vep-non-hearing.json"), defaultCharset()));
-        final JsonObject payload = Json.createObjectBuilder().add("hearing", hearing).build();
+        final JsonObject payload = createObjectBuilder().add("hearing", hearing).build();
 
         when(referenceDataService.getPoliceFlag(anyString(), anyString(), eq(requester))).thenReturn(false);
 
@@ -148,7 +149,7 @@ public class VejCaseworkerProcessorTest {
 
         verify(restEasyClientService).post(eq(VEJ_HEARING_DELETED_URL), envelopeArgumentCaptor.capture(), any());
         final String argumentCaptor = envelopeArgumentCaptor.getValue();
-        final JsonReader jsonReader = Json.createReader(new StringReader(argumentCaptor));
+        final JsonReader jsonReader = createReader(new StringReader(argumentCaptor));
         final JsonObject externalPayload = jsonReader.readObject();
         jsonReader.close();
         final JsonObject hearingObj = (JsonObject) externalPayload.get(HEARING);

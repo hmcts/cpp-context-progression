@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -36,7 +38,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -91,7 +92,7 @@ public class CaseLsmInfoQuery {
         final UUID caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), PARAM_CASE_ID)
                 .orElseThrow(() -> new IllegalArgumentException("caseId parameter cannot be empty!"));
 
-        final JsonObjectBuilder responseBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder responseBuilder = createObjectBuilder();
 
         //MATCHED DEFENDANTS
         try {
@@ -112,7 +113,7 @@ public class CaseLsmInfoQuery {
                 defendantCaseHearingEntityToBeRemoved.stream().forEach(e ->
                         uniqueMatchedCases.removeIf(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getId().equals(e))
                 );
-                final JsonArrayBuilder matchedCasesArrayBuilder = Json.createArrayBuilder();
+                final JsonArrayBuilder matchedCasesArrayBuilder = createArrayBuilder();
                 uniqueMatchedCases.stream().forEach(e -> matchedCasesArrayBuilder.add(buildMatchedDefendantCase(e.getProsecutionCase(), e.getMasterDefendantId(), Optional.ofNullable(e.getHearing()))));
                 responseBuilder.add(MATCHED_DEFENDANT_CASES, matchedCasesArrayBuilder);
             }
@@ -132,7 +133,7 @@ public class CaseLsmInfoQuery {
     }
 
     private void buildRelatedCases(final JsonObjectBuilder responseBuilder, final LinkType linkType, final List<CaseLinkSplitMergeEntity> linkedCases) {
-        final JsonArrayBuilder linkedCasesArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder linkedCasesArrayBuilder = createArrayBuilder();
         linkedCases.stream().forEach(e -> linkedCasesArrayBuilder.add(buildRelatedCase(e.getLinkedCase(), e.getType(), Optional.ofNullable(e.getReference()), e.getLinkGroupId(), getHearingByCaseId(e.getLinkedCaseId()))));
         responseBuilder.add(getLinkTitle(linkType), linkedCasesArrayBuilder);
     }
@@ -166,7 +167,7 @@ public class CaseLsmInfoQuery {
         final ProsecutionCase prosecutionCase = convertToProsecutionCase(prosecutionCaseEntity);
         final Hearing hearing = convertToHearing(hearingEntity);
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add(CASE_ID, prosecutionCase.getId().toString())
                 .add(CASE_URN, extractCaseUrn(prosecutionCase))
                 .add(MATCHED_MASTER_DEFENDANT_ID, matchedMasterDefendantId.toString())
@@ -190,7 +191,7 @@ public class CaseLsmInfoQuery {
             caseUrn = extractCaseUrn(prosecutionCase);
         }
 
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add(CASE_ID, prosecutionCase.getId().toString())
                 .add(CASE_URN, caseUrn)
                 .add(LINK_GROUP_ID, linkGroupId.toString())

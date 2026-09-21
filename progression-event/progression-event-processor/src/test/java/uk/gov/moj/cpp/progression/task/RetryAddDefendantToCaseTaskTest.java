@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.jobstore.api.task.ExecutionStatus.STARTED;
 import static uk.gov.moj.cpp.jobstore.persistence.Priority.MEDIUM;
 import static uk.gov.moj.cpp.progression.task.Task.TaskNames.RETRY_ADD_DEFENDANT_TO_CASE_TASK;

@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -13,7 +14,6 @@ import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -34,7 +34,7 @@ public class CourtlistQueryService {
     public JsonEnvelope buildCourtlistQueryEnvelope(final String courtCentreId, final String courtRoomId,
                                                    final String listId, final String startDate, final String endDate,
                                                    final boolean restricted, final UUID userId, final String courtListAction) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add("courtCentreId", courtCentreId)
                 .add("listId", listId)
                 .add("startDate", startDate)
@@ -59,7 +59,7 @@ public class CourtlistQueryService {
      * when available from reference data. courtIdNumeric is taken from reference data field "courtId", default "0".
      */
     public JsonObject buildEnrichedPayload(final JsonEnvelope document) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         document.payloadAsJsonObject().keySet().forEach(key ->
                 builder.add(key, document.payloadAsJsonObject().get(key)));
 
