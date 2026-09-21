@@ -5,8 +5,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import com.google.common.collect.Sets;
 

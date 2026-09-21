@@ -4,7 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 
 import java.util.UUID;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.core.annotation.Handles;

@@ -46,9 +46,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;

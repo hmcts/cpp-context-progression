@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.stream.Stream;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 public class EventStreamHelper {
     private EventStreamHelper() {

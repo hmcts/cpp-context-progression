@@ -28,7 +28,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;

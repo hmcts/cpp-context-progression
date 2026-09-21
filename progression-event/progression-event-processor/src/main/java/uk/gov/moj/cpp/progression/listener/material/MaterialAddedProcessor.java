@@ -12,7 +12,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.Originator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.UUID;
 
 import static uk.gov.moj.cpp.progression.processor.NowsMaterialStatusEventProcessor.GENERATED_STATUS_VALUE;

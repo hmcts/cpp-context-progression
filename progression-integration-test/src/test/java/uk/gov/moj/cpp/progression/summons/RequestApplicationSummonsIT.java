@@ -60,8 +60,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;

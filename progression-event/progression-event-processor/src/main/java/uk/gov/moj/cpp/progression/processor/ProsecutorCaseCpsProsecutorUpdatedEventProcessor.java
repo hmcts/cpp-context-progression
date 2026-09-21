@@ -16,10 +16,10 @@ import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
 import uk.gov.moj.cpp.progression.events.CaseCpsProsecutorUpdated;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;

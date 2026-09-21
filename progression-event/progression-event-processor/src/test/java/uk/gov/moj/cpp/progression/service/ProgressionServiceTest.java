@@ -142,9 +142,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;

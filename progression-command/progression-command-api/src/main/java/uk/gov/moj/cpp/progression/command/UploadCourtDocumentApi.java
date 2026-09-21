@@ -15,7 +15,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.api.UserDetailsLoader;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class UploadCourtDocumentApi {

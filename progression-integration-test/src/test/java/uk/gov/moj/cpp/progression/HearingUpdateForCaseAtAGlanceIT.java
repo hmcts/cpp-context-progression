@@ -20,7 +20,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

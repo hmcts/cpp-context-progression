@@ -6,7 +6,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.CivilFeesQueryView;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.QUERY_API)
 public class CivilFeesQueryApi {

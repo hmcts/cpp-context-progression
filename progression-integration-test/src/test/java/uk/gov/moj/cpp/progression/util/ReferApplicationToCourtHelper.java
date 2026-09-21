@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class ReferApplicationToCourtHelper extends AbstractTestHelper {
 

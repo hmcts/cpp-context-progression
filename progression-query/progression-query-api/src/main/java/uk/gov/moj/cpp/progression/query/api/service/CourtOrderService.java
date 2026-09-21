@@ -6,7 +6,7 @@ import uk.gov.justice.services.messaging.Envelope;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class CourtOrderService {

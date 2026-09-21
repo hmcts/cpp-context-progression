@@ -14,14 +14,14 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.listener.material.MaterialAddedProcessor;
 
 import java.nio.charset.Charset;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;

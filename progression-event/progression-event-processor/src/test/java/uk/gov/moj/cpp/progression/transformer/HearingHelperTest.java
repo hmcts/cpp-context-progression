@@ -15,7 +15,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;

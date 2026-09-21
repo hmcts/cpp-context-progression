@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.collections.MapUtils;
 

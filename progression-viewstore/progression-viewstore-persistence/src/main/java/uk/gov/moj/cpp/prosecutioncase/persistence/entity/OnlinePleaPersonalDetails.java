@@ -6,10 +6,10 @@ import uk.gov.justice.core.courts.Defendant;
 
 import java.time.LocalDate;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 @Embeddable
 @SuppressWarnings({"PMD.BeanMembersShouldSerialize"})

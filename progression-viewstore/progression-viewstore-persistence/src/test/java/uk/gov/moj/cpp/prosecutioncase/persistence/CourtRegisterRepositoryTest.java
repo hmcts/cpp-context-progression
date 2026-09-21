@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtRegisterRequestEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtRegisterRequestRepository;
@@ -13,32 +14,35 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
 public class CourtRegisterRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
     private static final UUID COURT_CENTRE_ID = randomUUID();
     private static final UUID HEARING_ID = randomUUID();
     private static final ZonedDateTime REGISTER_TIME_1 = ZonedDateTime.now();
     private static final ZonedDateTime REGISTER_TIME_2 = ZonedDateTime.now().plusHours(1);
 
-    @Inject
     private CourtRegisterRequestRepository courtRegisterRequestRepository;
 
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        courtRegisterRequestRepository = new CourtRegisterRequestRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(courtRegisterRequestRepository);
+    }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         courtRegisterRequestRepository.save(createCourtRegister(REGISTER_TIME_1));
         courtRegisterRequestRepository.save(createCourtRegister(REGISTER_TIME_2));
     }
-
-    @After
+    @AfterEach
     public void tearDown() {
         List<CourtRegisterRequestEntity> courtRegisterRequestEntities = courtRegisterRequestRepository.findAll();
         courtRegisterRequestEntities.forEach(cr -> courtRegisterRequestRepository.remove(cr));

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.service.disqualificationreferral;
 
 import java.util.Locale;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class ReferralDisqualifyWarningDataAggregatorFactory {
 

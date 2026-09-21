@@ -12,8 +12,8 @@ import uk.gov.moj.cpp.progression.command.service.DeleteNotificationInfoService;
 
 import java.time.ZonedDateTime;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
 public class DeleteNotificationInfoApi {

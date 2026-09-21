@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.progression.event.service.CaseService;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

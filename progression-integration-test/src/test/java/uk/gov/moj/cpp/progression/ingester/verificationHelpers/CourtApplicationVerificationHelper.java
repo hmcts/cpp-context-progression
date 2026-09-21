@@ -1,17 +1,17 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertOrganisationDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertRespondantDetails;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 

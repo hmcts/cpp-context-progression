@@ -37,8 +37,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class JudicialResultQueryView {

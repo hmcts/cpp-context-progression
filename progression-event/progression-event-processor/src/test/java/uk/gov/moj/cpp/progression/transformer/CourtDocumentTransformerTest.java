@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

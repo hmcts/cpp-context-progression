@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>uk.gov.moj.cpp.progression</groupId>
+        <artifactId>progression-domain</artifactId>
+        <version>25.104.0-M1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>progression-domain-listing</artifactId>
+
+    <!--
+      The listing hearing model progression consumes, generated from listing's published schemas
+      rather than compiled against listing-common.
+
+      progression used to depend on listing-common's Java classes, which forces a release order and
+      blocked this upgrade: listing-common is a Java 17 build whose ProvisionalBookingService returns
+      javax.ws.rs.core.Response, and the only Jakarta build is a SNAPSHOT.
+
+      Generating from listing-json keeps the dependency to the JSON contract, which is expected
+      between contexts. It is also the same model listing itself publishes: the query response schema
+      listing.search.hearing.json is a $ref to listing/events/hearing.json, which is what is generated
+      here. The hand-written listing.domain classes were listing's own view of that contract, and
+      copying thirty of them into progression would have duplicated concepts progression already has.
+    -->
+
+    <properties>
+        <skip.schema.event.pojo.generation>false</skip.schema.event.pojo.generation>
+        <pojo.generation.source.directory>${project.build.directory}/listing-schemas/json/schema</pojo.generation.source.directory>
+    </properties>
+
+    <dependencies>
+        <!-- Schemas-only contract artifact; a JSON dependency between contexts is sanctioned. -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.listing</groupId>
+            <artifactId>listing-json</artifactId>
+            <version>${listing.json.version}</version>
+            <!-- Build-time only: the generator reads these schemas, nothing needs them at runtime.
+                 On the compile classpath it puts a second copy of schemas that core-domain also
+                 publishes - prosecutionCase.json, defendant.json, offence.json and others - which
+                 the framework's schema duplicate check rightly fails. -->
+            <scope>provided</scope>
+        </dependency>
+        <!-- Supplies justice.gov.uk/domain/core/common/definitions.json, which the listing schemas
+             reference. Without it on the classpath the generator cannot resolve the id and SILENTLY
+             SKIPS the schema: a warning, no class, and a green build. -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>common-core-domain</artifactId>
+            <version>${coredomain.version}</version>
+        </dependency>
+        <!-- The listing schemas also reference the shared core/courts schemas (address,
+             jurisdictionType, hearingLanguage and friends), which live here. Same silent-skip
+             consequence if it is missing. -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>criminal-court-public-model</artifactId>
+            <version>${coredomain.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-listing-schemas</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>uk.gov.moj.cpp.listing</groupId>
+                                    <artifactId>listing-json</artifactId>
+                                    <version>${listing.json.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/listing-schemas</outputDirectory>
+                                    <includes>json/**/*.json</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- pluginManagement configures the execution, but a module must still declare the
+                 plugin for it to run - otherwise generation silently does nothing. -->
+            <plugin>
+                <groupId>uk.gov.justice.generators</groupId>
+                <artifactId>pojo-generation-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>event-pojo-generation</id>
+                        <configuration>
+                            <!-- Only the hearing model and its closure. Generating the whole of
+                                 listing-json would emit 174 classes that progression-domain-message
+                                 already produces, putting the same fully-qualified names in two jars
+                                 with subtly different shapes. -->
+                            <includes>
+                                <include>applicantRespondent.json</include>
+                                <include>committingCourt.json</include>
+                                <include>court-centre-details.json</include>
+                                <include>courtApplication.json</include>
+                                <include>defendant.json</include>
+                                <include>hearing-day.json</include>
+                                <include>hearing.json</include>
+                                <include>judicial-role-type.json</include>
+                                <include>judicial-role.json</include>
+                                <include>laaReference.json</include>
+                                <include>linked-case.json</include>
+                                <include>listedCase.json</include>
+                                <include>listing-definitions.json</include>
+                                <include>marker.json</include>
+                                <include>non-default-day.json</include>
+                                <include>offence.json</include>
+                                <include>reportingRestriction.json</include>
+                                <include>seedingHearing.json</include>
+                                <include>statement-of-offence.json</include>
+                            </includes>
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                                <plugins>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin</plugin>
+                                </plugins>
+                                <typeMappings>
+                                    <!-- Exactly the mappings progression-domain-message uses. The
+                                         listing schemas reference listing-definitions.json#/definitions/localDate,
+                                         and mapping that to LocalDate would render dates the rest of
+                                         progression reads as String, so it is deliberately absent. -->
+                                    <typeMapping>
+                                        <name>uuid</name>
+                                        <type>reference</type>
+                                        <implementation>java.util.UUID</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>datePattern</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>format</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>format</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                </typeMappings>
+                            </generatorProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

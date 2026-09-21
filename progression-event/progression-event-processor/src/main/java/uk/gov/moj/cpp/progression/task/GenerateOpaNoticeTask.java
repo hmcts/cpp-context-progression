@@ -13,9 +13,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutableTask;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

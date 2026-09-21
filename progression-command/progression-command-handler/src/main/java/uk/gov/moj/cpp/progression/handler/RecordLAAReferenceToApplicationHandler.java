@@ -16,9 +16,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;

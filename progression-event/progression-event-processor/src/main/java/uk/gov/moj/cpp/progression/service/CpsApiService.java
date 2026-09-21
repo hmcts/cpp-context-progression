@@ -10,8 +10,8 @@ import uk.gov.justice.services.common.configuration.Value;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;

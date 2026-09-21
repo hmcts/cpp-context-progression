@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserDetails;
 
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

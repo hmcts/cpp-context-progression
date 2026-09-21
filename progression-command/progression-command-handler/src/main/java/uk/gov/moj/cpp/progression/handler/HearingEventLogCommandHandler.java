@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

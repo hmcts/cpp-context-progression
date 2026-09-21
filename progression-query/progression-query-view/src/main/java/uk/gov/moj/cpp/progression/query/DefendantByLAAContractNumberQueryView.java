@@ -7,10 +7,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import java.util.List;
 import java.util.Objects;
 

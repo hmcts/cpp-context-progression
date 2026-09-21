@@ -19,8 +19,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 import java.util.UUID;
 import java.util.stream.Stream;

@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

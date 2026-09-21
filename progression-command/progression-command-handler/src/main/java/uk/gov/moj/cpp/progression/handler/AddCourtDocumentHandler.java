@@ -23,8 +23,8 @@ import uk.gov.moj.cpp.progression.handler.courts.document.DocumentTypeAccessProv
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.stream.Stream;
 
 

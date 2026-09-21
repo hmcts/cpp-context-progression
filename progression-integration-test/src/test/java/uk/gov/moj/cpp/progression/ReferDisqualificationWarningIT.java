@@ -38,7 +38,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;

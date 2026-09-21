@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>17.104.300-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -28,8 +28,8 @@
             <artifactId>rest-client-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -41,12 +41,6 @@
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-domain-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.moj.cpp.material</groupId>
-            <artifactId>material-client</artifactId>
-            <version>${material.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
@@ -65,8 +59,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

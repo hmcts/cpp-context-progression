@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.domain.constant.FeeType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CivilFeeRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

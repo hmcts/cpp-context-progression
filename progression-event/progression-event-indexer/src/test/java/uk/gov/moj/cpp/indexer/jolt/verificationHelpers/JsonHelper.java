@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 public class JsonHelper {
     public static JsonObject readJson(final String filePath) {

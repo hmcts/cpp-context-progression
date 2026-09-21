@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <!--
+      RESOURCE_LOCAL unit over in-memory H2, used by the repository tests so that every migrated
+      JPQL query is actually executed against a database rather than mocked. That is the only thing
+      that catches a mistranslated query before the integration tests.
+    -->
+    <persistence-unit name="progression-test-persistence-unit" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jar-file>../classes</jar-file>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:h2:mem:progressiontest;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+            <property name="hibernate.archive.autodetection" value="class"/>
+            <property name="hibernate.jdbc.time_zone" value="UTC"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <!--
+              Deliberately no hibernate.jpa.compliance.query here. Setting it would look like it
+              worked and would not: HibernateTestEntityManagerProvider passes
+              hibernate.jpa.compliance.query=true to createEntityManagerFactory as an override, and
+              an override beats this file. A test needing production's setting has to build its own
+              EntityManagerFactory - see CourtRegisterRequestRepositoryTest.
+            -->
+        </properties>
+    </persistence-unit>
+
+</persistence>

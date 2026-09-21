@@ -36,9 +36,9 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;

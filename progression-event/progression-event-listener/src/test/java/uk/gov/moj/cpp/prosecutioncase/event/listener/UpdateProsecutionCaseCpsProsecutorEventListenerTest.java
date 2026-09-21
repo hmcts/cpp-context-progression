@@ -36,8 +36,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProse
 import java.util.Collections;
 import java.util.UUID;
 import static java.util.Arrays.asList;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

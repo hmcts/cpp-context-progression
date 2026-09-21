@@ -11,8 +11,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.Optional.empty;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;

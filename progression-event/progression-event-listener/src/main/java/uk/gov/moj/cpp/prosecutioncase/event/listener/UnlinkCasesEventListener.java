@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.progression.events.UnlinkedCases;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseLinkSplitMergeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseLinkSplitMergeRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.UUID;

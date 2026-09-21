@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -40,7 +40,7 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;

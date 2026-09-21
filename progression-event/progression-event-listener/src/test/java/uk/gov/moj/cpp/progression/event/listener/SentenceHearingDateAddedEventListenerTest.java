@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

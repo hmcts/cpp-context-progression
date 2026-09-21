@@ -6,7 +6,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

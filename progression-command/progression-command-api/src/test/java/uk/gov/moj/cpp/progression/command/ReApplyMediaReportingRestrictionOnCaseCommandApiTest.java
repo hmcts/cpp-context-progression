@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;

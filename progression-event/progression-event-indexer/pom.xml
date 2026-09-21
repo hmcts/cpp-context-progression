@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.104.300-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-indexer</artifactId>
     <packaging>war</packaging>
@@ -18,8 +18,8 @@
             <artifactId>event-indexer</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -224,8 +224,8 @@
                         <version>${cpp.framework.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>javax</groupId>
-                        <artifactId>javaee-api</artifactId>
+                        <groupId>jakarta.platform</groupId>
+                        <artifactId>jakarta.jakartaee-api</artifactId>
                         <version>${javaee-api.version}</version>
                         <scope>runtime</scope>
                     </dependency>

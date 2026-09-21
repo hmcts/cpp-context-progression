@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.view.service.exception.ProgressionServiceException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Objects;
 

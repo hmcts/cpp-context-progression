@@ -19,7 +19,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.MaterialClient;
 import uk.gov.moj.cpp.progression.processor.exceptions.MaterialNotFoundException;
 
 import java.io.IOException;
@@ -28,11 +28,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

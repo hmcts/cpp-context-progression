@@ -20,9 +20,9 @@ import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;

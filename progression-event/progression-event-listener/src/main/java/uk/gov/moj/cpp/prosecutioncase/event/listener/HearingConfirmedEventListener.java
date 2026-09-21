@@ -10,7 +10,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import java.io.StringReader;
 import java.util.Comparator;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
 import uk.gov.justice.hearing.courts.Initiate;
@@ -28,8 +28,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonReader;
+import jakarta.inject.Inject;
+import jakarta.json.JsonReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,7 +5,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.BaseMatcher;

@@ -7,9 +7,9 @@ import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.services.core.annotation.Handles;

@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicatio
 import java.nio.charset.Charset;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;

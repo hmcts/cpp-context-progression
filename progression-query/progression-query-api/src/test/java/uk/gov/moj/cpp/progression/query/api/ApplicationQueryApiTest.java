@@ -34,9 +34,9 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

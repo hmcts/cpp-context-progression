@@ -69,6 +69,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +78,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1203,7 +1204,7 @@ public class HearingAtAGlanceServiceTest {
 
         assertThat(trialHearings.size(), is(1));
         assertThat(trialHearings.get(0).getTrialDefendants().size(), is(2));
-        assertThat(trialHearings.get(0).getHearingDay(), is(ZonedDateTime.of(2019, 07, 16, 0, 0, 0, 0, ZoneId.of("UTC"))));
+        assertThat(trialHearings.get(0).getHearingDay(), is(ZonedDateTime.of(2019, 07, 16, 0, 0, 0, 0, ZoneOffset.UTC)));
         assertThat(trialHearings.get(0).getTrialDefendants().get(0).getFullName(), is("John Williams"));
 
     }

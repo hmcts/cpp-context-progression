@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
@@ -20,19 +21,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * DB integration tests for {@link CourtDocumentEntity} class
  */
 
-
-@RunWith(CdiTestRunner.class)
 public class CourtDocumentRepositoryTest {
+
+    /**
+     * These queries use aliased fetch joins, an HQL extension that the shared
+     * HibernateTestEntityManagerProvider rejects because it forces strict JPA query compliance on.
+     * The deployed persistence unit runs with compliance off, so the tests use an EntityManager
+     * configured the same way - otherwise they would be testing a configuration we never deploy.
+     */
+    private ProductionLikeEntityManagerProvider entityManagerProvider;
 
     private static final String PAYLOAD = "{\"removed\":false,\"courtDocumentId\":\"7aa6d35d-70c3-45fb-a05e-bfedbce16412\",\"name\":\"SJP Notice\",\"documentTypeId\":\"0bb7b276-9dc0-4af2-83b9-f4acef0c7898\",\"documentTypeDescription\":\"SJP Notice\",\"mimeType\":\"pdf\",\"isRemoved\":false}";
     private static final UUID CASE_ID = UUID.randomUUID();
@@ -45,12 +50,25 @@ public class CourtDocumentRepositoryTest {
     private static final UUID DEFENDANT_ID_1 = UUID.randomUUID();
     private static final UUID DEFENDANT_ID_2 = UUID.randomUUID();
 
-
-    @Inject
     private CourtDocumentRepository repository;
 
-    @Inject
     private CourtDocumentIndexRepository courtDocumentIndexRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        entityManagerProvider = new ProductionLikeEntityManagerProvider("courtdocumenttest");
+        repository = new CourtDocumentRepository();
+        entityManagerProvider.injectEntityManagerInto(repository);
+        courtDocumentIndexRepository = new CourtDocumentIndexRepository();
+        entityManagerProvider.injectEntityManagerInto(courtDocumentIndexRepository);
+        entityManagerProvider.beginTransaction();
+    }
+
+    @AfterEach
+    void rollBackAndClose() {
+        entityManagerProvider.rollbackTransaction();
+        entityManagerProvider.close();
+    }
 
     @Test
     public void shouldFindOptionalBy() throws Exception {
@@ -106,7 +124,6 @@ public class CourtDocumentRepositoryTest {
         assertEquals(false, actual.get(0).getContainsFinancialMeans());
     }
 
-
     @Test
     public void testFindByApplicationIdOrderingSeqNumASC() {
 
@@ -128,7 +145,6 @@ public class CourtDocumentRepositoryTest {
         assertEquals(HEARING_ID, actual.get(0).getIndices().iterator().next().getHearingId());
         assertEquals(DocumentCategoryEnum.NOW_DOCUMENT.toString(), actual.get(0).getIndices().iterator().next().getDocumentCategory());
     }
-
 
     @Test
     public void testFindByCaseIdAndDefendantid() {
@@ -179,7 +195,6 @@ public class CourtDocumentRepositoryTest {
                 nullValue());
     }
 
-
     @Test
     public void shouldTestFindByCourtDocumentsWhenOneOfTheRecordIsNotRemoved() {
         final UUID caseId5 = UUID.randomUUID();
@@ -195,6 +210,51 @@ public class CourtDocumentRepositoryTest {
         assertEquals(1, actual.get(0).getIndices().size());
         assertEquals(CASE_ID_1, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
         assertEquals(DEFENDANT_ID_1, actual.get(0).getIndices().iterator().next().getDefendantId());
+    }
+
+    /**
+     * Case-level documents are the ones indexed against a case with no defendant, so a document that
+     * does name a defendant is what proves the "defendantId is null" half of the query.
+     */
+    @Test
+    public void shouldFindOnlyTheCaseLevelDocumentsForTheGivenCases() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID caseLevelDocumentId = UUID.randomUUID();
+        repository.saveAndFlush(courtDocumentIndexedBy(caseLevelDocumentId, caseId, null));
+        repository.saveAndFlush(courtDocumentIndexedBy(UUID.randomUUID(), caseId, DEFENDANT_ID_1));
+
+        final List<CourtDocumentEntity> actual =
+                repository.findByProsecutionCaseIdsAndDefendantIsNull(singletonList(caseId));
+
+        assertEquals(1, actual.size());
+        assertEquals(caseLevelDocumentId, actual.get(0).getCourtDocumentId());
+        assertNull(actual.get(0).getIndices().iterator().next().getDefendantId());
+    }
+
+    @Test
+    public void shouldReturnNothingWhenTheCaseHasNoCaseLevelDocument() {
+        final UUID caseId = UUID.randomUUID();
+        repository.saveAndFlush(courtDocumentIndexedBy(UUID.randomUUID(), caseId, DEFENDANT_ID_1));
+
+        assertEquals(0, repository.findByProsecutionCaseIdsAndDefendantIsNull(singletonList(caseId)).size());
+    }
+
+    private CourtDocumentEntity courtDocumentIndexedBy(final UUID courtDocumentId, final UUID prosecutionCaseId,
+                                                       final UUID defendantId) {
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(false);
+        courtDocumentEntity.setPayload(PAYLOAD);
+
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity.setId(UUID.randomUUID());
+        courtDocumentIndexEntity.setProsecutionCaseId(prosecutionCaseId);
+        courtDocumentIndexEntity.setDefendantId(defendantId);
+        courtDocumentIndexEntity.setCourtDocument(courtDocumentEntity);
+
+        courtDocumentEntity.setIndices(new HashSet<>());
+        courtDocumentEntity.getIndices().add(courtDocumentIndexEntity);
+        return courtDocumentEntity;
     }
 
     private CourtDocumentEntity getProsecutionCase(Boolean financialMeansFlag) {
@@ -248,7 +308,6 @@ public class CourtDocumentRepositoryTest {
         courtDocumentEntity.setSeqNum(seqNumber);
         return courtDocumentEntity;
     }
-
 
     private CourtDocumentEntity getProsecutionCaseForNowDocument(Boolean financialMeansFlag) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
@@ -310,7 +369,7 @@ public class CourtDocumentRepositoryTest {
         DEFENDANT_DOCUMENT("DEFENDANT_DOCUMENT"),
         CASE_DOCUMENT("CASE_DOCUMENT");
 
-        private String description;
+    private String description;
 
         private DocumentCategoryEnum(final String description) {
             this.description = description;

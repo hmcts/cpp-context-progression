@@ -7,8 +7,8 @@ import uk.gov.moj.cpp.progression.domain.pojo.Prompt;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.List;
 import java.util.stream.Collectors;
 

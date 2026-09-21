@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexC
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class CourtDocumentIndexService {
 

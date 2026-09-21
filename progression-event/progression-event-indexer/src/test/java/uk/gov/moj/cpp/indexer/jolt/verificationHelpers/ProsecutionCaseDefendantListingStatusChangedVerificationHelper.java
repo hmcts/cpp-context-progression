@@ -8,10 +8,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

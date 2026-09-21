@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.util.UUID;
 import org.slf4j.Logger;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

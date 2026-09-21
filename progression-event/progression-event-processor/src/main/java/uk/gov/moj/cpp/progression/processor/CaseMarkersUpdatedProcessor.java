@@ -6,7 +6,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
 import java.util.UUID;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -16,7 +16,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

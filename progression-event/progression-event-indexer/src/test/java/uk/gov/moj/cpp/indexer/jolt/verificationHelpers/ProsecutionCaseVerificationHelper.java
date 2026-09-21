@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.addressLines;
 
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 

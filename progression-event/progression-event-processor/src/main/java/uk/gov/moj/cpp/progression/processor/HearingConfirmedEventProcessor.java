@@ -47,6 +47,7 @@ import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -88,8 +89,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -135,6 +136,9 @@ public class HearingConfirmedEventProcessor {
     private Logger LOGGER;
     @Inject
     ProgressionService progressionService;
+
+    @Inject
+    private UtcClock utcClock;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -313,8 +317,20 @@ public class HearingConfirmedEventProcessor {
         }
     }
 
+    /**
+     * Today according to UTC, which is the zone this service runs in.
+     *
+     * These dates used to come from LocalDate.now(), which resolves against the JVM default zone.
+     * That agrees with UTC on the server but not on a developer machine in another zone: on a BST
+     * machine between midnight and 01:00 it reports tomorrow, which was enough to make a hearing
+     * sitting today be judged past-dated and its notification suppressed.
+     */
+    private LocalDate todayUtc() {
+        return utcClock.now().toLocalDate();
+    }
+
     private boolean isPastDatedHearing(final ZonedDateTime hearingStartDateTime) {
-        return hearingStartDateTime.toLocalDate().isBefore(LocalDate.now());
+        return hearingStartDateTime.toLocalDate().isBefore(todayUtc());
     }
 
     private void sendNotification(final JsonEnvelope jsonEnvelope,
@@ -367,7 +383,7 @@ public class HearingConfirmedEventProcessor {
                             if (eligible) {
                                 final String defendantName = getDefendantName(defendant);
                                 final OnlinePleaNotification onlinePleaNotification = OnlinePleaNotification.onlinePleaNotification()
-                                        .withPostingDate(LocalDate.now())
+                                        .withPostingDate(todayUtc())
                                         .withAddress(getDefendantAddress(defendant))
                                         .withCaseReferenceNumber(caseReference)
                                         .withOnlinePleaValidUntil(calculateOnlinePleaValidUntilDate(defendant))
@@ -391,7 +407,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     private LocalDate calculateOnlinePleaValidUntilDate(final Defendant defendant) {
-        return calendarService.plusWorkingDays(LocalDate.now(), getValidityPeriodOfOnlinePleaInDays(defendant), requester);
+        return calendarService.plusWorkingDays(todayUtc(), getValidityPeriodOfOnlinePleaInDays(defendant), requester);
     }
 
     private static String getHearingTime(final LocalDateTime hearingDate) {
@@ -484,7 +500,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     private long getNumberOfWorkingDaysBetweenTodayAndHearingDay(final LocalDate hearingDay) {
-        final LocalDate today = LocalDate.now();
+        final LocalDate today = todayUtc();
         final Predicate<LocalDate> isWeekend = day -> day.getDayOfWeek() == DayOfWeek.SATURDAY || day.getDayOfWeek() == DayOfWeek.SUNDAY;
         final long daysBetween = ChronoUnit.DAYS.between(today, hearingDay);
         return Stream.iterate(today, date -> date.plusDays(1))

@@ -139,7 +139,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;

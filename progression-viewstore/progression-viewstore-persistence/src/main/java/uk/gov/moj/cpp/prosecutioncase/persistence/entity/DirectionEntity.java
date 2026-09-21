@@ -2,18 +2,18 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
 import uk.gov.moj.cpp.progression.domain.pojo.Status;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static javax.persistence.EnumType.STRING;
+import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "direction")

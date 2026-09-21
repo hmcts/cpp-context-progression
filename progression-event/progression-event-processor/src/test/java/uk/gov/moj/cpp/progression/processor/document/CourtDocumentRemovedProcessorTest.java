@@ -13,11 +13,11 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.MaterialClient;
 
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

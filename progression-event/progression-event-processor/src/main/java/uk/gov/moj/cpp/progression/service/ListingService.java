@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -23,9 +24,9 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.Offence;
+import uk.gov.justice.listing.events.Hearing;
+import uk.gov.justice.listing.events.ListedCase;
+import uk.gov.justice.listing.events.Offence;
 import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
@@ -38,8 +39,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ public class ListingService {
         ofNullable(hearingListed).ifPresent(hearing ->
                 ofNullable(hearing.getListedCases()).ifPresent(listedCases -> {
                     final List<ListedCase> shadowListedCases = listedCases.stream()
-                            .filter(listedCase -> ofNullable(listedCase.getShadowListed()).isPresent() && listedCase.getShadowListed().orElse(Boolean.FALSE))
+                            .filter(listedCase -> TRUE.equals(listedCase.getShadowListed()))
                             .collect(Collectors.toList());
 
                     shadowListedCases.stream()
@@ -131,7 +132,7 @@ public class ListingService {
                             .forEach(listedCase ->
                                     listedCase.getDefendants().stream().forEach(defendant ->
                                             defendant.getOffences().stream()
-                                                    .filter(offence -> ofNullable(offence.getShadowListed()).isPresent() && offence.getShadowListed().orElse(Boolean.FALSE))
+                                                    .filter(offence -> TRUE.equals(offence.getShadowListed()))
                                                     .forEach(offence -> shadowListedOffenceIds.add(offence.getId()))));
                 })
         );
@@ -190,16 +191,16 @@ public class ListingService {
                     lc.getDefendants().forEach(ld -> {
                         final Offence offence = ld.getOffences()
                                 .stream()
-                                .filter(lo -> nonNull(lo.getCommittingCourt()) && lo.getCommittingCourt().isPresent())
+                                .filter(lo -> nonNull(lo.getCommittingCourt()))
                                 .findFirst()
                                 .orElse(null);
 
-                        if (nonNull(offence) && offence.getCommittingCourt().isPresent()) {
-                            final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = offence.getCommittingCourt().get();
+                        if (nonNull(offence) && nonNull(offence.getCommittingCourt())) {
+                            final uk.gov.justice.listing.events.CommittingCourt committingCourt = offence.getCommittingCourt();
                             builder.withCourtCentreId(committingCourt.getCourtCentreId())
                                     .withCourtHouseType(JurisdictionType.MAGISTRATES)
-                                    .withCourtHouseShortName(committingCourt.getCourtHouseShortName().get())
-                                    .withCourtHouseCode(committingCourt.getCourtHouseCode().get())
+                                    .withCourtHouseShortName(committingCourt.getCourtHouseShortName())
+                                    .withCourtHouseCode(committingCourt.getCourtHouseCode())
                                     .withCourtHouseName(committingCourt.getCourtHouseName());
                         }
 

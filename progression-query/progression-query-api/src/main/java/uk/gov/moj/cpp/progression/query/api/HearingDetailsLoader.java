@@ -7,8 +7,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 
 import static java.util.UUID.fromString;

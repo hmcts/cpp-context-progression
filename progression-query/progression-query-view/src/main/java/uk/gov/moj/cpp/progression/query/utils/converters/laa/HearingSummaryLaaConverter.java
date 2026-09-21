@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 @SuppressWarnings("squid:S1168")
 public class HearingSummaryLaaConverter extends LAAConverter {
 

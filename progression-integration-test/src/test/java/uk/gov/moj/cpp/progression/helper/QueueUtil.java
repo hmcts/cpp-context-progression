@@ -8,7 +8,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
 import static java.util.Optional.ofNullable;

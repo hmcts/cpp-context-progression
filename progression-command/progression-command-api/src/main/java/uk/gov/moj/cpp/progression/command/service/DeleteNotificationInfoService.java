@@ -5,8 +5,8 @@ import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.Not
 
 import java.time.ZonedDateTime;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @Transactional
 public class DeleteNotificationInfoService {

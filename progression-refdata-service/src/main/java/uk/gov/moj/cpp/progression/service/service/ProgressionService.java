@@ -15,9 +15,9 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

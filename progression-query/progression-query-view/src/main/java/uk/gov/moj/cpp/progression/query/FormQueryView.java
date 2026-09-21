@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class FormQueryView {

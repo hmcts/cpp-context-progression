@@ -4,7 +4,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Objects.nonNull;

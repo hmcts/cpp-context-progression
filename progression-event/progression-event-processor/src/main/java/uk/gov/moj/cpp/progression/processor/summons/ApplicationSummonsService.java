@@ -38,7 +38,7 @@ import uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class ApplicationSummonsService {
 

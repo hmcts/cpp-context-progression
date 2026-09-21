@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 /**

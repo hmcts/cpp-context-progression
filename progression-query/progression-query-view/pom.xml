@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>17.104.300-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-view</artifactId>
     <packaging>jar</packaging>
@@ -17,9 +17,23 @@
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>rest-client-generator-plugin</artifactId>
                 <dependencies>
+                    <!-- raml-parser needs the pre-EE9 javax.xml.bind.SchemaOutputResolver on the
+                         plugin classpath; without it the generator dies with NoClassDefFoundError -->
                     <dependency>
-                        <groupId>javax</groupId>
-                        <artifactId>javaee-api</artifactId>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${jakarta.xml.bind-api.raml.version}</version>
+                    </dependency>
+                    <!-- Jakarta JSON-P provider for the generator's build-time JSON processing;
+                         without it the plugin fails with "Provider org.eclipse.parsson.JsonProviderImpl not found" -->
+                    <dependency>
+                        <groupId>org.eclipse.parsson</groupId>
+                        <artifactId>parsson</artifactId>
+                        <version>${parsson.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.platform</groupId>
+                        <artifactId>jakarta.jakartaee-api</artifactId>
                         <version>${javaee-api.version}</version>
                     </dependency>
                     <dependency>
@@ -114,8 +128,8 @@
             <version>${coredomain.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -154,8 +168,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

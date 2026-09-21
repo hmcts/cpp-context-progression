@@ -4,7 +4,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.io.IOException;
 
 import static java.util.UUID.randomUUID;

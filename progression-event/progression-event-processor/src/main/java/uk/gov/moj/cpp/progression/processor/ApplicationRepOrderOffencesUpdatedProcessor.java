@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.deltaspike.core.util.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.progression.courts.OffencesForDefendantChanged.offencesForDefendantChanged;
 import static uk.gov.justice.progression.courts.UpdatedOffences.updatedOffences;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -41,8 +41,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;

@@ -31,7 +31,7 @@ import uk.gov.moj.cpp.progression.util.FileUtil;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;

@@ -15,8 +15,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 
 import static java.util.Objects.nonNull;

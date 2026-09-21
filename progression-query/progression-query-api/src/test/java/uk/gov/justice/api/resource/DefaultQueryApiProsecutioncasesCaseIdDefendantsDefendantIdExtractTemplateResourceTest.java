@@ -39,10 +39,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Disabled;

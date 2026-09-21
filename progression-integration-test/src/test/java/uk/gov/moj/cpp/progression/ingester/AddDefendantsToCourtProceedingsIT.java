@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
@@ -50,10 +51,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import junit.framework.TestCase;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -94,7 +94,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         final Optional<JsonObject> prosecussionCaseResponseJsonObject = findBy(caseMatcher);
 
-        TestCase.assertTrue(prosecussionCaseResponseJsonObject.isPresent());
+        assertTrue(prosecussionCaseResponseJsonObject.isPresent());
 
         final JsonObject outputCase = prosecussionCaseResponseJsonObject.get();
         final JsonObject prosecutionCase = documentContextProsecutionCase(caseUrn);
@@ -124,7 +124,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                     return of(jsonObject);
                 }
             } catch (final IOException e) {
-                TestCase.fail();
+                fail();
             }
             return empty();
         });

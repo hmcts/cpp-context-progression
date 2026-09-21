@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

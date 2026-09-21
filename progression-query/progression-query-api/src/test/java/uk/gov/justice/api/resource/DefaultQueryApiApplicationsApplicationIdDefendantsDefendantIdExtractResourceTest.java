@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.inject.Named;
-import javax.json.JsonObject;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;

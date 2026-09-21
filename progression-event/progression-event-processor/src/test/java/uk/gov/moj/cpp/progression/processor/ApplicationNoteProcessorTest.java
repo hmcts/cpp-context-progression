@@ -27,7 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

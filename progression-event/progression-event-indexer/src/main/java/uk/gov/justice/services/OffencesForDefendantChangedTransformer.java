@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.bazaarvoice.jolt.Transform;
 import com.fasterxml.jackson.databind.ObjectMapper;

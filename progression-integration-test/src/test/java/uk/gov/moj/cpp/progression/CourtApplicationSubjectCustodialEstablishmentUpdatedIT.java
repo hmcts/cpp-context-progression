@@ -9,7 +9,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -54,8 +54,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matcher;

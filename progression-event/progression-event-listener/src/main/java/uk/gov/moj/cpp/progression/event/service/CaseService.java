@@ -16,8 +16,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 /**
  * @deprecated This is deprecated for Release 2.4

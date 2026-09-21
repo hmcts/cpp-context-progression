@@ -31,7 +31,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.MaterialClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -39,8 +39,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.MatcherAssert;

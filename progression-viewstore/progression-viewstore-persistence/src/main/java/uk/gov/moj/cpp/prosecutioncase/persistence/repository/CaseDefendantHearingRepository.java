@@ -1,56 +1,115 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Modifying;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface CaseDefendantHearingRepository extends EntityRepository<CaseDefendantHearingEntity, CaseDefendantHearingKey> {
+@ApplicationScoped
+public class CaseDefendantHearingRepository
+        extends JpaEntityRepository<CaseDefendantHearingEntity, CaseDefendantHearingKey> {
 
-    @Query("from CaseDefendantHearingEntity entity where entity.id.caseId in (:caseId)")
-    public abstract List<CaseDefendantHearingEntity> findByCaseId(@QueryParam("caseId") UUID caseId);
+    private static final String CASE_ID = "caseId";
+    private static final String HEARING_ID = "hearingId";
+    private static final String DEFENDANT_ID = "defendantId";
 
-    @Query("from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId)")
-    public abstract List<CaseDefendantHearingEntity> findByHearingId(@QueryParam("hearingId") UUID hearingId);
+    private static final String SELECT_ENTITY = "select entity from CaseDefendantHearingEntity entity";
+    private static final String DELETE_ENTITY = "delete from CaseDefendantHearingEntity entity";
 
-    @Query("from CaseDefendantHearingEntity entity where entity.id.defendantId in (:defendantId)")
-    public abstract List<CaseDefendantHearingEntity> findByDefendantId(@QueryParam("defendantId") UUID defendantId);
+    private static final String WHERE_CASE_ID = " where entity.id.caseId in (:caseId)";
+    private static final String WHERE_HEARING_ID = " where entity.id.hearingId in (:hearingId)";
+    private static final String WHERE_DEFENDANT_ID = " where entity.id.defendantId in (:defendantId)";
+    private static final String AND_CASE_ID = " and entity.id.caseId in (:caseId)";
+    private static final String AND_DEFENDANT_ID = " and entity.id.defendantId in (:defendantId)";
 
-    @Query("from CaseDefendantHearingEntity entity where entity.id.defendantId in (:defendantId) and entity.id.caseId in (:caseId)")
-    public abstract List<CaseDefendantHearingEntity> findByCaseIdAndDefendantId(@QueryParam("caseId") UUID caseId,
-                                                                                @QueryParam("defendantId") UUID defendantId);
+    public CaseDefendantHearingRepository() {
+        super(CaseDefendantHearingEntity.class);
+    }
 
-    @Query("from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.caseId in (:caseId) and entity.id.defendantId in (:defendantId)")
-    public abstract CaseDefendantHearingEntity findByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
-                                                                                      @QueryParam("caseId") UUID caseId,
-                                                                                      @QueryParam("defendantId") UUID defendantId);
-    @Modifying
-    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.caseId in (:caseId) and entity.id.defendantId in (:defendantId)")
-    void removeByHearingIdAndCaseIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
-                                                  @QueryParam("caseId") UUID caseId,
-                                                  @QueryParam("defendantId") UUID defendantId);
+    @Override
+    protected CaseDefendantHearingKey idOf(final CaseDefendantHearingEntity entity) {
+        return entity.getId();
+    }
 
-    @Modifying
-    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.caseId in (:caseId)")
-    void removeByHearingIdAndCaseId(@QueryParam("hearingId") UUID hearingId,
-                                    @QueryParam("caseId") UUID caseId);
+    public List<CaseDefendantHearingEntity> findByCaseId(final UUID caseId) {
+        return entityManager.createQuery(
+                        SELECT_ENTITY + WHERE_CASE_ID,
+                        CaseDefendantHearingEntity.class)
+                .setParameter(CASE_ID, caseId)
+                .getResultList();
+    }
 
-    @Modifying
-    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId) and entity.id.defendantId in (:defendantId)")
-    void removeByHearingIdAndDefendantId(@QueryParam("hearingId") UUID hearingId,
-                                    @QueryParam("defendantId") UUID defendantId);
+    public List<CaseDefendantHearingEntity> findByHearingId(final UUID hearingId) {
+        return entityManager.createQuery(
+                        SELECT_ENTITY + WHERE_HEARING_ID,
+                        CaseDefendantHearingEntity.class)
+                .setParameter(HEARING_ID, hearingId)
+                .getResultList();
+    }
 
-    @Modifying
-    @Query("delete from CaseDefendantHearingEntity entity where entity.id.hearingId in (:hearingId)" )
-    void removeByHearingId(@QueryParam("hearingId") UUID hearingId);
+    public List<CaseDefendantHearingEntity> findByDefendantId(final UUID defendantId) {
+        return entityManager.createQuery(
+                        SELECT_ENTITY + WHERE_DEFENDANT_ID,
+                        CaseDefendantHearingEntity.class)
+                .setParameter(DEFENDANT_ID, defendantId)
+                .getResultList();
+    }
 
+    public List<CaseDefendantHearingEntity> findByCaseIdAndDefendantId(final UUID caseId, final UUID defendantId) {
+        return entityManager.createQuery(
+                        SELECT_ENTITY + WHERE_DEFENDANT_ID + AND_CASE_ID,
+                        CaseDefendantHearingEntity.class)
+                .setParameter(DEFENDANT_ID, defendantId)
+                .setParameter(CASE_ID, caseId)
+                .getResultList();
+    }
 
+    /**
+     * Single result: throws NoResultException when absent, as the DeltaSpike @Query did by default.
+     */
+    public CaseDefendantHearingEntity findByHearingIdAndCaseIdAndDefendantId(final UUID hearingId,
+                                                                            final UUID caseId,
+                                                                            final UUID defendantId) {
+        return entityManager.createQuery(
+                        SELECT_ENTITY + WHERE_HEARING_ID + AND_CASE_ID + AND_DEFENDANT_ID,
+                        CaseDefendantHearingEntity.class)
+                .setParameter(HEARING_ID, hearingId)
+                .setParameter(CASE_ID, caseId)
+                .setParameter(DEFENDANT_ID, defendantId)
+                .getSingleResult();
+    }
+
+    public void removeByHearingIdAndCaseIdAndDefendantId(final UUID hearingId,
+                                                         final UUID caseId,
+                                                         final UUID defendantId) {
+        entityManager.createQuery(DELETE_ENTITY + WHERE_HEARING_ID + AND_CASE_ID + AND_DEFENDANT_ID)
+                .setParameter(HEARING_ID, hearingId)
+                .setParameter(CASE_ID, caseId)
+                .setParameter(DEFENDANT_ID, defendantId)
+                .executeUpdate();
+    }
+
+    public void removeByHearingIdAndCaseId(final UUID hearingId, final UUID caseId) {
+        entityManager.createQuery(DELETE_ENTITY + WHERE_HEARING_ID + AND_CASE_ID)
+                .setParameter(HEARING_ID, hearingId)
+                .setParameter(CASE_ID, caseId)
+                .executeUpdate();
+    }
+
+    public void removeByHearingIdAndDefendantId(final UUID hearingId, final UUID defendantId) {
+        entityManager.createQuery(DELETE_ENTITY + WHERE_HEARING_ID + AND_DEFENDANT_ID)
+                .setParameter(HEARING_ID, hearingId)
+                .setParameter(DEFENDANT_ID, defendantId)
+                .executeUpdate();
+    }
+
+    public void removeByHearingId(final UUID hearingId) {
+        entityManager.createQuery(DELETE_ENTITY + WHERE_HEARING_ID)
+                .setParameter(HEARING_ID, hearingId)
+                .executeUpdate();
+    }
 }

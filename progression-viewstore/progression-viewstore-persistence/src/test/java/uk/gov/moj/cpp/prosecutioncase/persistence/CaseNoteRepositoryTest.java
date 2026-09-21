@@ -5,25 +5,31 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
 
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
 public class CaseNoteRepositoryTest {
 
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
+
     private static final UUID CASE_ID = randomUUID();
-    @Inject
     private CaseNoteRepository caseNoteRepository;
 
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        caseNoteRepository = new CaseNoteRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseNoteRepository);
+    }
 
     @Test
     public void shouldSaveAndReadACaseNoteAndOrderByCreatedDateDesc() {

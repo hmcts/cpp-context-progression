@@ -9,9 +9,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociation
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.persistence.NoResultException;
 import java.util.UUID;
 
 import static java.util.UUID.fromString;

@@ -3,11 +3,12 @@
   <parent>
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.104.300-SNAPSHOT</version>
+    <version>25.104.0-M1-SNAPSHOT</version>
   </parent>
   <artifactId>progression-domain</artifactId>
   <packaging>pom</packaging>
   <modules>
+        <module>progression-domain-listing</module>
   	<module>progression-domain-message</module>
   	<module>progression-domain-common</module>
     <module>progression-domain-aggregate</module>

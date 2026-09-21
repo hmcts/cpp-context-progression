@@ -8,7 +8,7 @@ import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
 import java.io.ByteArrayInputStream;
 import java.util.Map;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;
 import org.junit.jupiter.api.Test;

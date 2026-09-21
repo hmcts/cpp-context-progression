@@ -14,7 +14,7 @@ import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValid
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.junit.jupiter.api.BeforeEach;

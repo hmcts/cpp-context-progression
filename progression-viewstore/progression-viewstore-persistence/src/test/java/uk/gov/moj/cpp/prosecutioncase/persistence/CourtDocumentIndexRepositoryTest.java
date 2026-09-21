@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
@@ -18,23 +19,31 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
 public class CourtDocumentIndexRepositoryTest  {
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
+
     private CourtDocumentIndexRepository courtDocumentIndexRepository;
 
-    @Inject
     private CourtDocumentRepository courtDocumentRepository;
 
-    @Inject
     private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        courtDocumentIndexRepository = new CourtDocumentIndexRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(courtDocumentIndexRepository);
+        courtDocumentRepository = new CourtDocumentRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(courtDocumentRepository);
+        courtDocumentMaterialRepository = new CourtDocumentMaterialRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(courtDocumentMaterialRepository);
+    }
 
     @Test
     public void shouldFindByCaseIdDefendantIdAndCourtDocumentId() {
@@ -57,7 +66,6 @@ public class CourtDocumentIndexRepositoryTest  {
         assertEquals(caseId, byCaseIdDefendantIdAndCaseDocumentId.getProsecutionCaseId());
         assertEquals(defendantId, byCaseIdDefendantIdAndCaseDocumentId.getDefendantId());
 
-
         final Set<CourtDocumentIndexEntity> courtDocumentIndexEntities = courtDocumentEntity.getIndices();
         courtDocumentIndexEntities.remove(courtDocumentIndexRepository.findByCaseIdDefendantIdAndCaseDocumentId(caseId, defendantId, courtDocumentId));
         courtDocumentEntity.setIndices(courtDocumentIndexEntities);
@@ -67,7 +75,6 @@ public class CourtDocumentIndexRepositoryTest  {
         assertNull(byCaseIdDefendantIdAndCaseDocumentId);
 
     }
-
 
     @Test
     public void shouldFindByMaterialId() {
@@ -169,5 +176,27 @@ public class CourtDocumentIndexRepositoryTest  {
         final CourtDocumentIndexEntity courtDocumentIndexEntity = getCourtDocumentIndexEntity(courtDocumentEntity, caseId, defendantId, courtDocumentId);
         courtDocumentIndexEntity.setHearingId(hearingId);
         return courtDocumentIndexEntity;
+    }
+
+    /**
+     * Saves through the index repository itself rather than letting the court document cascade,
+     * which is the only way its own idOf runs - and idOf decides whether save() persists or merges.
+     */
+    @Test
+    public void shouldSaveAnIndexDirectlyAndReadItBack() {
+        final UUID courtDocumentId = UUID.randomUUID();
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(false);
+        courtDocumentEntity.setPayload("{}");
+        courtDocumentRepository.saveAndFlush(courtDocumentEntity);
+
+        final CourtDocumentIndexEntity index =
+                getCourtDocumentIndexEntity(courtDocumentEntity, UUID.randomUUID(), UUID.randomUUID(), courtDocumentId);
+        final UUID indexId = UUID.randomUUID();
+        index.setId(indexId);
+        courtDocumentIndexRepository.saveAndFlush(index);
+
+        assertThat(courtDocumentIndexRepository.findBy(indexId).getId(), is(indexId));
     }
 }

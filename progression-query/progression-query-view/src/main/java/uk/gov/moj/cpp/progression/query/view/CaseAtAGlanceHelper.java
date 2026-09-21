@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.collections.CollectionUtils;
 

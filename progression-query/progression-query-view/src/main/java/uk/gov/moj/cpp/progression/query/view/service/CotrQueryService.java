@@ -39,10 +39,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.google.common.base.Strings;
 import org.slf4j.Logger;

@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
 /**
  * @deprecated
  *

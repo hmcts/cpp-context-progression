@@ -24,10 +24,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

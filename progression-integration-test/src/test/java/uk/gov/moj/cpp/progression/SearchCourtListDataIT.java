@@ -13,7 +13,7 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupListingCourtListPa
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupListingQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupReferenceDataQueryCourtCenterDataByCourtNameStub;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

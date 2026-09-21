@@ -15,9 +15,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantPartialMat
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -85,18 +85,18 @@ public class DefendantPartialMatchQueryView {
         if (StringUtils.equalsIgnoreCase(sortField, DEFENDANT_NAME)) {
             if (StringUtils.equalsIgnoreCase(sortOrder, DESC)) {
                 LOGGER.info("findAll is called order by DefendantName with DESC");
-                return defendantPartialMatchRepository.findAllOrderByDefendantNameDesc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByDefendantNameDesc(pageSize, page - 1);
             } else {
                 LOGGER.info("findAll is called order by DefendantName with ASC");
-                return defendantPartialMatchRepository.findAllOrderByDefendantNameAsc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByDefendantNameAsc(pageSize, page - 1);
             }
         } else {
             if (StringUtils.equalsIgnoreCase(sortOrder, ASC)) {
                 LOGGER.info("findAll is called order by CaseReceivedDate with ASC");
-                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc(pageSize, page - 1);
             } else {
                 LOGGER.info("findAll is called order by CaseReceivedDate with DESC");
-                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc(pageSize, page - 1);
             }
         }
     }

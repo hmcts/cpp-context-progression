@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

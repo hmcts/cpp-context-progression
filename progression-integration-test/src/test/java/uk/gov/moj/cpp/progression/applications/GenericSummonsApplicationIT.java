@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.applications;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static io.smallrye.common.constraint.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -46,9 +46,9 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.util.List;
 import java.util.Optional;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.path.json.JsonPath;

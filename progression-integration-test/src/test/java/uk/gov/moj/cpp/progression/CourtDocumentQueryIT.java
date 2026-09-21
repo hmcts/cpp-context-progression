@@ -5,9 +5,9 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import io.restassured.response.Response;

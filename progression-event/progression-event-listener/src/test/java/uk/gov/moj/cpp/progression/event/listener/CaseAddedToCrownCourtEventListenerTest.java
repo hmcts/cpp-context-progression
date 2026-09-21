@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

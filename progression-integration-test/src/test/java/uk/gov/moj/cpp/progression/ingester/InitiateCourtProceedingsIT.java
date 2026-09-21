@@ -5,7 +5,7 @@ import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.anyOf;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.DocumentContext;

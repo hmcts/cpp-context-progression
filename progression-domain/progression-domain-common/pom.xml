@@ -3,10 +3,26 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain</artifactId>
-        <version>17.104.300-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <artifactId>progression-domain-common</artifactId>
     <dependencies>
+        <!-- Needed by the progression-owned material client that replaced the material-client
+             jar: JAX-RS and CDI from the platform API, the CJSCPPUID header constant from the
+             framework, and slf4j for the call logging the original did. -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -19,13 +35,37 @@
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- For MaterialClientTest, which mocks the JAX-RS chain to pin the requests the
+             decoupled client builds. Versions come from the platform BOM, as elsewhere. -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- A JAX-RS implementation, for the RuntimeDelegate only. MaterialClient.removeMaterial
+             builds a jakarta.ws.rs Entity, and Entity.entity(body, "type/subtype") parses the media
+             type through RuntimeDelegate - which the API jar alone does not provide, so the call
+             dies with "Provider for jakarta.ws.rs.ext.RuntimeDelegate cannot be found". RESTEasy is
+             what the application runs on in WildFly and what progression-event-processor already
+             declares, so it is the implementation the test should exercise. Test scope: nothing in
+             this module's main code needs it. -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>

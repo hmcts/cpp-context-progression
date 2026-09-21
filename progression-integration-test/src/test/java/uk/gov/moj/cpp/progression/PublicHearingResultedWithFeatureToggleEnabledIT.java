@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import com.jayway.jsonpath.ReadContext;
@@ -33,7 +33,7 @@ import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Matcher;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.jboss.resteasy.util.HttpResponseCodes.SC_ACCEPTED;
+import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

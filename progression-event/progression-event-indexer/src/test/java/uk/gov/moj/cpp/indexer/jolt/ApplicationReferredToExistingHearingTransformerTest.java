@@ -13,7 +13,7 @@ import uk.gov.justice.json.jolt.JoltTransformer;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.junit.jupiter.api.BeforeEach;

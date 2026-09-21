@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;

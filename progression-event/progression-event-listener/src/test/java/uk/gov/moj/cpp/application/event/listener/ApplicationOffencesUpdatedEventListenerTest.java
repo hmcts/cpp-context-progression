@@ -40,7 +40,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicatio
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.List;
 import java.util.UUID;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;

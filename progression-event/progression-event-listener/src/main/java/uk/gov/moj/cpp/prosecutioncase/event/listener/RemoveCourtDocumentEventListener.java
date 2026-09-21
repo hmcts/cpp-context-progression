@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 

@@ -1,30 +1,58 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Modifying;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
-
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
-public interface CourtApplicationRepository extends EntityRepository<CourtApplicationEntity, UUID> {
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class CourtApplicationRepository extends JpaEntityRepository<CourtApplicationEntity, UUID> {
+
+    public CourtApplicationRepository() {
+        super(CourtApplicationEntity.class);
+    }
 
     @Override
-    CourtApplicationEntity findBy(UUID id);
+    protected UUID idOf(final CourtApplicationEntity entity) {
+        return entity.getApplicationId();
+    }
 
-    CourtApplicationEntity findByApplicationId(UUID id);
+    /**
+     * Throws NoResultException when there is no match, which is what the DeltaSpike derived finder
+     * did (its default is SingleResultType.JPA). ApplicationQueryView catches that exception and
+     * relies on it - returning null here instead would turn a handled "not found" into an NPE.
+     */
+    public CourtApplicationEntity findByApplicationId(final UUID applicationId) {
+        return entityManager.createQuery(
+                        "select entity from CourtApplicationEntity entity where entity.applicationId = :applicationId",
+                        CourtApplicationEntity.class)
+                .setParameter("applicationId", applicationId)
+                .getSingleResult();
+    }
 
-    List<CourtApplicationEntity> findByParentApplicationId(UUID id);
+    public List<CourtApplicationEntity> findByParentApplicationId(final UUID parentApplicationId) {
+        return entityManager.createQuery(
+                        "select entity from CourtApplicationEntity entity where entity.parentApplicationId = :parentApplicationId",
+                        CourtApplicationEntity.class)
+                .setParameter("parentApplicationId", parentApplicationId)
+                .getResultList();
+    }
 
-    @Modifying
-    @Query("delete from CourtApplicationEntity entity where entity.applicationId = :applicationId")
-    void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
+    public void removeByApplicationId(final UUID applicationId) {
+        entityManager.createQuery(
+                        "delete from CourtApplicationEntity entity where entity.applicationId = :applicationId")
+                .setParameter("applicationId", applicationId)
+                .executeUpdate();
+    }
 
-    @Query("from CourtApplicationEntity entity where entity.applicationId in (:applicationIds)")
-    List<CourtApplicationEntity> findByApplicationIds(@QueryParam("applicationIds") List<UUID> applicationIds);
+    public List<CourtApplicationEntity> findByApplicationIds(final List<UUID> applicationIds) {
+        return entityManager.createQuery(
+                        "select entity from CourtApplicationEntity entity where entity.applicationId in (:applicationIds)",
+                        CourtApplicationEntity.class)
+                .setParameter("applicationIds", applicationIds)
+                .getResultList();
+    }
 }

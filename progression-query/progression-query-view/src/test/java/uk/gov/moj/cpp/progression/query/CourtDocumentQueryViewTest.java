@@ -96,12 +96,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.persistence.NoResultException;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.persistence.NoResultException;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -704,9 +704,9 @@ public class CourtDocumentQueryViewTest {
         assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
         assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
         assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders1"));
-        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z"));
         assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders0"));
-        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z"));
 
         //query second page
         jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, DATE, ASC, null));
@@ -718,9 +718,9 @@ public class CourtDocumentQueryViewTest {
         assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
         assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
         assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders3"));
-        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z"));
         assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders2"));
-        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z"));
 
     }
 
@@ -760,9 +760,9 @@ public class CourtDocumentQueryViewTest {
         assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
         assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
         assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders2"));
-        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z"));
         assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders3"));
-        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z"));
 
         //query second page
         jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, DATE, DESC, null));
@@ -774,9 +774,9 @@ public class CourtDocumentQueryViewTest {
         assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
         assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
         assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders0"));
-        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z"));
         assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders1"));
-        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z"));
 
     }
 

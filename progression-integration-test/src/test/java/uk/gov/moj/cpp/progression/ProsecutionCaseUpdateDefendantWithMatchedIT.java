@@ -5,7 +5,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;

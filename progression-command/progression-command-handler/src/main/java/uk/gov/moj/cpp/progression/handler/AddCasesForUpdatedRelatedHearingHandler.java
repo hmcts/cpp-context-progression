@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

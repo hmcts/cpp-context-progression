@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 /**
  * @deprecated
  *

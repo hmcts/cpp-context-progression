@@ -10,11 +10,11 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.MaterialClient;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -26,8 +26,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProse
 
 import java.util.UUID;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

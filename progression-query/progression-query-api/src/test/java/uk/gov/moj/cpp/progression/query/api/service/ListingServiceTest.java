@@ -24,7 +24,7 @@ import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

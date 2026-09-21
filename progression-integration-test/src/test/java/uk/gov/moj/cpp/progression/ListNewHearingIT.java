@@ -55,10 +55,10 @@ import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;

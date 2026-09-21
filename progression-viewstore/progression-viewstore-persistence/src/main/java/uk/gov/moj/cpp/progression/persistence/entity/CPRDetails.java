@@ -3,11 +3,11 @@ package uk.gov.moj.cpp.progression.persistence.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 /**
  * @deprecated
  *

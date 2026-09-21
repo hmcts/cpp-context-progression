@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

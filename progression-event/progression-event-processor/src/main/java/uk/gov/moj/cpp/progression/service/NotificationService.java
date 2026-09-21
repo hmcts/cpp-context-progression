@@ -46,7 +46,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
 import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
@@ -77,12 +77,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

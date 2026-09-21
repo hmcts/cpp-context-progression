@@ -12,7 +12,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantRequestEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantRequestRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantRequestEventListener {

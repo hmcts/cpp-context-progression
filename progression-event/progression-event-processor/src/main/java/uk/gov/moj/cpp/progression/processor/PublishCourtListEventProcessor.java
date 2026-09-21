@@ -25,7 +25,7 @@ import uk.gov.moj.cpp.progression.service.payloads.PublishCourtListPayload.Publi
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

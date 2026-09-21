@@ -162,7 +162,6 @@ public class SearchProsecutionCaseTest {
 
     }
 
-
     @Test
     public void testExpectedSearchResponse() {
         final SearchProsecutionCaseEntity searchProsecutionCaseDetails
@@ -293,7 +292,6 @@ public class SearchProsecutionCaseTest {
         assertEquals(expectedSearchTarget, searchProsecutionCaseDetails.getSearchTarget());
 
     }
-
 
     static class ApplicationArbitraryValues {
         final static UUID APPLICATION_ID = UUID.randomUUID();

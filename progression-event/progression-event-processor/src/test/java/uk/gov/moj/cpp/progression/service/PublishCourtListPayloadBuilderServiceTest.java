@@ -44,8 +44,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;

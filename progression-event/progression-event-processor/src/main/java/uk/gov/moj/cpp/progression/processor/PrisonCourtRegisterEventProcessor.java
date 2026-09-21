@@ -31,11 +31,11 @@ import uk.gov.moj.cpp.progression.exception.HearingResultsDocumentSubscriptionPC
 import static java.lang.Integer.parseInt;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

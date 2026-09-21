@@ -21,7 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

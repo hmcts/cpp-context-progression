@@ -2,8 +2,8 @@ package uk.gov.justice.api.resource;
 
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.status;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -18,19 +18,19 @@ import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.logging.HttpTraceLoggerHelper;
 import uk.gov.justice.services.messaging.logging.TraceLogger;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.InputStream;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonValue;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
 
 @Adapter(Component.QUERY_API)
 public class DefaultQueryApiMaterialNowsMaterialIdContentResource implements QueryApiMaterialNowsMaterialIdContentResource {

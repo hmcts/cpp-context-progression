@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class UsersGroupServiceTest {
+
+    private static final String USER_ID = "userId";
+    private static final String ORGANISATION_ID = "organisationId";
+    private static final String ORGANISATION_NAME = "organisationName";
+    private static final String ORGANISATION_TYPE = "organisationType";
+    private static final String LEGAL_ORGANISATION = "LEGAL_ORGANISATION";
+    private static final String ORGANISATION_DISPLAY_NAME = "Greg Associates Ltd.";
+    private static final String ADDRESS_LINE_1 = "Legal House";
+    private static final String PHONE_NUMBER = "080012345678";
 
     @Mock
     private SystemUserProvider systemUserProvider;
@@ -65,8 +75,8 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
-        JsonObject responseJsonObject = createObjectBuilder().add("organisationId",organisationId.toString()).build();
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), "userId").build();
+        JsonObject responseJsonObject = createObjectBuilder().add(ORGANISATION_ID, organisationId.toString()).build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), USER_ID).build();
 
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
             final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
@@ -80,7 +90,7 @@ public class UsersGroupServiceTest {
 
         //Then
         verify(requester).requestAsAdmin(any(JsonEnvelope.class), eq(JsonObject.class));
-        assertThat(result.payload().getString("organisationId"), is(organisationId.toString()));
+        assertThat(result.payload().getString(ORGANISATION_ID), is(organisationId.toString()));
 
     }
 
@@ -90,7 +100,7 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), USER_ID).build();
         JsonObject userGroupsResponse = getHMCTSGroups();
         final JsonEnvelope response = envelopeFrom(metadataBuilder.build(), userGroupsResponse);
         when(requester.request(any())).thenReturn(response);
@@ -113,7 +123,7 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), USER_ID).build();
         JsonObject userGroupsResponse = getNoGroups();
         final JsonEnvelope response = envelopeFrom(metadataBuilder.build(), userGroupsResponse);
         when(requester.request(any())).thenReturn(response);
@@ -129,7 +139,7 @@ public class UsersGroupServiceTest {
     public void shouldThrowIllegalArgumentExceptionForMissingGroups() {
         final UUID userId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), USER_ID).build();
         final JsonEnvelope response = envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
         when(requester.request(any())).thenReturn(response);
@@ -141,7 +151,7 @@ public class UsersGroupServiceTest {
 
         assertThrows(NullPointerException.class, () -> {
             final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
-            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
+            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, USER_ID).build();
 
             final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
             when(requester.requestAsAdmin(any())).thenReturn(response);
@@ -154,7 +164,7 @@ public class UsersGroupServiceTest {
 
         assertThrows(NullPointerException.class, () -> {
             final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
-            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
+            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, USER_ID).build();
 
             final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
             when(requester.request(any())).thenReturn(response);
@@ -192,7 +202,7 @@ public class UsersGroupServiceTest {
         //Given
         final UUID userId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), USER_ID).build();
         final String laaContractNumber = "LAA1234";
 
         //When
@@ -205,6 +215,129 @@ public class UsersGroupServiceTest {
         assertEquals(null, result.getType());
     }
 
+
+    /**
+     * The response that jammed the queue. users-groups answered with a contract number and nothing
+     * else, and the three fields read without a default - id, name and type - threw a
+     * NullPointerException inside the command handler. That rolled the transaction back, Artemis
+     * redelivered the same message, and the cycle repeated: the command never completed and its
+     * public event was never raised. Reaching the assertions at all is most of the point of this
+     * test.
+     */
+    @Test
+    public void shouldReportTheOrganisationAsNotFoundWhenUsersGroupsAnswersWithoutIdNameOrType() {
+        final UUID userId = randomUUID();
+        final String laaContractNumber = "LAA3456";
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), USER_ID).build();
+
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            return envelopeFrom(envelope.metadata(), createObjectBuilder()
+                    .add("laaContractNumber", laaContractNumber)
+                    .add("addressLine1", ADDRESS_LINE_1)
+                    .build());
+        });
+
+        final OrganisationDetails result = usersGroupService.getOrganisationDetailsForLAAContractNumber(query, laaContractNumber);
+
+        assertThat(result.getId(), is(nullValue()));
+        assertThat(result.getName(), is(nullValue()));
+        assertThat(result.getType(), is(nullValue()));
+        assertThat(result.getLaaContractNumber(), is(nullValue()));
+        assertThat(result.getAddressLine1(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldMapEveryFieldWhenUsersGroupsAnswersWithACompleteOrganisation() {
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final String laaContractNumber = "LAA3456";
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), USER_ID).build();
+
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            return envelopeFrom(envelope.metadata(), createObjectBuilder()
+                    .add(ORGANISATION_ID, organisationId.toString())
+                    .add(ORGANISATION_NAME, ORGANISATION_DISPLAY_NAME)
+                    .add(ORGANISATION_TYPE, LEGAL_ORGANISATION)
+                    .add("laaContractNumber", laaContractNumber)
+                    .add("addressLine1", ADDRESS_LINE_1)
+                    .add("addressLine2", "15 Sewell Street")
+                    .add("addressLine3", "Hammersmith")
+                    .add("addressLine4", "London")
+                    .add("addressPostcode", "SE14 2AB")
+                    .add("phoneNumber", PHONE_NUMBER)
+                    .add("email", "joe@example.com")
+                    .build());
+        });
+
+        final OrganisationDetails result = usersGroupService.getOrganisationDetailsForLAAContractNumber(query, laaContractNumber);
+
+        assertThat(result.getId(), is(organisationId));
+        assertThat(result.getName(), is(ORGANISATION_DISPLAY_NAME));
+        assertThat(result.getType(), is(LEGAL_ORGANISATION));
+        assertThat(result.getLaaContractNumber(), is(laaContractNumber));
+        assertThat(result.getAddressLine1(), is(ADDRESS_LINE_1));
+        assertThat(result.getAddressLine2(), is("15 Sewell Street"));
+        assertThat(result.getAddressLine3(), is("Hammersmith"));
+        assertThat(result.getAddressLine4(), is("London"));
+        assertThat(result.getAddressPostcode(), is("SE14 2AB"));
+        assertThat(result.getPhoneNumber(), is(PHONE_NUMBER));
+        assertThat(result.getEmail(), is("joe@example.com"));
+    }
+
+    /**
+     * The phone number used to be read from the organisationName field, so every organisation
+     * looked up by id came back carrying its own name as its telephone number.
+     */
+    @Test
+    public void shouldTakeThePhoneNumberFromThePhoneNumberFieldWhenLookingUpByOrganisationId() {
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), USER_ID).build();
+
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            return envelopeFrom(envelope.metadata(), createObjectBuilder()
+                    .add(ORGANISATION_ID, organisationId.toString())
+                    .add(ORGANISATION_NAME, ORGANISATION_DISPLAY_NAME)
+                    .add(ORGANISATION_TYPE, LEGAL_ORGANISATION)
+                    .add("phoneNumber", PHONE_NUMBER)
+                    .build());
+        });
+
+        final OrganisationDetails result = usersGroupService.getOrganisationDetailsForOrganisationId(query, organisationId.toString());
+
+        assertThat(result.getPhoneNumber(), is(PHONE_NUMBER));
+        assertThat(result.getName(), is(ORGANISATION_DISPLAY_NAME));
+    }
+
+    /**
+     * The by-id lookup read addressLine1, addressLine4 and addressPostcode without a default too,
+     * so an organisation recorded without a full address threw rather than being returned.
+     */
+    @Test
+    public void shouldReturnTheOrganisationWhenLookedUpByIdWithoutAFullAddress() {
+        final UUID userId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), USER_ID).build();
+
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            return envelopeFrom(envelope.metadata(), createObjectBuilder()
+                    .add(ORGANISATION_ID, organisationId.toString())
+                    .add(ORGANISATION_NAME, ORGANISATION_DISPLAY_NAME)
+                    .add(ORGANISATION_TYPE, LEGAL_ORGANISATION)
+                    .build());
+        });
+
+        final OrganisationDetails result = usersGroupService.getOrganisationDetailsForOrganisationId(query, organisationId.toString());
+
+        assertThat(result.getId(), is(organisationId));
+        assertThat(result.getName(), is(ORGANISATION_DISPLAY_NAME));
+        assertThat(result.getAddressLine1(), is(nullValue()));
+        assertThat(result.getAddressPostcode(), is(nullValue()));
+    }
 
     private MetadataBuilder getMetadataBuilder(final UUID userId) {
         final MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder()

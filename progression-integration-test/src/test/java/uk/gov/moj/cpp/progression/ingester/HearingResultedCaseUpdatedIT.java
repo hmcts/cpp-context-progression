@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.ingester;
 import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;

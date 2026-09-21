@@ -82,10 +82,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;

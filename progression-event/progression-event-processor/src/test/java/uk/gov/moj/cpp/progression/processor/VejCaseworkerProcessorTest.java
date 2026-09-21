@@ -26,10 +26,10 @@ import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 import java.io.IOException;
 import java.io.StringReader;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;

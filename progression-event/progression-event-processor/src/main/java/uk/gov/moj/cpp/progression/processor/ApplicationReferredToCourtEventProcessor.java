@@ -13,8 +13,8 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.Objects;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;

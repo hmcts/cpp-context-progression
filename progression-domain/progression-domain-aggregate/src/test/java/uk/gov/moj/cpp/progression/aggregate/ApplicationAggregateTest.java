@@ -120,7 +120,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;

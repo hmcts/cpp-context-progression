@@ -19,8 +19,8 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.util.Map;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

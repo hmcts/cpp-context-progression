@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -65,7 +66,7 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandSuccessfullyWhenLAAEventFoundForResultingDateWithEmptyHearingID() throws Exception {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(UTC);
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
 
@@ -97,7 +98,7 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenNoMatchingEventFoundWithResultingDate() {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(UTC);
         Stream<JsonEnvelope> eventLogStream = Stream.<JsonEnvelope>builder()
                 .build();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -119,7 +120,7 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenMatchingEventFoundForResultingDateWithHearingID() throws IOException {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(UTC);
 
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
@@ -146,7 +147,7 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenMoreThanOneMatchingEventsFound() throws IOException {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(UTC);
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
 

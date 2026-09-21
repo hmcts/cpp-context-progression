@@ -75,8 +75,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 @ExtendWith(MockitoExtension.class)
 public class AddDefendantsToCourtProceedingsHandlerTest {

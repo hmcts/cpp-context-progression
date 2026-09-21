@@ -8,7 +8,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * The command API is being added only to be called from BDF, to result hearing entries from the progression view store.

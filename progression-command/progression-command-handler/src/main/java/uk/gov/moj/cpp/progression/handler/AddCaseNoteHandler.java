@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserDetails;
 
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

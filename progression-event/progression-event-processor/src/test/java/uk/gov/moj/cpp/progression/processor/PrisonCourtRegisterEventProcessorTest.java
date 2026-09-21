@@ -38,8 +38,8 @@ import uk.gov.moj.cpp.progression.service.amp.dto.PcrEventPayload;
 import uk.gov.moj.cpp.progression.service.amp.mappers.HearingResultsDocumentSubscriptionPCRMapper;
 import uk.gov.moj.cpp.progression.service.amp.service.HearingResultsDocumentSubscriptionClient;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;

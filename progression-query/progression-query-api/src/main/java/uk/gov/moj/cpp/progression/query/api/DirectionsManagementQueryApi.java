@@ -20,10 +20,10 @@ import uk.gov.moj.cpp.progression.query.view.service.transformer.WitnessPetTrans
 import uk.gov.moj.cpp.progression.query.view.service.transformer.WitnessPtphTransformer;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

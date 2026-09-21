@@ -51,7 +51,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationNotifyEventProcessorTest {

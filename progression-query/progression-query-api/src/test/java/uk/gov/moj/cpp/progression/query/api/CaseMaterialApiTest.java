@@ -9,8 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.MaterialBulkQueryView;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;

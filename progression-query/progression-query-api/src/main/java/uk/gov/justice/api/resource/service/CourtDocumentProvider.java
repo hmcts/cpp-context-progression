@@ -10,9 +10,9 @@ import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.providers.Provider;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObjectBuilder;
 
 
 @Provider

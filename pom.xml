@@ -5,13 +5,13 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.104.4</version>
+        <version>25.104.2</version>
     </parent>
 
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.104.300-SNAPSHOT</version>
+    <version>25.104.0-M1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -34,6 +34,26 @@
     </modules>
 
     <properties>
+        <!--
+          OVERRIDE: this belongs in cpp-platform-maven-common-bom, which declares
+          <lombok.version>1.18.26</lombok.version> (see its pom.xml, currently line 128, feeding the
+          org.projectlombok:lombok entry in dependencyManagement). It is overridden here rather than
+          fixed centrally to avoid re-releasing the platform chain and rebuilding every context image
+          for one property. Replace that value with 1.18.40 and delete this override when the BOM is
+          next released. cpp-platform-maven-parent-pom carries the same stale number as
+          org.projectlombok.version, which cpp-context-work-management-proxy reads.
+
+          Why it cannot stay at 1.18.26: that release predates Java 25 and generates nothing at all
+          on this JDK - no getters, no builders, no log field - without reporting an error. The
+          module then fails with well over a hundred "cannot find symbol" errors that point nowhere
+          near the cause. 1.18.40 is the version sjp and work-management-proxy already override to on
+          this same stack.
+
+          Lombok also has to be listed in the compiler plugin's annotationProcessorPaths: since JDK
+          23 a provided-scope dependency alone is not discovered and is silently never invoked. See
+          progression-event-processor, the only module here that uses it.
+        -->
+        <lombok.version>1.18.40</lombok.version>
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec
         </sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
@@ -64,15 +84,18 @@
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
         <material.version>17.0.75</material.version>
-        <json-transformer.version>1.0.6</json-transformer.version>
+        <json-transformer.version>25.104.3</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.104.137</referencedata.version>
-        <listing.version>17.104.8</listing.version>
-        <hearing.version>17.104.197</hearing.version>
+        <listing.version>17.104.10</listing.version>
+        <!-- listing's schemas-only contract artifact, used to generate progression's own
+             view of the listing hearing model instead of compiling against listing-common. -->
+        <listing.json.version>17.104.8</listing.json.version>
+        <hearing.version>17.104.200</hearing.version>
         <usersgroups.version>17.104.50</usersgroups.version>
         <defence.version>17.104.102</defence.version>
         <referencedata.offence.version>17.104.52</referencedata.offence.version>
-        <coredomain.version>17.104.4</coredomain.version>
+        <coredomain.version>25.104.2</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.104.116</results.version>
@@ -94,7 +117,6 @@
         <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
         <jmeter-lightning-maven-plugin>0.1.1</jmeter-lightning-maven-plugin>
         <powermock-reflect>2.0.2</powermock-reflect>
-        <byte-buddy.version>1.12.22</byte-buddy.version>
         <podam>7.1.0.RELEASE</podam>
         <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
         <liquibase.core.version>3.6.1</liquibase.core.version>
@@ -173,20 +195,10 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>uk.gov.moj.cpp.listing</groupId>
-                <artifactId>listing-common</artifactId>
-                <version>${listing.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${httpmime.version}</version>
                 <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${byte-buddy.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.javafaker</groupId>

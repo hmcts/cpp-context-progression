@@ -21,7 +21,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.Metadata;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;

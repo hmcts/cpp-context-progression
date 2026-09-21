@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.applications.applicationHelper;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.CoreMatchers.allOf;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;

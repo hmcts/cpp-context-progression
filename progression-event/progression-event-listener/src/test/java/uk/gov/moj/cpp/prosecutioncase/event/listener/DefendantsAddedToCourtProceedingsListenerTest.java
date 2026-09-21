@@ -27,7 +27,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;

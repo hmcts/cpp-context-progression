@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 
 public class MatchedDefendantCriteria {

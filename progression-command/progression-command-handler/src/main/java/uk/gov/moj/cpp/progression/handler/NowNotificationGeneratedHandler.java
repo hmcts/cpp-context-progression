@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.progression.command.RecordNowNotificationGenerated;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class NowNotificationGeneratedHandler {

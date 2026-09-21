@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,12 +24,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.deltaspike.data.api.QueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -66,9 +66,6 @@ public class DefendantPartialMatchQueryViewTest {
 
     @Mock
     private DefendantPartialMatchRepository defendantPartialMatchRepository;
-
-    @Mock
-    private QueryResult<DefendantPartialMatchEntity> queryResult;
 
     @Captor
     private ArgumentCaptor<Integer> page;
@@ -162,19 +159,18 @@ public class DefendantPartialMatchQueryViewTest {
 
 
         when(defendantPartialMatchRepository.count()).thenReturn(expectedCount);
-        if(shouldStub) {
-            when(queryResult.toPage(page.capture())).thenReturn(queryResult);
-            when(queryResult.withPageSize(size.capture())).thenReturn(queryResult);
-            when(queryResult.getResultList()).thenReturn(getDefendantPartialMatchData(defendantId));
-        }
         if (StringUtils.equals(invokedMethodName, "findAllOrderByDefendantNameAsc")) {
-            when(defendantPartialMatchRepository.findAllOrderByDefendantNameAsc()).thenReturn(queryResult);
+            when(defendantPartialMatchRepository.findAllOrderByDefendantNameAsc(size.capture(), page.capture()))
+                    .thenReturn(getDefendantPartialMatchData(defendantId));
         } else if (StringUtils.equals(invokedMethodName, "findAllOrderByDefendantNameDesc")) {
-            when(defendantPartialMatchRepository.findAllOrderByDefendantNameDesc()).thenReturn(queryResult);
+            when(defendantPartialMatchRepository.findAllOrderByDefendantNameDesc(size.capture(), page.capture()))
+                    .thenReturn(getDefendantPartialMatchData(defendantId));
         } else if (StringUtils.equals(invokedMethodName, "findAllOrderByCaseReceivedDatetimeAsc")) {
-            when(defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc()).thenReturn(queryResult);
+            when(defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc(size.capture(), page.capture()))
+                    .thenReturn(getDefendantPartialMatchData(defendantId));
         } else if (StringUtils.equals(invokedMethodName, "findAllOrderByCaseReceivedDatetimeDesc")) {
-            when(defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc()).thenReturn(queryResult);
+            when(defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc(size.capture(), page.capture()))
+                    .thenReturn(getDefendantPartialMatchData(defendantId));
         }
     }
 
@@ -186,10 +182,10 @@ public class DefendantPartialMatchQueryViewTest {
     }
 
     private void verifyRepository(final String invokedMethodName) {
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeAsc"))).findAllOrderByCaseReceivedDatetimeAsc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeDesc"))).findAllOrderByCaseReceivedDatetimeDesc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameAsc"))).findAllOrderByDefendantNameAsc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameDesc"))).findAllOrderByDefendantNameDesc();
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeAsc"))).findAllOrderByCaseReceivedDatetimeAsc(anyInt(), anyInt());
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeDesc"))).findAllOrderByCaseReceivedDatetimeDesc(anyInt(), anyInt());
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameAsc"))).findAllOrderByDefendantNameAsc(anyInt(), anyInt());
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameDesc"))).findAllOrderByDefendantNameDesc(anyInt(), anyInt());
     }
 
     private List<DefendantPartialMatchEntity> getDefendantPartialMatchData(UUID defendantId) {

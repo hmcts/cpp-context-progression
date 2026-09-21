@@ -5,8 +5,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

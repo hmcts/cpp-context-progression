@@ -42,7 +42,7 @@ import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;

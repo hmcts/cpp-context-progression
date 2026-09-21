@@ -5,7 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -79,7 +79,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
@@ -102,7 +102,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

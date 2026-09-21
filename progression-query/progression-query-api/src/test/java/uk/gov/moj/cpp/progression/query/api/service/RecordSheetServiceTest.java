@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

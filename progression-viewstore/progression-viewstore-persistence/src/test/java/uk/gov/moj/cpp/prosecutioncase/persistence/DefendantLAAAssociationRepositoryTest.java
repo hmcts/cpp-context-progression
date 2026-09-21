@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
@@ -11,15 +12,16 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssocia
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
 public class DefendantLAAAssociationRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final UUID DEFENDANT_ID = randomUUID();
 
@@ -27,12 +29,11 @@ public class DefendantLAAAssociationRepositoryTest {
 
     private static final String LAA_CONTRACT_NUMBER = "LAA1234";
 
-    @Inject
-    DefendantLAAAssociationRepository defendantLAAAssociationRepository;
-
-
-    @Before
+        private DefendantLAAAssociationRepository defendantLAAAssociationRepository;
+    @BeforeEach
     public void setUp() {
+        defendantLAAAssociationRepository = new DefendantLAAAssociationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantLAAAssociationRepository);
         final DefendantLAAAssociationEntity defendantLAAAssociationEntity = new DefendantLAAAssociationEntity();
         defendantLAAAssociationEntity.setDefendantLAAKey(new DefendantLAAKey(DEFENDANT_ID, LAA_CONTRACT_NUMBER));
         defendantLAAAssociationEntity.setAssociatedByLAA(false);

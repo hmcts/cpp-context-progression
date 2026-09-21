@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
 
 @Embeddable
 public class CourtDocumentTypeRBAC implements Serializable {

@@ -26,7 +26,7 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;

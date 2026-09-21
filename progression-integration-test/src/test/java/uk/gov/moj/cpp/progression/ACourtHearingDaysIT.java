@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.json.JSONException;

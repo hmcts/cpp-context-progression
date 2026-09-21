@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.progression.query.CaseNotesQueryView;
 import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
 import uk.gov.moj.cpp.progression.query.HearingQueryView;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.QUERY_API)
 public class ProgressionQueryApi {

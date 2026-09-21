@@ -8,7 +8,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;

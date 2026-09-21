@@ -7,7 +7,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;

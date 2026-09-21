@@ -11,8 +11,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
 public class CaseStatusApi {

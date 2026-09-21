@@ -12,7 +12,6 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;

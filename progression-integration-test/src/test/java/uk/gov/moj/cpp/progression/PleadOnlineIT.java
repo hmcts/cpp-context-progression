@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.path.json.JsonPath;
@@ -38,7 +38,7 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -81,7 +81,7 @@ public class PleadOnlineIT extends AbstractIT {
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnline.defendantId", is(defendantId.toString()))
         )));
-        Assert.assertNotNull(matchers);
+        Assertions.assertNotNull(matchers);
 
 
     }
@@ -111,7 +111,7 @@ public class PleadOnlineIT extends AbstractIT {
                 withJsonPath("$.pleadOnlinePcqVisited.urn", is("TFL12345467"))
         )));
 
-        Assert.assertNotNull(matchers);
+        Assertions.assertNotNull(matchers);
     }
 
 
@@ -137,7 +137,7 @@ public class PleadOnlineIT extends AbstractIT {
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnline.defendantId", is(defendantId.toString()))
         )));
-        Assert.assertNotNull(matchers);
+        Assertions.assertNotNull(matchers);
 
     }
 
@@ -164,7 +164,7 @@ public class PleadOnlineIT extends AbstractIT {
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnlinePcqVisited.defendantId", is(defendantId.toString()))
         )));
-        Assert.assertNotNull(matchers);
+        Assertions.assertNotNull(matchers);
 
     }
 

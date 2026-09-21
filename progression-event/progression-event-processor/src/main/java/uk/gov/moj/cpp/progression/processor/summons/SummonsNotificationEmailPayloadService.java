@@ -19,7 +19,7 @@ import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDocument;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingDateException;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;

@@ -1,14 +1,15 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
@@ -25,17 +26,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.NonUniqueResultException;
+import jakarta.persistence.NonUniqueResultException;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
 public class MatchDefendantCaseHearingRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final UUID PROSECUTION_CASE_ID = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
@@ -44,26 +46,31 @@ public class MatchDefendantCaseHearingRepositoryTest {
     private static final UUID NEW_HEARING_ID = randomUUID();
     private static final UUID RESULT_ID = randomUUID();
 
-    @Inject
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
-    @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
 
-    @Inject
     private HearingRepository hearingRepository;
 
-    @Before
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        matchDefendantCaseHearingRepository = new MatchDefendantCaseHearingRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(matchDefendantCaseHearingRepository);
+        prosecutionCaseRepository = new ProsecutionCaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(prosecutionCaseRepository);
+        hearingRepository = new HearingRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(hearingRepository);
+    }
+
+    @BeforeEach
     public void setup() {
         saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, HEARING_ID, RESULT_ID);
     }
-
-    @After
+    @AfterEach
     public void tearDown() {
         removeEntity(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
         removeEntity(NEW_HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
     }
-
 
     @Test
     public void shouldFindByProsecutionCaseIdAndDefendantId() {
@@ -163,6 +170,26 @@ public class MatchDefendantCaseHearingRepositoryTest {
         matchDefendantCaseHearingRepository.removeByHearingId(HEARING_ID);
         final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(PROSECUTION_CASE_ID, DEFENDANT_ID);
         assertThat(matchDefendantCaseHearingEntities.size(), is(0));
+    }
+
+    @Test
+    public void shouldFindEveryMatchForADefendantAcrossCasesAndHearings() {
+        final UUID defendantId = randomUUID();
+        saveEntity(defendantId, randomUUID(), randomUUID(), randomUUID(), randomUUID());
+        saveEntity(defendantId, randomUUID(), randomUUID(), randomUUID(), randomUUID());
+        saveEntity(randomUUID(), randomUUID(), randomUUID(), randomUUID(), randomUUID());
+
+        final List<MatchDefendantCaseHearingEntity> found =
+                matchDefendantCaseHearingRepository.findByDefendantId(defendantId);
+
+        assertThat(found.size(), is(2));
+        assertThat(found.stream().map(MatchDefendantCaseHearingEntity::getDefendantId).distinct().toList(),
+                is(List.of(defendantId)));
+    }
+
+    @Test
+    public void shouldReturnNothingWhenTheDefendantHasNoMatches() {
+        assertThat(matchDefendantCaseHearingRepository.findByDefendantId(randomUUID()).size(), is(0));
     }
 
     private void saveEntity(UUID defendantId, UUID masterDefendantId, UUID prosecutionCaseId, UUID hearingId, UUID resultId) {

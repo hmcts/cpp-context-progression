@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static io.smallrye.common.constraint.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

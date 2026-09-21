@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matchers;

@@ -1,18 +1,18 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 
 import uk.gov.justice.services.common.configuration.Value;
 
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;

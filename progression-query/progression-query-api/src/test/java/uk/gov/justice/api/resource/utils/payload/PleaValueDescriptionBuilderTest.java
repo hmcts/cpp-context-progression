@@ -14,10 +14,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseCpsProsecutorRe
 
 import java.util.Objects;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

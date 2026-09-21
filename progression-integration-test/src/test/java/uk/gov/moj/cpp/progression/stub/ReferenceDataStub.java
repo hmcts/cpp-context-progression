@@ -4,9 +4,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.collect.Lists;
 public class ReferenceDataStub {

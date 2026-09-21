@@ -9,7 +9,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 
 import java.util.List;
-import javax.json.JsonArrayBuilder;
+import jakarta.json.JsonArrayBuilder;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
@@ -21,9 +21,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

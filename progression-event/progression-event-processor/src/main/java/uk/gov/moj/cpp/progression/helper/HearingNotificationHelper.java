@@ -32,7 +32,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.CommunicationType;
 import uk.gov.moj.cpp.progression.NotificationInfoStatus;
 import uk.gov.moj.cpp.progression.RecipientType;
@@ -69,8 +69,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections.CollectionUtils;

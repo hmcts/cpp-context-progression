@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class PersonVerificationHelper {
 

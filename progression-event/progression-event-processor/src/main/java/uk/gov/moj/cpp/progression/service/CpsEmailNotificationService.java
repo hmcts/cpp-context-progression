@@ -19,7 +19,7 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.CaseVO;
@@ -37,8 +37,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

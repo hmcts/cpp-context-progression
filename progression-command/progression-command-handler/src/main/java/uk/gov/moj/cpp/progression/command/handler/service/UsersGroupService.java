@@ -23,9 +23,9 @@ import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import java.util.List;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,45 +146,91 @@ public class UsersGroupService {
     public OrganisationDetails getOrganisationDetailsForLAAContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
         final Envelope<JsonObject> jsonResultEnvelope = getOrganisationForLaaContractNumber(envelope, laaContractNumber);
 
-        if (isNull(jsonResultEnvelope) || emptyPayload(jsonResultEnvelope.payload())) {
-            return newBuilder().build();
+        return ofNullable(jsonResultEnvelope)
+                .map(Envelope::payload)
+                .filter(payload -> !emptyPayload(payload))
+                .map(payload -> organisationDetailsFrom(payload, laaContractNumber))
+                .orElseGet(() -> newBuilder().build());
+    }
+
+    /**
+     * An organisation with no id, name or type is not an organisation, and is reported as one that
+     * was not found.
+     *
+     * These three fields used to be read straight through getString, which throws when the field is
+     * absent. That turned a thin response from users-groups into a NullPointerException inside the
+     * command handler, which rolled the transaction back, and Artemis then redelivered the same
+     * message indefinitely - so a receive-representationOrder-for-application command never
+     * completed and its public event was never raised. A partial response from another service
+     * should not be able to jam the queue.
+     *
+     * Reporting it as not found is the path the callers are already written for: CaseAggregate logs
+     * "Organisation not set up for LAA Contract Number ..." and carries on, which is exactly what
+     * the empty-payload case above already returns.
+     *
+     * The remaining fields keep the absent-means-null reading they have always had. Giving them
+     * empty strings instead would be a wider behaviour change than this fix, and callers test them
+     * for null.
+     */
+    private OrganisationDetails organisationDetailsFrom(final JsonObject payload, final String laaContractNumber) {
+        final OrganisationDetails organisationDetails;
+
+        if (identifiesAnOrganisation(payload)) {
+            organisationDetails = newBuilder()
+                    .withLaaContractNumber(payload.getString(LAA_CONTRACT_NUMBER, null))
+                    .withPhoneNumber(payload.getString(PHONE_NUMBER, null))
+                    .withName(payload.getString(ORGANISATION_NAME))
+                    .withAddressLine1(payload.getString(ADDRESS_1, null))
+                    .withAddressLine2(payload.getString(ADDRESS_2, null))
+                    .withAddressLine3(payload.getString(ADDRESS_3, null))
+                    .withAddressLine4(payload.getString(ADDRESS_4, null))
+                    .withEmail(payload.getString(EMAIL, null))
+                    .withId(fromString(payload.getString(ORGANISATION_ID)))
+                    .withType(payload.getString(ORGANISATION_TYPE))
+                    .withAddressPostcode(payload.getString(POSTCODE, null))
+                    .build();
+        } else {
+            LOGGER.warn("users-groups returned an organisation for LAA contract number {} without {}, {} or {}. "
+                            + "Reporting it as not found, rather than failing the command and having it redelivered.",
+                    laaContractNumber, ORGANISATION_ID, ORGANISATION_NAME, ORGANISATION_TYPE);
+            organisationDetails = newBuilder().build();
         }
 
-        final JsonObject payload = jsonResultEnvelope.payload();
-        return newBuilder()
-                .withLaaContractNumber(payload.getString(LAA_CONTRACT_NUMBER, null))
-                .withPhoneNumber(payload.getString(PHONE_NUMBER,null))
-                .withName(payload.getString(ORGANISATION_NAME))
-                .withAddressLine1(payload.getString(ADDRESS_1, null))
-                .withAddressLine2(payload.getString(ADDRESS_2, null))
-                .withAddressLine3(payload.getString(ADDRESS_3, null))
-                .withAddressLine4(payload.getString(ADDRESS_4, null))
-                .withEmail(payload.getString(EMAIL, null))
-                .withId(fromString(payload.getString(ORGANISATION_ID)))
-                .withType(payload.getString(ORGANISATION_TYPE))
-                .withAddressPostcode(payload.getString(POSTCODE, null))
-                .build();
+        return organisationDetails;
+    }
 
+    private boolean identifiesAnOrganisation(final JsonObject payload) {
+        return payload.containsKey(ORGANISATION_ID)
+                && payload.containsKey(ORGANISATION_NAME)
+                && payload.containsKey(ORGANISATION_TYPE);
     }
 
     public OrganisationDetails getOrganisationDetailsForOrganisationId(final Envelope<?> envelope, final String organisationId) {
         final JsonObject orgResponse = getOrganisationForOrganisationId(envelope, organisationId);
-        if (emptyPayload(orgResponse)) {
-            return newBuilder().build();
+        final OrganisationDetails organisationDetails;
+
+        if (!emptyPayload(orgResponse) && identifiesAnOrganisation(orgResponse)) {
+            organisationDetails = newBuilder()
+                    .withAddressLine1(getOptionalJsonString(orgResponse, ADDRESS_1))
+                    .withAddressLine2(getOptionalJsonString(orgResponse, ADDRESS_2))
+                    .withAddressLine3(getOptionalJsonString(orgResponse, ADDRESS_3))
+                    .withAddressLine4(getOptionalJsonString(orgResponse, ADDRESS_4))
+                    .withAddressPostcode(getOptionalJsonString(orgResponse, POSTCODE))
+                    .withEmail(getOptionalJsonString(orgResponse, EMAIL))
+                    .withId(fromString(orgResponse.getString(ORGANISATION_ID)))
+                    .withLaaContractNumber(getOptionalJsonString(orgResponse, LAA_CONTRACT_NUMBER))
+                    .withName(orgResponse.getString(ORGANISATION_NAME))
+                    // Was reading ORGANISATION_NAME, so every organisation looked up by id came
+                    // back with its name in the phone number field.
+                    .withPhoneNumber(getOptionalJsonString(orgResponse, PHONE_NUMBER))
+                    .withType(orgResponse.getString(ORGANISATION_TYPE))
+                    .build();
+        } else {
+            LOGGER.warn("users-groups returned no usable organisation for organisation id {}.", organisationId);
+            organisationDetails = newBuilder().build();
         }
-        return newBuilder()
-                .withAddressLine1(orgResponse.getString(ADDRESS_1))
-                .withAddressLine2(getOptionalJsonString(orgResponse, ADDRESS_2))
-                .withAddressLine3(getOptionalJsonString(orgResponse, ADDRESS_3))
-                .withAddressLine4(orgResponse.getString(ADDRESS_4))
-                .withAddressPostcode(orgResponse.getString(POSTCODE))
-                .withEmail(getOptionalJsonString(orgResponse, EMAIL))
-                .withId(fromString(orgResponse.getString(ORGANISATION_ID)))
-                .withLaaContractNumber(getOptionalJsonString(orgResponse, LAA_CONTRACT_NUMBER))
-                .withName(orgResponse.getString(ORGANISATION_NAME))
-                .withPhoneNumber(orgResponse.getString(ORGANISATION_NAME))
-                .withType(orgResponse.getString(ORGANISATION_TYPE))
-                .build();
+
+        return organisationDetails;
     }
 
     private String getOptionalJsonString(final JsonObject jsonObject, final String fieldName) {

@@ -22,8 +22,8 @@ import uk.gov.moj.cpp.progression.events.RelatedReferenceDeleted;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

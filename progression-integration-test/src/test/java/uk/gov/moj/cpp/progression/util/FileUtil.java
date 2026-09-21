@@ -9,7 +9,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.io.InputStream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

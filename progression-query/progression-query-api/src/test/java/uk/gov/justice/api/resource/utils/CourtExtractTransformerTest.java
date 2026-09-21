@@ -113,10 +113,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.justice.listing.events.Hearing;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.listing.events.ListedCase;
+import uk.gov.justice.listing.events.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
@@ -134,8 +134,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -2850,14 +2850,14 @@ public class CourtExtractTransformerTest {
     private static Hearing getHearingFromListing(final UUID hearingId, final UUID seedingHearingId, final UUID defendantId, final UUID offenceId) {
         return Hearing.hearing().withId(hearingId)
                 .withListedCases(singletonList(ListedCase.listedCase()
-                        .withDefendants(singletonList(uk.gov.moj.cpp.listing.domain.Defendant.defendant()
+                        .withDefendants(singletonList(uk.gov.justice.listing.events.Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(singletonList(uk.gov.moj.cpp.listing.domain.Offence.offence()
+                                .withOffences(singletonList(uk.gov.justice.listing.events.Offence.offence()
                                         .withId(offenceId)
-                                        .withSeedingHearing(Optional.of(SeedingHearing.seedingHearing()
+                                        .withSeedingHearing(SeedingHearing.seedingHearing()
                                                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                                                 .withSittingDay(LocalDate.now().toString())
-                                                .withSeedingHearingId(seedingHearingId).build()))
+                                                .withSeedingHearingId(seedingHearingId).build())
                                         .build()))
                                 .build()))
                         .build()))

@@ -27,8 +27,8 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;

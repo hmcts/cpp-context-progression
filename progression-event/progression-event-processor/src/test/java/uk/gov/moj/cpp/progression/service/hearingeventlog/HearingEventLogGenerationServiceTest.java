@@ -34,8 +34,8 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

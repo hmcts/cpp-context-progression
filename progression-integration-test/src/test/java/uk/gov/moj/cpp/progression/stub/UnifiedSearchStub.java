@@ -8,8 +8,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
 
 

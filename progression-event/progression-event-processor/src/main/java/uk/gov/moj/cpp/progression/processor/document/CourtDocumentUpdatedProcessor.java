@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtDocumentUpdatedProcessor {

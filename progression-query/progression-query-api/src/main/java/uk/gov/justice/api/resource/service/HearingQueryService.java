@@ -5,7 +5,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static javax.json.JsonValue.EMPTY_JSON_OBJECT;
+import static jakarta.json.JsonValue.EMPTY_JSON_OBJECT;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -27,9 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue.ValueType;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue.ValueType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

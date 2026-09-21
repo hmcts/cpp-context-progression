@@ -13,7 +13,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matchers;
 

@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.progression.domain.pojo.ReferenceDataDirectionManagementTy
 import uk.gov.moj.cpp.progression.query.view.service.DefendantService;
 import uk.gov.moj.cpp.progression.query.view.service.DirectionTransformService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

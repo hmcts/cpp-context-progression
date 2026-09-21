@@ -29,8 +29,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 /**
  * Created by satishkumar on 13/11/2018.

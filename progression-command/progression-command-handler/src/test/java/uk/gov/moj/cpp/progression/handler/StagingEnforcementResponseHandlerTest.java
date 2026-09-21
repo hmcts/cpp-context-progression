@@ -18,12 +18,12 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

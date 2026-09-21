@@ -5,7 +5,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -16,8 +16,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

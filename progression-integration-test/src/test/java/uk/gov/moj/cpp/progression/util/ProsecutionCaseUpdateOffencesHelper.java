@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static java.util.UUID.randomUUID;
 import org.json.JSONException;

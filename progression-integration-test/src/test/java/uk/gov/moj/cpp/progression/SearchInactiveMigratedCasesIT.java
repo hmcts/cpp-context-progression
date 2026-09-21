@@ -9,6 +9,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.genera
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollInactiveProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
+import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -19,6 +22,7 @@ import java.util.List;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +39,28 @@ public class SearchInactiveMigratedCasesIT extends AbstractIT {
     private String listedStartDateTime;
     private String earliestStartDateTime;
     private String defendantDOB;
+
+    /**
+     * State the unified search this test needs instead of inheriting whatever ran before it.
+     *
+     * The WireMock stubs are global and live for the whole VM, and failsafe runs these classes in
+     * alphabetical order. ReferProsecutionCaseToCrownCourtIT - "Refe" sorts just ahead of "Sear" -
+     * registers an exact-match stub that returns matched defendants carrying a fixed
+     * masterDefendantId, and never removes it; its tearDown only re-stubs ethnicity data and says
+     * "one off change -- need to fix this properly". Every case created after it is therefore
+     * matched, and this test's defendant had its masterDefendantId overwritten with that fixture
+     * value, so the assertion failed in a full run while passing on its own.
+     *
+     * Empty results are what this test wants: it asserts the masterDefendantId it sent survives,
+     * which is only true when no match comes back. Same pattern as RecordApplicationLAAReferenceIT
+     * and ReceiveRepresentationOrderForApplicationIT.
+     */
+    @BeforeAll
+    public static void stubUnifiedSearchToReturnNoMatches() {
+        removeStub();
+        stubUnifiedSearchQueryExactMatchWithEmptyResults();
+        stubUnifiedSearchQueryPartialMatchWithEmptyResults();
+    }
 
     @BeforeEach
     public void setUp() {

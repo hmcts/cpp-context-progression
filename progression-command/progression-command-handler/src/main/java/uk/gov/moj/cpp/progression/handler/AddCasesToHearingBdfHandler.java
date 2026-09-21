@@ -27,8 +27,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonValue;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AddCasesToHearingBdfHandler {

@@ -6,7 +6,7 @@ import static uk.gov.justice.api.resource.utils.ResultPromptValueHelper.getValue
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.messaging.JsonObjects;

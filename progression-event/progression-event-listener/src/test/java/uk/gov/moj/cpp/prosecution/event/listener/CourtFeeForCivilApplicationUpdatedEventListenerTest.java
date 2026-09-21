@@ -40,7 +40,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplic
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;

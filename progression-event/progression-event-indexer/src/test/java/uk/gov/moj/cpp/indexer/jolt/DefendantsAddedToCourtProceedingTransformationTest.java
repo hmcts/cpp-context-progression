@@ -12,7 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;

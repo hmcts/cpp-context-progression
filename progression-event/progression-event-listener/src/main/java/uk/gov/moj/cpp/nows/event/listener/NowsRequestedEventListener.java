@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.transaction.Transactional;
 
 @SuppressWarnings("squid:S1188")
 @ServiceComponent(EVENT_LISTENER)

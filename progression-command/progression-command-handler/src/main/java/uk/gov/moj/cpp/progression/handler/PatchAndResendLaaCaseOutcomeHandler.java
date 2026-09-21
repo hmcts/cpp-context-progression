@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.JsonValue.NULL;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
 import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

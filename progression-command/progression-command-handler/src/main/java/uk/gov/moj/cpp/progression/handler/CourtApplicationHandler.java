@@ -85,9 +85,9 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

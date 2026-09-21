@@ -3,25 +3,25 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
 
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link SearchProsecutionCaseEntity} class
  */
 
-
-@RunWith(CdiTestRunner.class)
 public class SearchProsecutionCaseRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private final String searchTarget = "TEST12345 | John S Smith | 1977-01-01";
 
@@ -29,10 +29,15 @@ public class SearchProsecutionCaseRepositoryTest {
     private UUID defedantId;
     private String caseId;
 
-    @Inject
     private SearchProsecutionCaseRepository repository;
 
-    @Before
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        repository = new SearchProsecutionCaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(repository);
+    }
+
+    @BeforeEach
     public void setUp() {
         defedantId = UUID.fromString("e1d32d9d-29ec-4934-a932-22a50f223966");
         searchCriteria = "%JOHN% %smith% %1977-01-01%".toLowerCase();
@@ -61,7 +66,6 @@ public class SearchProsecutionCaseRepositoryTest {
         assertEquals("TFL", actual.get(0).getProsecutor());
         assertEquals("SJP Referral", actual.get(0).getStatus());
     }
-
 
     @Test
     public void shouldFindFirstByreference() {

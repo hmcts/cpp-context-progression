@@ -15,7 +15,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingResultLineEn
 
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantHearingResultUpdatedListener {

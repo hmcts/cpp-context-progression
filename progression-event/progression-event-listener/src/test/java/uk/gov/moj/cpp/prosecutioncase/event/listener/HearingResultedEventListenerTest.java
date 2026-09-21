@@ -32,8 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

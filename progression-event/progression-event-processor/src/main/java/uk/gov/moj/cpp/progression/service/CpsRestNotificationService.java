@@ -16,9 +16,9 @@ import uk.gov.moj.cpp.progression.command.UpdateSendToCpsFlag;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;

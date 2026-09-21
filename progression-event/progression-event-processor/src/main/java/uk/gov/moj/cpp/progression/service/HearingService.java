@@ -12,10 +12,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @ApplicationScoped
 public class HearingService {

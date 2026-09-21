@@ -13,8 +13,8 @@ import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValid
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

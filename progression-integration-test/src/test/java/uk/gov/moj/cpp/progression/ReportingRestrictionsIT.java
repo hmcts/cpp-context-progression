@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import com.jayway.jsonpath.ReadContext;

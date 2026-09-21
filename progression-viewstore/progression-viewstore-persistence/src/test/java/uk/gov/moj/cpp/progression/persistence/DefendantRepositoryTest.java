@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.persistence;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
@@ -16,20 +17,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @deprecated This is deprecated for Release 2.4
  */
 @Deprecated
-@RunWith(CdiTestRunner.class)
 public class DefendantRepositoryTest {
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
 
     private static final String COURT_CENTER = "Liverpool";
     private static final String ID_ONE = "CASEURN";
@@ -38,12 +39,18 @@ public class DefendantRepositoryTest {
     private static LocalDate now;
     private static ZonedDateTime currentDateTime;
     private final List<CaseProgressionDetail> caseProgressionDetails = new ArrayList<>();
-    @Inject
     private CaseProgressionDetailRepository repository;
-    @Inject
     private DefendantRepository defendantRepository;
 
-    @Before
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        repository = new CaseProgressionDetailRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(repository);
+        defendantRepository = new DefendantRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantRepository);
+    }
+
+    @BeforeEach
     public void setup() {
         now = LocalDate.now();
         currentDateTime = ZonedDateTime.now();
@@ -71,6 +78,43 @@ public class DefendantRepositoryTest {
         assertThat(results.getSentenceHearingReviewDecisionDateTime(), equalTo(currentDateTime));
     }
 
+    /**
+     * Saves through the defendant repository itself rather than letting the case cascade, which is
+     * the only way its own idOf is exercised - and idOf is what decides whether save() persists a
+     * new row or merges an existing one.
+     */
+    @Test
+    public void shouldSaveADefendantDirectlyAndReadItBack() {
+        final UUID defendantId = UUID.randomUUID();
+        final CaseProgressionDetail caseProgressionDetail =
+                createCaseProgressionDetail("URN-DIRECT", UUID.randomUUID(), CaseStatusEnum.INCOMPLETE);
+        repository.saveAndFlush(caseProgressionDetail);
+
+        final Defendant defendant = new Defendant(defendantId, caseProgressionDetail, false, null);
+        defendantRepository.saveAndFlush(defendant);
+
+        final Defendant found = defendantRepository.findByDefendantId(defendantId);
+        assertThat(found.getDefendantId(), equalTo(defendantId));
+    }
+
+    @Test
+    public void shouldUpdateRatherThanDuplicateWhenSavingADefendantThatAlreadyExists() {
+        final UUID defendantId = UUID.randomUUID();
+        final CaseProgressionDetail caseProgressionDetail =
+                createCaseProgressionDetail("URN-TWICE", UUID.randomUUID(), CaseStatusEnum.INCOMPLETE);
+        repository.saveAndFlush(caseProgressionDetail);
+
+        final Defendant defendant = new Defendant(defendantId, caseProgressionDetail, false, null);
+        defendantRepository.saveAndFlush(defendant);
+        final Long countAfterFirstSave = defendantRepository.count();
+
+        final Defendant again = new Defendant(defendantId, caseProgressionDetail, true, null);
+        defendantRepository.saveAndFlush(again);
+
+        assertThat(defendantRepository.count(), equalTo(countAfterFirstSave));
+        assertThat(defendantRepository.findByDefendantId(defendantId).getDefendantId(), equalTo(defendantId));
+    }
+
     private CaseProgressionDetail createCaseProgressionDetail(final String caseUrn, final UUID caseId,
                                                               final CaseStatusEnum status) {
         final CaseProgressionDetail caseProgressionDetail = new CaseProgressionDetail();
@@ -84,8 +128,7 @@ public class DefendantRepositoryTest {
         caseProgressionDetail.setStatus(status);
         return caseProgressionDetail;
     }
-
-    @After
+    @AfterEach
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
                 .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));

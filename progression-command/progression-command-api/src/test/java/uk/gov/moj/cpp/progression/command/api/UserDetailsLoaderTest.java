@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.util.List;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

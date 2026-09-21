@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
-
-import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedAllCourtDocumentsEntity;
 
 import java.time.ZonedDateTime;
@@ -13,21 +13,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link SharedAllCourtDocumentsRepository} class
  */
 
-
-@RunWith(CdiTestRunner.class)
 public class SharedAllCourtDocumentsRepositoryTest {
-    @Inject
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
     private SharedAllCourtDocumentsRepository sharedAllCourtDocumentsRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        sharedAllCourtDocumentsRepository = new SharedAllCourtDocumentsRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(sharedAllCourtDocumentsRepository);
+    }
 
     @Test
     public void shouldFindByCaseIdAndDefendantIdAndHearingIdAndUserGroupIdsAndUserId() {

@@ -1,19 +1,38 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEntity;
 
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface SharedCourtDocumentRepository extends EntityRepository<SharedCourtDocumentEntity, UUID> {
+@ApplicationScoped
+public class SharedCourtDocumentRepository extends JpaEntityRepository<SharedCourtDocumentEntity, UUID> {
 
-    @Query("from SharedCourtDocumentEntity entity where entity.caseId in (:caseId) and entity.hearingId in (:hearingId) and entity.userGroupId in (:userGroup) and (entity.defendantId is null or entity.defendantId in  (:defendantId)) ORDER BY entity.seqNum ASC")
-    List<SharedCourtDocumentEntity> findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(@QueryParam("caseId") UUID caseId, @QueryParam("hearingId") UUID hearingId,
-                                                                                             @QueryParam("userGroup") UUID userGroupId, @QueryParam("defendantId") UUID defendantId);
+    public SharedCourtDocumentRepository() {
+        super(SharedCourtDocumentEntity.class);
+    }
+
+    @Override
+    protected UUID idOf(final SharedCourtDocumentEntity entity) {
+        return entity.getId();
+    }
+
+    public List<SharedCourtDocumentEntity> findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(
+            final UUID caseId, final UUID hearingId, final UUID userGroupId, final UUID defendantId) {
+        return entityManager.createQuery(
+                        "select entity from SharedCourtDocumentEntity entity"
+                                + " where entity.caseId in (:caseId) and entity.hearingId in (:hearingId)"
+                                + " and entity.userGroupId in (:userGroup)"
+                                + " and (entity.defendantId is null or entity.defendantId in (:defendantId))"
+                                + " ORDER BY entity.seqNum ASC",
+                        SharedCourtDocumentEntity.class)
+                .setParameter("caseId", caseId)
+                .setParameter("hearingId", hearingId)
+                .setParameter("userGroup", userGroupId)
+                .setParameter("defendantId", defendantId)
+                .getResultList();
+    }
 }
