@@ -66,7 +66,9 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.aggregate.helper.CaseReactivationOnApplicationGrantHelper;
 import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
@@ -307,8 +309,49 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final CourtApplication courtApplication = hearingResultedUpdateApplicationEnvelope.payload().getCourtApplication();
         final EventStream eventStream = eventSource.getStreamById(courtApplication.getId());
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final CourtApplication storedApplication = applicationAggregate.getCourtApplication();
         final Stream<Object> events = applicationAggregate.hearingResulted(courtApplication);
         appendEventsToStream(hearingResultedUpdateApplicationEnvelope, eventStream, events);
+        reactivateLinkedCasesOnGrantedReopen(hearingResultedUpdateApplicationEnvelope, courtApplication, storedApplication);
+    }
+
+    /**
+     * Application-only result shares do not emit prosecution-cases-resulted-v2, so CaseAggregate.updateCase
+     * is never reached from that path. Reopen + grant is applied here from the application command that
+     * always runs for {@code progression.event.applications-resulted}.
+     * Capture the stored application before {@code hearingResulted} so case links survive a payload
+     * that omits {@code courtApplicationCases}.
+     */
+    private void reactivateLinkedCasesOnGrantedReopen(final Envelope<?> envelope,
+                                                      final CourtApplication courtApplication,
+                                                      final CourtApplication storedApplication) throws EventStreamException {
+        final List<UUID> caseIds = CaseReactivationOnApplicationGrantHelper.linkedCaseIdsToReactivate(
+                courtApplication, storedApplication);
+        if (caseIds.isEmpty()) {
+            return;
+        }
+        for (final UUID caseId : caseIds) {
+            final EventStream caseEventStream = eventSource.getStreamById(caseId);
+            final CaseAggregate caseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
+            final ProsecutionCase existingCase = caseAggregate.getProsecutionCase();
+            if (existingCase == null) {
+                LOGGER.warn("Cannot reactivate case {} after reopen grant; prosecution case is not on the aggregate", caseId);
+                continue;
+            }
+            LOGGER.info("Reactivating case {} after reopen application {} was granted", caseId, courtApplication.getId());
+            final Stream<Object> caseEvents = caseAggregate.updateCase(
+                    existingCase,
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    List.of(courtApplication));
+            appendEventsToStream(envelope, caseEventStream, caseEvents);
+        }
     }
 
     @Handles("progression.command.update-court-application-to-hearing")

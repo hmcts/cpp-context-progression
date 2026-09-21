@@ -79,6 +79,35 @@ public class CaseReactivationOnApplicationGrantHelperTest {
         assertThat(CaseReactivationOnApplicationGrantHelper.shouldReactivateCase(null, singletonList(reopenApplication(randomUUID(), singletonList(ResultConstants.G)))), is(false));
     }
 
+    @Test
+    void shouldReturnLinkedCaseIdsOnlyForReopenGrant() {
+        final UUID caseId = randomUUID();
+        final CourtApplication reopenGranted = reopenApplication(caseId, singletonList(ResultConstants.G));
+        final CourtApplication reopenRefused = reopenApplication(caseId, singletonList(ResultConstants.RFSD));
+
+        assertThat(CaseReactivationOnApplicationGrantHelper.linkedCaseIdsToReactivate(reopenGranted), is(singletonList(caseId)));
+        assertThat(CaseReactivationOnApplicationGrantHelper.linkedCaseIdsToReactivate(reopenRefused), is(emptyList()));
+        assertThat(CaseReactivationOnApplicationGrantHelper.linkedCaseIdsToReactivate(courtApplication()
+                .withId(randomUUID())
+                .withType(courtApplicationType().withCode(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID).build())
+                .withJudicialResults(singletonList(grantedResult()))
+                .build()), is(emptyList()));
+    }
+
+    @Test
+    void shouldReturnLinkedCaseIdsFromStoredApplicationWhenGrantPayloadOmitsCases() {
+        final UUID caseId = randomUUID();
+        final CourtApplication grantWithoutCases = courtApplication()
+                .withId(randomUUID())
+                .withType(courtApplicationType().withCode(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID).build())
+                .withJudicialResults(singletonList(grantedResult()))
+                .build();
+        final CourtApplication storedWithCases = reopenApplication(caseId, emptyList());
+
+        assertThat(CaseReactivationOnApplicationGrantHelper.linkedCaseIdsToReactivate(grantWithoutCases, storedWithCases),
+                is(singletonList(caseId)));
+    }
+
     private CourtApplication reopenApplication(final UUID caseId, final List<UUID> resultTypeIds) {
         final List<JudicialResult> judicialResults = resultTypeIds.stream()
                 .map(id -> judicialResult()

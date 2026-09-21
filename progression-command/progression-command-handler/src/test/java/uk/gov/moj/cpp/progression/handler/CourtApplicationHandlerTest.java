@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -75,6 +77,9 @@ import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
+import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
@@ -113,7 +118,10 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationTypeConstants;
+import uk.gov.moj.cpp.progression.aggregate.helper.ResultConstants;
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
@@ -326,6 +334,115 @@ public class CourtApplicationHandlerTest {
 
                 )
         ));
+    }
+
+    @Test
+    public void shouldReactivateLinkedCaseWhenReopenApplicationIsGranted() throws Exception {
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final CourtApplication reopenGranted = reopenApplication(applicationId, caseId, ResultConstants.G);
+        final Envelope<HearingResultedUpdateApplication> envelope = envelopeFrom(
+                Envelope.metadataBuilder()
+                        .withName("progression.command.hearing-resulted-update-application")
+                        .withId(randomUUID())
+                        .build(),
+                HearingResultedUpdateApplication.hearingResultedUpdateApplication()
+                        .withCourtApplication(reopenGranted)
+                        .build());
+
+        final CaseAggregate caseAggregate = mock(CaseAggregate.class);
+        final ProsecutionCase existingCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
+        when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(applicationAggregate.hearingResulted(reopenGranted)).thenReturn(Stream.empty());
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream1);
+        when(aggregateService.get(eventStream1, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.getProsecutionCase()).thenReturn(existingCase);
+        when(caseAggregate.updateCase(eq(existingCase), any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(reopenGranted))))
+                .thenReturn(Stream.empty());
+
+        courtApplicationHandler.hearingResultedUpdateApplication(envelope);
+
+        verify(caseAggregate).updateCase(eq(existingCase), any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(reopenGranted)));
+        verify(eventStream1).append(any());
+    }
+
+    @Test
+    public void shouldReactivateLinkedCaseFromStoredApplicationWhenGrantPayloadOmitsCases() throws Exception {
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final CourtApplication grantWithoutCases = courtApplication()
+                .withId(applicationId)
+                .withType(courtApplicationType().withCode(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID).build())
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withJudicialResultTypeId(ResultConstants.G)
+                        .withRootJudicialResultTypeId(ResultConstants.G)
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        final CourtApplication storedWithCases = reopenApplication(applicationId, caseId, ResultConstants.G);
+        final Envelope<HearingResultedUpdateApplication> envelope = envelopeFrom(
+                Envelope.metadataBuilder()
+                        .withName("progression.command.hearing-resulted-update-application")
+                        .withId(randomUUID())
+                        .build(),
+                HearingResultedUpdateApplication.hearingResultedUpdateApplication()
+                        .withCourtApplication(grantWithoutCases)
+                        .build());
+
+        final CaseAggregate caseAggregate = mock(CaseAggregate.class);
+        final ProsecutionCase existingCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
+        when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(applicationAggregate.getCourtApplication()).thenReturn(storedWithCases);
+        when(applicationAggregate.hearingResulted(grantWithoutCases)).thenReturn(Stream.empty());
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream1);
+        when(aggregateService.get(eventStream1, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.getProsecutionCase()).thenReturn(existingCase);
+        when(caseAggregate.updateCase(eq(existingCase), any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(grantWithoutCases))))
+                .thenReturn(Stream.empty());
+
+        courtApplicationHandler.hearingResultedUpdateApplication(envelope);
+
+        verify(caseAggregate).updateCase(eq(existingCase), any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(grantWithoutCases)));
+        verify(eventStream1).append(any());
+    }
+
+    @Test
+    public void shouldNotReactivateLinkedCaseWhenReopenApplicationIsRefused() throws Exception {
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final CourtApplication reopenRefused = reopenApplication(applicationId, caseId, ResultConstants.RFSD);
+        final Envelope<HearingResultedUpdateApplication> envelope = envelopeFrom(
+                Envelope.metadataBuilder()
+                        .withName("progression.command.hearing-resulted-update-application")
+                        .withId(randomUUID())
+                        .build(),
+                HearingResultedUpdateApplication.hearingResultedUpdateApplication()
+                        .withCourtApplication(reopenRefused)
+                        .build());
+
+        when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(applicationAggregate.hearingResulted(reopenRefused)).thenReturn(Stream.empty());
+
+        courtApplicationHandler.hearingResultedUpdateApplication(envelope);
+
+        verify(aggregateService, never()).get(any(), eq(CaseAggregate.class));
+        verify(eventStream1, never()).append(any());
+    }
+
+    private CourtApplication reopenApplication(final UUID applicationId, final UUID caseId, final UUID judicialResultTypeId) {
+        return courtApplication()
+                .withId(applicationId)
+                .withType(courtApplicationType().withCode(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID).build())
+                .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseId(caseId).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withJudicialResultTypeId(judicialResultTypeId)
+                        .withRootJudicialResultTypeId(judicialResultTypeId)
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
     }
 
 
