@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,7 +46,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -191,7 +192,7 @@ public class CaseDefendantSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
         final SummonsProsecutor summonsProsecutor = getProsecutor();
 
-        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
 
         //Then
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
@@ -215,7 +216,7 @@ public class CaseDefendantSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
         final SummonsProsecutor summonsProsecutor = getProsecutor();
 
-        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
 
         //Then
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
@@ -238,7 +239,7 @@ public class CaseDefendantSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
         final SummonsProsecutor summonsProsecutor = getProsecutor();
 
-        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
         assertThat(summonsDocumentContent.getProsecutorCosts(), notNullValue());
         if (isEmpty(costValue)) {
             assertThat(summonsDocumentContent.getProsecutorCosts(), is(""));
@@ -267,7 +268,7 @@ public class CaseDefendantSummonsServiceTest {
         final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
         final SummonsProsecutor summonsProsecutor = getProsecutor();
 
-        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
 
         //Then
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
@@ -311,5 +312,47 @@ public class CaseDefendantSummonsServiceTest {
             final JsonObject referralReason = summonsDataJson.getJsonObject("referralContent");
             assertOnReferralReason(referralReason);
         }
+    }
+
+    @Test
+    void shouldSetAmendedDateWhenSummonsIsAmended() {
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.empty()))).thenReturn(getRefDataOffences());
+
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared()
+                .withSummonsData(generateSummonsData(FIRST_HEARING, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, false))
+                .withIsSummonsAmended(true)
+                .build();
+
+        final ProsecutionCase prosecutionCase = generateProsecutionCase(CASE_ID.toString(), DEFENDANT_ID.toString(), MCA.getCode(), true);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final ListDefendantRequest listDefendantRequest = summonsDataPrepared.getSummonsData().getListDefendantRequests().get(0);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final SummonsProsecutor summonsProsecutor = getProsecutor();
+
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(
+                envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, getLjaDetails(), summonsProsecutor);
+
+        assertThat(summonsDocumentContent.getAmendedDate(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldNotSetAmendedDateWhenSummonsIsNotAmended() {
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.empty()))).thenReturn(getRefDataOffences());
+
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared()
+                .withSummonsData(generateSummonsData(FIRST_HEARING, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, false))
+                .withIsSummonsAmended(false)
+                .build();
+
+        final ProsecutionCase prosecutionCase = generateProsecutionCase(CASE_ID.toString(), DEFENDANT_ID.toString(), MCA.getCode(), true);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final ListDefendantRequest listDefendantRequest = summonsDataPrepared.getSummonsData().getListDefendantRequests().get(0);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final SummonsProsecutor summonsProsecutor = getProsecutor();
+
+        final SummonsDocument summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(
+                envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, getLjaDetails(), summonsProsecutor);
+
+        assertThat(summonsDocumentContent.getAmendedDate(), is(nullValue()));
     }
 }

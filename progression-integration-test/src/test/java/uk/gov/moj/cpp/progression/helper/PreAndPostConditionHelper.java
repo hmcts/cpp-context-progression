@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedMap;
@@ -36,7 +35,7 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -108,7 +107,7 @@ public class PreAndPostConditionHelper {
     public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) {
         return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
-                Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
+                createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
     }
 
     public static Response recordLAAReference(final String caseId, final String defendantId, final String offenceId, final String statusCode) {
@@ -398,6 +397,25 @@ public class PreAndPostConditionHelper {
 
     }
 
+    /**
+     * Civil fees are separate event streams keyed by feeId. A fixed feeId reused across every test
+     * run accumulates real history in the persistent event store, causing a version-mismatch once
+     * that stream already exists from a previous run. Callers must generate a fresh feeId per run.
+     */
+    public static Response initiateCourtProceedingsWithCivilFees(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
+                                                    final String materialIdTwo, final String referralId,
+                                                    final String caseUrn,
+                                                    final String listedStartDateTime, final String earliestStartDateTime, final String dob,
+                                                    final String feeIdOne, final String feeIdTwo) {
+        final String payload = getInitiateCourtProceedingsJsonFromResource(resourceLocation, caseId, defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob)
+                .replace("RANDOM_FEE_ID_ONE", feeIdOne)
+                .replace("RANDOM_FEE_ID_TWO", feeIdTwo);
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                payload);
+
+    }
+
     public static Response initiateCourtProceedings(final String resourceLocation, final String caseId, final String defendantId, final String defendantId2, final String materialIdOne,
                                                     final String materialIdTwo, final String referralId,
                                                     final String caseUrn,
@@ -419,7 +437,7 @@ public class PreAndPostConditionHelper {
     public static Response deleteRelatedReference(final String caseId, final String relatedReferenceId) {
         return postCommand(getWriteUrl("/prosecutioncases/" + caseId),
                 "application/vnd.progression.delete-related-reference+json",
-                Json.createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
+                createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
 
     }
 
@@ -919,7 +937,9 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_REFERRAL_ID", referralId)
                 .replace("LISTED_START_DATE_TIME", listedStartDateTime)
                 .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
-                .replace("DOB", dob);
+                .replace("DOB", dob)
+                .replace("AUTO_FEE_ID_ONE", randomUUID().toString())
+                .replace("AUTO_FEE_ID_TWO", randomUUID().toString());
 
     }
 

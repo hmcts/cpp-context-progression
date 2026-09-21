@@ -191,4 +191,12 @@ public class PrepareSummonsDataHandlerTest {
                         .thatHandles("progression.command.prepare-summons-data")
                 ));
     }
+
+    @Test
+    public void shouldHandleAmendSummonsDataCommand() {
+        assertThat(new PrepareSummonsDataHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("amendSummonsData")
+                        .thatHandles("progression.command.amend-summons-data")
+                ));
+    }
 }

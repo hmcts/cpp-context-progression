@@ -8,7 +8,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -300,13 +300,21 @@ public class HearingConfirmedEventProcessor {
                                              final ZonedDateTime hearingStartDateTime, final List<CourtApplication> courtApplications) {
         boolean isWarrantHearingType = WARRANT_OF_FURTHER_DETENTION_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
         boolean isPCBHearingType = PRE_CHARGE_BAIL_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
+        boolean isPastDatedHearing = isPastDatedHearing(hearingStartDateTime);
 
-        if (!isWarrantHearingType && !isPCBHearingType) {
+        if (!isWarrantHearingType && !isPCBHearingType && !isPastDatedHearing) {
             LOGGER.info("Sending notification as hearing type is not : Warrant of Further Detention or Pre-Charge Bail");
             courtApplications.forEach(courtApplication ->
                     sendNotification(jsonEnvelope, hearing, hearingStartDateTime, courtApplication)
             );
+        } else {
+            LOGGER.info("Notification is not sent for HearingId {} with start date time {}. warrantOfFurtherDetention: {}, preChargeBail: {}, pastDatedHearing: {}",
+                    hearing.getId(), hearingStartDateTime, isWarrantHearingType, isPCBHearingType, isPastDatedHearing);
         }
+    }
+
+    private boolean isPastDatedHearing(final ZonedDateTime hearingStartDateTime) {
+        return hearingStartDateTime.toLocalDate().isBefore(LocalDate.now());
     }
 
     private void sendNotification(final JsonEnvelope jsonEnvelope,

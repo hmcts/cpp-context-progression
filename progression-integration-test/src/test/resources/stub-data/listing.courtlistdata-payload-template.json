@@ -1,0 +1,35 @@
+{
+  "listType": "public",
+  "courtCentreName": "Test Court Centre",
+  "hearingDates": [
+    {
+      "hearingDate": "2022-07-12",
+      "courtRooms": [
+        {
+          "courtRoomName": "Court Room 01",
+          "timeslots": [
+            {
+              "hearings": [
+                {
+                  "id": "HEARING_ID",
+                  "caseId": "CASE_ID",
+                  "defendants": [
+                    {
+                      "id": "DEFENDANT_ID",
+                      "organisationName": "",
+                      "firstName": "Test",
+                      "surname": "Defendant",
+                      "nationality": "",
+                      "reportingRestrictions": [],
+                      "offences": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

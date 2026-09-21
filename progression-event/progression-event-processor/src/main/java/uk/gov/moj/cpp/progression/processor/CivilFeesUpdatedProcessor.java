@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -11,7 +12,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.CivilFeeResults;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class CivilFeesUpdatedProcessor {
     }
 
     private static JsonObject createResponsePayload(final CivilFeeResults response) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("civilFeeResults", response.toString())
                 .build();
     }

@@ -5,13 +5,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
@@ -52,7 +52,7 @@ public class CourtOrderServiceTest {
     public void shouldNotReturnCourtOrders() {
 
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_ORDERS_QUERY, randomUUID());
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
 

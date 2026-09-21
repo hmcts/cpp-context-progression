@@ -11,9 +11,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -142,7 +142,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -164,7 +163,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"squid:S1607"})
+@SuppressWarnings({"squid:S1607", "java:S1874"})
 public class ProgressionServiceTest {
 
     private static final UUID CASE_ID_1 = randomUUID();
@@ -540,7 +539,7 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final HearingType hearingType = HearingType.hearingType().withDescription("Trial").build();
         final List<HearingDay> hearingDays = List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
                 .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
                 .add("hearingId", hearingId.toString())
                 .add("hearingDays", hearingDayListToJsonArrayConverter.convert(hearingDays))
@@ -1245,7 +1244,7 @@ public class ProgressionServiceTest {
         final LocalDate earliestHearingDate = ProgressionService.getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
 
         final Optional<JsonObject> prosecutionCaseJsonObject = Optional.of(getJsonObjectResponseFromJsonResource("progression.prosecution-case-11SS0342023.json"));
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJsonObject.get()).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", prosecutionCaseJsonObject.get()).build();
 
         when(enveloper.withMetadataFrom(confirmedJsonEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(confirmedJsonEnvelope);
@@ -1485,7 +1484,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void transformConfirmedHearingShouldKeepConfirmedCaseOffencesWhenAllApplicationOffencesConcluded() {
+    void transformConfirmedHearingShouldKeepConfirmedCaseOffencesWhenAllApplicationOffencesConcluded() {
         final UUID courtCentreId = randomUUID();
         final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
         final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
@@ -1519,7 +1518,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void transformConfirmedHearingShouldMoveActiveApplicationOffenceToProsecutionAndClearItFromApplication() {
+    void transformConfirmedHearingShouldMoveActiveApplicationOffenceToProsecutionAndClearItFromApplication() {
         final UUID courtCentreId = randomUUID();
         final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
         final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
@@ -1546,7 +1545,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void offenceOwnerResolverShouldFetchEachProsecutionCaseOnlyOncePerCall() {
+    void offenceOwnerResolverShouldFetchEachProsecutionCaseOnlyOncePerCall() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offence1 = randomUUID();
@@ -1583,7 +1582,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shapeHearingForListingShouldDropProsecutionCasesForApplicationHearing() {
+    void shapeHearingForListingShouldDropProsecutionCasesForApplicationHearing() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID activeCaseOffenceId = randomUUID();
@@ -1613,7 +1612,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shapeHearingForListingShouldLeaveCaseOnlyHearingUnchanged() {
+    void shapeHearingForListingShouldLeaveCaseOnlyHearingUnchanged() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -1638,7 +1637,7 @@ public class ProgressionServiceTest {
     // ---- CHD-2687: prosecution-case order anchored on progression's stored hearing ------------
 
     @Test
-    public void reorderShouldPutExistingHearingCasesFirstKeepingStoredRelativeOrder() {
+    void reorderShouldPutExistingHearingCasesFirstKeepingStoredRelativeOrder() {
         final UUID case1 = randomUUID();
         final UUID case2 = randomUUID();
         final UUID case3 = randomUUID();
@@ -1656,7 +1655,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void reorderShouldHandleTheAdjournOntoExistingLinkedCaseHearingShape() {
+    void reorderShouldHandleTheAdjournOntoExistingLinkedCaseHearingShape() {
         // CHD-2687 AC3: hearing of case2 extended by adjourning case1 + application; payload came
         // in as [case1, case2] and displayed in that order - existing case must stay first
         final UUID case1 = randomUUID();
@@ -1670,7 +1669,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void reorderShouldReturnHearingUnchangedWithoutAnchor() {
+    void reorderShouldReturnHearingUnchangedWithoutAnchor() {
         final Hearing shaped = hearingWithCases(randomUUID(), randomUUID());
 
         assertThat(progressionService.reorderProsecutionCasesByExistingHearing(shaped, null), sameInstance(shaped));
@@ -1678,7 +1677,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void reorderShouldReturnHearingUnchangedWhenNoAnchoredCasePresent() {
+    void reorderShouldReturnHearingUnchangedWhenNoAnchoredCasePresent() {
         // fresh content only (e.g. hearing just created): nothing to anchor, order untouched
         final Hearing shaped = hearingWithCases(randomUUID());
         final Hearing anchor = hearingWithCases(randomUUID());
@@ -1691,12 +1690,12 @@ public class ProgressionServiceTest {
                 .withId(randomUUID())
                 .withProsecutionCases(java.util.Arrays.stream(caseIds)
                         .map(id -> ProsecutionCase.prosecutionCase().withId(id).build())
-                        .collect(java.util.stream.Collectors.toList()))
+                        .toList())
                 .build();
     }
 
     @Test
-    public void updateHearingListingStatusToHearingInitiatedShouldSendHearingInitialisedCommand() {
+    void updateHearingListingStatusToHearingInitiatedShouldSendHearingInitialisedCommand() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -2001,7 +2000,7 @@ public class ProgressionServiceTest {
                         .withName(commandName)
                         .withId(randomUUID())
                         .build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     @Test
@@ -2010,13 +2009,13 @@ public class ProgressionServiceTest {
         final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
                 .withName("progression.event.prosecution-case-defendant-updated")
                 .withId(randomUUID())
-                .build(),Json.createObjectBuilder().build());
+                .build(),createObjectBuilder().build());
         final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
                 .withName("progression.query.active-applications-on-case")
                 .withId(randomUUID())
-                .build(),Json.createObjectBuilder().add("linkedApplications",
-                Json.createArrayBuilder().add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build())
-                        .add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build()).build()).build());
+                .build(),createObjectBuilder().add("linkedApplications",
+                createArrayBuilder().add(createObjectBuilder().add("applicationId", randomUUID().toString()).build())
+                        .add(createObjectBuilder().add("applicationId", randomUUID().toString()).build()).build()).build());
         when(requester.request(any())).thenReturn(outputEnvelop);
 
         final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
@@ -2032,11 +2031,11 @@ public class ProgressionServiceTest {
         final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
                 .withName("progression.event.prosecution-case-defendant-updated")
                 .withId(randomUUID())
-                .build(),Json.createObjectBuilder().build());
+                .build(),createObjectBuilder().build());
         final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
                 .withName("progression.query.active-applications-on-case")
                 .withId(randomUUID())
-                .build(),Json.createObjectBuilder().build());
+                .build(),createObjectBuilder().build());
         when(requester.request(any())).thenReturn(outputEnvelop);
 
         final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
@@ -2053,7 +2052,7 @@ public class ProgressionServiceTest {
         final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
                 .withName("progression.event.defendant-trial-record-sheet-requested-for-application")
                 .withId(randomUUID())
-                .build(), Json.createObjectBuilder().build());
+                .build(), createObjectBuilder().build());
 
         final JsonArray payloads = createArrayBuilder().add(createObjectBuilder().
                         add("defendantId", randomUUID().toString())

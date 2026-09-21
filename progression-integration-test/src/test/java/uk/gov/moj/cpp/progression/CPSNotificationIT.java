@@ -23,9 +23,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static javax.json.Json.createObjectBuilder;
+
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCPSCivilProsecutionCaseToCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCPSProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCivilProsecutionCaseToCourt;
