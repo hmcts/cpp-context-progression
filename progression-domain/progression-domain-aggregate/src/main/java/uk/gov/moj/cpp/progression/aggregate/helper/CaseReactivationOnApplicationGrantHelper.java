@@ -7,11 +7,14 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.JudicialResult;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * Narrow hook: reactivate a case when a grant result is shared for selected application types.
@@ -34,6 +37,50 @@ public final class CaseReactivationOnApplicationGrantHelper {
                 .filter(Objects::nonNull)
                 .filter(application -> isLinkedToCase(application, prosecutionCaseId))
                 .anyMatch(CaseReactivationOnApplicationGrantHelper::isGrantThatReactivatesCase);
+    }
+
+    /**
+     * Case ids linked on a grant that should reopen/reactivate. Empty when the application is not
+     * a reopen grant, or when neither the granted payload nor the stored application has linked cases.
+     * <p>
+     * Application-only shares may omit {@code courtApplicationCases} on the result payload; the stored
+     * application (from {@code ApplicationAggregate}) still holds the case link from creation.
+     */
+    public static List<UUID> linkedCaseIdsToReactivate(final CourtApplication grantedApplication) {
+        return linkedCaseIdsToReactivate(grantedApplication, null);
+    }
+
+    public static List<UUID> linkedCaseIdsToReactivate(final CourtApplication grantedApplication,
+                                                       final CourtApplication storedApplication) {
+        if (grantedApplication == null || !isGrantThatReactivatesCase(grantedApplication)) {
+            return List.of();
+        }
+        final List<UUID> fromGranted = linkedProsecutionCaseIds(grantedApplication);
+        if (!fromGranted.isEmpty()) {
+            return fromGranted;
+        }
+        return linkedProsecutionCaseIds(storedApplication);
+    }
+
+    static List<UUID> linkedProsecutionCaseIds(final CourtApplication application) {
+        if (application == null) {
+            return List.of();
+        }
+        final Stream<UUID> fromApplicationCases = ofNullable(application.getCourtApplicationCases())
+                .orElse(List.of())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(CourtApplicationCase::getProsecutionCaseId);
+        final Stream<UUID> fromCourtOrder = ofNullable(application.getCourtOrder())
+                .map(CourtOrder::getCourtOrderOffences)
+                .orElse(List.of())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(CourtOrderOffence::getProsecutionCaseId);
+        return Stream.concat(fromApplicationCases, fromCourtOrder)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     /**
