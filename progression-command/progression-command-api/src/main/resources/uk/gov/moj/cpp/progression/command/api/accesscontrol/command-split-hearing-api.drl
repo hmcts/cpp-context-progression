@@ -1,0 +1,16 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+// Deliberately not the "System Users" restriction that list-new-hearing carries: a split is
+// initiated by a court user through listing's proxy, so the listing groups must be granted here.
+rule "Command - Rule for split hearing"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.split-hearing");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Listing Officers", "Crown Court Admin", "Court Administrators", "Court Clerks", "Legal Advisers", "Court Associate"));
+  then
+    $outcome.setSuccess(true);
+end
