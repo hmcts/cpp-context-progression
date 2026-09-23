@@ -59,63 +59,60 @@ import static uk.gov.moj.cpp.progression.test.FileUtil.givenPayload;
 @ExtendWith(MockitoExtension.class)
 public class CourtProceedingsInitiatedProcessorTest {
 
-    @Spy
-    private final Enveloper enveloper = createEnveloper();
-
-    @InjectMocks
-    private CourtProceedingsInitiatedProcessor eventProcessor;
-
-    @Mock
-    private JsonEnvelope jsonEnvelope;
-
-    @Mock
-    private JsonObject payload;
-
-    @Mock
-    private JsonObject courtReferralJson;
-
-    @Mock
-    private Sender sender;
-
-    @Mock
-    private Requester requester;
-
-    @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Mock
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Mock
-    private CourtReferral courtReferral;
-
-    @Mock
-    private ReferenceDataOffenceService referenceDataOffenceService;
-
-    @Spy
-    private SummonsHearingRequestService summonsHearingRequestService;
-
-    @Spy
-    private ProgressionService progressionService;
-
+    public static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
+    public static final String YOUTH_OFFENCE_RR_DESCRIPTION = "Section 49 of the Children and Young Persons Act 1933 applies";
     private static final String PCF_CASE_URN = "PCF_CASE_URN";
     private static final String PRO_AUTH_REF = "PRO_AUTH_REF";
-
+    @Spy
+    private final Enveloper enveloper = createEnveloper();
+    @InjectMocks
+    private CourtProceedingsInitiatedProcessor eventProcessor;
+    @Mock
+    private JsonEnvelope jsonEnvelope;
+    @Mock
+    private JsonObject payload;
+    @Mock
+    private JsonObject courtReferralJson;
+    @Mock
+    private Sender sender;
+    @Mock
+    private Requester requester;
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Mock
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Mock
+    private CourtReferral courtReferral;
+    @Mock
+    private ReferenceDataOffenceService referenceDataOffenceService;
+    @Spy
+    private SummonsHearingRequestService summonsHearingRequestService;
+    @Spy
+    private ProgressionService progressionService;
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
-
     @Spy
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
-
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
-
-
     @Mock
     private AzureFunctionService azureFunctionService;
 
-    public static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
-    public static final String YOUTH_OFFENCE_RR_DESCRIPTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+    private static List<Defendant> buildDefendant(final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final LocalDate dateOfBirth) {
+        return defendantIdList.stream().map(defendantId -> {
+            final Defendant.Builder defendantBuilder = new Defendant.Builder()
+                    .withId(defendantId)
+                    .withOffences(Stream.of(Offence.offence()
+                                    .withId(offenceId)
+                                    .withOffenceCode(offenceCode)
+                                    .build())
+                            .collect(Collectors.toList()));
+            if (isYouth) {
+                defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(dateOfBirth).build()).build());
+            }
+            return defendantBuilder.build();
+        }).toList();
+    }
 
     @BeforeEach
     public void initMocks() {
@@ -479,7 +476,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("groupId"), is(groupId.toString()));
     }
 
-
     @Test
     void shouldCreateAnotherCaseWhenExistsCaseEjected() throws IOException {
         //Given
@@ -501,7 +497,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester),any())).thenReturn(Optional.of(emptyList()));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(emptyList()));
         when(azureFunctionService.relayCaseOnCPP(anyString())).thenReturn(1);
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
@@ -936,7 +932,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withId(caseId)
                         .build()))
                 .build());
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
@@ -1034,7 +1030,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withId(caseId)
                         .build()))
                 .build());
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
@@ -1144,7 +1140,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withId(caseId)
                         .build()))
                 .build());
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
@@ -1244,7 +1240,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withId(caseId)
                         .build()))
                 .build());
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
@@ -1341,7 +1337,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withId(caseId)
                         .build()))
                 .build());
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
@@ -1413,7 +1409,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
-        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+        when(listCourtHearingTransformer.transform(any(), anyList(), anyList(), any()))
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(List.of()).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
@@ -1473,22 +1469,6 @@ public class CourtProceedingsInitiatedProcessorTest {
 
 
         return builder.build();
-    }
-
-    private static List<Defendant> buildDefendant(final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final LocalDate dateOfBirth) {
-        return defendantIdList.stream().map(defendantId -> {
-            final Defendant.Builder defendantBuilder = new Defendant.Builder()
-                    .withId(defendantId)
-                    .withOffences(Stream.of(Offence.offence()
-                                    .withId(offenceId)
-                                    .withOffenceCode(offenceCode)
-                                    .build())
-                            .collect(Collectors.toList()));
-            if (isYouth) {
-                defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(dateOfBirth).build()).build());
-            }
-            return defendantBuilder.build();
-        }).toList();
     }
 
     private ProsecutionCase getProsecutionCaseForGroupCases(final UUID groupId, final UUID caseId, final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
@@ -1623,9 +1603,9 @@ public class CourtProceedingsInitiatedProcessorTest {
     }
 
     private JsonEnvelope setupCourtProceedingsInitiatedEvent(final ProsecutionCase prosecutionCase,
-                                                               final UUID caseId,
-                                                               final UUID defendantId,
-                                                               final UUID offenceId) {
+                                                             final UUID caseId,
+                                                             final UUID defendantId,
+                                                             final UUID offenceId) {
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
