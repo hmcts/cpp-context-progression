@@ -115,6 +115,7 @@ public class ProsecutionCaseQuery {
     private static final String SEARCH_RESULT = "searchResults";
     public static final String OLD_PROSECUTION_AUTHORITY_CODE = "oldProsecutionAuthorityCode";
     public static final String HEARINGS_AT_A_GLANCE = "hearingsAtAGlance";
+    public static final String NUMBER_OF_GROUP_CASES = "numberOfGroupCases";
     public static final String PROSECUTION_CASE = "prosecutionCase";
     public static final String MASTER_CASE = "masterCase";
     public static final String CASE_STATUS = "caseStatus";
@@ -277,7 +278,7 @@ public class ProsecutionCaseQuery {
 
             final List<Hearings> hearingsList = hearingAtAGlanceService.getCaseHearings(caseId.get());
             final ProsecutionCase prosecutionCase1 = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase1, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository);
+            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase1, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final List<CivilFees> civilFeesList = caseAtAGlanceHelper.getCivilFeeEntity(prosecutionCase1);
 
             JsonArray civilFeesArray = null;
@@ -302,6 +303,7 @@ public class ProsecutionCaseQuery {
 
             final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(getHearingsAtAGlance(jsonObjectBuilder, caseId));
             jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, getCaseAtAGlanceJson);
+            caseAtAGlanceHelper.getNumberOfGroupCases().ifPresent(numberOfGroupCases -> jsonObjectBuilder.add(NUMBER_OF_GROUP_CASES, numberOfGroupCases));
 
             final CaseCpsProsecutorEntity caseCpsProsecutorEntity = caseCpsProsecutorRepository.findBy(caseId.get());
             if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
@@ -429,7 +431,7 @@ public class ProsecutionCaseQuery {
             final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
             final List<Hearings> hearingsList = hearingAtAGlanceService.getCaseHearings(caseId.get());
-            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository);
+            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());

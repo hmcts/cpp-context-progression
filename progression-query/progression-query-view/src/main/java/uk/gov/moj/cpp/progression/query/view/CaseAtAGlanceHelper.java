@@ -47,6 +47,7 @@ import uk.gov.justice.progression.query.RelatedReference;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CivilFeeRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRepository;
 
 import java.time.LocalDate;
@@ -82,13 +83,15 @@ public class CaseAtAGlanceHelper {
     private final ReferenceDataService referenceDataService;
     private final CivilFeeRepository civilFeeRepository;
     private final RelatedReferenceRepository relatedReferenceRepository;
+    private final ProsecutionCaseRepository prosecutionCaseRepository;
 
-    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> hearingsList, final ReferenceDataService referenceDataService, final CivilFeeRepository civilFeeRepository, final RelatedReferenceRepository relatedReferenceRepository) {
+    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> hearingsList, final ReferenceDataService referenceDataService, final CivilFeeRepository civilFeeRepository, final RelatedReferenceRepository relatedReferenceRepository, final ProsecutionCaseRepository prosecutionCaseRepository) {
         this.prosecutionCase = prosecutionCase;
         this.hearingsList = new ArrayList<>(hearingsList);
         this.referenceDataService = referenceDataService;
         this.civilFeeRepository = civilFeeRepository;
         this.relatedReferenceRepository = relatedReferenceRepository;
+        this.prosecutionCaseRepository = prosecutionCaseRepository;
     }
 
     static Integer getAge(final LocalDate dateOfBirth) {
@@ -154,6 +157,14 @@ public class CaseAtAGlanceHelper {
         if(nonNull(prosecutionCase.getIsGroupMember())){
             caseDetailsBuilder.withIsGroupMember(prosecutionCase.getIsGroupMember());
         }
+        getNumberOfGroupCases().ifPresent(caseDetailsBuilder::withNumberOfGroupCases);
+    }
+
+    public Optional<Integer> getNumberOfGroupCases() {
+        if (Boolean.TRUE.equals(prosecutionCase.getIsCivil()) && Boolean.TRUE.equals(prosecutionCase.getIsGroupMember()) && nonNull(prosecutionCase.getGroupId())) {
+            return ofNullable(prosecutionCaseRepository.countActiveGroupMembers(prosecutionCase.getGroupId()));
+        }
+        return Optional.empty();
     }
 
     public List<CivilFees> getCivilFeeEntity(ProsecutionCase prosecutionCase){
