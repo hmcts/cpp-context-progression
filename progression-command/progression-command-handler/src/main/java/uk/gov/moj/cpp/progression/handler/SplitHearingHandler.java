@@ -31,9 +31,10 @@ import org.slf4j.LoggerFactory;
  * {@code list-hearing-requested} and {@code hearing-updated-for-partial-allocation} carry it, so
  * every downstream processor, listener and public publication is unchanged.
  *
- * <p><strong>Order matters.</strong> The new hearing is raised first and the removal second. A crash
- * between the two then leaves the offences listed twice — visible and recoverable — rather than
- * unlisted, which would silently drop them from every court list.
+ * <p><strong>Order matters.</strong> The new hearing is raised first and the removal second, which
+ * fixes their order in the event log and therefore the order they publish to listing and hearing.
+ * Consumers see the offences arrive on the new hearing before they leave the old one, so at no
+ * point do they read a state where the offences are listed nowhere.
  */
 @ServiceComponent(COMMAND_HANDLER)
 public class SplitHearingHandler {

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toSet;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -177,12 +179,19 @@ public class SplitHearingApi {
                     .computeIfAbsent(defendantId, key -> new LinkedHashSet<>());
             if (request.containsKey(DEFENDANT_OFFENCES) && !request.isNull(DEFENDANT_OFFENCES)) {
                 request.getJsonArray(DEFENDANT_OFFENCES).getValuesAs(javax.json.JsonString.class)
-                        .forEach(offence -> offenceIds.add(fromString(offence.getString())));
+                        .forEach(offence -> offenceIds.add(offenceId(offence.getString())));
             }
         }
         return byCase;
     }
 
+    /**
+     * An offence has to be on the hearing <strong>under the case and defendant it was requested
+     * under</strong>, not merely somewhere on it. Comparing flattened id sets would accept a request
+     * that names one defendant's offence under another defendant: validation would pass, the new
+     * hearing would list the offence against the wrong defendant, and the removal computed from the
+     * same request would take nothing off the defendant who actually holds it.
+     */
     private void validateStrictSubset(final Map<UUID, Map<UUID, Set<UUID>>> stored,
                                       final Map<UUID, Map<UUID, Set<UUID>>> requested,
                                       final UUID hearingId) {
@@ -193,11 +202,19 @@ public class SplitHearingApi {
             throw new BadRequestException("No offences requested for the split");
         }
 
-        final Set<UUID> notOnHearing = new LinkedHashSet<>(requestedIds);
-        notOnHearing.removeAll(storedIds);
+        final Set<UUID> notOnHearing = new LinkedHashSet<>();
+        requested.forEach((caseId, requestedByDefendant) ->
+                requestedByDefendant.forEach((defendantId, offenceIds) -> {
+                    final Set<UUID> storedForDefendant = stored
+                            .getOrDefault(caseId, emptyMap())
+                            .getOrDefault(defendantId, emptySet());
+                    offenceIds.stream()
+                            .filter(offenceId -> !storedForDefendant.contains(offenceId))
+                            .forEach(notOnHearing::add);
+                }));
         if (!notOnHearing.isEmpty()) {
-            throw new BadRequestException(
-                    "Offences are not on hearing " + hearingId + ": " + notOnHearing);
+            throw new BadRequestException("Offences are not on hearing " + hearingId
+                    + " under the case and defendant they were requested under: " + notOnHearing);
         }
 
         if (requestedIds.containsAll(storedIds)) {
@@ -232,6 +249,19 @@ public class SplitHearingApi {
                     .add("defendantsToRemove", defendants));
         });
         return cases.build();
+    }
+
+    /**
+     * A malformed offence id is the caller's mistake, so it has to read as one. Left to
+     * {@code fromString} it would escape as an unchecked {@code IllegalArgumentException} and reach
+     * the caller as a 500, unlike every other id on this request.
+     */
+    private static UUID offenceId(final String value) {
+        try {
+            return fromString(value);
+        } catch (final IllegalArgumentException ex) {
+            throw new BadRequestException("defendantOffences contains an id that is not a valid UUID: " + value);
+        }
     }
 
     private static UUID uuid(final JsonObject object, final String field) {

@@ -219,6 +219,44 @@ class SplitHearingApiTest {
         verify(sender, never()).send(any(Envelope.class));
     }
 
+    /**
+     * The offence exists on the hearing, but under a different defendant. Comparing flattened id
+     * sets would accept this: the new hearing would list OFFENCE_3 against DEFENDANT_1, and the
+     * removal computed from the same request would take nothing off DEFENDANT_2, who actually
+     * holds it.
+     */
+    @Test
+    void shouldRejectAnOffenceRequestedUnderTheWrongDefendant() {
+        givenStoredHearing(null, prosecutionCase(CASE_A,
+                defendant(DEFENDANT_1, OFFENCE_1, OFFENCE_2),
+                defendant(DEFENDANT_2, OFFENCE_3)));
+
+        final BadRequestException thrown = assertThrows(BadRequestException.class,
+                () -> splitHearingApi.handle(splitEnvelope(
+                        defendantRequest(CASE_A, DEFENDANT_1, OFFENCE_3))));
+
+        assertThat(thrown.getMessage(), containsString(OFFENCE_3.toString()));
+        verify(sender, never()).send(any(Envelope.class));
+    }
+
+    /**
+     * Same trap one level up: the offence is on the hearing under the same defendant but a
+     * different prosecution case.
+     */
+    @Test
+    void shouldRejectAnOffenceRequestedUnderTheWrongCase() {
+        givenStoredHearing(null,
+                prosecutionCase(CASE_A, defendant(DEFENDANT_1, OFFENCE_1, OFFENCE_2)),
+                prosecutionCase(CASE_B, defendant(DEFENDANT_1, OFFENCE_3)));
+
+        final BadRequestException thrown = assertThrows(BadRequestException.class,
+                () -> splitHearingApi.handle(splitEnvelope(
+                        defendantRequest(CASE_A, DEFENDANT_1, OFFENCE_3))));
+
+        assertThat(thrown.getMessage(), containsString(OFFENCE_3.toString()));
+        verify(sender, never()).send(any(Envelope.class));
+    }
+
     @Test
     void shouldRejectAnEmptyOffenceSelection() {
         givenStoredHearing(null, prosecutionCase(CASE_A, defendant(DEFENDANT_1, OFFENCE_1)));
@@ -226,6 +264,27 @@ class SplitHearingApiTest {
         assertThrows(BadRequestException.class,
                 () -> splitHearingApi.handle(splitEnvelope(defendantRequest(CASE_A, DEFENDANT_1))));
 
+        verify(sender, never()).send(any(Envelope.class));
+    }
+
+    /**
+     * A malformed offence id has to read as the caller's mistake. Unguarded it escapes as an
+     * unchecked {@code IllegalArgumentException} and reaches the caller as a 500.
+     */
+    @Test
+    void shouldRejectAnOffenceIdThatIsNotAUuid() {
+        givenStoredHearing(null, prosecutionCase(CASE_A, defendant(DEFENDANT_1, OFFENCE_1, OFFENCE_2)));
+
+        final JsonObject malformed = createObjectBuilder()
+                .add("prosecutionCaseId", CASE_A.toString())
+                .add("defendantId", DEFENDANT_1.toString())
+                .add("defendantOffences", createArrayBuilder().add("not-a-uuid"))
+                .build();
+
+        final BadRequestException thrown = assertThrows(BadRequestException.class,
+                () -> splitHearingApi.handle(splitEnvelope(malformed)));
+
+        assertThat(thrown.getMessage(), containsString("not-a-uuid"));
         verify(sender, never()).send(any(Envelope.class));
     }
 
