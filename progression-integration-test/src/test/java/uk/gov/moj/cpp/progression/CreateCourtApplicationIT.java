@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -17,6 +19,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.removeHearingTypePermission;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubHearingTypePermission;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -26,6 +30,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -156,18 +161,59 @@ public class CreateCourtApplicationIT extends AbstractIT {
         pollForApplication(applicationId, matchers);
     }
 
+    @Test
+    public void shouldRejectStandaloneApplicationWhenHearingTypeIsNotAnAllowedHearingType() throws Exception {
+        // The standalone fixture carries applicationType id e857c8ea-... and hearingType id 8cdfd3da-...
+        final String standaloneApplicationTypeId = "e857c8ea-cd95-47d1-842f-2d618e77a9b5";
+
+        // Allowed hearing type for this application type differs from the one in the fixture,
+        // so the initiate-court-proceedings-for-application command must be rejected.
+        try {
+        stubHearingTypePermission(standaloneApplicationTypeId, randomUUID().toString());
+
+        Response response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
+                "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+
+        assertThat(response.getStatusCode(), is(SC_BAD_REQUEST));
+
+        stubHearingTypePermission(standaloneApplicationTypeId, "8cdfd3da-8900-42ca-9835-9f29d1e03cd6");
+        response = initiateCourtProceedingsForCourtApplication(randomUUID().toString(),
+                "applications/progression.initiate-court-proceedings-for-standalone-application.json");
+
+        assertThat(response.getStatusCode(), is(SC_ACCEPTED));
+        } finally {
+            removeHearingTypePermission(standaloneApplicationTypeId);
+        }
+    }
+
     private void verifyCourtApplicationCreatedEventPublished(final String applicationId) {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent(), "Expected court-application-created event on JMS topic");
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated, courtApplicationIdMatches(applicationId));
+        assertTrue(message.isPresent(), "Expected court-application-created event on JMS topic for applicationId " + applicationId);
         final String idFromEvent = message.get().getJsonObject("courtApplication").getString("id");
         assertThat(idFromEvent, equalTo(applicationId));
     }
 
     private void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated, courtApplicationIdMatches(applicationId));
         assertTrue(message.isPresent());
         String idResponse = message.get().getJsonObject("courtApplication").getString("id");
         assertThat(idResponse, equalTo(applicationId));
+    }
+
+    private static Matcher<JsonObject> courtApplicationIdMatches(final String applicationId) {
+        return new org.hamcrest.BaseMatcher<>() {
+            @Override
+            public boolean matches(final Object item) {
+                return item instanceof JsonObject
+                        && ((JsonObject) item).containsKey("courtApplication")
+                        && applicationId.equals(((JsonObject) item).getJsonObject("courtApplication").getString("id", null));
+            }
+
+            @Override
+            public void describeTo(final org.hamcrest.Description description) {
+                description.appendText("courtApplication.id = " + applicationId);
+            }
+        };
     }
 
     private void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {

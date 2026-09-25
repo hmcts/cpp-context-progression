@@ -9,7 +9,7 @@ import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.notification.EmailChannel;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -51,7 +51,7 @@ public class PublishSummonsDocumentServiceTest {
     private Sender sender;
 
     @Mock
-    private SummonsDocumentContent summonsDocumentContent;
+    private SummonsDocument summonsDocumentContent;
 
     @Mock
     private JsonObject summonsDocumentContentAsJsonObject;

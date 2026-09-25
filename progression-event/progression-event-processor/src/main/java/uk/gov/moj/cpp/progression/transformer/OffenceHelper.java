@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.transformer.HearingHelper.filterJudicialResults;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.ALLOCATION_DECISION;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.ALLOCATION_DECISION_DATE;

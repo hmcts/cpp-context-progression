@@ -5,6 +5,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -20,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -72,9 +74,9 @@ public class DefendantDefenceAssociationLockedListenerTest {
                 .withId(prosecutionCaseId)
                 .withDefendants(getDefendants(defendantId, prosecutionCaseId, lockedByRepOrder))
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString()).build())
                                 .build())
                         .build()).build();
@@ -108,7 +110,7 @@ public class DefendantDefenceAssociationLockedListenerTest {
     private JsonObject jsonFromString(final String jsonObjectStr) {
 
         JsonObject object;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
 
@@ -118,7 +120,7 @@ public class DefendantDefenceAssociationLockedListenerTest {
 
 
     private static JsonObject createPayloadForDefendantDefenceAssociationLocked() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add(DEFENDANT_ID, defendantId.toString())
                 .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
                 .add(LOCKED_BY_REP_ORDER, lockedByRepOrder)

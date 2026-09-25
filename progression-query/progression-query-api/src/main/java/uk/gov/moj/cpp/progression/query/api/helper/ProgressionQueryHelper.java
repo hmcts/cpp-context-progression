@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api.helper;
 
 import static java.util.UUID.fromString;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -15,7 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -29,7 +29,7 @@ public class ProgressionQueryHelper {
 
     }
     public static JsonObject removeProperty(final JsonObject origin, final String key){
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             if (!entry.getKey().equals(key)){
                 builder.add(entry.getKey(), entry.getValue());
@@ -51,7 +51,7 @@ public class ProgressionQueryHelper {
     }
 
     public static JsonObjectBuilder buildJsonBuilder(final JsonObject origin) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
             builder.add(entry.getKey(), entry.getValue());
         }

@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.MatcherAssert;
@@ -65,7 +65,7 @@ public class ReApplyMediaReportingRestrictionOnCaseCommandApiTest {
     public void testHandleReApplyMediaReportingRestrictionOnCase() {
         final UUID caseId1 = randomUUID();
         final UUID caseId2 = randomUUID();
-        final JsonObject commandPayload = Json.createObjectBuilder()
+        final JsonObject commandPayload = createObjectBuilder()
                 .add("caseIds", createArrayBuilder()
                         .add(caseId1.toString())
                         .add(caseId2.toString())
