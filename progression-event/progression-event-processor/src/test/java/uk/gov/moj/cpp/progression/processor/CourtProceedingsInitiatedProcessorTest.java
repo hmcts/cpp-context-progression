@@ -11,6 +11,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -38,6 +40,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -514,6 +517,61 @@ public class CourtProceedingsInitiatedProcessorTest {
         final JsonObject reportingRestrictionJsonObject = offencesArray.getJsonObject(0).getJsonArray("reportingRestrictions").getJsonObject(0);
         assertThat(reportingRestrictionJsonObject.getString("label"), is(YOUTH_OFFENCE_RR_DESCRIPTION));
         assertThat(reportingRestrictionJsonObject.getString("orderedDate"), is(LocalDate.now().toString()));
+    }
+
+    @Test
+    void shouldPassTypeOfListFromEventWhenListingHearings() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(UUID.randomUUID()).withDescription("Bench Warrant").build();
+        final JsonObject typeOfListJson = createObjectBuilder().add("id", typeOfList.getId().toString()).add("description", "Bench Warrant").build();
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(payload.containsKey("typeOfList")).thenReturn(true);
+        when(payload.getJsonObject("typeOfList")).thenReturn(typeOfListJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        when(jsonObjectToObjectConverter.convert(typeOfListJson, TypeOfList.class)).thenReturn(typeOfList);
+        stubCourtReferralForListing(requestMessage, caseId, defendantId, offenceId);
+
+        this.eventProcessor.handle(requestMessage);
+
+        verify(progressionService).updateHearingListingStatusToSentForListingWithMultipleRequest(eq(requestMessage), anyList(), isNull(), anyList(), eq(false), eq(1), eq(typeOfList));
+    }
+
+    @Test
+    void shouldPassNoTypeOfListWhenEventHasNone() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(payload.containsKey("typeOfList")).thenReturn(false);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        stubCourtReferralForListing(requestMessage, caseId, defendantId, offenceId);
+
+        this.eventProcessor.handle(requestMessage);
+
+        verify(progressionService).updateHearingListingStatusToSentForListingWithMultipleRequest(eq(requestMessage), anyList(), isNull(), anyList(), eq(false), eq(1), isNull());
+    }
+
+    private void stubCourtReferralForListing(final JsonEnvelope requestMessage, final UUID caseId, final UUID defendantId, final UUID offenceId) {
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId), offenceId, RandomStringUtils.randomAlphanumeric(8), false,
+                ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(PCF_CASE_URN).build(), true);
+        when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
+        when(courtReferral.getListHearingRequests()).thenReturn(singletonList(populateListHearingRequest(caseId, defendantId, offenceId)));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(emptyList()));
+        when(listCourtHearingTransformer.transform(any(), any(), anyList(), any())).thenReturn(ListCourtHearing.listCourtHearing().withHearings(new ArrayList<>()).build());
+        doNothing().when(progressionService).createProsecutionCases(any(), anyList());
+        doNothing().when(progressionService).updateHearingListingStatusToSentForListingWithMultipleRequest(any(), anyList(), any(), anyList(), any(), any(), any());
     }
 
     @Test

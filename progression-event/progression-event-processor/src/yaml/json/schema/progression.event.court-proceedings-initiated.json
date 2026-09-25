@@ -6,6 +6,11 @@
     "courtReferral": {
       "$ref": "http://justice.gov.uk/core/courts/courtReferral.json#"
     }
+,
+    "typeOfList": {
+      "description": "Type of list for any unscheduled hearing listed from this referral, e.g. carried over from a case migrated from XHIBIT or Libra. When absent, 'Date and time to be fixed' is used",
+      "$ref": "http://justice.gov.uk/core/courts/hearingUnscheduledListingNeeds.json#/properties/typeOfList"
+    }
   },
   "required": [
     "courtReferral"

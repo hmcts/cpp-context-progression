@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
@@ -21,9 +23,9 @@ public class HearingUnscheduledListingHelper {
     @Inject
     private ListingService listingService;
 
-    public void processUnscheduledHearings(final JsonEnvelope event, final Hearing hearing) {
+    public void processUnscheduledHearings(final JsonEnvelope event, final Hearing hearing, final TypeOfList typeOfList) {
 
-        final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(hearing);
+        final HearingUnscheduledListingNeeds hearingUnscheduledListingNeeds = createHearingListingNeeds(hearing, typeOfList);
 
         final List<HearingUnscheduledListingNeeds> unscheduledListingNeeds = List.of(hearingUnscheduledListingNeeds);
 
@@ -32,10 +34,10 @@ public class HearingUnscheduledListingHelper {
                 .build());
     }
 
-    private HearingUnscheduledListingNeeds createHearingListingNeeds(final Hearing hearing) {
+    private HearingUnscheduledListingNeeds createHearingListingNeeds(final Hearing hearing, final TypeOfList typeOfList) {
         return HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
                 .withId(hearing.getId())
-                .withTypeOfList(TypeOfList.typeOfList()
+                .withTypeOfList(nonNull(typeOfList) ? typeOfList : TypeOfList.typeOfList()
                         .withId(RESULT_DEFINITION_NHCCS)
                         .withDescription(DATE_AND_TIME_TO_BE_FIXED)
                         .build())

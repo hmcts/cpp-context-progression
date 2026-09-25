@@ -75,6 +75,7 @@ import uk.gov.justice.core.courts.PrepareSummonsData;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
@@ -175,6 +176,7 @@ public class ProgressionService {
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
     private static final String UNSCHEDULED = "isUnscheduled";
     private static final String HEARING = "hearing";
+    private static final String TYPE_OF_LIST = "typeOfList";
     private static final String LIST_NEXT_HEARINGS = "listNextHearings";
     private static final String LIST_HEARING_REQUESTS = "listHearingRequests";
     private static final String HEARING_INITIALISED = "HEARING_INITIALISED";
@@ -1015,11 +1017,12 @@ public class ProgressionService {
      * @param jsonEnvelope
      * @param hearings       - the hearings to update the status for
      * @param seedingHearing - The originating hearing details
+     * @param typeOfList     - The type of list for any unscheduled hearing, or null for 'Date and time to be fixed'
      */
     public void updateHearingListingStatusToSentForListingWithMultipleRequest(final JsonEnvelope jsonEnvelope,
                                                                               final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing,
                                                                               final List<HearingListing> hearingListingList, final Boolean isGroupProceedings,
-                                                                              final Integer numberOfGroupCases) {
+                                                                              final Integer numberOfGroupCases, final TypeOfList typeOfList) {
 
         hearings.forEach(hearingListingNeeds -> {
             final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, isGroupProceedings, numberOfGroupCases);
@@ -1031,7 +1034,7 @@ public class ProgressionService {
                     .toList();
 
             if (checksIfUnscheduledHearingNeedsToBeCreated(listHearingRequests)) {
-                listUnscheduledHearings(jsonEnvelope, hearing);
+                listUnscheduledHearings(jsonEnvelope, hearing, typeOfList);
                 return;
             }
 
@@ -1109,11 +1112,18 @@ public class ProgressionService {
     }
 
     public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
-        final JsonObject payload = createObjectBuilder()
-                .add(HEARING, objectToJsonObjectConverter.convert(hearing))
-                .build();
+        listUnscheduledHearings(jsonEnvelope, hearing, null);
+    }
 
-        sender.send(Enveloper.envelop(payload).withName(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND).withMetadataFrom(jsonEnvelope));
+    public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing, final TypeOfList typeOfList) {
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder()
+                .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+
+        if (nonNull(typeOfList)) {
+            payloadBuilder.add(TYPE_OF_LIST, objectToJsonObjectConverter.convert(typeOfList));
+        }
+
+        sender.send(Enveloper.envelop(payloadBuilder.build()).withName(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND).withMetadataFrom(jsonEnvelope));
     }
 
     public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings, final Set<UUID> hearingsToBeSentNotification) {

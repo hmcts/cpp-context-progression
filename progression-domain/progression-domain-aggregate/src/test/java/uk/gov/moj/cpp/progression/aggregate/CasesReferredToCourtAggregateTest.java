@@ -14,9 +14,11 @@ import uk.gov.justice.core.courts.CasesReferredToCourtV2;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
 import uk.gov.justice.core.courts.SjpCourtReferral;
+import uk.gov.justice.core.courts.TypeOfList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 
@@ -50,6 +52,17 @@ public class CasesReferredToCourtAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtProceedingsInitiated.class)));
+    }
+
+    @Test
+    public void shouldAddTypeOfListToCourtProceedingsInitiated(){
+        final CourtReferral courtReferral = CourtReferral.courtReferral().build();
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(UUID.randomUUID()).withDescription("Bench Warrant").build();
+
+        final List<Object> eventStream = aggregate.initiateCourtProceedings(courtReferral, typeOfList).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(((CourtProceedingsInitiated) eventStream.get(0)).getTypeOfList(), is(typeOfList));
     }
 
     @Test

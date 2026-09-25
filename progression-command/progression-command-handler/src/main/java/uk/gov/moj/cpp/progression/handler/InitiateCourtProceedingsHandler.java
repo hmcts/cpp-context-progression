@@ -55,7 +55,7 @@ public class InitiateCourtProceedingsHandler {
         final UUID streamId = Optional.ofNullable(command.getId()).orElseGet(UUID::randomUUID);
         final EventStream stream = eventSource.getStreamById(streamId);
         final CasesReferredToCourtAggregate aggregate = aggregateService.get(stream, CasesReferredToCourtAggregate.class);
-        final Stream<Object> events = aggregate.initiateCourtProceedings(command.getInitiateCourtProceedings());
+        final Stream<Object> events = aggregate.initiateCourtProceedings(command.getInitiateCourtProceedings(), command.getTypeOfList());
         appendEventsToStream(initiateCourtProceedingsEnvelope, stream, events);
     }
 

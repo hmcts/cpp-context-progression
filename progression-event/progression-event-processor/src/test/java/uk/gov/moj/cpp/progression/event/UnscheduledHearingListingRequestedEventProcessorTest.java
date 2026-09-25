@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -54,6 +56,9 @@ public class UnscheduledHearingListingRequestedEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<Hearing> argumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<TypeOfList> typeOfListCaptor;
 
     @Test
     public void shouldProcessUnscheduledHearingListingRequestedEvent(){
@@ -112,10 +117,35 @@ public class UnscheduledHearingListingRequestedEventProcessorTest {
         processor.process(event);
 
         verify(hearingUnscheduledListingHelper, times(1))
-                .processUnscheduledHearings(any(), argumentCaptor.capture());
+                .processUnscheduledHearings(any(), argumentCaptor.capture(), isNull());
 
         assertThat(argumentCaptor.getValue(), notNullValue());
         assertThat(argumentCaptor.getValue().getId(), is(HEARING_ID));
+    }
+
+    @Test
+    public void shouldPassTypeOfListWhenProcessingUnscheduledHearingListingRequestedEventForNewHearing(){
+        final TypeOfList typeOfList = TypeOfList.typeOfList()
+                .withId(randomUUID())
+                .withDescription("Warned list")
+                .build();
+        final UnscheduledHearingListingRequested unscheduledHearingListingRequested = UnscheduledHearingListingRequested.unscheduledHearingListingRequested()
+                .withHearing(Hearing.hearing().withId(HEARING_ID)
+                        .build())
+                .withTypeOfList(typeOfList)
+                .build();
+
+        final JsonEnvelope event = createEnvelope("progression.event.unscheduled-hearing-listing-requested", createObjectBuilder().build());
+
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(unscheduledHearingListingRequested);
+
+        processor.process(event);
+
+        verify(hearingUnscheduledListingHelper, times(1))
+                .processUnscheduledHearings(any(), argumentCaptor.capture(), typeOfListCaptor.capture());
+
+        assertThat(argumentCaptor.getValue().getId(), is(HEARING_ID));
+        assertThat(typeOfListCaptor.getValue(), is(typeOfList));
     }
 
 }

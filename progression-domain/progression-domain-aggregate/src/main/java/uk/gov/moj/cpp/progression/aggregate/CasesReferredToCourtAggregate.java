@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.SjpCourtReferral;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.domain.aggregate.Aggregate;
 
 import java.util.stream.Stream;
@@ -54,10 +55,15 @@ public class CasesReferredToCourtAggregate implements Aggregate {
 
 
     public Stream<Object> initiateCourtProceedings(final CourtReferral courtReferral) {
+        return initiateCourtProceedings(courtReferral, null);
+    }
+
+    public Stream<Object> initiateCourtProceedings(final CourtReferral courtReferral, final TypeOfList typeOfList) {
         if(isInitiated){
             return Stream.empty();
         } else {
             return apply(Stream.of(CourtProceedingsInitiated.courtProceedingsInitiated().withCourtReferral(courtReferral)
+                    .withTypeOfList(typeOfList)
                     .build()));
         }
     }

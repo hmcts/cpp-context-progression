@@ -22,6 +22,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -109,6 +110,10 @@ public class CourtProceedingsInitiatedProcessor {
         final CourtReferral courtReferral = jsonObjectToObjectConverter.convert(
                 event.getJsonObject("courtReferral"), CourtReferral.class);
 
+        final TypeOfList typeOfList = event.containsKey("typeOfList")
+                ? jsonObjectToObjectConverter.convert(event.getJsonObject("typeOfList"), TypeOfList.class)
+                : null;
+
         final boolean isGroupCases = isGroupCases(courtReferral.getProsecutionCases());
         LOGGER.info("progression.event.court-proceedings-initiated is executed for isGroupCases {}", isGroupCases);
 
@@ -138,7 +143,7 @@ public class CourtProceedingsInitiatedProcessor {
         progressionService.updateHearingListingStatusToSentForListingWithMultipleRequest(jsonEnvelope,
                 listCourtHearing.getHearings(), null,
                 hearingListingList,
-                isGroupCases, courtReferral.getProsecutionCases().size());
+                isGroupCases, courtReferral.getProsecutionCases().size(), typeOfList);
 
     }
 
