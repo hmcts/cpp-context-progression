@@ -1129,6 +1129,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> listUnscheduledHearing(final Hearing hearing) {
+        return listUnscheduledHearing(hearing, null);
+    }
+
+    public Stream<Object> listUnscheduledHearing(final Hearing hearing, final TypeOfList typeOfList) {
         if (TRUE.equals(this.unscheduledHearingListedFromThisHearing)) {
             LOGGER.info("Unscheduled hearing has been listing from this hearing with id {}", hearing.getId());
             return empty();
@@ -1150,6 +1154,7 @@ public class HearingAggregate implements Aggregate {
         streamBuilder.add(UnscheduledHearingListingRequested
                 .unscheduledHearingListingRequested()
                 .withHearing(hearing)
+                .withTypeOfList(typeOfList)
                 .build());
 
         return apply(streamBuilder.build());

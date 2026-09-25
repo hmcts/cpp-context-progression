@@ -38,7 +38,7 @@ public class UnscheduledHearingListingRequestedEventProcessor {
         if (isHearingResulted(unscheduledHearingListingRequested)) {
             hearingResultUnscheduledListingHelper.processUnscheduledCourtHearings(event, unscheduledHearingListingRequested.getHearing());
         } else {
-            hearingUnscheduledListingHelper.processUnscheduledHearings(event, unscheduledHearingListingRequested.getHearing());
+            hearingUnscheduledListingHelper.processUnscheduledHearings(event, unscheduledHearingListingRequested.getHearing(), unscheduledHearingListingRequested.getTypeOfList());
         }
 
     }

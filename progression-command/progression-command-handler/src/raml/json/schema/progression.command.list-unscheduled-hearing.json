@@ -5,6 +5,10 @@
   "properties": {
     "hearing": {
       "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    },
+    "typeOfList": {
+      "description": "Type of list requested for the unscheduled hearing. When absent, 'Date and time to be fixed' is used",
+      "$ref": "http://justice.gov.uk/core/courts/hearingUnscheduledListingNeeds.json#/properties/typeOfList"
     }
   },
   "required": [

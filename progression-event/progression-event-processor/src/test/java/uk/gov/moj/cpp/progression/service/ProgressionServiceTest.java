@@ -103,6 +103,7 @@ import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.YouthCourt;
@@ -124,6 +125,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
+import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 import uk.gov.moj.cpp.progression.transformer.HearingOffenceFilter;
 
@@ -417,6 +419,43 @@ public class ProgressionServiceTest {
         assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND));
         JsonObject jsonObject = envelopeCaptor.getValue().payload();
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearing.getId().toString()));
+        assertThat(jsonObject.containsKey("typeOfList"), is(false));
+    }
+
+    @Test
+    public void shouldListUnscheduledHearingWithTypeOfList() {
+        final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(randomUUID()).withDescription("Warned list").build();
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
+
+        progressionService.listUnscheduledHearings(envelope, hearing, typeOfList);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonObject jsonObject = envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearing.getId().toString()));
+        assertThat(jsonObject.getJsonObject("typeOfList").getString("id"), is(typeOfList.getId().toString()));
+        assertThat(jsonObject.getJsonObject("typeOfList").getString("description"), is("Warned list"));
+    }
+
+    @Test
+    public void shouldListUnscheduledHearingWithTypeOfListWhenNoDatesRequested() {
+        final UUID hearingId = randomUUID();
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(randomUUID()).withDescription("Warned list").build();
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withType(HearingType.hearingType().withId(randomUUID()).build())
+                .build();
+        final List<HearingListing> hearingListings = List.of(new HearingListing(hearingId, "key",
+                List.of(ListHearingRequest.listHearingRequest().build()), List.of()));
+        final JsonEnvelope envelope = getEnvelope("progression.event.court-proceedings-initiated");
+
+        progressionService.updateHearingListingStatusToSentForListingWithMultipleRequest(envelope, List.of(hearingListingNeeds), null, hearingListings, false, 1, typeOfList);
+
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND));
+        final JsonObject jsonObject = envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(jsonObject.getJsonObject("typeOfList").getString("id"), is(typeOfList.getId().toString()));
     }
 
     @Test

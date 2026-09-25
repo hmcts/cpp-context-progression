@@ -4910,6 +4910,21 @@ public class HearingAggregateTest {
         final List<?> eventList = eventStream.toList();
         assertThat(eventList.get(0), instanceOf(ProsecutionCaseDefendantListingStatusChangedV2.class));
         assertThat(eventList.get(1), instanceOf(UnscheduledHearingListingRequested.class));
+        assertThat(((UnscheduledHearingListingRequested) eventList.get(1)).getTypeOfList(), nullValue());
+    }
+
+    @Test
+    public void shouldListUnscheduledHearingWithTypeOfList() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(randomUUID()).withDescription("Warned list").build();
+
+        final List<?> eventList = hearingAggregate.listUnscheduledHearing(hearing, typeOfList).toList();
+
+        assertThat(eventList.get(1), instanceOf(UnscheduledHearingListingRequested.class));
+        assertThat(((UnscheduledHearingListingRequested) eventList.get(1)).getTypeOfList(), is(typeOfList));
     }
 
 

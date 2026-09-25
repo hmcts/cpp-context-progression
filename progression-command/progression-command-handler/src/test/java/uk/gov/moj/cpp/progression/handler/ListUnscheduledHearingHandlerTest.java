@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelp
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ListUnscheduledHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -83,5 +84,31 @@ public class ListUnscheduledHearingHandlerTest {
         assertThat(events.get(0).metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed-v2"));
         assertThat(events.get(1).metadata().name(), is("progression.event.unscheduled-hearing-listing-requested"));
 
+    }
+
+    @Test
+    public void shouldAddTypeOfListToUnscheduledHearingListingRequestedEvent() throws EventStreamException {
+        final UUID typeOfListId = randomUUID();
+        final ListUnscheduledHearing listUnscheduledHearing = ListUnscheduledHearing.listUnscheduledHearing()
+                .withHearing(Hearing.hearing().withId(HEARING_ID).build())
+                .withTypeOfList(TypeOfList.typeOfList()
+                        .withId(typeOfListId)
+                        .withDescription("Warned list")
+                        .build())
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.list-unscheduled-hearing")
+                .withId(randomUUID())
+                .build();
+
+        listUnscheduledHearingHandler.handleUnscheduledHearing(envelopeFrom(metadata, listUnscheduledHearing));
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).toList();
+
+        assertThat(events.get(1).metadata().name(), is("progression.event.unscheduled-hearing-listing-requested"));
+        assertThat(events.get(1).payloadAsJsonObject().getJsonObject("typeOfList").getString("id"), is(typeOfListId.toString()));
+        assertThat(events.get(1).payloadAsJsonObject().getJsonObject("typeOfList").getString("description"), is("Warned list"));
     }
 }

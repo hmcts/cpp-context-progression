@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,7 @@ import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
 import uk.gov.justice.core.courts.InitiateCourtProceedings;
+import uk.gov.justice.core.courts.TypeOfList;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -115,8 +117,40 @@ public class InitiateCourtProceedingsHandlerTest {
 
         assertThat("progression.event.court-proceedings-initiated", is(courtProceedingsInitiatedEnvelope.metadata().name()));
         assertThat(courtProceedingsInitiated.getCourtReferral(), notNullValue());
+        assertThat(courtProceedingsInitiated.getTypeOfList(), nullValue());
 
         verify(matchedDefendantLoadService).aggregateDefendantsSearchResultForAProsecutionCase(any(),any());
+    }
+
+    @Test
+    public void shouldAddTypeOfListToCourtProceedingsInitiated() throws Exception {
+        final TypeOfList typeOfList = TypeOfList.typeOfList().withId(randomUUID()).withDescription("Bench Warrant").build();
+        final InitiateCourtProceedings initiateCourtProceedings = InitiateCourtProceedings.initiateCourtProceedings()
+                .withInitiateCourtProceedings(generateCourtReferral())
+                .withTypeOfList(typeOfList)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings")
+                .withId(randomUUID())
+                .build();
+
+        aggregate = new CasesReferredToCourtAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CasesReferredToCourtAggregate.class)).thenReturn(aggregate);
+
+        initiateCourtProceedingsHandler.handle(envelopeFrom(metadata, initiateCourtProceedings));
+
+        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        Mockito.verify(eventStream, times(1)).append(argumentCaptor.capture());
+        final JsonEnvelope courtProceedingsInitiatedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(0).findFirst().orElse(null);
+
+        final CourtProceedingsInitiated courtProceedingsInitiated = jsonObjectToObjectConverter.convert(courtProceedingsInitiatedEnvelope.payloadAsJsonObject(), CourtProceedingsInitiated.class);
+
+        assertThat(courtProceedingsInitiated.getTypeOfList().getId(), is(typeOfList.getId()));
+        assertThat(courtProceedingsInitiated.getTypeOfList().getDescription(), is("Bench Warrant"));
     }
 
     private static InitiateCourtProceedings generateInitiateCourtProceedings() {

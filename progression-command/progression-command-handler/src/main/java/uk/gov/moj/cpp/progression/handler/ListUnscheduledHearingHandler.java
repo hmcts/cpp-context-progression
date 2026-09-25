@@ -30,7 +30,7 @@ public class ListUnscheduledHearingHandler {
         final ListUnscheduledHearing listUnscheduledHearing = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(listUnscheduledHearing.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.listUnscheduledHearing(listUnscheduledHearing.getHearing());
+        final Stream<Object> events = hearingAggregate.listUnscheduledHearing(listUnscheduledHearing.getHearing(), listUnscheduledHearing.getTypeOfList());
         appendEventsToStream(envelope, eventStream, events);
     }
 }
