@@ -531,10 +531,10 @@ public class HearingAggregate implements Aggregate {
         if (isEmpty(enrichCommandHearing.getProsecutionCases())) {
             return this.hearing.getProsecutionCases();
         }
-        return mergeProsecutionCasesForEnrichInitiate(enrichCommandHearing.getProsecutionCases());
+        return mergeProsecutionCasesForEnrichInitiate(enrichCommandHearing.getProsecutionCases(), Boolean.TRUE.equals(enrichCommandHearing.getIsGroupProceedings()));
     }
 
-    private List<ProsecutionCase> mergeProsecutionCasesForEnrichInitiate(final List<ProsecutionCase> payloadProsecutionCases) {
+    private List<ProsecutionCase> mergeProsecutionCasesForEnrichInitiate(final List<ProsecutionCase> payloadProsecutionCases, final boolean isGroupProceedings) {
         final List<ProsecutionCase> resultCases = new ArrayList<>();
         final Set<UUID> processedCaseIds = new HashSet<>();
 
@@ -550,11 +550,17 @@ public class HearingAggregate implements Aggregate {
             processedCaseIds.add(payloadCase.getId());
         });
 
+        // bulk member cases are resulted through the master case, so only the master is sent to the hearing context
         this.hearing.getProsecutionCases().stream()
                 .filter(hearingCase -> !processedCaseIds.contains(hearingCase.getId()))
+                .filter(hearingCase -> !(isGroupProceedings && isGroupMemberCase(hearingCase)))
                 .forEach(hearingCase -> resultCases.add(ProsecutionCase.prosecutionCase().withValuesFrom(hearingCase).build()));
 
         return resultCases;
+    }
+
+    private static boolean isGroupMemberCase(final ProsecutionCase prosecutionCase) {
+        return Boolean.TRUE.equals(prosecutionCase.getIsGroupMember()) && !Boolean.TRUE.equals(prosecutionCase.getIsGroupMaster());
     }
 
     private ProsecutionCase getMergedProsecutionForEnrichInitiate(final ProsecutionCase caseInHearing, final ProsecutionCase caseInPayload) {

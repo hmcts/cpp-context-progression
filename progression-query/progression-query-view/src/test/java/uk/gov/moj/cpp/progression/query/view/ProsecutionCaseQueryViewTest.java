@@ -290,6 +290,46 @@ public class ProsecutionCaseQueryViewTest {
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
         assertThat(response.payloadAsJsonObject().get("hearingsAtAGlance"), notNullValue());
+        assertThat(response.payloadAsJsonObject().containsKey("numberOfGroupCases"), is(false));
+    }
+
+    @Test
+    public void shouldReturnNumberOfGroupCasesForProsecutionCaseInGroup() {
+        final UUID caseId = randomUUID();
+        final UUID groupId = randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", caseId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase").build(),
+                jsonObject);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(asList(Defendant.defendant().withMasterDefendantId(randomUUID()).build()))
+                .withIsCivil(true)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(false)
+                .withGroupId(groupId)
+                .build();
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+
+        final GetHearingsAtAGlance getCaseAtAGlance = getHearingsAtAGlance()
+                .withHearings(asList(hearings().build()))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
+
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.countActiveGroupMembers(groupId)).thenReturn(4);
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
+        when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().getInt("numberOfGroupCases"), is(4));
+        assertThat(response.payloadAsJsonObject().getJsonObject("prosecutionCase").containsKey("numberOfGroupCases"), is(false));
     }
 
     @Test
@@ -583,6 +623,34 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(defendantJudicialResults.getJsonObject(1).getBoolean("useResultText"), is(false));
         assertThat(defendantJudicialResults.getJsonObject(2).getJsonString("label").getString(), is(LABEL3));
         assertThat(defendantJudicialResults.getJsonObject(3).getJsonString("label").getString(), is(LABEL4));
+    }
+
+    @Test
+    public void shouldReturnNumberOfGroupCasesInCaseAtAGlanceForGroupMember() {
+        final UUID groupId = randomUUID();
+        final Defendant defendant = defendant().withId(randomUUID()).withMasterDefendantId(randomUUID()).build();
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
+        final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase("05PP1000915", defendant))
+                .withIsCivil(true)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(false)
+                .withGroupId(groupId)
+                .build();
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(fromString(caseId));
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+
+        when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.countActiveGroupMembers(groupId)).thenReturn(4);
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getInt("numberOfGroupCases"), is(4));
     }
 
     @Test

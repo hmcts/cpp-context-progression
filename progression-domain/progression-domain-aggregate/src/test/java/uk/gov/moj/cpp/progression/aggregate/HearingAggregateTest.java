@@ -5080,6 +5080,77 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotAddGroupMemberCasesWhenEnrichInitiateHearingForGroupProceedings() {
+        final UUID hearingId = randomUUID();
+        final UUID groupId = randomUUID();
+        final ProsecutionCase masterCase = groupCase(randomUUID(), groupId, true);
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withIsGroupProceedings(true)
+                        .withProsecutionCases(new ArrayList<>(asList(masterCase,
+                                groupCase(randomUUID(), groupId, false),
+                                groupCase(randomUUID(), groupId, false))))
+                        .build())
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        final Hearing confirmPayload = Hearing.hearing()
+                .withId(hearingId)
+                .withIsGroupProceedings(true)
+                .withProsecutionCases(new ArrayList<>(singletonList(groupCase(masterCase.getId(), groupId, true))))
+                .build();
+
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) hearingAggregate.enrichInitiateHearing(confirmPayload).collect(toList()).get(0);
+        final List<UUID> caseIds = hearingInitiateEnriched.getHearing().getProsecutionCases().stream().map(ProsecutionCase::getId).collect(toList());
+
+        assertThat(caseIds, is(singletonList(masterCase.getId())));
+    }
+
+    @Test
+    public void shouldAddCasesMissingFromPayloadWhenEnrichInitiateHearingForNonGroupProceedings() {
+        final UUID hearingId = randomUUID();
+        final UUID confirmedCaseId = randomUUID();
+        final UUID unconfirmedCaseId = randomUUID();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withProsecutionCases(new ArrayList<>(asList(caseWithDefendant(confirmedCaseId), caseWithDefendant(unconfirmedCaseId))))
+                        .build())
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+
+        final Hearing confirmPayload = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(singletonList(caseWithDefendant(confirmedCaseId))))
+                .build();
+
+        final HearingInitiateEnriched hearingInitiateEnriched = (HearingInitiateEnriched) hearingAggregate.enrichInitiateHearing(confirmPayload).collect(toList()).get(0);
+        final List<UUID> caseIds = hearingInitiateEnriched.getHearing().getProsecutionCases().stream().map(ProsecutionCase::getId).collect(toList());
+
+        assertThat(caseIds, is(asList(confirmedCaseId, unconfirmedCaseId)));
+    }
+
+    private static ProsecutionCase groupCase(final UUID caseId, final UUID groupId, final boolean isGroupMaster) {
+        return ProsecutionCase.prosecutionCase()
+                .withValuesFrom(caseWithDefendant(caseId))
+                .withIsCivil(true)
+                .withGroupId(groupId)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(isGroupMaster)
+                .build();
+    }
+
+    private static ProsecutionCase caseWithDefendant(final UUID caseId) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(new ArrayList<>(singletonList(Defendant.defendant().withId(randomUUID()).withOffences(new ArrayList<>()).build())))
+                .build();
+    }
+
+    @Test
     public void shouldNotReAddListedOffenceWhenEnrichInitiateHearingUsesPartialConfirmPayload() {
         final UUID hearingId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();

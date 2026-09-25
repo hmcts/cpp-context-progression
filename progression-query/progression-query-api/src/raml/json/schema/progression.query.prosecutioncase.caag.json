@@ -36,6 +36,10 @@
         },
         "migrationSourceSystem": {
           "$ref": "http://justice.gov.uk/core/courts/migrationSourceSystem.json"
+        },
+        "numberOfGroupCases": {
+          "description": "Number of active cases (isGroupMember = true) in the group, including this case",
+          "type": "integer"
         }
       }
     },

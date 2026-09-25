@@ -22,7 +22,10 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.JsonPath;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
@@ -33,7 +36,10 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import org.hamcrest.Matcher;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import org.json.JSONArray;
 import org.json.JSONException;
 import static org.junit.Assert.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,9 +54,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollGroupMemberCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusResulted;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesWithCourtOrdersFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.removeCaseFromGroupCases;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.getPostInitiateCourtHearingRequest;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingForGroupCase;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -62,6 +72,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private JmsMessageConsumerClient publicCourtProceedingsInitiatedEventConsumer;
@@ -136,6 +147,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         verifyInMessagingQueueForNumberOfTimes(0, publicCourtProceedingsInitiatedEventConsumer);
 
         final UUID groupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), emptyList());
+        verifyNumberOfGroupCases(caseDefendantOffence.keySet(), emptyList());
         final String hearingId = verifyPostListCourtHearing(groupMasterId, caseCount);
         final UUID masterCaseDefendantId = caseDefendantOffence.get(groupMasterId).getK();
         final UUID masterCaseOffenceId = caseDefendantOffence.get(groupMasterId).getV();
@@ -148,16 +160,58 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         verifyHearing(hearingId, groupCaseIds, "HEARING_INITIALISED");
 
         sendPublicHearingResultedEventForGroupCases(masterCaseId, hearingId, masterCaseDefendantId);
-        pollHearingWithStatusResulted(hearingId);
+        final List<String> hearingCaseIdsBeforeRemoval = JsonPath.read(pollHearingWithStatusResulted(hearingId), "$.hearing.prosecutionCases[*].id");
 
         final UUID caseRemoved = removeNonMasterCaseAndVerifyMasterIsNotChanged(caseDefendantOffence, groupMasterId);
         removeMasterCaseAndVerifyMasterIsChanged(caseDefendantOffence, groupMasterId, caseRemoved);
+        verifyRemovedCasesKeepHearing(Arrays.asList(caseRemoved, groupMasterId), hearingId, hearingCaseIdsBeforeRemoval);
 
+        // group-member-cases excludes the master: 4 cases - 2 removed - 1 new master = 1
         final Matcher[] groupIdMatcher = new Matcher[]{
+                withJsonPath("$.prosecutionCases.length()", is(caseCount - 3)),
                 withJsonPath("$.prosecutionCases[0].groupId", is(groupId))
         };
 
         pollGroupMemberCases(groupId, groupIdMatcher);
+    }
+
+    @Test
+    public void shouldShowMasterResultsOnMemberCasesWhenGroupHearingResulted() throws IOException, JSONException {
+        final int caseCount = 3;
+
+        final Map<UUID, Pair<UUID, UUID>> caseDefendantOffence = Stream.generate(UUID::randomUUID).limit(caseCount)
+                .collect(Collectors.toMap(caseId -> caseId, caseId -> new Pair<>(randomUUID(), randomUUID())));
+        final UUID masterCaseId = caseDefendantOffence.keySet().stream().findFirst().orElseThrow(() -> new RuntimeException("No case found!"));
+        final List<String> groupCaseIds = caseDefendantOffence.keySet().stream().map(UUID::toString).collect(Collectors.toList());
+
+        initiateCourtProceedingsForGroupCases(masterCaseId, caseDefendantOffence, listedStartDateTime, earliestStartDateTime, groupId, courtCentreId, courtCentreName);
+
+        final UUID groupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), emptyList());
+        final String hearingId = verifyPostListCourtHearing(groupMasterId, caseCount);
+        final UUID masterCaseDefendantId = caseDefendantOffence.get(groupMasterId).getK();
+        final UUID masterCaseOffenceId = caseDefendantOffence.get(groupMasterId).getV();
+
+        sendPublicListingHearingConfirmedEventForGroupCases(groupMasterId, hearingId, masterCaseDefendantId, masterCaseOffenceId);
+
+        final JSONArray initiatedProsecutionCases = getPostInitiateCourtHearingRequest(hearingId).getJSONObject("hearing").getJSONArray("prosecutionCases");
+        assertThat(initiatedProsecutionCases.length(), is(1));
+        assertThat(initiatedProsecutionCases.getJSONObject(0).getString("id"), is(groupMasterId.toString()));
+        pollForHearing(hearingId, withJsonPath("$.hearingListingStatus", is("HEARING_INITIALISED")));
+
+        sendPublicHearingResultedV2EventForGroupCases(groupMasterId, hearingId, masterCaseDefendantId, masterCaseOffenceId);
+
+        pollForHearing(hearingId,
+                withJsonPath("$.hearingListingStatus", is("HEARING_RESULTED")),
+                withJsonPath("$.hearing.prosecutionCases.length()", is(caseCount)),
+                withJsonPath("$.hearing.prosecutionCases[*].id", containsInAnyOrder(groupCaseIds.toArray())));
+
+        caseDefendantOffence.keySet().stream()
+                .filter(caseId -> !caseId.equals(groupMasterId))
+                .forEach(memberCaseId -> {
+                    stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", memberCaseId.toString());
+                    pollProsecutionCasesProgressionForCAAG(memberCaseId.toString(),
+                            withJsonPath("$.defendants[0].caagDefendantOffences[0].caagResults[0].label", is("a")));
+                });
     }
 
     @Test
@@ -216,6 +270,20 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED, publicEventEnvelope);
     }
 
+    private void sendPublicHearingResultedV2EventForGroupCases(final UUID masterCaseId, final String hearingId, final UUID defendantId, final UUID offenceId) {
+        final String payload = getPayload("public.events.hearing.hearing-resulted-group-master-case.json")
+                .replaceAll("CASE_ID", masterCaseId.toString())
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId.toString())
+                .replaceAll("OFFENCE_ID", offenceId.toString())
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("GROUP_ID", groupId)
+                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), stringToJsonObjectConverter.convert(payload));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+    }
+
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String offenceId, final String courtCentreId, final String courtCentreName) {
         final String strPayload = getPayload(path)
@@ -265,6 +333,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         verifyPublicEventCaseRemovedFromGroupCases(caseIdToBeRemoved.toString(), groupId, groupMasterId.toString(), false);
         final UUID newGroupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), List.of(caseIdToBeRemoved));
         assertThat(newGroupMasterId, is(groupMasterId));
+        verifyNumberOfGroupCases(caseDefendantOffence.keySet(), List.of(caseIdToBeRemoved));
         return caseIdToBeRemoved;
     }
 
@@ -273,6 +342,45 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         verifyPublicEventCaseRemovedFromGroupCases(groupMasterId.toString(), groupId, groupMasterId.toString(), true);
         final UUID newGroupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), Arrays.asList(groupMasterId, caseRemoved));
         assertThat(newGroupMasterId, is(not(groupMasterId)));
+        verifyNumberOfGroupCases(caseDefendantOffence.keySet(), Arrays.asList(groupMasterId, caseRemoved));
+    }
+
+    private void verifyNumberOfGroupCases(final Set<UUID> caseIds, final List<UUID> removedCaseIds) {
+        final int activeGroupCases = caseIds.size() - removedCaseIds.size();
+
+        for (final UUID caseId : caseIds) {
+            stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId.toString());
+            if (removedCaseIds.contains(caseId)) {
+                pollProsecutionCasesProgressionForCAAG(caseId.toString(),
+                        withJsonPath("$.caseDetails.isGroupMember", is(false)),
+                        withoutJsonPath("$.caseDetails.numberOfGroupCases"));
+                pollProsecutionCasesProgressionFor(caseId.toString(),
+                        withJsonPath("$.prosecutionCase.isGroupMember", is(false)),
+                        withoutJsonPath("$.numberOfGroupCases"));
+                pollProsecutionCasesWithCourtOrdersFor(caseId.toString(),
+                        withJsonPath("$.prosecutionCase.isGroupMember", is(false)),
+                        withoutJsonPath("$.numberOfGroupCases"));
+            } else {
+                pollProsecutionCasesProgressionForCAAG(caseId.toString(),
+                        withJsonPath("$.caseDetails.numberOfGroupCases", is(activeGroupCases)));
+                pollProsecutionCasesProgressionFor(caseId.toString(),
+                        withJsonPath("$.numberOfGroupCases", is(activeGroupCases)));
+                pollProsecutionCasesWithCourtOrdersFor(caseId.toString(),
+                        withJsonPath("$.numberOfGroupCases", is(activeGroupCases)));
+            }
+        }
+    }
+
+    private void verifyRemovedCasesKeepHearing(final List<UUID> removedCaseIds, final String hearingId, final List<String> hearingCaseIdsBeforeRemoval) {
+        for (final UUID removedCaseId : removedCaseIds) {
+            verifyCaseHearings(removedCaseId.toString(), hearingId);
+            pollProsecutionCasesProgressionFor(removedCaseId.toString(),
+                    withJsonPath("$.prosecutionCase.isGroupMember", is(false)),
+                    withJsonPath("$.hearingsAtAGlance.hearings[*].id", hasItem(hearingId)));
+        }
+        pollForHearing(hearingId,
+                withJsonPath("$.hearingListingStatus", is("HEARING_RESULTED")),
+                withJsonPath("$.hearing.prosecutionCases[*].id", containsInAnyOrder(hearingCaseIdsBeforeRemoval.toArray())));
     }
 
     private void verifyInMessagingQueueForNumberOfTimes(final int times, final JmsMessageConsumerClient messageConsumer) {
