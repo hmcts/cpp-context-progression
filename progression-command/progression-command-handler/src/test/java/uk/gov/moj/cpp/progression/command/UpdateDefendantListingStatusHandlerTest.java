@@ -42,6 +42,7 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.UpdateDefendantListingStatusHandler;
 
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -190,6 +191,49 @@ public class UpdateDefendantListingStatusHandlerTest {
                                 withJsonPath("$.hearingListingStatus", is(SENT_FOR_LISTING.toString())),
                                 withJsonPath("$.hearing.type.description", is(HEARING_TYPE)),
                                 withJsonPath("$.notifyNCES", is(false))
+                        ))
+                )
+        ));
+    }
+
+    @Test
+    public void shouldNotDuplicateGroupMemberCaseWhenIncomingHearingAlreadyContainsMember() throws EventStreamException {
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName(COMMAND)
+                .withId(randomUUID())
+                .build();
+        final UpdateDefendantListingStatusV2 withMasterOnly = getUpdateDefendantListingStatusWithGroupMasterCase();
+        final ProsecutionCase memberCase = ProsecutionCase.prosecutionCase()
+                .withId(MEMBER_CASE_ID)
+                .withIsGroupMaster(false)
+                .withGroupId(GROUP_ID).build();
+        final UpdateDefendantListingStatusV2 updateDefendantListingStatus = UpdateDefendantListingStatusV2.updateDefendantListingStatusV2()
+                .withValuesFrom(withMasterOnly)
+                .withHearing(Hearing.hearing()
+                        .withValuesFrom(withMasterOnly.getHearing())
+                        .withProsecutionCases(Arrays.asList(withMasterOnly.getHearing().getProsecutionCases().get(0), memberCase))
+                        .build())
+                .build();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(eventSource.getStreamById(MASTER_CASE_ID)).thenReturn(caseEventStream);
+        when(eventSource.getStreamById(MEMBER_CASE_ID)).thenReturn(caseEventStream);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(groupCaseAggregate.getMemberCases()).thenReturn(new LinkedHashSet<>(Arrays.asList(MASTER_CASE_ID, MEMBER_CASE_ID)));
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(caseAggregate.getProsecutionCase()).thenReturn(memberCase);
+
+        handler.handle(envelopeFrom(metadata, updateDefendantListingStatus));
+
+        assertThat(verifyAppendAndGetArgumentFrom(eventStream), streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecutionCase-defendant-listing-status-changed-v2"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
+                                withJsonPath("$.hearing.prosecutionCases[0].id", is(MASTER_CASE_ID.toString())),
+                                withJsonPath("$.hearing.prosecutionCases[1].id", is(MEMBER_CASE_ID.toString()))
                         ))
                 )
         ));

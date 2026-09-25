@@ -6,6 +6,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,10 +63,13 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
@@ -191,6 +196,105 @@ public class HearingResultsCommandHandlerTest {
                 withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
 
         )));
+    }
+
+    @Test
+    public void shouldAddEachGroupMemberCaseOnceWithMasterResultsWhenIncomingHearingHasOnlyMaster() throws EventStreamException {
+        final UUID groupId = randomUUID();
+        final ProsecutionCase masterCase = groupCaseWithOffence(randomUUID(), groupId, true, resultedOffenceJudicialResults());
+        final ProsecutionCase memberCase = groupCaseWithOffence(randomUUID(), groupId, false, null);
+
+        final JsonObject hearingResulted = processGroupHearingResults(masterCase, memberCase, Arrays.asList(masterCase));
+
+        assertThat(caseIds(hearingResulted), contains(masterCase.getId().toString(), memberCase.getId().toString()));
+        assertThat(offenceJudicialResults(hearingResulted, 1), hasSize(1));
+    }
+
+    @Test
+    public void shouldNotDuplicateGroupMemberCaseWhenIncomingHearingAlreadyContainsMember() throws EventStreamException {
+        final UUID groupId = randomUUID();
+        final ProsecutionCase masterCase = groupCaseWithOffence(randomUUID(), groupId, true, resultedOffenceJudicialResults());
+        final ProsecutionCase memberCase = groupCaseWithOffence(randomUUID(), groupId, false, null);
+
+        final JsonObject hearingResulted = processGroupHearingResults(masterCase, memberCase, Arrays.asList(masterCase, memberCase));
+
+        assertThat(caseIds(hearingResulted), contains(masterCase.getId().toString(), memberCase.getId().toString()));
+        assertThat(offenceJudicialResults(hearingResulted, 1), hasSize(1));
+    }
+
+    private JsonObject processGroupHearingResults(final ProsecutionCase masterCase, final ProsecutionCase memberCase,
+                                                  final List<ProsecutionCase> incomingProsecutionCases) throws EventStreamException {
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withId(randomUUID())
+                        .withIsGroupProceedings(true)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build()))
+                        .withProsecutionCases(incomingProsecutionCases)
+                        .build())
+                .withHearingDay(LocalDate.now())
+                .withSharedTime(ZonedDateTime.now())
+                .build();
+        final JsonEnvelope resultsEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder().add(createObjectBuilder().add("id", randomUUID().toString()))));
+
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(groupCaseAggregate.getMemberCases()).thenReturn(new LinkedHashSet<>(Arrays.asList(masterCase.getId(), memberCase.getId())));
+        when(caseAggregate.getProsecutionCase()).thenReturn(memberCase);
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(resultsEnvelope);
+
+        hearingAggregate.apply(hearingResult.getHearing());
+
+        final Metadata metadata = Envelope.metadataBuilder()
+                .withName("progression.command.process-hearing-results")
+                .withId(randomUUID())
+                .build();
+        handler.processHearingResults(envelopeFrom(metadata, hearingResult));
+
+        return verifyAppendAndGetArgumentFrom(eventStream)
+                .filter(env -> env.metadata().name().equals("progression.event.hearing-resulted"))
+                .findFirst().get()
+                .payloadAsJsonObject();
+    }
+
+    private static List<String> caseIds(final JsonObject hearingResulted) {
+        return hearingResulted.getJsonObject("hearing").getJsonArray("prosecutionCases").getValuesAs(JsonObject.class).stream()
+                .map(prosecutionCase -> prosecutionCase.getString("id"))
+                .collect(Collectors.toList());
+    }
+
+    private static List<JsonObject> offenceJudicialResults(final JsonObject hearingResulted, final int caseIndex) {
+        return hearingResulted.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(caseIndex)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getValuesAs(JsonObject.class);
+    }
+
+    private static List<JudicialResult> resultedOffenceJudicialResults() {
+        return singletonList(JudicialResult.judicialResult()
+                .withJudicialResultId(randomUUID())
+                .withLabel("Sexual risk order")
+                .withIsAdjournmentResult(false)
+                .withCategory(JudicialResultCategory.FINAL)
+                .build());
+    }
+
+    private static ProsecutionCase groupCaseWithOffence(final UUID caseId, final UUID groupId, final boolean isGroupMaster, final List<JudicialResult> judicialResults) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withGroupId(groupId)
+                .withIsCivil(true)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(isGroupMaster)
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(new ArrayList<>(singletonList(Offence.offence()
+                                .withId(randomUUID())
+                                .withJudicialResults(judicialResults)
+                                .build())))
+                        .build())))
+                .build();
     }
 
     @Test
