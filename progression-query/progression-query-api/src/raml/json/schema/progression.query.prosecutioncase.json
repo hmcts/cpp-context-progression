@@ -56,6 +56,10 @@
       "items": {
         "$ref": "#/definitions/relatedCase"
       }
+    },
+    "numberOfGroupCases": {
+      "description": "Number of active cases (isGroupMember = true) in the group, including this case",
+      "type": "integer"
     }
   },
   "additionalProperties": false,

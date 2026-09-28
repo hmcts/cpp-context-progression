@@ -55,6 +55,20 @@ public class HearingStub {
 
     }
 
+    public static JSONObject getPostInitiateCourtHearingRequest(final String hearingId) {
+        verifyPostInitiateCourtHearing(hearingId);
+        return getListCourtHearingRequestsAsStream()
+                .filter(payload -> {
+                    try {
+                        return payload.getJSONObject("hearing").get("id").toString().equalsIgnoreCase(hearingId);
+                    } catch (JSONException e) {
+                        return false;
+                    }
+                })
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No hearing.initiate request found for hearing " + hearingId));
+    }
+
     private static Stream<JSONObject> getListCourtHearingRequestsAsStream() {
         return findAll(postRequestedFor(urlPathEqualTo(HEARING_COMMAND))
                 .withHeader(CONTENT_TYPE, equalTo(HEARING_RESPONSE_TYPE)))
