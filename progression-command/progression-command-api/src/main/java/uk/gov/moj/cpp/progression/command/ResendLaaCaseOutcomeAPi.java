@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -9,7 +10,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -32,7 +32,7 @@ public class ResendLaaCaseOutcomeAPi {
         for (int i = 0; i < jsonArrayOfCaseIds.size(); i++) {
             final String caseId = jsonArrayOfCaseIds.getJsonString(i).getString();
 
-            sender.send(envelop(Json.createObjectBuilder().add("caseId", caseId).build())
+            sender.send(envelop(createObjectBuilder().add("caseId", caseId).build())
                     .withName("progression.command.handler.resend-laa-outcome-concluded")
                     .withMetadataFrom(envelope));
 

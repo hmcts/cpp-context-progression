@@ -9,8 +9,8 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -61,6 +61,7 @@ import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentR
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
@@ -236,7 +237,6 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
@@ -1445,17 +1445,17 @@ class CaseAggregateTest {
     private void createCompleteSendingSheetEnvelope() {
         when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
 
-        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
+        when(this.jsonObj.getJsonObject("hearing")).thenReturn(createObjectBuilder()
                 .add("courtCentreName", COURT_CENTRE_NAME)
                 .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
                 .add("sendingCommittalDate", SENDING_COMMITTAL_DATE).add("caseId", CASE_ID)
                 .add("caseUrn", CASE_URN)
-                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()
                         .add("id", DEFENDANT_ID)
                         .add("personId", DEFENDANT_PERSON_ID)
                         .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
                         .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
-                        .add("address", Json.createObjectBuilder()
+                        .add("address", createObjectBuilder()
                                 .add("address1", DEFENDANT_ADDRESS_1)
                                 .add("address2", DEFENDANT_ADDRESS_2)
                                 .add("address3", DEFENDANT_ADDRESS_3)
@@ -1465,14 +1465,13 @@ class CaseAggregateTest {
                         .add("bailStatus", BAIL_STATUS)
                         .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
                         .add("defenceOrganisation", DEFENCE_ORGANISATION)
-                        .add("interpreter", Json.createObjectBuilder()
+                        .add("interpreter", createObjectBuilder()
                                 .add("needed", INTERPRETER_NEEDED)
                                 .add("language", INTERPRETER_LANGUAGE).build())
-                        .add("offences", Json.createArrayBuilder().add(Json
-                                .createObjectBuilder()
+                        .add("offences", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", OFFENCE_ID)
                                 .add("offenceCode", OFFENCE_CODE)
-                                .add("indicatedPlea", Json.createObjectBuilder().add("id", INDICATED_PLEA_ID).add("value", INDICATED_PLEA_VALUE).add("allocationDecision", ALLOCATION_DECISION).build())
+                                .add("indicatedPlea", createObjectBuilder().add("id", INDICATED_PLEA_ID).add("value", INDICATED_PLEA_VALUE).add("allocationDecision", ALLOCATION_DECISION).build())
                                 .add("section", SECTION)
                                 .add("wording", WORDING)
                                 .add("reason", REASON)
@@ -7674,7 +7673,7 @@ class CaseAggregateTest {
                 .replace("OFFENCE_ID", offenceId.toString())
                 .replace("OFFENCE_CODE", offenceCode)
                 .replace("LEGISLATION", legislation);
-        final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
+        final JsonReader jsonReader = createReader(new StringReader(referenceDataOffenceJsonString));
 
 
         final List<JsonObject> referencedataOffencesJsonObject = jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);

@@ -6,6 +6,8 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASES;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.LINK_ACTION_TYPE;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.UNLINK;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildCaseLinkedOrUnlinkedEventJson;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -15,7 +17,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -51,9 +52,9 @@ public class UnlinkCasesEventProcessor {
 
     private JsonObject buildCaseUnlinkedEventPayload(final CasesUnlinked casesUnlinked) {
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
         payloadBuilder.add(LINK_ACTION_TYPE, UNLINK);
-        final JsonArrayBuilder casesArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder casesArrayBuilder = createArrayBuilder();
 
         casesUnlinked.getUnlinkedCases().forEach(
                 unlinkedCases ->

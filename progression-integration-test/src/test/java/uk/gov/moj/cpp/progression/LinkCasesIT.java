@@ -35,6 +35,7 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("java:S2699")
 public class LinkCasesIT extends AbstractIT {
 
     public static final String LINKED_CASES = "linkedCases";
