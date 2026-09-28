@@ -125,6 +125,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.Json;
 
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
