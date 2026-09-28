@@ -79,8 +79,8 @@
         <notification.notify.version>17.104.44</notification.notify.version>
         <unifiedsearch.version>17.104.2</unifiedsearch.version>
         <systemdocgenerator.version>17.104.114</systemdocgenerator.version>
-        <applicationscourtorders.version>17.0.70</applicationscourtorders.version>
-        <sjp.version>17.104.193</sjp.version>
+        <applicationscourtorders.version>17.104.73</applicationscourtorders.version>
+        <sjp.version>17.104.195</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.29</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
