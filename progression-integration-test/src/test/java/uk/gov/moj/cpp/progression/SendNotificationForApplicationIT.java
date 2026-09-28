@@ -46,6 +46,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import javax.json.JsonObject;
@@ -65,6 +68,10 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
     private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
+    // hearing notifications are not sent for past-dated hearings, so the linked-case payload's sitting days are moved into the future
+    private static final String FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD = "2018-09-28T12:13:00.000Z";
+    private static final String SECOND_SITTING_DAY_IN_LINKED_CASE_PAYLOAD = "2018-09-30T09:30:00.000Z";
+    private static final DateTimeFormatter UTC_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private static final String CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID = "5c559f19-ec94-43ec-a1fe-39a0ce7cfd50";
     private static final String CIVIL_PROCEEDINGS_PROSECUTION_AUTHORITY_ID = "3c39ec72-694b-4d3e-87ea-0e84fabf6816";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
@@ -247,8 +254,14 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                 .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                 .replaceAll("APPLICATION_ID", applicationId)
                 .replaceAll("CASE_ID", caseId)
-                .replaceAll("DEFENDANT_ID", defendantId);
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replace(FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD, futureSittingDay(1))
+                .replace(SECOND_SITTING_DAY_IN_LINKED_CASE_PAYLOAD, futureSittingDay(3));
         return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    private String futureSittingDay(final int daysFromNow) {
+        return ZonedDateTime.now(ZoneOffset.UTC).plusDays(daysFromNow).format(UTC_DATE_TIME_FORMATTER);
     }
 
     private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {
