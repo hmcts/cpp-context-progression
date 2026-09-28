@@ -25,7 +25,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialNotCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterNotificationIsRaised;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterNotificationIsRaisedWithContent;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -161,8 +161,8 @@ public class NowDocumentRequestIT extends AbstractIT {
         final String payload = prepareAddNowNonFinancialDocumentRequestForBulkCivilCasePayload(masterCaseId);
         nowsRequestHelper.makeNowsRequestAndVerify(null, payload);
 
-        verifyMaterialNotCreated();
-        verifyNoLetterNotificationIsRaised();
+        verifyMaterialNotCreated(materialId);
+        verifyNoLetterNotificationIsRaisedWithContent(materialId);
     }
 
     private String prepareAddNowNonFinancialDocumentRequestForBulkCivilCasePayload(final UUID caseId) {

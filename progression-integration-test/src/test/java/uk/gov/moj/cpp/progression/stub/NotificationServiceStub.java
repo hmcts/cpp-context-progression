@@ -152,11 +152,12 @@ public class NotificationServiceStub {
         });
     }
 
-    public static void verifyNoLetterNotificationIsRaised() {
+    public static void verifyNoLetterNotificationIsRaisedWithContent(final String content) {
         await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
             try {
                 verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
-                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE)));
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE))
+                        .withRequestBody(containing(content)));
                 return true;
             } catch (VerificationException e) {
                 return false;
