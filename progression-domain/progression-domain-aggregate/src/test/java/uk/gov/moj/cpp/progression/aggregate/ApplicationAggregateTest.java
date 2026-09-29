@@ -1679,6 +1679,30 @@ public class ApplicationAggregateTest {
         assertThat(eventStream.size(), is(1));
         final CourtApplicationDeletedBdf event = (CourtApplicationDeletedBdf) eventStream.get(0);
         assertThat(event.getApplicationId(), is(courtApplicationId));
+        assertThat(event.getCaseIds().isEmpty(), is(true));
+    }
+
+    @Test
+    public void shouldDeleteCourtApplicationByBdfWithLinkedCaseIds() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+
+        aggregate.apply(CourtApplicationCreated.courtApplicationCreated()
+                .withCourtApplication(courtApplication()
+                        .withId(courtApplicationId)
+                        .withCourtApplicationCases(List.of(
+                                courtApplicationCase().withProsecutionCaseId(caseId1).build(),
+                                courtApplicationCase().withProsecutionCaseId(caseId2).build()))
+                        .build())
+                .build());
+
+        final List<Object> eventStream = aggregate.deleteCourtApplicationByBdf(courtApplicationId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationDeletedBdf event = (CourtApplicationDeletedBdf) eventStream.get(0);
+        assertThat(event.getApplicationId(), is(courtApplicationId));
+        assertThat(event.getCaseIds(), is(List.of(caseId1, caseId2)));
     }
 
     @Test
