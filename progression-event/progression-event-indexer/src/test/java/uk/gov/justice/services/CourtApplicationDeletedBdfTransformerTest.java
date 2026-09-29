@@ -60,15 +60,27 @@ public class CourtApplicationDeletedBdfTransformerTest {
     }
 
     @Test
-    public void shouldCreateNoCaseDocumentsWhenNoLinkedCases() {
+    public void shouldCreateStandaloneApplicationDocumentWhenNoLinkedCases() {
 
-        final String inputJson = "{\"applicationId\":\"" + UUID.randomUUID() + "\"}";
+        final String applicationId = UUID.randomUUID().toString();
+
+        final String inputJson = "{\"applicationId\":\"" + applicationId + "\"}";
         final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.getBytes()));
 
         final JsonObject output = objectToJsonObjectConverter.convert(transformer.transform(input));
 
         jsonValidator.validate(output, "/json/schema/crime-case-index-schema.json");
 
-        assertThat(output.getJsonArray("caseDocuments").isEmpty(), is(true));
+        final JsonArray caseDocuments = output.getJsonArray("caseDocuments");
+        assertThat(caseDocuments.size(), is(1));
+
+        final JsonObject standaloneApplicationCase = caseDocuments.getJsonObject(0);
+        assertThat(standaloneApplicationCase.getString("caseId"), is(applicationId));
+        assertThat(standaloneApplicationCase.getString("_case_type"), is("APPLICATION"));
+
+        final JsonArray applications = standaloneApplicationCase.getJsonArray("applications");
+        assertThat(applications.size(), is(1));
+        assertThat(applications.getJsonObject(0).getString("applicationId"), is(applicationId));
+        assertThat(applications.getJsonObject(0).getString("applicationStatus"), is(DELETED_APPLICATION_STATUS));
     }
 }
