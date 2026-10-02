@@ -580,12 +580,13 @@ public class NotificationService {
     private void sendNotificationToThirdParties(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
         final List<CourtApplicationParty> thirdParties = ofNullable(courtApplication.getThirdParties()).map(r -> courtApplication.getThirdParties()).orElse(new ArrayList<>());
 
+        if (!thirdParties.isEmpty() && isExParteCivilApplication(courtApplication)) {
+            LOGGER.info("Notification to third parties suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
+            return;
+        }
+
         thirdParties.forEach(courtApplicationParty -> {
             checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
-            if (shouldSuppressNotification(courtApplication, courtApplicationParty.getMasterDefendant())) {
-                LOGGER.info("Notification to third party suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
-                return;
-            }
             sendNotification(event, UUID.randomUUID(), courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, "YES", isAmended, issueDate);
         });
     }
@@ -616,6 +617,10 @@ public class NotificationService {
         if (isNull(masterDefendant) || isNull(masterDefendant.getMasterDefendantId())) {
             return false;
         }
+        return isExParteCivilApplication(courtApplication);
+    }
+
+    private boolean isExParteCivilApplication(final CourtApplication courtApplication) {
         final List<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).orElse(new ArrayList<>());
         return courtApplicationCases.stream().anyMatch(this::caseHasExParteOffence);
     }
