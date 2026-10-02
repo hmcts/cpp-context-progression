@@ -67,6 +67,9 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
     private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room.json";
+    private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_THIRD_PARTIES_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room-and-third-parties.json";
+    private static final String INDIVIDUAL_THIRD_PARTY_EMAIL = "exparte.individual.thirdparty@example.com";
+    private static final String ORGANISATION_THIRD_PARTY_EMAIL = "exparte.organisation.thirdparty@example.com";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
     // hearing notifications are not sent for past-dated hearings, so the linked-case payload's sitting days are moved into the future
     private static final String FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD = "2018-09-28T12:13:00.000Z";
@@ -229,6 +232,42 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
 
         verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+    }
+
+    @Test
+    void shouldOnlyNotifyProsecutorForExParteCivilApplicationWithDefenceOrganisationAndThirdParties() throws Exception {
+
+        final String materialIdOne = randomUUID().toString();
+        final String materialIdTwo = randomUUID().toString();
+        final String referralId = randomUUID().toString();
+        final String feesId = randomUUID().toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDoB = LocalDate.now().minusYears(30).toString();
+        final String courtCentreName = "Lavender Hill Magistrates' Court";
+
+        civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, defendantDoB, feesId);
+
+        final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
+
+        givenDefendantIsRepresentedByDefenceOrganisation(CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
+        stubApplicantIsNotCpsProsecutor();
+
+        final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        initiateCourtProceedingsForCourtApplicationWithCourtHearing(courtApplicationId, caseId, applicationHearingId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_THIRD_PARTIES_JSON);
+
+        final String caseResponse = getApplicationFor(courtApplicationId);
+        assertThat(caseResponse, is(notNullValue()));
+
+        doHearingConfirmedForApplicationAndVerify(applicationHearingId, courtCentreName);
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
+
+        verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+        verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
+        verifyEmailNotificationIsNotRaisedWithContent(INDIVIDUAL_THIRD_PARTY_EMAIL);
+        verifyEmailNotificationIsNotRaisedWithContent(ORGANISATION_THIRD_PARTY_EMAIL);
     }
 
     private void stubApplicantIsNotCpsProsecutor() {
