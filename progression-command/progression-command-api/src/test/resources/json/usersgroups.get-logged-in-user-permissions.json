@@ -1,0 +1,426 @@
+{
+    "groups": [
+        {
+            "groupId": "63cae459-0e51-4d60-bcf8-c5324be50ba4",
+            "groupName": "Legal Advisers",
+            "prosecutingAuthority": "ALL"
+        }
+    ],
+    "switchableRoles": [],
+    "permissions": [
+        {
+            "permissionId": "1a2c61ac-a607-497f-b36d-f56030bf0f6b",
+            "object": "CP Search",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "c23d6374-a816-4eff-b5fc-a0a5b7b8c0af",
+            "object": "Restrict Details",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "e525c6cd-2e76-4f23-ba58-f792db4ae0e8",
+            "object": "Reorder",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "62487c49-dd76-4413-9f18-bfdd64d335d4",
+            "object": "CrackedIneffective",
+            "action": "Edit",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "e074ef08-af3e-48f5-aecd-cf285a918615",
+            "object": "WorkManagement",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "94b0d19a-ca73-4a8f-8130-2001b2a36f67",
+            "object": "WorkManagement",
+            "action": "Update",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "91e2a296-af38-11eb-8529-0242ac130003",
+            "object": "PetForm",
+            "action": "GrantAccess",
+            "description": "Grant Access to PetForm"
+        },
+        {
+            "permissionId": "3a31059e-3aac-4a33-ad39-b47b335b0dbc",
+            "object": "PET",
+            "action": "Finalise",
+            "description": "Finalise PET"
+        },
+        {
+            "permissionId": "5533dcb9-af06-4c2d-a112-c5cf49ba7ec7",
+            "object": "COTR",
+            "action": "courts-access",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "337b9bdf-c443-4fbc-b680-bf4c2db88b6c",
+            "object": "BCM",
+            "action": "Create",
+            "description": "Create"
+        },
+        {
+            "permissionId": "92bb2027-4310-47c7-9297-b9d5d4600459",
+            "object": "BCM",
+            "action": "Edit",
+            "description": "Edit"
+        },
+        {
+            "permissionId": "495c8df6-cd46-43b5-be02-96e770d87e28",
+            "object": "BCM",
+            "action": "View",
+            "description": "View BCM"
+        },
+        {
+            "permissionId": "e271f8cb-3235-4b66-883e-b0a656a1475a",
+            "object": "BCM",
+            "action": "Finalise",
+            "description": "Finalise"
+        },
+        {
+            "permissionId": "c8f197c9-eafc-4bae-843f-3d0bd6b979a4",
+            "object": "AdhocHearing",
+            "action": "Create",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "178f9b71-68c7-469c-824c-d5503e2a335d",
+            "object": "createDirection",
+            "action": "Create",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "d477cc71-9f2a-4cdf-ada4-fea5e7c7afcf",
+            "object": "editDirection",
+            "action": "Edit",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "cafdd996-53fa-4b97-a55c-9567ddca7a86",
+            "object": "editDirectionStatus",
+            "action": "Edit",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "453f8b89-b8b3-48ca-886f-fda340329551",
+            "object": "viewDirection",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "85f90d32-fbe8-47ab-bc7d-a26f129f3527",
+            "object": "viewDirectionHistory",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "385b5d43-250b-4089-86fc-40a2550a935f",
+            "object": "reserveCase",
+            "action": "View",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "ac07980b-d691-496c-8f28-ffe34418f222",
+            "object": "Review new documents",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "b1546993-a37c-404d-ad98-b2bf41a8ca26",
+            "object": "SJP",
+            "action": "Search",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "99512f6e-08ae-4aef-8254-f0bd2ee81508",
+            "object": "Create an SJP case",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "aa4dc6b4-ba75-4c0c-bc6f-2761a522665e",
+            "object": "View unscheduled list",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "23304522-1136-4411-b71b-0877e7054fde",
+            "object": "View Outstanding cases",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "434b1787-f2d8-4437-94c1-e18b3a39f5db",
+            "object": "Reporting Dashboard",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "e6f5635b-dc99-434e-bfa6-f9e15422907e",
+            "object": "PET",
+            "action": "Component",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "4064c8ba-95aa-4175-9ad7-d02b77ec9636",
+            "object": "Record court room use",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "b77de082-ce37-49f2-be04-be63602bc4d8",
+            "object": "Perform legal SOC check",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "f1984c87-8025-41c9-8257-a04a15982e72",
+            "object": "Match defendants",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "356083c9-cd79-47e9-9ee3-01b0ee8914df",
+            "object": "COTR",
+            "action": "Component",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "9c7c8b17-e0ed-464a-91e0-678cfffece04",
+            "object": "Case activities",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "56d4f8ae-6fc5-436c-b645-38e477807918",
+            "object": "Create case or application",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "f99582ac-5207-449d-ad2f-e8b3700e4336",
+            "object": "Create a migrated case",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "50bb4101-4e2e-4689-94d9-41ee6e7298ab",
+            "object": "BCM",
+            "action": "Component",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "0aba9d9a-4161-4b6b-8b56-1c9f38cb4e08",
+            "object": "View list and manage hearings",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "f22cf4d0-a8e7-43b0-a392-7e3c15acb2a4",
+            "object": "Unallocated hearings",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "28f77db2-e544-4320-9826-0a2375bd30cb",
+            "object": "Manage box work",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "fecdf10e-d579-4dc4-a6a9-b4d5c495fd08",
+            "object": "Fix case interface errors",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "b6aaca08-6a25-4a05-a0f6-07105f049c21",
+            "object": "Start a new SJP session",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "52ca34ec-038e-4949-8ae3-ccf139123721",
+            "object": "Create SJP media register",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "1b60a689-5d7b-42bc-9352-7556d02be6a3",
+            "object": "PL84504",
+            "action": "Access to Standalone Application",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "03b129a5-c138-438e-a71f-98e31e2b0d91",
+            "object": "PL84505",
+            "action": "Access to Standalone Application",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "9c3e8c9b-9248-45cf-a9ea-0a1fc665329a",
+            "object": "PL84506",
+            "action": "Access to Standalone Application",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "73ee57d4-806b-4fde-ae2f-6a28f873717a",
+            "object": "Edit Standalone application",
+            "action": "Link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "18e56953-43e0-44fd-940c-0765962f83ee",
+            "object": "Publish and download hearing list",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "011a71d5-8eae-4123-9863-18090107ed42",
+            "object": "Court List",
+            "action": "Publish",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "b3950f5b-4c1a-466e-9bfa-e6a4ae280596",
+            "object": "Judiciary itinerary",
+            "action": "Manage",
+            "description": "Manage Judicial itinerary"
+        },
+        {
+            "permissionId": "78bd65e9-30d1-480c-86cb-0eb725b75ed0",
+            "object": "Search for driver record",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "73d7508e-8dac-4c25-a538-ea6f5552cfdb",
+            "object": "Prosecution Case File",
+            "action": "Search",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "2d94e121-89c1-457c-b843-8ffb3622ef11",
+            "object": "Edit case",
+            "action": "Link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "cfabc9d7-08c8-4115-852f-456ae2e671c8",
+            "object": "Allocated hearings",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "bc47d5d1-d4fe-46f7-af4e-d73a70d49f9b",
+            "object": "Correspondence",
+            "action": "Component",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "bca63c8e-eea7-46ca-ab35-0b260043bc4d",
+            "object": "Reuse of Information",
+            "action": "Component",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "75f699ef-29f2-4dca-8955-fa2e38613fc9",
+            "object": "CourtSchedule",
+            "action": "Create",
+            "description": "Permission for Create Court Schedule API operation"
+        },
+        {
+            "permissionId": "dde03c95-c4e2-42c0-9036-f1c38505e263",
+            "object": "CourtSchedule",
+            "action": "View",
+            "description": "Permission for Get Court Schedule API operation"
+        },
+        {
+            "permissionId": "6b29ac9d-7134-4614-92a8-65140a41916f",
+            "object": "Court Scheduler",
+            "action": "Home page link",
+            "description": "Link for Create CourtSchedule Sessions"
+        },
+        {
+            "permissionId": "2bd1b865-02b1-47de-89cc-2c7bd1331697",
+            "object": "Court Scheduler",
+            "action": "Home page link",
+            "description": "Link for Update CourtSchedule Sessions"
+        },
+        {
+            "permissionId": "b96ab0d7-1123-4632-950d-273206fba571",
+            "object": "Court Calendar",
+            "action": "Manage",
+            "description": "Manage Court Calendar"
+        },
+        {
+            "permissionId": "eaae02dc-1ccc-42ea-9bf2-5061bd304a7e",
+            "object": "Find available sessions",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "5f3c9de5-5a76-4e0a-bde1-3f5a2c1d6b68",
+            "object": "PL84501",
+            "action": "Access to Standalone Application",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "d7af4ec4-bf01-4322-bcb9-960d6a3e6f3d",
+            "object": "PL84502",
+            "action": "Access to Standalone Application",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "a12dd7f3-9295-450d-a46e-05ba8d870d28",
+            "object": "Staging Dcs",
+            "action": "COMPONENT",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "8d3d74d4-e3b3-4402-a640-269a4812bac9",
+            "object": "civil cases",
+            "action": "Component",
+            "description": "Civil feature"
+        },
+        {
+            "permissionId": "7d81c588-6bd0-4d99-bd68-5cd0a09b0bf8",
+            "object": "Create court media register",
+            "action": "Home page link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "e61fc0fc-d307-4915-ae4a-0c7a4beb329e",
+            "object": "Create Child Application",
+            "action": "Link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "0d291eb9-a605-4795-aa2c-1281bf5db5ce",
+            "object": "Change hearing to past date",
+            "action": "Link",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "ac444697-b013-4dd7-bb5c-ce403f3fdd9e",
+            "object": "AccessController",
+            "action": "Access",
+            "description": "DESCRIPTION"
+        },
+        {
+            "permissionId": "4088ab90-010b-4689-805e-5e604ef7192c",
+            "object": "AI search",
+            "action": "View",
+            "description": "DESCRIPTION"
+        }
+    ]
+}

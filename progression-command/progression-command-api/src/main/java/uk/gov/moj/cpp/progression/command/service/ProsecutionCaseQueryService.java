@@ -1,10 +1,15 @@
 package uk.gov.moj.cpp.progression.command.service;
 
-import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -26,13 +31,19 @@ public class ProsecutionCaseQueryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQueryService.class);
     private static final String CASE_ID = "caseId";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
+    private static final String PROGRESSION_QUERY_COURT_PROCEEDINGS_FOR_APPLICATION = "progression.query.court-proceedings-for-application";
+    private static final String APPLICATION_ID = "applicationId";
+    private static final String COURT_APPLICATION = "courtApplication";
 
     @Inject
-    @ServiceComponent(COMMAND_HANDLER)
+    @ServiceComponent(COMMAND_API)
     private Requester requester;
 
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     public Optional<JsonObject> getProsecutionCase(final JsonEnvelope envelope, final UUID caseId) {
-        Optional<JsonObject> result = Optional.empty();
+        Optional<JsonObject> result = empty();
         final JsonObject requestParameter = createObjectBuilder()
                 .add(CASE_ID, caseId.toString())
                 .build();
@@ -63,7 +74,26 @@ public class ProsecutionCaseQueryService {
         if (!response.payload().isEmpty()) {
             return Optional.of(response.payload());
         }
-        return Optional.empty();
+        return empty();
 
+    }
+
+    /**
+     * Returns the {@code courtApplication} of the stored initiate payload for the given application.
+     * The view throws for an unknown id, so any failure is treated as "not found".
+     */
+    public Optional<CourtApplication> getCourtProceedingsForApplication(final UUID applicationId, final Envelope<?> envelope) {
+        final JsonObject payload = createObjectBuilder().add(APPLICATION_ID, applicationId.toString()).build();
+        final Envelope<JsonObject> requestEnvelope = envelop(payload)
+                .withName(PROGRESSION_QUERY_COURT_PROCEEDINGS_FOR_APPLICATION).withMetadataFrom(envelope);
+        try {
+            final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+            return ofNullable(response.payload())
+                    .filter(json -> json.containsKey(COURT_APPLICATION))
+                    .map(json -> jsonObjectToObjectConverter.convert(json.getJsonObject(COURT_APPLICATION), CourtApplication.class));
+        } catch (final RuntimeException e) {
+            LOGGER.warn("applicationId {} court proceedings for application not found", applicationId, e);
+            return empty();
+        }
     }
 }

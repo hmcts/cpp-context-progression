@@ -18,6 +18,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.helper.ChildApplicationCreationValidator;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,9 @@ public class InitiateCourtApplicationProceedingsCommandApi {
     @Inject
     private Requester requester;
 
+    @Inject
+    private ChildApplicationCreationValidator childApplicationCreationValidator;
+
     @Handles("progression.initiate-court-proceedings-for-application")
     public void initiateCourtApplicationProceedings(final JsonEnvelope command) {
 
@@ -48,6 +52,7 @@ public class InitiateCourtApplicationProceedingsCommandApi {
         }
 
         validateInputsForApplication(command);
+        childApplicationCreationValidator.validate(command);
 
         this.sender.send(Envelope.envelopeFrom(metadataFrom(command.metadata()).withName("progression.command.initiate-court-proceedings-for-application").build(),
                 command.payloadAsJsonObject()));

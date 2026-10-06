@@ -67,6 +67,7 @@
     ]
   },
   "courtHearing": {
+    "id": "HEARING_ID",
     "hearingType": {
       "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
       "description": "Breach Hearing"
