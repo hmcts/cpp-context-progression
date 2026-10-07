@@ -61,8 +61,6 @@ public class CourtProceedingsInitiatedProcessorTest {
 
     public static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     public static final String YOUTH_OFFENCE_RR_DESCRIPTION = "Section 49 of the Children and Young Persons Act 1933 applies";
-    private static final String PCF_CASE_URN = "PCF_CASE_URN";
-    private static final String PRO_AUTH_REF = "PRO_AUTH_REF";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @InjectMocks
@@ -89,6 +87,10 @@ public class CourtProceedingsInitiatedProcessorTest {
     private SummonsHearingRequestService summonsHearingRequestService;
     @Spy
     private ProgressionService progressionService;
+
+    private static final String PCF_CASE_URN = "PCF_CASE_URN";
+    private static final String PRO_AUTH_REF = "PRO_AUTH_REF";
+
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
     @Spy
