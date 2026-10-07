@@ -598,7 +598,7 @@ public class HearingAggregate implements Aggregate {
                     .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                     .withType(hearing.getType())
                     .withIsGroupProceedings(hearing.getIsGroupProceedings())
-                    .withNumberOfGroupCases(hearing.getNumberOfGroupCases())
+                    .withNumberOfGroupCases(resolveNumberOfGroupCases(hearing))
                     .build();
 
             addNewOffencesToHearing(enrichedHearing);
@@ -610,12 +610,23 @@ public class HearingAggregate implements Aggregate {
                 .withValuesFrom(hearing);
 
         if (nonNull(this.hearing)) {
-            enrichedHearingBuilder.withNumberOfGroupCases(this.hearing.getNumberOfGroupCases());
+            enrichedHearingBuilder.withNumberOfGroupCases(resolveNumberOfGroupCases(hearing));
             enrichedHearingBuilder.withProsecutionCases(mergedProsecutionCases);
         }
         final Hearing enrichedHearing = enrichedHearingBuilder.build();
         addNewOffencesToHearing(enrichedHearing);
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
+    }
+
+    /**
+     * Listing's confirmed hearing carries the current group size, which wins over the stored copy. When
+     * it carries none (for example a hearing that is not a group hearing), the stored value is kept.
+     */
+    private Integer resolveNumberOfGroupCases(final Hearing enrichCommandHearing) {
+        if (nonNull(enrichCommandHearing.getNumberOfGroupCases()) || isNull(this.hearing)) {
+            return enrichCommandHearing.getNumberOfGroupCases();
+        }
+        return this.hearing.getNumberOfGroupCases();
     }
 
     private List<ProsecutionCase> getMergedProsecutionCasesForEnrichInitiate(final Hearing enrichCommandHearing) {
