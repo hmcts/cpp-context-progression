@@ -8,9 +8,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -22,6 +26,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
+import uk.gov.moj.cpp.progression.command.helper.ChildApplicationCreationValidator;
 
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -31,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -43,6 +49,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
     @Mock
     private Requester requester;
+
+    @Mock
+    private ChildApplicationCreationValidator childApplicationCreationValidator;
 
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
@@ -319,6 +328,74 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
         verify(sender, times(1)).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+    }
+
+    @Test
+    public void shouldValidateChildApplicationCreationBeforeSendingCommand() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+        stubHasPermission(true);
+        stubEmptyPermissions();
+
+        initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
+
+        final InOrder inOrder = inOrder(childApplicationCreationValidator, sender);
+        inOrder.verify(childApplicationCreationValidator).validate(commandEnvelope);
+        inOrder.verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+        assertThat(envelopeCaptor.getValue().payload(), equalTo(commandEnvelope.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldNotSendCommandWhenChildApplicationCreationIsRejected() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+        stubHasPermission(true);
+        stubEmptyPermissions();
+        doThrow(new BadRequestException("A child application cannot have a child application (AC7)"))
+                .when(childApplicationCreationValidator).validate(commandEnvelope);
+
+        final BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
+
+        assertThat(exception.getMessage(), is("A child application cannot have a child application (AC7)"));
+        verify(childApplicationCreationValidator).validate(commandEnvelope);
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void shouldNotSendCommandWhenChildApplicationCreationIsForbidden() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+        stubHasPermission(true);
+        stubEmptyPermissions();
+        doThrow(new ForbiddenRequestException("User is not authorised to create a child application!"))
+                .when(childApplicationCreationValidator).validate(commandEnvelope);
+
+        final ForbiddenRequestException exception = assertThrows(ForbiddenRequestException.class,
+                () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
+
+        assertThat(exception.getMessage(), is("User is not authorised to create a child application!"));
+        verify(childApplicationCreationValidator).validate(commandEnvelope);
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void shouldNotValidateChildApplicationCreationWhenUserNotAuthorisedForTheApplicationType() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+        stubHasPermission(false);
+
+        assertThrows(ForbiddenRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
+
+        verifyNoInteractions(childApplicationCreationValidator, sender);
+    }
+
+    @Test
+    public void shouldNotValidateChildApplicationCreationOnEditOrBreachApplication() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+
+        initiateCourtApplicationProceedingsCommandApi.editCourtApplicationProceedings(commandEnvelope);
+        initiateCourtApplicationProceedingsCommandApi.addBreachApplication(commandEnvelope);
+
+        verifyNoInteractions(childApplicationCreationValidator);
+        verify(sender, times(2)).send(any());
     }
 
     private JsonEnvelope buildStandaloneEnvelope(final String applicationTypeId, final String hearingTypeId) {

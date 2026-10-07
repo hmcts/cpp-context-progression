@@ -15,9 +15,11 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.stubGetHearingWithCourtApplications;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.removeHearingTypePermission;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubHearingTypePermission;
@@ -124,9 +126,14 @@ public class CreateCourtApplicationIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        stubGetHearingWithCourtApplications(hearingId);
+
         final String applicationId = randomUUID().toString();
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, MH_ACTIVE_CASE_FIXTURE);
+        final Response response = initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, MH_ACTIVE_CASE_FIXTURE);
+
+        assertThat(response.getStatusCode(), is(SC_ACCEPTED));
 
         verifyCourtApplicationCreatedEventPublished(applicationId);
 
@@ -145,9 +152,14 @@ public class CreateCourtApplicationIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        stubGetHearingWithCourtApplications(hearingId);
+
         final String applicationId = randomUUID().toString();
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, MH_INACTIVE_CASE_FIXTURE);
+        final Response response = initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, MH_INACTIVE_CASE_FIXTURE);
+
+        assertThat(response.getStatusCode(), is(SC_ACCEPTED));
 
         verifyCourtApplicationCreatedEventPublished(applicationId);
 

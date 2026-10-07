@@ -73,6 +73,7 @@
       "enum": [
         "HOME",
         "CAAG",
+        "AAAG",
         "MH",
         "UNKNOWN"
       ]
