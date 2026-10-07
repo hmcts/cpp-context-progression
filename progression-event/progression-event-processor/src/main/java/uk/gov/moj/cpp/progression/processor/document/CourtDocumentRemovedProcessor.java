@@ -7,6 +7,7 @@ import uk.gov.justice.core.courts.CourtsDocumentRemoved;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -34,7 +35,10 @@ public class CourtDocumentRemovedProcessor {
     private JsonObjectToObjectConverter jsonObjectConverter;
 
     @Inject
-    MaterialClient materialClient;
+    private SystemUserProvider systemUserProvider;
+
+    @Inject
+    private MaterialClient materialClient;
 
     @Handles("progression.event.court-document-removed")
     public void handleCourtDocumentRemovedEvent(final JsonEnvelope envelope) {
@@ -42,9 +46,12 @@ public class CourtDocumentRemovedProcessor {
             LOGGER.info("Received progression.event.court-document-removed , payload {} ", envelope.toObfuscatedDebugString());
         }
         final CourtsDocumentRemoved courtsDocumentRemoved = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), CourtsDocumentRemoved.class);
-        final String userId = envelope.metadata().userId()
-                .orElseThrow(() -> new IllegalArgumentException("No UserId Supplied"));
-        materialClient.removeMaterial(courtsDocumentRemoved.getMaterialId(), UUID.fromString(userId), createObjectBuilder().build());
+        final UUID systemUserId = systemUserProvider.getContextSystemUserId()
+                .orElseThrow(() -> {
+                    LOGGER.error("Failed to retrieve context system user ID.");
+                    return new IllegalStateException("Invalid context system user id");
+                });
+        materialClient.removeMaterial(courtsDocumentRemoved.getMaterialId(), systemUserId, createObjectBuilder().build());
         sender.send(enveloper.withMetadataFrom(envelope, PUBLIC_PROGRESSION_EVENTS_COURT_DOCUMENT_REMOVED).apply(envelope.payloadAsJsonObject()));
     }
 }
