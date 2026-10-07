@@ -130,6 +130,10 @@ public class ApplicationParameters {
     private String summonsRejectedTemplateId;
 
     @Inject
+    @Value(key = "bulk_summons_approved_template_id")
+    private String bulkSummonsApprovedTemplateId;
+
+    @Inject
     @Value(key = "statdec_send_appointment_letter_template_id")
     private String statDecSendAppointmentLetterTemplateId;
 
@@ -294,6 +298,10 @@ public class ApplicationParameters {
 
     public String getSummonsRejectedTemplateId() {
         return summonsRejectedTemplateId;
+    }
+
+    public String getBulkSummonsApprovedTemplateId() {
+        return bulkSummonsApprovedTemplateId;
     }
 
     public String getEndClientHost() {

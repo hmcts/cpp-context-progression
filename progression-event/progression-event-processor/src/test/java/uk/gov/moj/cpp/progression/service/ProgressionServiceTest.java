@@ -2075,4 +2075,38 @@ public class ProgressionServiceTest {
         assertThat(result, is(payloads));
 
     }
+
+    @Test
+    void shouldReturnMasterProsecutionCaseWhenPresentForGroupId() {
+        final UUID groupId = randomUUID();
+        final JsonEnvelope inputEnvelope = envelopeFrom(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.court-application-summons-approved")
+                .build(), createObjectBuilder().build());
+
+        final JsonObject masterCaseJson = createObjectBuilder().add("id", randomUUID().toString()).build();
+        final JsonObject responsePayload = createObjectBuilder().add("masterCase", masterCaseJson).build();
+
+        when(requester.requestAsAdmin(any())).thenReturn(JsonEnvelope.envelopeFrom(inputEnvelope.metadata(), responsePayload));
+
+        final Optional<JsonObject> result = progressionService.getMasterProsecutionCaseByGroupId(inputEnvelope, groupId);
+
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is(masterCaseJson));
+    }
+
+    @Test
+    void shouldReturnEmptyWhenNoMasterProsecutionCaseFoundForGroupId() {
+        final UUID groupId = randomUUID();
+        final JsonEnvelope inputEnvelope = envelopeFrom(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.court-application-summons-approved")
+                .build(), createObjectBuilder().build());
+
+        when(requester.requestAsAdmin(any())).thenReturn(JsonEnvelope.envelopeFrom(inputEnvelope.metadata(), createObjectBuilder().build()));
+
+        final Optional<JsonObject> result = progressionService.getMasterProsecutionCaseByGroupId(inputEnvelope, groupId);
+
+        assertThat(result.isPresent(), is(false));
+    }
 }
