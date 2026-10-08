@@ -1099,7 +1099,10 @@ public class ProgressionService {
                     .withAdjournedFromDate(LocalDate.now())
                     .withHearings(Arrays.asList(hearingListingNeeds))
                     .withShadowListedOffences(shadowListedOffences)
-                    .withBookingReferencesWithCourtScheduleIds(bookingReferencesWithCourtScheduleIds)
+                    // Normalised here too: this re-wrap is reached per hearing, and an empty list
+                    // arriving from an older event must not reintroduce the property.
+                    .withBookingReferencesWithCourtScheduleIds(
+                            isEmpty(bookingReferencesWithCourtScheduleIds) ? null : bookingReferencesWithCourtScheduleIds)
                     .build();
         }
         return null;

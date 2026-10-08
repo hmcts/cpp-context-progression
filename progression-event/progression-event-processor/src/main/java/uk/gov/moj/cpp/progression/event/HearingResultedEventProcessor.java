@@ -174,6 +174,9 @@ public class HearingResultedEventProcessor {
         final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds);
         if (isNotEmpty(nextHearingsList)) {
             LOGGER.info("progression.event.next-hearings-requested nextHearingsList not empty");
+            final List<BookingReferenceCourtScheduleIds> previousBookingReferences =
+                    nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds();
+
             final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
                     .withHearingId(seedingHearing.getSeedingHearingId())
                     .withSeedingHearing(seedingHearing)
@@ -196,7 +199,15 @@ public class HearingResultedEventProcessor {
                     // keeps a genuinely expired booking behaving as it does today: nothing was
                     // ever stored for it, so nothing is carried, and the share still fails loudly
                     // instead of being listed into a slot nobody holds.
-                    .withBookingReferencesWithCourtScheduleIds(nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds())
+                    // null, not an empty list, when there is nothing to carry. The aggregate hands
+                    // back emptyList() for every first share, and serialising that put
+                    // "bookingReferencesWithCourtScheduleIds": [] on EVERY command - so a listing
+                    // that predates the field rejected all of them on additionalProperties:false,
+                    // not just the re-shares that actually need it. Nulls are omitted from the
+                    // payload (the same reason committingCourt is passed as null when absent), so
+                    // the property only appears on the commands that have something to say.
+                    .withBookingReferencesWithCourtScheduleIds(
+                            isEmpty(previousBookingReferences) ? null : previousBookingReferences)
                     .build();
 
             progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings);
