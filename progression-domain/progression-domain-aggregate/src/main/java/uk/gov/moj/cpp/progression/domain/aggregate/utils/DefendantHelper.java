@@ -274,7 +274,17 @@ public class DefendantHelper {
 
     public static boolean isConcluded(final Offence offence) {
         return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
-                .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
+                .anyMatch(DefendantHelper::isFinalOrTerminatesProceedings);
+    }
+
+    /**
+     * A judicial result concludes an offence either because it is categorised FINAL, or because
+     * it is explicitly flagged as terminating the offence's proceedings regardless of category
+     * (SNI-9799: some results, e.g. IMP, terminate proceedings without always being tagged FINAL).
+     */
+    private static boolean isFinalOrTerminatesProceedings(final JudicialResult judicialResult) {
+        return JudicialResultCategory.FINAL.equals(judicialResult.getCategory())
+                || TRUE.equals(judicialResult.getTerminatesOffenceProceedings());
     }
 
     public static boolean isConcluded(final Offence offence, final List<DefendantJudicialResult> defendantJudicialResults, final List<JudicialResult> defendantCaseJudicialResults) {
@@ -288,13 +298,13 @@ public class DefendantHelper {
                 .collect(toList());
 
         final Optional<Boolean> caseLevelConcluded = isEmpty(caseJudicialResultsForOffence) ? empty() : of(caseJudicialResultsForOffence.stream()
-                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+                .anyMatch(DefendantHelper::isFinalOrTerminatesProceedings));
 
         final Optional<Boolean> defendantLevelConcluded = isEmpty(defendantJudicialResultsForTheOffence) ? empty() : of(defendantJudicialResultsForTheOffence.stream()
-                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+                .anyMatch(DefendantHelper::isFinalOrTerminatesProceedings));
 
         final Optional<Boolean> offenceLevelConcluded = isEmpty(offence.getJudicialResults()) ? empty() : of(offence.getJudicialResults().stream()
-                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+                .anyMatch(DefendantHelper::isFinalOrTerminatesProceedings));
 
         if (!offenceLevelConcluded.isPresent() && !defendantLevelConcluded.isPresent() && !caseLevelConcluded.isPresent()) {
             return false;

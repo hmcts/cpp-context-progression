@@ -601,6 +601,84 @@ public class DefendantHelperTest {
         assertFalse(DefendantHelper.isConcluded(offence, emptyList(), emptyList()));
     }
 
+    // SNI-9799: a result that terminates offence proceedings concludes the offence even when its
+    // category is not FINAL (e.g. IMP results reported with a non-FINAL category).
+
+    @Test
+    public void shouldIsConcludedSingleArgBeTrueWhenCategoryIsFinal() {
+        final Offence offence = Offence.offence()
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+
+        assertTrue(DefendantHelper.isConcluded(offence));
+    }
+
+    @Test
+    public void shouldIsConcludedSingleArgBeTrueWhenCategoryIsNotFinalButResultTerminatesOffenceProceedings() {
+        final Offence offence = Offence.offence()
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                        .withTerminatesOffenceProceedings(TRUE)
+                        .build()))
+                .build();
+
+        assertTrue(DefendantHelper.isConcluded(offence));
+    }
+
+    @Test
+    public void shouldIsConcludedSingleArgBeFalseWhenCategoryIsNotFinalAndResultDoesNotTerminateOffenceProceedings() {
+        final Offence offence = Offence.offence()
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                        .withTerminatesOffenceProceedings(false)
+                        .build()))
+                .build();
+
+        assertFalse(DefendantHelper.isConcluded(offence));
+    }
+
+    @Test
+    public void shouldIsConcludedSingleArgBeFalseWhenCategoryIsNotFinalAndTerminatesOffenceProceedingsIsNull() {
+        final Offence offence = Offence.offence()
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY)
+                        .build()))
+                .build();
+
+        assertFalse(DefendantHelper.isConcluded(offence));
+    }
+
+    @Test
+    public void shouldIsConcludedThreeArgBeTrueWhenOffenceLevelResultTerminatesProceedingsButIsNotFinal() {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                        .withTerminatesOffenceProceedings(TRUE)
+                        .build()))
+                .build();
+
+        assertTrue(DefendantHelper.isConcluded(offence, emptyList(), emptyList()));
+    }
+
+    @Test
+    public void shouldIsConcludedThreeArgBeTrueWhenDefendantLevelResultTerminatesProceedingsButIsNotFinal() {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).build();
+        final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY)
+                        .withTerminatesOffenceProceedings(TRUE)
+                        .withOffenceId(offenceId)
+                        .build())
+                .build());
+
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, emptyList()));
+    }
+
     private Offence.Builder createOffenceWithMultipleReportingRestriction(final ReportingRestriction reportingRestriction1,
                                                                           final ReportingRestriction reportingRestriction2,
                                                                           final UUID offenceId) {

@@ -1,0 +1,385 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-22T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2021-11-17T09:15:23.514Z",
+            "id": "DEFENDANT_ID_ONE",
+            "isYouth": false,
+            "masterDefendantId": "DEFENDANT_ID_ONE",
+            "prosecutionCaseId": "CASE_ID",
+            "offences": [
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "FINAL",
+                    "cjsCode": "1002",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "6c3e9e2a-7e3d-4a1e-9a8e-1a2b3c4d5e6f",
+                    "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "label": "Imprisonment",
+                    "lastSharedDateTime": "2023-11-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 10200,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "IMP - Imprisonment",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "6c3e9e2a-7e3d-4a1e-9a8e-1a2b3c4d5e6f",
+                    "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "terminatesOffenceProceedings": true,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "plea": {
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "originatingHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                  "pleaDate": "2021-11-22",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and interfere with witnesses"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2023-11-02",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "4d0463cd-1ea0-4e7a-b946-3a38bec16709",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£100.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£100.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2023-11-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 51600,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £100.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "4d0463cd-1ea0-4e7a-b946-3a38bec16709",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 501,
+                "plea": {
+                  "offenceId": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "originatingHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                  "pleaDate": "2021-11-22",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "svfdg"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "071",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1943-03-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Robert",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Ormsby",
+                "title": "Ormsby"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "TFL"
+          },
+          {
+            "courtProceedingsInitiated": "2021-11-17T09:15:23.514Z",
+            "id": "DEFENDANT_ID_TWO",
+            "isYouth": false,
+            "masterDefendantId": "DEFENDANT_ID_TWO",
+            "prosecutionCaseId": "CASE_ID",
+            "offences": [
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "FINAL",
+                    "cjsCode": "1002",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7d4f0f3b-8f4e-5b2f-ab9f-2b3c4d5e6f7a",
+                    "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "label": "Imprisonment",
+                    "lastSharedDateTime": "2023-11-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 10200,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "IMP - Imprisonment",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "7d4f0f3b-8f4e-5b2f-ab9f-2b3c4d5e6f7a",
+                    "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "terminatesOffenceProceedings": true,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "plea": {
+                  "offenceId": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "originatingHearingId": "0ef3ca6e-c846-4860-8c55-b4581453b6fb",
+                  "pleaDate": "2021-11-22",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and interfere with witnesses"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "6789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 501,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "svfdg"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "071",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1990-03-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Sarah",
+                "gender": "FEMALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Smith",
+                "title": "Smith"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "TFL"
+          }
+        ],
+        "id": "CASE_ID",
+        "initiationCode": "C",
+        "originatingOrganisation": "0450000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "23GD9188221"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2021-11-22",
+  "sharedTime": "2021-11-17T09:20:51.596Z",
+  "isReshare": false
+}
