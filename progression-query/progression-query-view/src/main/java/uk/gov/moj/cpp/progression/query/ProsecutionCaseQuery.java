@@ -212,7 +212,7 @@ public class ProsecutionCaseQuery {
      * Same structure as progression.query.prosecutioncase-details, but the case is reduced to the
      * defendant/offence fields needed to work out a defendant's current bail status.
      */
-    @Handles("progression.query.prosecution-case-details-summary")
+    @Handles("progression.query.prosecutioncase-details-summary")
     public JsonEnvelope getProsecutionCaseDetailsSummary(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), CASE_ID);

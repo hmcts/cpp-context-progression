@@ -134,10 +134,10 @@ rule "Query - Access control for  progression.query.prosecutioncase-details"
     $outcome.setSuccess(true);
 end
 
-rule "Query - Access control for  progression.query.prosecution-case-details-summary"
+rule "Query - Access control for  progression.query.prosecutioncase-details-summary"
   when
     $outcome: Outcome();
-    $action: Action(name == "progression.query.prosecution-case-details-summary");
+    $action: Action(name == "progression.query.prosecutioncase-details-summary");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
   then
     $outcome.setSuccess(true);

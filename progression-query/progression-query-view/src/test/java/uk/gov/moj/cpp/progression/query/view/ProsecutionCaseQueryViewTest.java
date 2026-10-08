@@ -2389,7 +2389,7 @@ public class ProsecutionCaseQueryViewTest {
     public void shouldReturnOnlyBailStatusFieldsForProsecutionCaseDetailsSummary() {
         final UUID caseId = randomUUID();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecution-case-details-summary").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-summary").build(),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
 
         final String storedPayload = "{"
@@ -2432,7 +2432,7 @@ public class ProsecutionCaseQueryViewTest {
     public void shouldReturnEmptyPayloadForProsecutionCaseDetailsSummaryWhenCaseNotFound() {
         final UUID caseId = randomUUID();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecution-case-details-summary").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-summary").build(),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenThrow(new javax.persistence.NoResultException());
 
