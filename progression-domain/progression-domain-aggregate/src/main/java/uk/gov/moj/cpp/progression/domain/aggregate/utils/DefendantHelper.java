@@ -61,9 +61,13 @@ import javax.json.JsonObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S1067", "squid:MethodCyclomaticComplexity", "squid:S2234", "squid:S1188", "squid:S1066"})
 public class DefendantHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantHelper.class);
 
     public static final String SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     public static final String SEXUAL_OFFENCE_REPORTING_RESTRICTION_CODE = "YES";
@@ -178,6 +182,14 @@ public class DefendantHelper {
         final List<JudicialResult> defendantCaseJudicialResults = prosecutionCase.getDefendants().stream()
                         .flatMap(defendant -> ofNullable(defendant.getDefendantCaseJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
                                 .collect(toList());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("LAA-DEFECT-TRACE: hearingDefendantJudicialResults size={}, entries={}; defendantCaseJudicialResults size={}, entries={}",
+                    isNull(hearingDefendantJudicialResults) ? 0 : hearingDefendantJudicialResults.size(),
+                    ofNullable(hearingDefendantJudicialResults).map(Collection::stream).orElseGet(Stream::empty)
+                            .map(DefendantJudicialResult::getJudicialResult).filter(Objects::nonNull).map(DefendantHelper::describeJudicialResult).collect(toList()),
+                    defendantCaseJudicialResults.size(),
+                    defendantCaseJudicialResults.stream().map(DefendantHelper::describeJudicialResult).collect(toList()));
+        }
         prosecutionCase.getDefendants().stream().forEach(existingDefendant -> {
             final List<Offence> updatedOffences = new ArrayList<>();
             final List<Offence> caseOffences = offenceProceedingConcluded.get(existingDefendant.getId());
@@ -189,6 +201,11 @@ public class DefendantHelper {
                 final Defendant updatedDefendant = Defendant.defendant().withValuesFrom(existingDefendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
                 updatedDefendants.add(updatedDefendant);
 
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("LAA-DEFECT-TRACE: defendantId={} resolved proceedingsConcluded={} (per-offence: {})",
+                            existingDefendant.getId(), proceedingConcluded,
+                            updatedOffences.stream().map(o -> o.getId() + "=" + o.getProceedingsConcluded()).collect(toList()));
+                }
             }
         });
     }
@@ -297,6 +314,9 @@ public class DefendantHelper {
                 .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
 
         if (!offenceLevelConcluded.isPresent() && !defendantLevelConcluded.isPresent() && !caseLevelConcluded.isPresent()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("LAA-DEFECT-TRACE: offenceId={} all three sources absent -> isConcluded=false", offence.getId());
+            }
             return false;
         }
 
@@ -305,7 +325,35 @@ public class DefendantHelper {
         defendantLevelConcluded.ifPresent(b -> result.set(result.get() && b));
         caseLevelConcluded.ifPresent(b -> result.set(result.get() && b));
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("LAA-DEFECT-TRACE: offenceId={} offenceLevelConcluded={} (ownResults={}), defendantLevelConcluded={} (hearingLevelMatches={}), caseLevelConcluded={} (caseLevelMatches={}) -> isConcluded={}",
+                    offence.getId(),
+                    offenceLevelConcluded,
+                    ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty).map(DefendantHelper::describeJudicialResult).collect(toList()),
+                    defendantLevelConcluded,
+                    defendantJudicialResultsForTheOffence.stream().map(DefendantHelper::describeJudicialResult).collect(toList()),
+                    caseLevelConcluded,
+                    caseJudicialResultsForOffence.stream().map(DefendantHelper::describeJudicialResult).collect(toList()),
+                    result.get());
+        }
+
         return result.get();
+    }
+
+    private static String describeJudicialResult(final JudicialResult judicialResult) {
+        if (isNull(judicialResult)) {
+            return "null";
+        }
+        return "{judicialResultId=" + judicialResult.getJudicialResultId()
+                + ", judicialResultTypeId=" + judicialResult.getJudicialResultTypeId()
+                + ", offenceId=" + judicialResult.getOffenceId()
+                + ", label=" + judicialResult.getLabel()
+                + ", cjsCode=" + judicialResult.getCjsCode()
+                + ", category=" + judicialResult.getCategory()
+                + ", terminatesOffenceProceedings=" + judicialResult.getTerminatesOffenceProceedings()
+                + ", orderedHearingId=" + judicialResult.getOrderedHearingId()
+                + ", orderedDate=" + judicialResult.getOrderedDate()
+                + "}";
     }
 
     public static boolean hasNewAmendment(final Offence offence) {
