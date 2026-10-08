@@ -12,6 +12,7 @@ import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
@@ -85,6 +86,7 @@ public class BulkCivilCaseSummonsApplicationIT extends AbstractIT {
         // bulk case request.
         initiateCourtProceedingsForCourtApplication(applicationId, caseId.toString(),
                 "applications/progression.initiate-court-proceedings-for-bulk-civil-group-application.json");
+        pollForCourtApplication(applicationId);
 
         // When this application is resulted with SA results and hearing is shared - injected
         // directly as the private event the real event chain ultimately produces, to isolate
