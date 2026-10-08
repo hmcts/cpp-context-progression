@@ -79,9 +79,9 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getProsecutionCaseDetails(query);
     }
 
-    @Handles("progression.query.prosecutioncase-details-light")
-    public JsonEnvelope getCaseProsecutionCaseDetailsLight(final JsonEnvelope query) {
-        return prosecutionCaseQuery.getProsecutionCaseDetailsLight(query);
+    @Handles("progression.query.prosecution-case-details-summary")
+    public JsonEnvelope getCaseProsecutionCaseDetailsSummary(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getProsecutionCaseDetailsSummary(query);
     }
 
     @Handles("progression.query.mastercase-details")

@@ -212,14 +212,14 @@ public class ProsecutionCaseQuery {
      * Same structure as progression.query.prosecutioncase-details, but the case is reduced to the
      * defendant/offence fields needed to work out a defendant's current bail status.
      */
-    @Handles("progression.query.prosecutioncase-details-light")
-    public JsonEnvelope getProsecutionCaseDetailsLight(final JsonEnvelope envelope) {
+    @Handles("progression.query.prosecution-case-details-summary")
+    public JsonEnvelope getProsecutionCaseDetailsSummary(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), CASE_ID);
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-            jsonObjectBuilder.add(PROSECUTION_CASE, toLightProsecutionCase(prosecutionCase));
+            jsonObjectBuilder.add(PROSECUTION_CASE, toSummaryProsecutionCase(prosecutionCase));
         } catch (final NoResultException e) {
             LOGGER.info("No case found  for caseId '{}'", caseId.get());
         }
@@ -229,18 +229,18 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.build());
     }
 
-    private static JsonObject toLightProsecutionCase(final JsonObject prosecutionCase) {
+    private static JsonObject toSummaryProsecutionCase(final JsonObject prosecutionCase) {
         final JsonObjectBuilder caseBuilder = copyFields(prosecutionCase, "id");
         if (prosecutionCase.containsKey(DEFENDANTS)) {
             final JsonArrayBuilder defendantsBuilder = createArrayBuilder();
             prosecutionCase.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class)
-                    .forEach(defendant -> defendantsBuilder.add(toLightDefendant(defendant)));
+                    .forEach(defendant -> defendantsBuilder.add(toSummaryDefendant(defendant)));
             caseBuilder.add(DEFENDANTS, defendantsBuilder);
         }
         return caseBuilder.build();
     }
 
-    private static JsonObject toLightDefendant(final JsonObject defendant) {
+    private static JsonObject toSummaryDefendant(final JsonObject defendant) {
         final JsonObjectBuilder defendantBuilder = copyFields(defendant, "id", "masterDefendantId", "proceedingsConcluded");
         if (defendant.containsKey(PERSON_DEFENDANT)) {
             defendantBuilder.add(PERSON_DEFENDANT, copyFields(defendant.getJsonObject(PERSON_DEFENDANT), "bailStatus"));

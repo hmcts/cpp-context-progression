@@ -68,7 +68,7 @@ public class ProsecutionCaseQueryApiTest {
     private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
     private static final String PROSECUTION_CASE_QUERY_ACTIVE_APPLICATIONS_JSON  = "json/activeApplicationsOnCaseResponse.json";
     private static final String PROSECUTION_CASE_QUERY_DETAILS = "progression.query.prosecutioncase-details";
-    private static final String PROSECUTION_CASE_QUERY_DETAILS_LIGHT = "progression.query.prosecutioncase-details-light";
+    private static final String PROSECUTION_CASE_QUERY_DETAILS_SUMMARY = "progression.query.prosecution-case-details-summary";
     private static final String GROUP_MEMBER_CASES_QUERY_DETAILS = "progression.query.group-member-cases";
     private static final String GROUP_MEMBER_CASES_QUERY_VIEW_JSON = "json/groupMemberCasesQueryResponse.json";
 
@@ -189,14 +189,14 @@ public class ProsecutionCaseQueryApiTest {
     }
 
     @Test
-    public void shouldHandleProsecutionCaseDetailsLightQuery() {
+    public void shouldHandleProsecutionCaseDetailsSummaryQuery() {
         final JsonObject prosecutionCasePayload = QueryClientTestBase.readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
 
-        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_DETAILS_LIGHT, randomUUID());
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_DETAILS_SUMMARY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(prosecutionCaseQuery.getProsecutionCaseDetailsLight(query)).thenReturn(envelope);
-        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCaseDetailsLight(query);
+        when(prosecutionCaseQuery.getProsecutionCaseDetailsSummary(query)).thenReturn(envelope);
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCaseDetailsSummary(query);
 
         assertThat(actualProsecutionCaseResponse, equalTo(envelope));
     }

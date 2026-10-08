@@ -2386,10 +2386,10 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnOnlyBailStatusFieldsForProsecutionCaseDetailsLight() {
+    public void shouldReturnOnlyBailStatusFieldsForProsecutionCaseDetailsSummary() {
         final UUID caseId = randomUUID();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-light").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecution-case-details-summary").build(),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
 
         final String storedPayload = "{"
@@ -2407,7 +2407,7 @@ public class ProsecutionCaseQueryViewTest {
         prosecutionCaseEntity.setPayload(storedPayload);
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
 
-        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsLight(jsonEnvelope);
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsSummary(jsonEnvelope);
 
         final JsonObject expected = createObjectBuilder()
                 .add("prosecutionCase", createObjectBuilder()
@@ -2429,14 +2429,14 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnEmptyPayloadForProsecutionCaseDetailsLightWhenCaseNotFound() {
+    public void shouldReturnEmptyPayloadForProsecutionCaseDetailsSummaryWhenCaseNotFound() {
         final UUID caseId = randomUUID();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-light").build(),
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecution-case-details-summary").build(),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenThrow(new javax.persistence.NoResultException());
 
-        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsLight(jsonEnvelope);
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsSummary(jsonEnvelope);
 
         assertThat(response.payloadAsJsonObject().isEmpty(), is(true));
     }

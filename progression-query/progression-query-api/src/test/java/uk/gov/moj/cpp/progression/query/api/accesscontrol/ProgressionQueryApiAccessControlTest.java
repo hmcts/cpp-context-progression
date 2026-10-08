@@ -77,13 +77,13 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     }
 
     @Test
-    public void shouldAllowSystemUsersToGetProsecutionCaseDetailsLight() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase-details-light", "System Users");
+    public void shouldAllowSystemUsersToGetProsecutionCaseDetailsSummary() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecution-case-details-summary", "System Users");
     }
 
     @Test
-    public void shouldNotAllowNonSystemUsersToGetProsecutionCaseDetailsLight() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase-details-light", "System Users");
+    public void shouldNotAllowNonSystemUsersToGetProsecutionCaseDetailsSummary() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecution-case-details-summary", "System Users");
     }
 
     @Test
