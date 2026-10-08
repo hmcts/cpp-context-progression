@@ -107,6 +107,9 @@ public class ProsecutionCaseQuery {
     public static final String PROSECUTION_AUTHORITY_ID = "prosecutionAuthorityId";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQuery.class);
     private static final String CASE_ID = "caseId";
+    private static final String DEFENDANTS = "defendants";
+    private static final String PERSON_DEFENDANT = "personDefendant";
+    private static final String OFFENCES = "offences";
     private static final String DEFENDANT_ID = "defendantId";
     private static final String GROUP_ID = "groupId";
     private static final String FIELD_QUERY = "q";
@@ -203,6 +206,60 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
+    }
+
+    /**
+     * Same structure as progression.query.prosecutioncase-details, but the case is reduced to the
+     * defendant/offence fields needed to work out a defendant's current bail status.
+     */
+    @Handles("progression.query.prosecutioncase-details-summary")
+    public JsonEnvelope getProsecutionCaseDetailsSummary(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), CASE_ID);
+        try {
+            final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
+            final JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+            jsonObjectBuilder.add(PROSECUTION_CASE, toSummaryProsecutionCase(prosecutionCase));
+        } catch (final NoResultException e) {
+            LOGGER.info("No case found  for caseId '{}'", caseId.get());
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
+    private static JsonObject toSummaryProsecutionCase(final JsonObject prosecutionCase) {
+        final JsonObjectBuilder caseBuilder = copyFields(prosecutionCase, "id");
+        if (prosecutionCase.containsKey(DEFENDANTS)) {
+            final JsonArrayBuilder defendantsBuilder = createArrayBuilder();
+            prosecutionCase.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class)
+                    .forEach(defendant -> defendantsBuilder.add(toSummaryDefendant(defendant)));
+            caseBuilder.add(DEFENDANTS, defendantsBuilder);
+        }
+        return caseBuilder.build();
+    }
+
+    private static JsonObject toSummaryDefendant(final JsonObject defendant) {
+        final JsonObjectBuilder defendantBuilder = copyFields(defendant, "id", "masterDefendantId", "proceedingsConcluded");
+        if (defendant.containsKey(PERSON_DEFENDANT)) {
+            defendantBuilder.add(PERSON_DEFENDANT, copyFields(defendant.getJsonObject(PERSON_DEFENDANT), "bailStatus"));
+        }
+        if (defendant.containsKey(OFFENCES)) {
+            final JsonArrayBuilder offencesBuilder = createArrayBuilder();
+            defendant.getJsonArray(OFFENCES).getValuesAs(JsonObject.class)
+                    .forEach(offence -> offencesBuilder.add(copyFields(offence, "id", "proceedingsConcluded", "bailStatus")));
+            defendantBuilder.add(OFFENCES, offencesBuilder);
+        }
+        return defendantBuilder.build();
+    }
+
+    private static JsonObjectBuilder copyFields(final JsonObject source, final String... fieldNames) {
+        final JsonObjectBuilder builder = createObjectBuilder();
+        Arrays.stream(fieldNames)
+                .filter(source::containsKey)
+                .forEach(fieldName -> builder.add(fieldName, source.get(fieldName)));
+        return builder;
     }
 
     @Handles("progression.query.mastercase-details")
@@ -437,7 +494,7 @@ public class ProsecutionCaseQuery {
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
             jsonObjectBuilder.add("prosecutorDetails", prosecutorDetailsJson);
-            jsonObjectBuilder.add("defendants", resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
+            jsonObjectBuilder.add(DEFENDANTS, resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
 
             if (!courtApplicationCaseEntities.isEmpty()) {
                 final JsonArrayBuilder jsonApplicationBuilder = createArrayBuilder();
@@ -927,7 +984,7 @@ public class ProsecutionCaseQuery {
                 }
                 caseObjectBuilder.add(PROSECUTION_CASE_IDENTIFIER, pciJsonBuilder.build());
             }
-            caseObjectBuilder.add("offences", offences);
+            caseObjectBuilder.add(OFFENCES, offences);
             casesArrayBuilder.add(caseObjectBuilder.build());
         }
     }

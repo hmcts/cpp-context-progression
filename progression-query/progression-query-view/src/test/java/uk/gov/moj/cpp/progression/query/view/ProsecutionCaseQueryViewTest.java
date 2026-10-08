@@ -74,6 +74,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
@@ -2382,6 +2383,62 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetails(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
+    }
+
+    @Test
+    public void shouldReturnOnlyBailStatusFieldsForProsecutionCaseDetailsSummary() {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-summary").build(),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+
+        final String storedPayload = "{"
+                + "\"id\":\"" + caseId + "\","
+                + "\"initiationCode\":\"C\","
+                + "\"prosecutionCaseIdentifier\":{\"caseURN\":\"URN123\"},"
+                + "\"defendants\":[{"
+                + "\"id\":\"d1\",\"masterDefendantId\":\"m1\",\"proceedingsConcluded\":false,\"courtProceedingsInitiated\":\"2026-01-01T00:00:00Z\","
+                + "\"personDefendant\":{\"bailStatus\":{\"id\":\"b1\",\"code\":\"C\",\"description\":\"Custody\"},\"personDetails\":{\"firstName\":\"John\"}},"
+                + "\"offences\":["
+                + "{\"id\":\"o1\",\"proceedingsConcluded\":true,\"bailStatus\":{\"id\":\"b2\",\"code\":\"U\",\"description\":\"Unconditional\"},\"offenceCode\":\"TH68001\"},"
+                + "{\"id\":\"o2\",\"wording\":\"no bail status here\"}"
+                + "]}]}";
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(storedPayload);
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsSummary(jsonEnvelope);
+
+        final JsonObject expected = createObjectBuilder()
+                .add("prosecutionCase", createObjectBuilder()
+                        .add("id", caseId.toString())
+                        .add("defendants", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                                .add("id", "d1")
+                                .add("masterDefendantId", "m1")
+                                .add("proceedingsConcluded", false)
+                                .add("personDefendant", createObjectBuilder()
+                                        .add("bailStatus", createObjectBuilder().add("id", "b1").add("code", "C").add("description", "Custody")))
+                                .add("offences", JsonObjects.createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("id", "o1")
+                                                .add("proceedingsConcluded", true)
+                                                .add("bailStatus", createObjectBuilder().add("id", "b2").add("code", "U").add("description", "Unconditional")))
+                                        .add(createObjectBuilder().add("id", "o2"))))))
+                .build();
+        assertThat(response.payloadAsJsonObject(), is(expected));
+    }
+
+    @Test
+    public void shouldReturnEmptyPayloadForProsecutionCaseDetailsSummaryWhenCaseNotFound() {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutioncase-details-summary").build(),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenThrow(new javax.persistence.NoResultException());
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseDetailsSummary(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().isEmpty(), is(true));
     }
 
     @Test

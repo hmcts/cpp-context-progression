@@ -194,6 +194,9 @@ protocols: [ HTTP, HTTPS ]
             responseType: application/vnd.progression.query.prosecutioncase-details+json
             name: progression.query.prosecutioncase-details
         (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase-details-summary+json
+            name: progression.query.prosecutioncase-details-summary
+        (mapping):
             responseType: application/vnd.progression.query.related-references+json
             name: progression.query.related-references
         ...
@@ -236,6 +239,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.prosecutioncase-details+json:
                     example:  !include json/progression.query.prosecutioncase-details.json
                     schema:  !include json/schema/progression.query.prosecutioncase-details.json
+                  application/vnd.progression.query.prosecutioncase-details-summary+json:
+                    example:  !include json/progression.query.prosecutioncase-details-summary.json
+                    schema:  !include json/schema/progression.query.prosecutioncase-details-summary.json
                   application/vnd.progression.query.related-references+json:
                     schema:  !include json/schema/progression.query.related-references.json
 
