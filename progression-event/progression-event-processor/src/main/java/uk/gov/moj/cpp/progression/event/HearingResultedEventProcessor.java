@@ -180,6 +180,23 @@ public class HearingResultedEventProcessor {
                     .withAdjournedFromDate(LocalDate.now())
                     .withHearings(nextHearingsList)
                     .withShadowListedOffences(shadowListedOffences)
+                    // Deliberately the PREVIOUS references only, not the combined map.
+                    //
+                    // A re-share frees the previous hearing's slots before the new one is listed,
+                    // and freeing them removes the only rows still tying those bookingReferences
+                    // to their sessions - reserve-a-slot stopped writing the provisional_booking
+                    // row that used to survive the release. Listing's own lookup then comes back
+                    // empty for a reference the clerk picked perfectly well, and the hearing is
+                    // dropped. These entries, resolved before the release and replayed here from
+                    // the aggregate, are the only copy left, so listing can fall back to them.
+                    //
+                    // The live half of the combined map is left out on purpose. Those references
+                    // resolved moments ago and will resolve again when listing asks; carrying
+                    // them would only let listing list against ids it could not confirm. It also
+                    // keeps a genuinely expired booking behaving as it does today: nothing was
+                    // ever stored for it, so nothing is carried, and the share still fails loudly
+                    // instead of being listed into a slot nobody holds.
+                    .withBookingReferencesWithCourtScheduleIds(nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds())
                     .build();
 
             progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings);

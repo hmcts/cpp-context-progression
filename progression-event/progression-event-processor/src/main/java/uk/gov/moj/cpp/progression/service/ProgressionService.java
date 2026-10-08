@@ -79,6 +79,7 @@ import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings;
+import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.query.laa.ApplicationLaa;
 import uk.gov.justice.progression.query.laa.HearingSummary;
@@ -1049,7 +1050,8 @@ public class ProgressionService {
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                         .add(HEARING, objectToJsonObjectConverter.convert(hearing));
 
-                final ListNextHearingsV3 listNextHearingsWithOneHearingListingNeeds = getListNextHearings(seedingHearing, listNextHearings.getShadowListedOffences(), hearingListingNeeds);
+                final ListNextHearingsV3 listNextHearingsWithOneHearingListingNeeds = getListNextHearings(seedingHearing, listNextHearings.getShadowListedOffences(), hearingListingNeeds,
+                        listNextHearings.getBookingReferencesWithCourtScheduleIds());
                 if(nonNull(listNextHearingsWithOneHearingListingNeeds)){
                     LOGGER.info("A next hearing Id: {}", objectToJsonValueConverter.convert(listNextHearingsWithOneHearingListingNeeds.getHearingId()));
                     hearingListingStatusCommandBuilder.add(LIST_NEXT_HEARINGS, objectToJsonObjectConverter.convert(listNextHearingsWithOneHearingListingNeeds));
@@ -1083,7 +1085,13 @@ public class ProgressionService {
         });
     }
 
-    private ListNextHearingsV3 getListNextHearings(final SeedingHearing seedingHearing, final List<UUID> shadowListedOffences, final HearingListingNeeds hearingListingNeeds) {
+    /**
+     * Re-wraps a single HearingListingNeeds as its own command. The booking map is carried through
+     * unsplit: it is keyed on bookingReference, every hearing in the original command looks itself
+     * up in it, and listing only reads the entry matching the hearing it is enriching.
+     */
+    private ListNextHearingsV3 getListNextHearings(final SeedingHearing seedingHearing, final List<UUID> shadowListedOffences, final HearingListingNeeds hearingListingNeeds,
+                                                  final List<BookingReferenceCourtScheduleIds> bookingReferencesWithCourtScheduleIds) {
         if(nonNull(seedingHearing)){
             return ListNextHearingsV3.listNextHearingsV3()
                     .withHearingId(seedingHearing.getSeedingHearingId())
@@ -1091,6 +1099,7 @@ public class ProgressionService {
                     .withAdjournedFromDate(LocalDate.now())
                     .withHearings(Arrays.asList(hearingListingNeeds))
                     .withShadowListedOffences(shadowListedOffences)
+                    .withBookingReferencesWithCourtScheduleIds(bookingReferencesWithCourtScheduleIds)
                     .build();
         }
         return null;
