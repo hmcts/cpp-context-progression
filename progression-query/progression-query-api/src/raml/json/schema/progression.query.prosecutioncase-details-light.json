@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/query/progression.query.prosecutioncase-details-light.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "defendants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "masterDefendantId": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "proceedingsConcluded": {
+                "type": "boolean"
+              },
+              "personDefendant": {
+                "type": "object",
+                "properties": {
+                  "bailStatus": {
+                    "$ref": "http://justice.gov.uk/core/courts/bailStatus.json"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "offences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                    },
+                    "proceedingsConcluded": {
+                      "type": "boolean"
+                    },
+                    "bailStatus": {
+                      "$ref": "http://justice.gov.uk/core/courts/bailStatus.json"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

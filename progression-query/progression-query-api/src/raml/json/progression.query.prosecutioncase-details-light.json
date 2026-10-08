@@ -1,0 +1,34 @@
+{
+  "prosecutionCase": {
+    "id": "5002d600-af66-11e8-b568-0800200c9a66",
+    "defendants": [
+      {
+        "id": "4c2c3cb6-2b6e-4a0a-8b5a-1e2f3d4c5b6a",
+        "masterDefendantId": "4c2c3cb6-2b6e-4a0a-8b5a-1e2f3d4c5b6a",
+        "proceedingsConcluded": false,
+        "personDefendant": {
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+            "code": "C",
+            "description": "Remanded into Custody"
+          }
+        },
+        "offences": [
+          {
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "proceedingsConcluded": false,
+            "bailStatus": {
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+              "code": "C",
+              "description": "Remanded into Custody"
+            }
+          },
+          {
+            "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+            "proceedingsConcluded": true
+          }
+        ]
+      }
+    ]
+  }
+}
