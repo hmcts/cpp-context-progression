@@ -51,6 +51,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -128,6 +129,12 @@ public class HearingResultedEventProcessor {
                 .withMetadataFrom(event));
 
         final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
+
+        if (LOGGER.isDebugEnabled()) {
+            logLaaDefectTraceForPublicEvent(hearing);
+            LOGGER.debug("LAA-DEFECT-TRACE (raw hearing json, unredacted - copy this to build a fixture): {}", hearingJson);
+        }
+
         summonsHelper.initiateSummonsProcess(event, hearing);
 
         commandUpdateDefendantWithDriverNumber(hearing, event);
@@ -135,11 +142,14 @@ public class HearingResultedEventProcessor {
 
     @Handles("progression.event.prosecution-cases-resulted-v2")
     public void handleProsecutionCasesResultedV2(final JsonEnvelope event) {
-        final ProsecutionCasesResultedV2 prosecutionCasesResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCasesResultedV2.class);
+        final JsonObject eventPayload = event.payloadAsJsonObject();
+        final ProsecutionCasesResultedV2 prosecutionCasesResulted = jsonObjectToObjectConverter.convert(eventPayload, ProsecutionCasesResultedV2.class);
         final Hearing hearing = prosecutionCasesResulted.getHearing();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Sending commands to update cases following hearing results shared for hearing id: {}", hearing.getId());
+            logLaaDefectTraceForPublicEvent(hearing);
+            LOGGER.debug("LAA-DEFECT-TRACE (raw prosecution-cases-resulted-v2 json, unredacted - copy this to build a fixture): {}", eventPayload);
         }
 
         hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase,
@@ -349,6 +359,54 @@ public class HearingResultedEventProcessor {
                     .withName("progression.update-case-defendant-with-driver-number")
                     .withMetadataFrom(event));
         });
+    }
+
+    private void logLaaDefectTraceForPublicEvent(final Hearing hearing) {
+        LOGGER.debug("LAA-DEFECT-TRACE (incoming hearing): hearingId={} hearing.defendantJudicialResults size={}, entries={}",
+                hearing.getId(),
+                isNull(hearing.getDefendantJudicialResults()) ? 0 : hearing.getDefendantJudicialResults().size(),
+                ofNullable(hearing.getDefendantJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                        .map(this::describeDefendantJudicialResult).collect(toList()));
+
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(prosecutionCase ->
+                ofNullable(prosecutionCase.getDefendants()).map(Collection::stream).orElseGet(Stream::empty).forEach(defendant -> {
+                    LOGGER.debug("LAA-DEFECT-TRACE (incoming hearing): defendantId={} defendantCaseJudicialResults={}",
+                            defendant.getId(),
+                            ofNullable(defendant.getDefendantCaseJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                                    .map(this::describeJudicialResult).collect(toList()));
+
+                    ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty).forEach(offence ->
+                            LOGGER.debug("LAA-DEFECT-TRACE (incoming hearing): defendantId={} offenceId={} judicialResults={}",
+                                    defendant.getId(), offence.getId(),
+                                    ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                                            .map(this::describeJudicialResult).collect(toList())));
+                }));
+    }
+
+    private String describeDefendantJudicialResult(final uk.gov.justice.core.courts.DefendantJudicialResult defendantJudicialResult) {
+        if (isNull(defendantJudicialResult)) {
+            return "null";
+        }
+        return "{defendantId=" + defendantJudicialResult.getDefendantId()
+                + ", masterDefendantId=" + defendantJudicialResult.getMasterDefendantId()
+                + ", judicialResult=" + describeJudicialResult(defendantJudicialResult.getJudicialResult())
+                + "}";
+    }
+
+    private String describeJudicialResult(final uk.gov.justice.core.courts.JudicialResult judicialResult) {
+        if (isNull(judicialResult)) {
+            return "null";
+        }
+        return "{judicialResultId=" + judicialResult.getJudicialResultId()
+                + ", judicialResultTypeId=" + judicialResult.getJudicialResultTypeId()
+                + ", offenceId=" + judicialResult.getOffenceId()
+                + ", label=" + judicialResult.getLabel()
+                + ", cjsCode=" + judicialResult.getCjsCode()
+                + ", category=" + judicialResult.getCategory()
+                + ", terminatesOffenceProceedings=" + judicialResult.getTerminatesOffenceProceedings()
+                + ", orderedHearingId=" + judicialResult.getOrderedHearingId()
+                + ", orderedDate=" + judicialResult.getOrderedDate()
+                + "}";
     }
 
 }
