@@ -580,6 +580,11 @@ public class NotificationService {
     private void sendNotificationToThirdParties(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
         final List<CourtApplicationParty> thirdParties = ofNullable(courtApplication.getThirdParties()).map(r -> courtApplication.getThirdParties()).orElse(new ArrayList<>());
 
+        if (!thirdParties.isEmpty() && isExParteCivilApplication(courtApplication)) {
+            LOGGER.info("Notification to third parties suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
+            return;
+        }
+
         thirdParties.forEach(courtApplicationParty -> {
             checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
             sendNotification(event, UUID.randomUUID(), courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, "YES", isAmended, issueDate);
@@ -612,6 +617,10 @@ public class NotificationService {
         if (isNull(masterDefendant) || isNull(masterDefendant.getMasterDefendantId())) {
             return false;
         }
+        return isExParteCivilApplication(courtApplication);
+    }
+
+    private boolean isExParteCivilApplication(final CourtApplication courtApplication) {
         final List<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).orElse(new ArrayList<>());
         return courtApplicationCases.stream().anyMatch(this::caseHasExParteOffence);
     }
@@ -1104,40 +1113,67 @@ public class NotificationService {
 
     public void sendNotificationForAutoApplication(final JsonEnvelope event, final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplication) {
         final CourtApplication courtApplication = sendNotificationForAutoApplication.getCourtApplication();
+        requireNonNull(courtApplication);
+
+        if (!courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
+            return;
+        }
+
         final ZonedDateTime hearingStartDateTime = ZonedDateTime.parse(sendNotificationForAutoApplication.getHearingStartDateTime());
         final Boolean isWelshTranslationRequired = sendNotificationForAutoApplication.getIsWelshTranslationRequired();
         final CourtCentre courtCentre = sendNotificationForAutoApplication.getCourtCentre();
         final JurisdictionType jurisdictionType = sendNotificationForAutoApplication.getJurisdictionType();
         final Boolean isAmended = sendNotificationForAutoApplication.getIsAmended();
         final LocalDate issueDate = sendNotificationForAutoApplication.getIssueDate();
-        requireNonNull(courtApplication);
 
-        if (courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
-            final String hearingDate = hearingStartDateTime.toLocalDate().toString();
-            final String hearingTime = getCourtTime(hearingStartDateTime);
+        final String hearingDate = hearingStartDateTime.toLocalDate().toString();
+        final String hearingTime = getCourtTime(hearingStartDateTime);
+        final InformantNotificationTracker informantNotificationTracker = buildInformantNotificationTracker(courtApplication);
 
-            InformantNotificationTracker informantNotificationTracker = new InformantNotificationTracker(null);
-            if (courtApplication.getCourtApplicationCases() != null && !courtApplication.getCourtApplicationCases().isEmpty()) {
-                informantNotificationTracker = new InformantNotificationTracker(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
-            }
+        sendNotificationToApplicant(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
+        sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
+        sendNotificationToThirdParties(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
 
-            sendNotificationToApplicant(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
-            sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
-            sendNotificationToThirdParties(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
-
-            LOGGER.info("InformantNotificationTracker= {}", informantNotificationTracker);
-            if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
-                sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
-            }
-
-            if(nonNull(isWelshTranslationRequired) && isWelshTranslationRequired) {
-                final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant())  && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
-                final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
-                final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder().add(MASTER_DEFENDANT_ID, courtApplication.getApplicant().getId().toString()).add(DEFENDANT_NAME, applicationName).add(CASE_URN, courtApplication.getApplicationReference());
-                final JsonObjectBuilder welshTranslationRequiredBuilder = createObjectBuilder().add("welshTranslationRequired", jsonObjectBuilder.build());
-                sender.send(Enveloper.envelop(welshTranslationRequiredBuilder.build()).withName(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED).withMetadataFrom(event));
-            }
+        LOGGER.info("InformantNotificationTracker= {}", informantNotificationTracker);
+        if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
+            sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
         }
+
+        if (Boolean.TRUE.equals(isWelshTranslationRequired)) {
+            sendWelshTranslationRequiredEvent(event, courtApplication);
+        }
+    }
+
+    private InformantNotificationTracker buildInformantNotificationTracker(final CourtApplication courtApplication) {
+        if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
+            return new InformantNotificationTracker(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
+        }
+        return new InformantNotificationTracker(null);
+    }
+
+    private void sendWelshTranslationRequiredEvent(final JsonEnvelope event, final CourtApplication courtApplication) {
+        final CourtApplicationParty applicant = courtApplication.getApplicant();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
+                .add(MASTER_DEFENDANT_ID, applicant.getId().toString())
+                .add(DEFENDANT_NAME, resolveApplicantName(applicant))
+                .add(CASE_URN, courtApplication.getApplicationReference());
+        final JsonObjectBuilder welshTranslationRequiredBuilder = createObjectBuilder().add("welshTranslationRequired", jsonObjectBuilder.build());
+        sender.send(Enveloper.envelop(welshTranslationRequiredBuilder.build()).withName(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED).withMetadataFrom(event));
+    }
+
+    private String resolveApplicantName(final CourtApplicationParty applicant) {
+        if (nonNull(applicant.getPersonDetails())) {
+            return applicant.getPersonDetails().getLastName() + " " + applicant.getPersonDetails().getFirstName();
+        }
+        return resolveApplicantNameFromMasterDefendant(applicant.getMasterDefendant());
+    }
+
+    private String resolveApplicantNameFromMasterDefendant(final MasterDefendant masterDefendant) {
+        if (isNull(masterDefendant) || isNull(masterDefendant.getPersonDefendant())) {
+            return EMPTY;
+        }
+        final Person personDetails = masterDefendant.getPersonDefendant().getPersonDetails();
+        return personDetails.getLastName() + " " + personDetails.getFirstName();
     }
 
     private Optional<AssociatedDefenceOrganisation> getAssociatedDefenceOrganisation(final JsonEnvelope event, final MasterDefendant masterDefendant) {

@@ -63,6 +63,7 @@ import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -120,6 +121,7 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -127,6 +129,7 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedForApplicationByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
@@ -605,7 +608,10 @@ public class ApplicationAggregate implements Aggregate {
             }
             if (nonNull(courtApplicationCase)) {
                 updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
-                boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
+                final boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
+                if (isCivil) {
+                    updatedCourtApplication = enrichCourtApplicationCasesWithCivilOffence(updatedCourtApplication, courtApplicationCase, initiateCourtApplicationProceedings.getApplicationSource());
+                }
                 updatedCourtApplication = updateCourtApplicatonWithFeeType(updatedCourtApplication, isCivil);
             }
             return apply(
@@ -632,6 +638,79 @@ public class ApplicationAggregate implements Aggregate {
         return CourtApplication.courtApplication().withValuesFrom(courtApplication)
                 .withCourtCivilApplication(CourtCivilApplication.courtCivilApplication().withIsCivil(isCivil).build())
                 .build();
+    }
+
+    private CourtApplication enrichCourtApplicationCasesWithCivilOffence(final CourtApplication courtApplication, final ProsecutionCase prosecutionCase, final ApplicationSource applicationSource) {
+        if (isNull(courtApplication.getCourtApplicationCases()) || isNull(prosecutionCase.getDefendants())) {
+            return courtApplication;
+        }
+
+        final List<Offence> caseOffences = prosecutionCase.getDefendants().stream()
+                .filter(Objects::nonNull)
+                .map(Defendant::getOffences)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .collect(toList());
+
+        if (caseOffences.isEmpty()) {
+            return courtApplication;
+        }
+
+        final Map<UUID, CivilOffence> civilOffenceByOffenceId = caseOffences.stream()
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(Collectors.toMap(Offence::getId, Offence::getCivilOffence, (first, second) -> first));
+
+        final List<CourtApplicationCase> enrichedCourtApplicationCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> enrichCourtApplicationCaseWithCivilOffence(courtApplicationCase, prosecutionCase.getId(), caseOffences, civilOffenceByOffenceId, applicationSource))
+                .collect(toList());
+
+        return courtApplication().withValuesFrom(courtApplication)
+                .withCourtApplicationCases(enrichedCourtApplicationCases)
+                .build();
+    }
+
+    private CourtApplicationCase enrichCourtApplicationCaseWithCivilOffence(final CourtApplicationCase courtApplicationCase, final UUID prosecutionCaseId,
+                                                                            final List<Offence> caseOffences, final Map<UUID, CivilOffence> civilOffenceByOffenceId,
+                                                                            final ApplicationSource applicationSource) {
+        if (!Objects.equals(courtApplicationCase.getProsecutionCaseId(), prosecutionCaseId)) {
+            return courtApplicationCase;
+        }
+
+        if (isNull(courtApplicationCase.getOffences()) || courtApplicationCase.getOffences().isEmpty()) {
+            // CourtApplicationHandler.updateClonedOffenceApplicationCases deliberately nulls offences for MH-sourced
+            // applications against an active case - respect that same exemption here instead of undoing it by
+            // repopulating offences the handler intentionally left out.
+            if (ignoreCaseOffences(courtApplicationCase.getCaseStatus(), applicationSource)) {
+                return courtApplicationCase;
+            }
+            return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                    .withOffences(caseOffences)
+                    .build();
+        }
+
+        final List<Offence> enrichedOffences = courtApplicationCase.getOffences().stream()
+                .map(applicationOffence -> {
+                    if (nonNull(applicationOffence.getCivilOffence())) {
+                        return applicationOffence;
+                    }
+                    final CivilOffence civilOffence = civilOffenceByOffenceId.get(applicationOffence.getId());
+                    if (isNull(civilOffence)) {
+                        return applicationOffence;
+                    }
+                    return offence().withValuesFrom(applicationOffence)
+                            .withCivilOffence(civilOffence)
+                            .build();
+                })
+                .collect(toList());
+
+        return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                .withOffences(enrichedOffences)
+                .build();
+    }
+
+    private boolean ignoreCaseOffences(final String caseStatus, final ApplicationSource applicationSource) {
+        final boolean activeCase = !(CaseStatusEnum.INACTIVE.name().equalsIgnoreCase(caseStatus) || CaseStatusEnum.CLOSED.name().equalsIgnoreCase(caseStatus));
+        return activeCase && ApplicationSource.MH == applicationSource;
     }
 
     private CourtApplication enrichApplicationIfAddressUpdatedFromApplication(final CourtApplication updatedCourtApplication, final ProsecutionCase courtApplicationCase) {
