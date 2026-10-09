@@ -12,9 +12,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Address.address;
@@ -74,6 +80,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicantEmailAddressUtil;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicationSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.BulkCivilCaseSummonsNotificationService;
 import uk.gov.moj.cpp.progression.processor.summons.CaseDefendantSummonsService;
 import uk.gov.moj.cpp.progression.processor.summons.PublishSummonsDocumentService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsCode;
@@ -92,6 +99,7 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -164,6 +172,9 @@ public class SummonsDataPreparedEventProcessorTest {
 
     @Mock
     private ApplicantEmailAddressUtil applicantEmailAddressUtil;
+
+    @Mock
+    private BulkCivilCaseSummonsNotificationService bulkCivilCaseSummonsNotificationService;
 
     // if suppressed, document not sent for remote printing
     private boolean summonsSuppressed;
@@ -760,6 +771,79 @@ public class SummonsDataPreparedEventProcessorTest {
     private SummonsDocument getDefendantTemplatePayload(final boolean isYouth) {
         final ZonedDateTime defendantDateOfBirth = isYouth ? HEARING_DATE_TIME.minusYears(16) : HEARING_DATE_TIME.minusYears(20);
         return summonsDocument().withDefendant(SummonsDefendant.summonsDefendant().withDateOfBirth(DateTimeFormatter.ofPattern("yyyy-MM-dd").format(defendantDateOfBirth)).build()).build();
+    }
+
+    @Test
+    public void shouldDelegateToBulkCivilCaseSummonsNotificationServiceForBulkCivilCase() {
+        final UUID groupId = randomUUID();
+
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(FIRST_HEARING);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+
+        final Defendant defendant = defendant().withId(DEFENDANT_ID).build();
+        final ProsecutionCase bulkProsecutionCase = prosecutionCase()
+                .withId(CASE_ID)
+                .withIsCivil(true)
+                .withIsGroupMember(true)
+                .withGroupId(groupId)
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withProsecutionAuthorityId(PROSECUTION_AUTHORITY_ID).build())
+                .withDefendants(newArrayList(defendant))
+                .build();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(bulkProsecutionCase)).build());
+
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(bulkCivilCaseSummonsNotificationService.isBulkCivilCase(any(ProsecutionCase.class))).thenReturn(true);
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        // the full bulk-notification behaviour (lead defendant resolution, master case reference,
+        // dedup-per-group, no attachment) is covered by BulkCivilCaseSummonsNotificationServiceTest -
+        // here we only verify the processor hands off to it, before any of the per-defendant
+        // summons-generation work, and does not fall through to the normal flow.
+        verify(bulkCivilCaseSummonsNotificationService).isBulkCivilCase(argThat(pc -> pc.getId().equals(CASE_ID)));
+        verify(bulkCivilCaseSummonsNotificationService).handleBulkCivilCaseSummons(eq(envelope), any(SummonsDataPrepared.class), eq(courtCentreJson.get()),
+                argThat(pc -> pc.getId().equals(CASE_ID)), eq(singletonList(DEFENDANT_ID)), anySet());
+        verifyNoInteractions(publishSummonsDocumentService);
+        verifyNoInteractions(summonsTemplateNameService);
+        verifyNoInteractions(caseDefendantSummonsService);
+        verifyNoInteractions(summonsNotificationEmailPayloadService);
+        verify(summonsService, never()).getProsecutor(any(), any());
+    }
+
+    @Test
+    public void shouldDelegateToBulkCivilCaseSummonsNotificationServiceForBulkCivilCaseApplication() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(APPLICATION);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+
+        final Optional<JsonObject> optionalApplication = of(createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(getCourtApplication())).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+        when(progressionService.getCourtApplicationById(envelope, APPLICATION_ID.toString())).thenReturn(optionalApplication);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(bulkCivilCaseSummonsNotificationService.isBulkCivilCaseApplication(any(CourtApplication.class))).thenReturn(true);
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        // the full bulk-notification behaviour (group resolution, master case reference,
+        // dedup-per-group, no attachment) is covered by BulkCivilCaseSummonsNotificationServiceTest -
+        // here we only verify the processor hands off to it, before any of the summons-generation
+        // work, and does not fall through to the normal application flow.
+        verify(bulkCivilCaseSummonsNotificationService).isBulkCivilCaseApplication(argThat(application -> application.getId().equals(APPLICATION_ID)));
+        verify(bulkCivilCaseSummonsNotificationService).handleBulkCivilCaseApplicationSummons(eq(envelope), any(SummonsDataPrepared.class), eq(courtCentreJson.get()),
+                argThat(application -> application.getId().equals(APPLICATION_ID)), any(SummonsApprovedOutcome.class), anySet());
+        verifyNoInteractions(publishSummonsDocumentService);
+        verifyNoInteractions(summonsTemplateNameService);
+        verifyNoInteractions(applicationSummonsService);
+        verifyNoInteractions(summonsNotificationEmailPayloadService);
     }
 
 }

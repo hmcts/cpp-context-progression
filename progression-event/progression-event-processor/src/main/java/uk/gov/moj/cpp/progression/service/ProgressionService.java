@@ -161,6 +161,9 @@ public class ProgressionService {
 
     private static final String PROGRESSION_QUERY_PROSECUTION_CASE_EXISTS_BY_CASEID = "progression.query.prosecutioncase-details";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
+    private static final String PROGRESSION_QUERY_MASTER_CASE_DETAILS = "progression.query.mastercase-details";
+    private static final String GROUP_ID = "groupId";
+    private static final String MASTER_CASE = "masterCase";
     private static final String PROGRESSION_QUERY_CASE_STATUS_FOR_APPLICATION = "progression.query.case.status-for-application";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_APPLICATIONS = "progression.query.application.aaag";
@@ -868,6 +871,28 @@ public class ProgressionService {
 
             throw new CourtApplicationAndCaseNotFoundException(String.format("Prosecution case detail not found for case id : %s", caseId));
 
+        }
+        return result;
+    }
+
+    public Optional<JsonObject> getMasterProsecutionCaseByGroupId(final JsonEnvelope envelope, final UUID groupId) {
+        Optional<JsonObject> result = Optional.empty();
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(GROUP_ID, groupId.toString())
+                .build();
+
+        LOGGER.info("groupId {}, get master prosecution case detail request {}", groupId, requestParameter);
+
+        final JsonEnvelope masterCaseResponse = requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_MASTER_CASE_DETAILS)
+                .apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("groupId {} master prosecution case detail payload {}", groupId, masterCaseResponse.toObfuscatedDebugString());
+        }
+
+        if (masterCaseResponse.payloadAsJsonObject().containsKey(MASTER_CASE)) {
+            result = Optional.of(masterCaseResponse.payloadAsJsonObject().getJsonObject(MASTER_CASE));
         }
         return result;
     }
