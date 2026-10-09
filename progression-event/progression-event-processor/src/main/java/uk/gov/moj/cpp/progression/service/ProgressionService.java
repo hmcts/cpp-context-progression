@@ -1411,6 +1411,7 @@ public class ProgressionService {
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
+                .withNumberOfGroupCases(confirmedHearing.getNumberOfGroupCases())
                 .build();
 
         // Shape application/case offences once, at the source, so the persisted hearing matches the
@@ -1534,6 +1535,7 @@ public class ProgressionService {
                 .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
                 .withType(confirmedHearing.getType())
                 .withHasSharedResults(false)
+                .withNumberOfGroupCases(ofNullable(confirmedHearing.getNumberOfGroupCases()).orElse(hearing.getNumberOfGroupCases()))
                 .build();
     }
 

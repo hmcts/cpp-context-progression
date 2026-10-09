@@ -14,6 +14,11 @@
     },
     "newGroupMaster": {
       "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json"
+    },
+    "numberOfGroupCases": {
+      "description": "Number of cases remaining in the group, including the master case",
+      "type": "integer",
+      "minimum": 1
     }
   },
   "required": [

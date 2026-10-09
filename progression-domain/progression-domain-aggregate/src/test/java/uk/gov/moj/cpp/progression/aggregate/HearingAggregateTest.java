@@ -5038,6 +5038,104 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldPreferConfirmedNumberOfGroupCasesOverStoredValueWhenEnrichingInitiateHearing() {
+        final UUID hearingId = randomUUID();
+        givenStoredGroupHearingWithNumberOfGroupCases(hearingId, 3);
+
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(hearingId, 2);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(2));
+        assertThat(hearingAggregate.getHearing().getNumberOfGroupCases(), is(2));
+    }
+
+    @Test
+    public void shouldKeepStoredNumberOfGroupCasesWhenConfirmedValueIsNullWhenEnrichingInitiateHearing() {
+        final UUID hearingId = randomUUID();
+        givenStoredGroupHearingWithNumberOfGroupCases(hearingId, 3);
+
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(hearingId, null);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(3));
+    }
+
+    @Test
+    public void shouldPreferConfirmedNumberOfGroupCasesOverStoredValueWhenEnrichingInitiateHearingWithDefendantRequests() {
+        final UUID hearingId = randomUUID();
+        givenStoredGroupHearingWithNumberOfGroupCases(hearingId, 3);
+        givenHearingDefendantRequest();
+
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(hearingId, 2);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(2));
+    }
+
+    @Test
+    public void shouldKeepStoredNumberOfGroupCasesWhenConfirmedValueIsNullWhenEnrichingInitiateHearingWithDefendantRequests() {
+        final UUID hearingId = randomUUID();
+        givenStoredGroupHearingWithNumberOfGroupCases(hearingId, 3);
+        givenHearingDefendantRequest();
+
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(hearingId, null);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(3));
+    }
+
+    @Test
+    public void shouldUseConfirmedNumberOfGroupCasesWhenNoStoredHearingWhenEnrichingInitiateHearing() {
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(randomUUID(), 2);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(2));
+    }
+
+    @Test
+    public void shouldKeepUpdatedNumberOfGroupCasesFromHearingUpdatedAndUseItWhenEnrichingInitiateHearing() {
+        final UUID hearingId = randomUUID();
+        givenStoredGroupHearingWithNumberOfGroupCases(hearingId, 3);
+
+        hearingAggregate.processHearingUpdated(ConfirmedHearing.confirmedHearing().withId(hearingId).withNumberOfGroupCases(2).build(),
+                groupHearing(hearingId, 2)).collect(toList());
+        assertThat(hearingAggregate.getHearing().getNumberOfGroupCases(), is(2));
+
+        final HearingInitiateEnriched enriched = enrichInitiateHearingWithNumberOfGroupCases(hearingId, null);
+
+        assertThat(enriched.getHearing().getNumberOfGroupCases(), is(2));
+    }
+
+    private void givenStoredGroupHearingWithNumberOfGroupCases(final UUID hearingId, final Integer numberOfGroupCases) {
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(groupHearing(hearingId, numberOfGroupCases))
+                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                .build());
+    }
+
+    private void givenHearingDefendantRequest() {
+        hearingAggregate.createHearingDefendantRequest(singletonList(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build())).collect(toList());
+    }
+
+    private HearingInitiateEnriched enrichInitiateHearingWithNumberOfGroupCases(final UUID hearingId, final Integer numberOfGroupCases) {
+        final List<Object> events = hearingAggregate.enrichInitiateHearing(groupHearing(hearingId, numberOfGroupCases)).collect(toList());
+        assertThat(events.get(0), instanceOf(HearingInitiateEnriched.class));
+        return (HearingInitiateEnriched) events.get(0);
+    }
+
+    private Hearing groupHearing(final UUID hearingId, final Integer numberOfGroupCases) {
+        return Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withHasSharedResults(false)
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .withType(HearingType.hearingType().withDescription("First hearing").build())
+                .withCourtCentre(CourtCentre.courtCentre().withCode("B30PG00").build())
+                .withIsGroupProceedings(true)
+                .withNumberOfGroupCases(numberOfGroupCases)
+                .build();
+    }
+
+    @Test
     public void shouldNotLoseDefendantAddedToHearingWhenHearingInitiateEnrichedUsesStalePayload() {
         final UUID hearingId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
