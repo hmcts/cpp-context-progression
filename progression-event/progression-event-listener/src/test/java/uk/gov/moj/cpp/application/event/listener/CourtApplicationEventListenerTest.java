@@ -159,6 +159,10 @@ public class CourtApplicationEventListenerTest {
     @Captor
     private ArgumentCaptor<CourtApplication> courtApplicationArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor;
+
+
     @Mock
     private JsonObject payload;
 
@@ -223,9 +227,17 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(courtApplication);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
 
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = Mockito.mock(InitiateCourtApplicationEntity.class);
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = Mockito.mock(InitiateCourtApplicationProceedings.class);
+        final CourtApplication initiateCourtApplication = Mockito.mock(CourtApplication.class);
+        when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
+        final JsonObject entityPayload = createObjectBuilder().build();
+        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(entityPayload);
+        when(jsonObjectToObjectConverter.convert(eq(entityPayload), eq(InitiateCourtApplicationProceedings.class))).thenReturn(initiateCourtApplicationProceedings);
+        when(initiateCourtApplicationProceedings.getCourtApplication()).thenReturn(initiateCourtApplication);
         eventListener.processCourtApplicationStatusChanged(envelope);
         verify(repository).save(argumentCaptor.capture());
-
+        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
     }
 
     @Test
