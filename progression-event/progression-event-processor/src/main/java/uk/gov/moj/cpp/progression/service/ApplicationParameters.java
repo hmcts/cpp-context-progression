@@ -130,7 +130,7 @@ public class ApplicationParameters {
     private String summonsRejectedTemplateId;
 
     @Inject
-    @Value(key = "bulk_summons_approved_template_id")
+    @Value(key = "bulk_summons_approved_template_id", defaultValue = "c1f97688-a67a-45ad-867b-d7df946e2f14")
     private String bulkSummonsApprovedTemplateId;
 
     @Inject

@@ -382,10 +382,18 @@ public class PreAndPostConditionHelper {
                                                              final String materialIdTwo,
                                                              final String referralId,
                                                              final String listedStartDateTime, final String earliestStartDateTime, final String dob, final String feesId) {
+        return civilCaseInitiateCourtProceedings(caseId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, dob, feesId, true);
+    }
+
+    public static Response civilCaseInitiateCourtProceedings(final String caseId, final String defendantId, final String materialIdOne,
+                                                             final String materialIdTwo,
+                                                             final String referralId,
+                                                             final String listedStartDateTime, final String earliestStartDateTime, final String dob, final String feesId,
+                                                             final boolean isExParte) {
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
-                getCivilCaseInitiateCourtProceedingsJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob, feesId));
-
+                getCivilCaseInitiateCourtProceedingsJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob, feesId)
+                        .replace("\"isExParte\" : true", "\"isExParte\" : " + isExParte));
     }
 
     public static Response initiateCourtProceedingsForGroupCases(final UUID masterCaseId, final Map<UUID, Pair<UUID, UUID>> caseDefendantOffence, final String listedStartDateTime, final String earliestStartDateTime, final String groupId, final String courtCenterId, final String courtCenterName) throws JSONException {

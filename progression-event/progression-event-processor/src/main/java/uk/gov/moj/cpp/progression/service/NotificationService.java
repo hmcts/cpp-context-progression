@@ -26,6 +26,7 @@ import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.EventNotification;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -37,9 +38,11 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -178,6 +181,12 @@ public class NotificationService {
 
     @Inject
     private CourtApplicationService courtApplicationService;
+
+    @Inject
+    private ProgressionService progressionService;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
 
@@ -577,10 +586,10 @@ public class NotificationService {
         return emailChannelBuilder.build();
     }
 
-    private void sendNotificationToThirdParties(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
+    private void sendNotificationToThirdParties(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker, final boolean isExParteCivilApplication) {
         final List<CourtApplicationParty> thirdParties = ofNullable(courtApplication.getThirdParties()).map(r -> courtApplication.getThirdParties()).orElse(new ArrayList<>());
 
-        if (!thirdParties.isEmpty() && isExParteCivilApplication(courtApplication)) {
+        if (!thirdParties.isEmpty() && isExParteCivilApplication) {
             LOGGER.info("Notification to third parties suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
             return;
         }
@@ -592,11 +601,11 @@ public class NotificationService {
     }
 
 
-    private void sendNotificationToRespondents(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
+    private void sendNotificationToRespondents(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker, final boolean isExParteCivilApplication) {
         final List<CourtApplicationParty> respondents = ofNullable(courtApplication.getRespondents()).map(r -> courtApplication.getRespondents()).orElse(new ArrayList<>());
         respondents.forEach(courtApplicationParty -> {
             checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
-            if (shouldSuppressNotification(courtApplication, courtApplicationParty.getMasterDefendant())) {
+            if (isExParteCivilApplication && isDefendant(courtApplicationParty.getMasterDefendant())) {
                 LOGGER.info("Notification to respondent suppressed for applicationId {} due to ex-parte offence on a linked civil case", courtApplication.getId());
                 return;
             }
@@ -613,21 +622,41 @@ public class NotificationService {
         sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
     }
 
-    private boolean shouldSuppressNotification(final CourtApplication courtApplication, final MasterDefendant masterDefendant) {
-        if (isNull(masterDefendant) || isNull(masterDefendant.getMasterDefendantId())) {
-            return false;
-        }
-        return isExParteCivilApplication(courtApplication);
+    private static boolean isDefendant(final MasterDefendant masterDefendant) {
+        return nonNull(masterDefendant) && nonNull(masterDefendant.getMasterDefendantId());
     }
 
-    private boolean isExParteCivilApplication(final CourtApplication courtApplication) {
+    private boolean isExParteCivilApplication(final JsonEnvelope event, final CourtApplication courtApplication) {
         final List<CourtApplicationCase> courtApplicationCases = ofNullable(courtApplication.getCourtApplicationCases()).orElse(new ArrayList<>());
-        return courtApplicationCases.stream().anyMatch(this::caseHasExParteOffence);
+        if (courtApplicationCases.stream().anyMatch(courtApplicationCase -> hasExParteOffence(courtApplicationCase.getOffences()))) {
+            return true;
+        }
+        // civilOffence is only enriched onto the first linked case when the application is created, so an
+        // ex-parte case selected as another linked case has to be checked against the prosecution case itself
+        return courtApplicationCases.stream()
+                .filter(courtApplicationCase -> nonNull(courtApplicationCase.getProsecutionCaseId()))
+                .filter(courtApplicationCase -> !hasCivilOffenceDetails(courtApplicationCase.getOffences()))
+                .anyMatch(courtApplicationCase -> linkedProsecutionCaseHasExParteOffence(event, courtApplicationCase.getProsecutionCaseId()));
     }
 
-    private boolean caseHasExParteOffence(final CourtApplicationCase courtApplicationCase) {
-        final List<Offence> offences = ofNullable(courtApplicationCase.getOffences()).orElse(new ArrayList<>());
-        return offences.stream()
+    private boolean linkedProsecutionCaseHasExParteOffence(final JsonEnvelope event, final UUID prosecutionCaseId) {
+        return progressionService.getProsecutionCase(event, prosecutionCaseId.toString())
+                .map(payload -> payload.getJsonObject("prosecutionCase"))
+                .map(prosecutionCaseJson -> jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class))
+                .map(prosecutionCase -> ofNullable(prosecutionCase.getDefendants()).orElse(new ArrayList<>()).stream()
+                        .map(Defendant::getOffences)
+                        .anyMatch(this::hasExParteOffence))
+                .orElse(false);
+    }
+
+    private static boolean hasCivilOffenceDetails(final List<Offence> offences) {
+        return ofNullable(offences).orElse(new ArrayList<>()).stream()
+                .map(Offence::getCivilOffence)
+                .anyMatch(Objects::nonNull);
+    }
+
+    private boolean hasExParteOffence(final List<Offence> offences) {
+        return ofNullable(offences).orElse(new ArrayList<>()).stream()
                 .map(Offence::getCivilOffence)
                 .filter(Objects::nonNull)
                 .anyMatch(civilOffence -> Boolean.TRUE.equals(civilOffence.getIsExParte()));
@@ -1095,9 +1124,11 @@ public class NotificationService {
             final String hearingDate = hearingStartDateTime.toLocalDate().toString();
             final String hearingTime = getCourtTime(hearingStartDateTime);
 
+            final boolean isExParteCivilApplication = isExParteCivilApplication(event, courtApplication);
+
             sendNotificationToApplicant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
-            sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
-            sendNotificationToThirdParties(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
+            sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker, isExParteCivilApplication);
+            sendNotificationToThirdParties(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker, isExParteCivilApplication);
             LOGGER.info("InformantNotificationTracker= {}", informantNotificationTracker);
             if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
                 sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
@@ -1129,10 +1160,11 @@ public class NotificationService {
         final String hearingDate = hearingStartDateTime.toLocalDate().toString();
         final String hearingTime = getCourtTime(hearingStartDateTime);
         final InformantNotificationTracker informantNotificationTracker = buildInformantNotificationTracker(courtApplication);
+        final boolean isExParteCivilApplication = isExParteCivilApplication(event, courtApplication);
 
         sendNotificationToApplicant(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
-        sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
-        sendNotificationToThirdParties(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
+        sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker, isExParteCivilApplication);
+        sendNotificationToThirdParties(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker, isExParteCivilApplication);
 
         LOGGER.info("InformantNotificationTracker= {}", informantNotificationTracker);
         if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
