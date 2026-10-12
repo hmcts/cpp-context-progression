@@ -55,6 +55,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -171,7 +172,15 @@ public class HearingResultedEventProcessor {
 
         final Map<UUID, Set<UUID>> combinedBookingReferencesWithCourtScheduleIds = getCombinedBookingReferencesWithCourtScheduleIds(nextHearingsRequested, hearing);
 
-        final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds);
+        // The references a previous share already confirmed. Where one of these collapses onto the
+        // same session as a reference the clerk has just picked, the transformer must list against
+        // the live one, or the new reservation is stranded and silently holds a slot.
+        final Set<UUID> alreadyConfirmedBookingReferences =
+                nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds().stream()
+                        .map(BookingReferenceCourtScheduleIds::getBookingId)
+                        .collect(toSet());
+
+        final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds, alreadyConfirmedBookingReferences);
         if (isNotEmpty(nextHearingsList)) {
             LOGGER.info("progression.event.next-hearings-requested nextHearingsList not empty");
             final List<BookingReferenceCourtScheduleIds> previousBookingReferences =

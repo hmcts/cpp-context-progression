@@ -341,7 +341,7 @@ public class HearingResultedEventProcessorTest {
         final List<HearingListingNeeds> hearings = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
                 .withId(hearingId)
                 .build());
-        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
         when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(alreadyExistingAndNewBookingReferencesWithCourtScheduleIds);
 
         final JsonEnvelope event = envelopeFrom(
@@ -391,7 +391,7 @@ public class HearingResultedEventProcessorTest {
                         .withId(hearingId)
                         .build())
                 .build();
-        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(null);
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(null);
         when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(alreadyExistingAndNewBookingReferencesWithCourtScheduleIds);
 
         final JsonEnvelope event = envelopeFrom(

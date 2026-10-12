@@ -262,6 +262,54 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(optProsecutionCase3.isPresent(), is(true));
     }
 
+    /**
+     * LPT-2582 / reserve-a-slot. A clerk who re-picks a session for a next hearing that an
+     * earlier share already confirmed gets a NEW bookingReference: the old one now carries a
+     * confirmed allocation, and ReservationService.guardAgainstConfirmedAllocation refuses to
+     * reserve over it.
+     *
+     * <p>Both references resolve to the same session, so they collapse onto one listing need -
+     * which is correct and wanted. What is not correct is WHICH reference survives the collapse:
+     * today it is whichever the payload happened to list first.
+     *
+     * <p>It has to be the live one. CourtScheduleRepositoryImpl.updateListHearingSlots releases
+     * the reservation held under the bookingId it is handed, immediately before charging the
+     * session for the real booking. Hand it the already-confirmed reference and that release is a
+     * no-op, so the clerk's new reservation is never consumed and never released - it holds a
+     * slot of that session until the overnight purge, counting against capacity exactly like a
+     * real listing.
+     */
+    @Test
+    public void shouldKeepTheLiveBookingReferenceWhenAReSharedPickCollapsesOntoTheSameSession() {
+        final UUID alreadySharedReference = BOOKING_REFERENCE_1;
+        final UUID rePickedReference = BOOKING_REFERENCE_2;
+
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(alreadySharedReference, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+        slotsMap.put(rePickedReference, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1,
+                        buildNextHearing(HEARING_TYPE_2, alreadySharedReference, COURT_LOCATION, null, LISTED_START_DATETIME_1)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2,
+                        buildNextHearing(HEARING_TYPE_2, rePickedReference, COURT_LOCATION, null, LISTED_START_DATETIME_1))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(
+                hearing,
+                Optional.empty(),
+                SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build(),
+                slotsMap,
+                new HashSet<>(Arrays.asList(alreadySharedReference)));
+
+        assertThat("both references are on one session, so they must merge into one listing need",
+                hearingListingNeedsList.size(), is(1));
+        assertThat("the surviving reference must be the clerk's live pick, not the already-shared one",
+                hearingListingNeedsList.get(0).getBookingReference(), is(rePickedReference));
+    }
+
     @Test
     public void shouldIntoDifferentHearingWhenSlotsAreDifferent() {
         final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
