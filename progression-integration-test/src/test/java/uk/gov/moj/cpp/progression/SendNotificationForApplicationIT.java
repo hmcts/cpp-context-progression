@@ -20,6 +20,7 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAS
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static java.util.Collections.emptyList;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplicationWithCourtHearing;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
@@ -68,6 +69,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
     private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room.json";
     private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_THIRD_PARTIES_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room-and-third-parties.json";
+    private static final String CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_LINKED_EX_PARTE_CASE_JSON = "applications/progression.initiate-court-proceedings-for-civil-proceedings-application-with-room-and-linked-exparte-case.json";
     private static final String INDIVIDUAL_THIRD_PARTY_EMAIL = "exparte.individual.thirdparty@example.com";
     private static final String ORGANISATION_THIRD_PARTY_EMAIL = "exparte.organisation.thirdparty@example.com";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
@@ -268,6 +270,44 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyEmailNotificationIsNotRaisedWithContent(defenceOrganisationEmail);
         verifyEmailNotificationIsNotRaisedWithContent(INDIVIDUAL_THIRD_PARTY_EMAIL);
         verifyEmailNotificationIsNotRaisedWithContent(ORGANISATION_THIRD_PARTY_EMAIL);
+    }
+
+    @Test
+    void shouldOnlyNotifyProsecutorWhenApplicationIsRaisedOnNonExParteCaseWithExParteCaseSelected() throws Exception {
+
+        final String exParteCaseId = randomUUID().toString();
+        final String exParteCaseDefendantId = randomUUID().toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDoB = LocalDate.now().minusYears(30).toString();
+        final String courtCentreName = "Lavender Hill Magistrates' Court";
+
+        // Case A: ex-parte civil case
+        civilCaseInitiateCourtProceedings(exParteCaseId, exParteCaseDefendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(),
+                listedStartDateTime, earliestStartDateTime, defendantDoB, randomUUID().toString(), true);
+        pollProsecutionCasesProgressionFor(exParteCaseId, getCivilProsecutionCaseMatchers(exParteCaseId, exParteCaseDefendantId, emptyList()));
+
+        // Case B: non ex-parte civil case, the case the application is raised on
+        civilCaseInitiateCourtProceedings(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(),
+                listedStartDateTime, earliestStartDateTime, defendantDoB, randomUUID().toString(), false);
+        pollProsecutionCasesProgressionFor(caseId, getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList()));
+
+        stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
+        stubApplicantIsNotCpsProsecutor();
+
+        // Case B is the first linked case and Case A is selected as a further linked case. Case A is not on the
+        // application hearing, so its ex-parte offence is only known from the prosecution case itself.
+        final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, exParteCaseId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_LINKED_EX_PARTE_CASE_JSON, applicationHearingId);
+
+        final String caseResponse = getApplicationFor(courtApplicationId);
+        assertThat(caseResponse, is(notNullValue()));
+
+        doHearingConfirmedForApplicationAndVerify(applicationHearingId, courtCentreName);
+
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
+
+        verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
     }
 
     private void stubApplicantIsNotCpsProsecutor() {
