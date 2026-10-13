@@ -9,8 +9,12 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -50,6 +54,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import javax.json.JsonObject;
@@ -73,6 +78,9 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String INDIVIDUAL_THIRD_PARTY_EMAIL = "exparte.individual.thirdparty@example.com";
     private static final String ORGANISATION_THIRD_PARTY_EMAIL = "exparte.organisation.thirdparty@example.com";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_CASE_JSON = "public.listing.hearing-confirmed-application-with-linked-case.json";
+    private static final String PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_EX_PARTE_CASE_NOTIFICATION_TRUE_JSON = "public.listing.hearing-confirmed-application-with-linked-exparte-case-notification-true.json";
+    private static final String DEFENDANT_EMAIL = "harry.kane@spurs.co.uk";
+    private static final String PROGRESSION_EVENT_EMAIL_REQUESTED = "progression.event.email-requested";
     // hearing notifications are not sent for past-dated hearings, so the linked-case payload's sitting days are moved into the future
     private static final String FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD = "2018-09-28T12:13:00.000Z";
     private static final String SECOND_SITTING_DAY_IN_LINKED_CASE_PAYLOAD = "2018-09-30T09:30:00.000Z";
@@ -295,19 +303,42 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", CIVIL_PROCEEDINGS_RESPONDENT_DEFENDANT_ID);
         stubApplicantIsNotCpsProsecutor();
 
-        // Case B is the first linked case and Case A is selected as a further linked case. Case A is not on the
-        // application hearing, so its ex-parte offence is only known from the prosecution case itself.
+        // Case B (not ex-parte) is the first linked case and Case A (ex-parte) is selected as a further linked case
         final String applicationHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, exParteCaseId, CIVIL_PROCEEDINGS_APPLICATION_WITH_ROOM_AND_LINKED_EX_PARTE_CASE_JSON, applicationHearingId);
 
         final String caseResponse = getApplicationFor(courtApplicationId);
         assertThat(caseResponse, is(notNullValue()));
 
-        doHearingConfirmedForApplicationAndVerify(applicationHearingId, courtCentreName);
+        final JmsMessageConsumerClient emailRequestedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME)
+                .withEventNames(PROGRESSION_EVENT_EMAIL_REQUESTED).getMessageConsumerClient();
+
+        // both linked cases are on the application hearing and the hearing notice is sent to the parties
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                        .withUserId(userId)
+                        .build(),
+                getHearingConfirmedWithLinkedExParteCaseJsonObject(applicationHearingId, exParteCaseId, exParteCaseDefendantId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
         verifyEmailNotificationIsRaisedWithAttachment(singletonList("michael.page2@cityoflondon.gov.uk"));
 
         verifyEmailNotificationIsNotRaisedWithContent("johnone.smith@example.com");
+
+        verifyNoHearingNoticeEmailRequestedForDefendant(emailRequestedConsumer, List.of(caseId, exParteCaseId));
+    }
+
+    private void verifyNoHearingNoticeEmailRequestedForDefendant(final JmsMessageConsumerClient emailRequestedConsumer, final List<String> caseIds) {
+        Optional<JsonObject> emailRequested = retrieveMessageBody(emailRequestedConsumer);
+        while (emailRequested.isPresent()) {
+            final JsonObject payload = emailRequested.get();
+            if (caseIds.contains(payload.getString("caseId", ""))) {
+                payload.getJsonArray("notifications").getValuesAs(JsonObject.class)
+                        .forEach(notification -> assertThat(notification.getString("sendToAddress", ""), not(DEFENDANT_EMAIL)));
+            }
+            emailRequested = retrieveMessageBody(emailRequestedConsumer);
+        }
     }
 
     private void stubApplicantIsNotCpsProsecutor() {
@@ -332,6 +363,22 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
                 .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                 .replaceAll("APPLICATION_ID", applicationId)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replace(FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD, futureSittingDay(1))
+                .replace(SECOND_SITTING_DAY_IN_LINKED_CASE_PAYLOAD, futureSittingDay(3));
+        return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    private JsonObject getHearingConfirmedWithLinkedExParteCaseJsonObject(final String hearingId, final String exParteCaseId, final String exParteCaseDefendantId,
+                                                                           final String courtCentreName) {
+        final String strPayload = getPayload(PUBLIC_LISTING_HEARING_CONFIRMED_APPLICATION_WITH_LINKED_EX_PARTE_CASE_NOTIFICATION_TRUE_JSON)
+                .replaceAll("EX_PARTE_CASE_REF", exParteCaseId)
+                .replaceAll("EX_PARTE_DEFENDANT_REF", exParteCaseDefendantId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("APPLICATION_ID", courtApplicationId)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replace(FIRST_SITTING_DAY_IN_LINKED_CASE_PAYLOAD, futureSittingDay(1))
