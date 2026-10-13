@@ -162,6 +162,15 @@ public class CourtApplicationEventListener {
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
             courtApplicationRepository.save(applicationEntity);
         }
+        Optional.ofNullable(initiateCourtApplicationRepository.findBy(courtApplicationStatusChanged.getId())).ifPresent(initiateCourtApplicationEntity -> {
+            final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+            final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+            final CourtApplication updatedInitiateCourtApplication = buildCourtApplicationWithStatus(persistedInitiateCourtApplication.getCourtApplication(),courtApplicationStatusChanged.getApplicationStatus());
+            final InitiateCourtApplicationProceedings updatedPersistedInitiateCourtApplication = initiateCourtApplicationProceedingsBuilder(persistedInitiateCourtApplication)
+                    .withCourtApplication(updatedInitiateCourtApplication).build();
+            initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedPersistedInitiateCourtApplication).toString());
+            initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+        });
     }
 
     @Handles("progression.event.court-application-updated")
