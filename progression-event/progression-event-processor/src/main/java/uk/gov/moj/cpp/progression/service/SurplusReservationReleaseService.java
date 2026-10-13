@@ -60,7 +60,7 @@ public class SurplusReservationReleaseService {
             httpDelete.addHeader(CONTENT_TYPE, COURTSCHEDULER_RELEASE_SESSIONS_TYPE);
             httpDelete.addHeader(CJS_CPP_UID, getUserId().toString());
 
-            final HttpResponse httpResponse = HttpClientBuilder.create().build().execute(httpDelete);
+            final HttpResponse httpResponse = execute(httpDelete);
             final int status = httpResponse.getStatusLine().getStatusCode();
 
             if (status == Response.Status.ACCEPTED.getStatusCode()) {
@@ -72,6 +72,15 @@ public class SurplusReservationReleaseService {
         } catch (URISyntaxException | IOException | IllegalStateException ex) {
             LOGGER.error("Exception releasing surplus reservation bookingReference=" + bookingReference, ex);
         }
+    }
+
+
+    /**
+     * The one network call, isolated so a test can stand in for it. Package-private rather than
+     * private for that reason only - nothing outside this class should call it.
+     */
+    HttpResponse execute(final HttpDelete httpDelete) throws IOException {
+        return HttpClientBuilder.create().build().execute(httpDelete);
     }
 
     private UUID getUserId() {
