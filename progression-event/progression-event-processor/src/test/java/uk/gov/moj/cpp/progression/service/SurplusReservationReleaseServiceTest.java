@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -112,10 +113,13 @@ class SurplusReservationReleaseServiceTest {
 
     @Test
     void shouldNotThrowWhenTheCallItselfFails() throws Exception {
+        final UUID bookingReference = randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
         doThrow(new IOException("courtscheduler unreachable")).when(service).execute(any(HttpDelete.class));
 
-        service.release(randomUUID());
+        assertDoesNotThrow(() -> service.release(bookingReference));
+
+        verify(service).execute(any(HttpDelete.class));
     }
 
     /**
