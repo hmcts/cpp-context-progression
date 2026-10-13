@@ -133,7 +133,7 @@ public class SystemDocGeneratorEventProcessor {
 
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
         final String originatingSource = documentAvailablePayload.getString(ORIGINATING_SOURCE, "");
-        final String fileId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID);
+        final String fileId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID, "");
 
         if (COURT_REGISTER.equalsIgnoreCase(originatingSource)) {
 
@@ -238,14 +238,11 @@ public class SystemDocGeneratorEventProcessor {
 
         final String originatingSource = documentAvailablePayload.getString(ORIGINATING_SOURCE, "");
 
-        final String sourceCorrelationId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
-
-        final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
-
-        final String reason = documentAvailablePayload.getString(REASON);
 
         if (PRISON_COURT_REGISTER.equalsIgnoreCase(originatingSource)) {
-
+            final String sourceCorrelationId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
+            final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
+            final String reason = documentAvailablePayload.getString(REASON);
             LOGGER.error("Asynchronous document generation failed. Failed to generate Prison Court Register for courtCentreId: '{}', payloadFileId: '{}', reason: '{}'",
                     sourceCorrelationId, payloadFileId, reason);
 
@@ -281,6 +278,9 @@ public class SystemDocGeneratorEventProcessor {
                             .build(),
                     this.objectToJsonObjectConverter.convert(payloadBuilder.build())));
         } else if (NOWS.equalsIgnoreCase(originatingSource)) {
+            final String sourceCorrelationId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
+            final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
+            final String reason = documentAvailablePayload.getString(REASON);
             LOGGER.error("Asynchronous document generation failed. Failed to generate NOWs for materialId: '{}', payloadFileId: '{}', reason: '{}'",
                     sourceCorrelationId, payloadFileId, reason);
 
