@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
@@ -1175,6 +1176,72 @@ public class HearingConfirmedEventProcessorTest {
         assertThat(inputData.getHearingType(), is("Plea"));
     }
 
+
+    @Test
+    public void shouldPassCasesLinkedToConfirmedApplicationsForExParteCheckWhenHearingInProgressionHasNoApplications() {
+
+        setField(this.eventProcessor, "jsonObjectConverter", new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper()));
+        setField(this.eventProcessor, "objectToJsonObjectConverter", new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()));
+
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID exParteCaseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final JsonObject hearingConfirmedPayload = FileUtil.jsonFromString(FileUtil.getPayload("public.listing.hearing-confirmed.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%HEARING_TYPE%", "Plea")
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+        final JsonObject payload = createObjectBuilder(hearingConfirmedPayload)
+                .add("confirmedHearing", createObjectBuilder(hearingConfirmedPayload.getJsonObject("confirmedHearing"))
+                        .add("courtApplicationIds", createArrayBuilder().add(applicationId.toString())))
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder()
+                        .withName("public.listing.hearing-confirmed")
+                        .withId(randomUUID())
+                        .build(),
+                payload);
+
+        // the application is confirmed onto an existing case hearing that progression does not yet hold it against
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .build()))
+                .build();
+
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
+        when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription("First hearing")
+                                .build())
+                        .build());
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(progressionService.getCourtApplicationByIdTyped(any(), eq(applicationId.toString()))).thenReturn(Optional.of(courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(asList(
+                        courtApplicationCase().withProsecutionCaseId(caseId).build(),
+                        courtApplicationCase().withProsecutionCaseId(exParteCaseId).build()))
+                .build()));
+
+        eventProcessor.processEvent(jsonEnvelope);
+
+        verify(hearingNotificationHelper, times(1)).sendHearingNotificationsToRelevantParties(any(), hearingInputDataEnvelopeCaptor.capture());
+        final HearingNotificationInputData inputData = hearingInputDataEnvelopeCaptor.getValue();
+        assertThat(inputData.getCaseIds(), is(singletonList(caseId)));
+        assertThat(inputData.getLinkedApplicationCaseIds(), is(asList(caseId, exParteCaseId)));
+    }
 
     @Test
     public void shouldHandleHearingConfirmedforAutApplication_NotificationSendTrue() {

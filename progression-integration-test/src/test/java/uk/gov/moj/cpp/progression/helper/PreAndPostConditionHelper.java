@@ -390,9 +390,19 @@ public class PreAndPostConditionHelper {
                                                              final String referralId,
                                                              final String listedStartDateTime, final String earliestStartDateTime, final String dob, final String feesId,
                                                              final boolean isExParte) {
+        return civilCaseInitiateCourtProceedings(caseId, defendantId, defendantId, materialIdOne, materialIdTwo, referralId, listedStartDateTime, earliestStartDateTime, dob, feesId, isExParte);
+    }
+
+    public static Response civilCaseInitiateCourtProceedings(final String caseId, final String defendantId, final String masterDefendantId,
+                                                             final String materialIdOne,
+                                                             final String materialIdTwo,
+                                                             final String referralId,
+                                                             final String listedStartDateTime, final String earliestStartDateTime, final String dob, final String feesId,
+                                                             final boolean isExParte) {
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
                 getCivilCaseInitiateCourtProceedingsJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob, feesId)
+                        .replace("\"masterDefendantId\": \"" + defendantId + "\"", "\"masterDefendantId\": \"" + masterDefendantId + "\"")
                         .replace("\"isExParte\" : true", "\"isExParte\" : " + isExParte));
     }
 
