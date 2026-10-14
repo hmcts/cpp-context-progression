@@ -11,6 +11,8 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
@@ -65,6 +67,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -139,11 +142,7 @@ public class HearingNotificationHelper {
     public void sendHearingNotificationsToRelevantParties(final JsonEnvelope jsonEnvelope, final HearingNotificationInputData hearingNotificationInputData) {
         LOGGER.info("sending hearing notifications to relevant parties for hearing : {}", hearingNotificationInputData.getHearingId());
 
-        final List<ProsecutionCase> cases = hearingNotificationInputData.getCaseIds().stream().map(caseId -> progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId.toString()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class))
-                .collect(Collectors.toList());
+        final List<ProsecutionCase> cases = getProsecutionCases(jsonEnvelope, hearingNotificationInputData.getCaseIds());
         final CourtCentre inputCourtCenter = CourtCentre.courtCentre()
                 .withId(hearingNotificationInputData.getCourtCenterId())
                 .withRoomId(hearingNotificationInputData.getCourtRoomId())
@@ -152,8 +151,10 @@ public class HearingNotificationHelper {
         final CourtCentre enrichedCourtCentre = progressionService.transformCourtCentreV2(inputCourtCenter, jsonEnvelope);
 
         // a defendant can be on both an ex-parte and a non ex-parte case in the same hearing, so the
-        // suppression has to apply to the whole hearing rather than to each case separately
-        final boolean hearingHasExParteCivilCase = cases.stream().anyMatch(HearingNotificationHelper::isExParteCivilCase);
+        // suppression has to apply to the whole hearing rather than to each case separately. An ex-parte case
+        // linked to an application on the hearing may not be listed on the hearing itself, so those are checked too
+        final boolean hearingHasExParteCivilCase = cases.stream().anyMatch(HearingNotificationHelper::isExParteCivilCase)
+                || linkedApplicationCaseIsExParte(jsonEnvelope, hearingNotificationInputData);
         if (hearingHasExParteCivilCase) {
             LOGGER.info("Hearing notification to defendants suppressed for hearing {} due to ex-parte offence on a civil case in the hearing", hearingNotificationInputData.getHearingId());
         }
@@ -169,12 +170,40 @@ public class HearingNotificationHelper {
         }
     }
 
+    public static List<UUID> getLinkedApplicationCaseIds(final List<CourtApplication> courtApplications) {
+        return ofNullable(courtApplications).orElse(new ArrayList<>()).stream()
+                .flatMap(courtApplication -> ofNullable(courtApplication.getCourtApplicationCases()).orElse(new ArrayList<>()).stream())
+                .map(CourtApplicationCase::getProsecutionCaseId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope jsonEnvelope, final List<UUID> caseIds) {
+        return caseIds.stream().map(caseId -> progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId.toString()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class))
+                .collect(Collectors.toList());
+    }
+
+    private boolean linkedApplicationCaseIsExParte(final JsonEnvelope jsonEnvelope, final HearingNotificationInputData hearingNotificationInputData) {
+        final List<UUID> linkedCaseIdsNotOnHearing = hearingNotificationInputData.getLinkedApplicationCaseIds().stream()
+                .filter(caseId -> !hearingNotificationInputData.getCaseIds().contains(caseId))
+                .collect(Collectors.toList());
+        return getProsecutionCases(jsonEnvelope, linkedCaseIdsNotOnHearing).stream().anyMatch(HearingNotificationHelper::isExParteCivilCase);
+    }
+
     private void sendNotificationToParties(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope, final boolean hearingHasExParteCivilCase) {
         sendHearingNotificationToDefendant(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope, hearingHasExParteCivilCase);
         sendHearingNotificationToProsecutor(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
     }
 
     private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope, final boolean hearingHasExParteCivilCase) {
+        if (hearingHasExParteCivilCase) {
+            LOGGER.info("HearingNotification not generated or sent on HearingId {} for DefendantId {} due to ex-parte civil case", hearingNotificationInputData.getHearingId(), defendant.getId());
+            return;
+        }
         LOGGER.info("Sending HearingNotification on HearingId {} and DefendantId {}", hearingNotificationInputData.getHearingId(), defendant.getId());
         final UUID caseId = prosecutionCase.getId();
         final UUID defendantId = defendant.getId();
@@ -198,18 +227,16 @@ public class HearingNotificationHelper {
         final UUID notificationId = randomUUID();
 
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
-        if (!hearingHasExParteCivilCase) {
-            if (nonNull(defenceOrganisationVO)) {
-                sendNotificationToDefendantOrganisation(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO, materialId, materialUrl, notificationId);
-            } else if (nonNull(defendant.getPersonDefendant())) {
-                final PersonDefendant personDefendant = defendant.getPersonDefendant();
-                sendNotificationToPersonDefendant(hearingNotificationInputData, jsonEnvelope, caseId, personDefendant, materialId, materialUrl, notificationId);
-            } else if (nonNull(defendant.getLegalEntityDefendant())) {
-                final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
-                sendNotificationToLegalEntityDefendant(hearingNotificationInputData, jsonEnvelope, caseId, legalEntityDefendant, materialId, materialUrl, notificationId);
-            }else {
-                LOGGER.info("Notification entity is neither defence organisation not person or org defendant hence not sending any notification");
-            }
+        if (nonNull(defenceOrganisationVO)) {
+            sendNotificationToDefendantOrganisation(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO, materialId, materialUrl, notificationId);
+        } else if (nonNull(defendant.getPersonDefendant())) {
+            final PersonDefendant personDefendant = defendant.getPersonDefendant();
+            sendNotificationToPersonDefendant(hearingNotificationInputData, jsonEnvelope, caseId, personDefendant, materialId, materialUrl, notificationId);
+        } else if (nonNull(defendant.getLegalEntityDefendant())) {
+            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+            sendNotificationToLegalEntityDefendant(hearingNotificationInputData, jsonEnvelope, caseId, legalEntityDefendant, materialId, materialUrl, notificationId);
+        }else {
+            LOGGER.info("Notification entity is neither defence organisation not person or org defendant hence not sending any notification");
         }
     }
 

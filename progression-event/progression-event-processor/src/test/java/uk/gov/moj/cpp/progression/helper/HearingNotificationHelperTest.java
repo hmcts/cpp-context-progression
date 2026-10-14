@@ -21,6 +21,8 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.HEARING_DATE_PATTERN;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.notification.EmailChannel;
@@ -304,19 +306,6 @@ public class HearingNotificationHelperTest {
         ));
 
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
-        AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
-                .withOrganisationId(randomUUID())
-                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder()
-                        .withAddress1("addressLine1")
-                        .withAddress2("addressLine2")
-                        .withAddress3("addressLine3")
-                        .withAddress4("addressLine4")
-                        .withAddressPostcode("CR01JS")
-                        .build())
-                .withEmail("organisation@org.com")
-                .withOrganisationName("defence Organisation")
-                .build();
-        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -325,7 +314,7 @@ public class HearingNotificationHelperTest {
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
 
-        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }
 
@@ -342,7 +331,6 @@ public class HearingNotificationHelperTest {
         givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
         givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, defendantId);
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
-        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(defenceOrganisationWithEmail());
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -350,7 +338,8 @@ public class HearingNotificationHelperTest {
         prosecutorEmailCapture.getAllValues().forEach(emailChannels ->
                 verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID)));
         verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
-        verify(documentGeneratorService, times(4)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verifyNoInteractions(defenceService);
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -368,7 +357,6 @@ public class HearingNotificationHelperTest {
         givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
         givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, otherDefendantId);
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
-        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(defenceOrganisationWithEmail());
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -398,6 +386,45 @@ public class HearingNotificationHelperTest {
         assertThat(defendantEmailCapture.getAllValues().stream()
                 .filter(emailChannels -> "organisation@org.com".equals(emailChannels.get(0).getSendToAddress()))
                 .count(), is(2L));
+    }
+
+    @Test
+    void sendHearingNotifications_OnlyProsecutorNotified_WhenExParteCaseIsLinkedToApplicationButNotOnHearing() {
+
+        final UUID exParteCaseId = randomUUID();
+        final UUID nonExParteCaseId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        final HearingNotificationInputData inputData = getInputData(nonExParteCaseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+        inputData.setLinkedApplicationCaseIds(List.of(nonExParteCaseId, exParteCaseId));
+
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, defendantId);
+        givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        verifyEmailChannel(prosecutorEmailCapture.getValue(), "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+        verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verifyNoInteractions(defenceService);
+    }
+
+    @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    void shouldGetDistinctLinkedApplicationCaseIds() {
+        final UUID firstCaseId = randomUUID();
+        final UUID secondCaseId = randomUUID();
+        final List<CourtApplication> courtApplications = List.of(
+                CourtApplication.courtApplication().withCourtApplicationCases(List.of(
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(firstCaseId).build(),
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(secondCaseId).build())).build(),
+                CourtApplication.courtApplication().withCourtApplicationCases(List.of(
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(firstCaseId).build())).build(),
+                CourtApplication.courtApplication().build());
+
+        assertThat(HearingNotificationHelper.getLinkedApplicationCaseIds(courtApplications), is(List.of(firstCaseId, secondCaseId)));
+        assertThat(HearingNotificationHelper.getLinkedApplicationCaseIds(null), is(List.of()));
     }
 
     private void givenProsecutionCase(final String payloadFile, final UUID caseId, final UUID defendantId) {

@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.getLinkedApplicationCaseIds;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -879,8 +880,20 @@ public class HearingConfirmedEventProcessor {
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(confirmedUpdatedHearing.getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(confirmedUpdatedHearing.getCourtCentre().getRoomId());
+        hearingNotificationInputData.setLinkedApplicationCaseIds(getLinkedApplicationCaseIdsForHearing(jsonEnvelope, confirmedUpdatedHearing, hearingInProgression));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, hearingNotificationInputData);
+    }
+
+    // an application can be confirmed onto a hearing that progression does not yet hold it against, so the
+    // confirmed applications are loaded as well to find every case linked to them
+    private List<UUID> getLinkedApplicationCaseIdsForHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
+        final List<CourtApplication> courtApplications = new ArrayList<>(ofNullable(hearingInProgression).map(Hearing::getCourtApplications).orElse(new ArrayList<>()));
+        ofNullable(confirmedHearing.getCourtApplicationIds()).orElse(new ArrayList<>()).stream()
+                .map(courtApplicationId -> progressionService.getCourtApplicationByIdTyped(jsonEnvelope, courtApplicationId.toString()))
+                .flatMap(Optional::stream)
+                .forEach(courtApplications::add);
+        return getLinkedApplicationCaseIds(courtApplications);
     }
 
 

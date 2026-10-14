@@ -12,6 +12,7 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
+import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.getLinkedApplicationCaseIds;
 
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
@@ -214,6 +215,7 @@ public class HearingUpdatedEventProcessor {
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(confirmedUpdatedHearing.getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(confirmedUpdatedHearing.getCourtCentre().getRoomId());
+        hearingNotificationInputData.setLinkedApplicationCaseIds(getLinkedApplicationCaseIds(updatedHearing.getCourtApplications()));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, hearingNotificationInputData);
     }
