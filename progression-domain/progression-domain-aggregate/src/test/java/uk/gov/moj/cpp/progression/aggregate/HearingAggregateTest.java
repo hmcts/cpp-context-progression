@@ -1163,7 +1163,7 @@ public class HearingAggregateTest {
                 .filter(prosecutionCase -> caseWithoutStatusId.equals(prosecutionCase.getId()))
                 .findFirst()
                 .orElseThrow(AssertionError::new);
-        assertNull(updatedCaseWithoutStatus.getCaseStatus());
+        assertEquals("ACTIVE", updatedCaseWithoutStatus.getCaseStatus());
 
         final CourtApplicationCase applicationCaseWithStatus = applicationsResulted.getHearing().getCourtApplications().get(0)
                 .getCourtApplicationCases().stream()
