@@ -1535,6 +1535,53 @@ class CaseAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object, instanceOf(ProsecutionCaseCreated.class));
+        final ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) object;
+        assertThat(prosecutionCaseCreated.getProsecutionCase().getCaseStatus(), is("caseStatus"));
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is("caseStatus"));
+    }
+
+    @Test
+    public void shouldDefaultCaseStatusToActiveWhenCreatingProsecutionCaseWithoutCaseStatus() {
+        final ProsecutionCase prosecutionCaseWithoutStatus = prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withCaseStatus(null)
+                .build();
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCase(prosecutionCaseWithoutStatus, emptyList()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) eventStream.get(0);
+        assertThat(prosecutionCaseCreated.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+    }
+
+    @Test
+    public void shouldPreserveExistingCaseStatusWhenCreatingProsecutionCase() {
+        final ProsecutionCase prosecutionCaseWithReadyForReview = prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withCaseStatus(READY_FOR_REVIEW.getDescription())
+                .build();
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCase(prosecutionCaseWithReadyForReview, emptyList()).collect(toList());
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) eventStream.get(0);
+        assertThat(prosecutionCaseCreated.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+    }
+
+    @Test
+    public void shouldDefaultCaseStatusToActiveWhenCreatingCivilProsecutionCaseWithoutCaseStatus() {
+        final ProsecutionCase civilProsecutionCaseWithoutStatus = prosecutionCase()
+                .withValuesFrom(prosecutionCaseWithCivilFess)
+                .withCaseStatus(null)
+                .build();
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCase(
+                civilProsecutionCaseWithoutStatus, civilProsecutionCaseWithoutStatus.getCivilFees()).collect(toList());
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) eventStream.get(0);
+        assertThat(prosecutionCaseCreated.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
     }
 
 
@@ -8226,6 +8273,7 @@ class CaseAggregateTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = (ProsecutionCaseCreated) events.get(0);
         List<CivilFees> civilFees = prosecutionCaseCreated.getProsecutionCase().getCivilFees();
         assertNotNull(civilFees);
+        assertThat(prosecutionCaseCreated.getProsecutionCase().getCaseStatus(), is("caseStatus"));
 
         civilFees.forEach(civilFee -> {
             assertNotNull(civilFee.getFeeId());
@@ -8257,7 +8305,87 @@ class CaseAggregateTest {
         assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
         assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0).getOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(),
                 equalTo(IndicatedPleaValue.INDICATED_GUILTY));
+        assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
 
+    }
+
+    @Test
+    public void shouldUseAggregateCaseStatusWhenProsecutionCaseStatusIsNullForAdhocHearing() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCaseWithoutStatus = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(null)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(singletonList(defendant))
+                .build();
+
+        caseAggregate.apply(prosecutionCaseCreated().withProsecutionCase(prosecutionCaseWithoutStatus).build());
+        setField(caseAggregate, "caseStatus", READY_FOR_REVIEW.getDescription());
+
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .withDefendantOffences(singletonList(offenceId))
+                        .build()))
+                .build();
+
+        final RelatedCaseRequestedForAdhocHearing relatedCaseRequestedForAdhocHearing = (RelatedCaseRequestedForAdhocHearing)
+                caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true)
+                        .filter(RelatedCaseRequestedForAdhocHearing.class::isInstance)
+                        .findFirst()
+                        .orElseThrow(AssertionError::new);
+
+        assertThat(relatedCaseRequestedForAdhocHearing.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+    }
+
+    @Test
+    public void shouldPreserveExistingCaseStatusWhenRaisingRelatedCaseRequestedForAdhocHearingEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withMasterDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence().withId(offenceId).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCaseWithStatus = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(singletonList(defendant))
+                .build();
+
+        caseAggregate.apply(prosecutionCaseCreated().withProsecutionCase(prosecutionCaseWithStatus).build());
+
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .withDefendantOffences(singletonList(offenceId))
+                        .build()))
+                .build();
+
+        final RelatedCaseRequestedForAdhocHearing relatedCaseRequestedForAdhocHearing = (RelatedCaseRequestedForAdhocHearing)
+                caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true)
+                        .filter(RelatedCaseRequestedForAdhocHearing.class::isInstance)
+                        .findFirst()
+                        .orElseThrow(AssertionError::new);
+
+        assertThat(relatedCaseRequestedForAdhocHearing.getProsecutionCase().getCaseStatus(), is(SJP_REFERRAL.getDescription()));
     }
 
     @Test

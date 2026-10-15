@@ -1112,10 +1112,23 @@ public class CaseAggregate implements Aggregate {
             return updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(prosecutionCase, effectiveCivilFeesForTheCase);
         } else {
             return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated()
-                    .withProsecutionCase(markMigratedCaseInActive(prosecutionCase))
+                    .withProsecutionCase(ensureCaseStatusOnCreate(prosecutionCase))
                     .build()));
         }
 
+    }
+
+    private ProsecutionCase ensureCaseStatusOnCreate(final ProsecutionCase prosecutionCase) {
+        if (isMigratedCaseInActive(prosecutionCase)) {
+            return markMigratedCaseInActive(prosecutionCase);
+        }
+        if (isBlank(prosecutionCase.getCaseStatus())) {
+            return ProsecutionCase.prosecutionCase()
+                    .withValuesFrom(prosecutionCase)
+                    .withCaseStatus(ACTIVE.getDescription())
+                    .build();
+        }
+        return prosecutionCase;
     }
 
     private ProsecutionCase markMigratedCaseInActive(final ProsecutionCase prosecutionCase) {
@@ -1169,7 +1182,9 @@ public class CaseAggregate implements Aggregate {
                 .withValuesFrom(prosecutionCase)
                 .withCivilFees(civilFeesWithFeeIdAndFeeType)
                 .build();
-        return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(updatedProsecutionCase).build()));
+        return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(ensureCaseStatusOnCreate(updatedProsecutionCase))
+                .build()));
     }
 
     private List<CivilFees> buildCivilFeesFromFeeIds(final List<CivilFees> effectiveFeesForTheCase) {
@@ -3999,6 +4014,7 @@ public class CaseAggregate implements Aggregate {
                                     .build();
                         })
                         .toList())
+                .withCaseStatus(resolveCaseStatusForAdhocHearing())
                 .build();
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -4008,6 +4024,16 @@ public class CaseAggregate implements Aggregate {
                 .withSendNotificationToParties(sendNotificationToParties)
                 .build());
         return apply(streamBuilder.build());
+    }
+
+    private String resolveCaseStatusForAdhocHearing() {
+        if (!isBlank(this.getProsecutionCase().getCaseStatus())) {
+            return this.getProsecutionCase().getCaseStatus();
+        }
+        if (!isBlank(this.caseStatus)) {
+            return this.caseStatus;
+        }
+        return ACTIVE.getDescription();
     }
 
     private Optional<String> getProsecutorEmail() {
