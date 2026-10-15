@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.progression.helper.HearingDayUtils;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer;
+import uk.gov.moj.cpp.progression.service.SurplusReservationReleaseService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
@@ -85,6 +86,9 @@ public class HearingResultedEventProcessor {
 
     @Inject
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
+    @Inject
+    private SurplusReservationReleaseService surplusReservationReleaseService;
 
     @Inject
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
@@ -221,23 +225,8 @@ public class HearingResultedEventProcessor {
 
             progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings);
 
-            // LPT-2599: do NOT release the reservations this share merged away.
-            //
-            // Releasing them is correct on capacity grounds - nothing will ever list against a
-            // reference the merge discarded - and that is what the removed
-            // SurplusReservationReleaseService did. It cannot be done from here, because the
-            // draft result keeps pointing at the released reference and nothing updates it. The
-            // UI's pre-share gate then asks courtscheduler about every reference the draft
-            // carries, gets NOT_FOUND for the one we deleted, reads that as "the hold expired,
-            // there is nothing left to share against" and refuses the share - silently, for the
-            // rest of that hearing's life. Verified on STE02: the second share never reaches the
-            // backend. STE34, which has no reserve-a-slot and so never releases anything, shares
-            // twice happily.
-            //
-            // A slot held until the overnight purge is a capacity inefficiency nobody sees. A
-            // share that cannot be made is a lost capability the clerk hits immediately. Until
-            // the reservation has a short TTL that reclaims it without anyone having to ask,
-            // the surplus stays put.
+            releaseSurplusReservations(nextHearingsList, combinedBookingReferencesWithCourtScheduleIds,
+                    alreadyConfirmedBookingReferences);
         }
 
         if (!combinedBookingReferencesWithCourtScheduleIds.isEmpty()) {
@@ -249,6 +238,36 @@ public class HearingResultedEventProcessor {
 
     }
 
+
+    /**
+     * Gives back the reservations this share resolved but never listed against.
+     *
+     * <p>The UI reserves a slot per result line. {@code transform} then merges every next hearing
+     * that resolves to one session into a single listing need, keeping one bookingReference and
+     * dropping the rest - right for the listing, but it leaves the dropped references holding
+     * slots that nothing will ever consume. They are invisible on the case page and the
+     * hearing-keyed release cannot reach them, because a reservation carries no hearing_id.
+     *
+     * <p>Only references resolved live in THIS share are candidates. Anything in
+     * {@code alreadyConfirmedBookingReferences} was confirmed by an earlier share and is a real
+     * listing now; releasing by bookingId would be a no-op for it anyway (courtscheduler only
+     * removes rows that still carry an expires_at) but it is excluded here so the intent is in
+     * the code rather than resting on that filter.
+     */
+    private void releaseSurplusReservations(final List<HearingListingNeeds> nextHearingsList,
+                                            final Map<UUID, Set<UUID>> combinedBookingReferencesWithCourtScheduleIds,
+                                            final Set<UUID> alreadyConfirmedBookingReferences) {
+
+        final Set<UUID> listedAgainst = nextHearingsList.stream()
+                .map(HearingListingNeeds::getBookingReference)
+                .filter(Objects::nonNull)
+                .collect(toSet());
+
+        combinedBookingReferencesWithCourtScheduleIds.keySet().stream()
+                .filter(bookingReference -> !alreadyConfirmedBookingReferences.contains(bookingReference))
+                .filter(bookingReference -> !listedAgainst.contains(bookingReference))
+                .forEach(surplusReservationReleaseService::release);
+    }
 
     @Handles("progression.event.hearing-for-application-created")
     public void processCreateHearingForApplication(final JsonEnvelope jsonEnvelope) {
