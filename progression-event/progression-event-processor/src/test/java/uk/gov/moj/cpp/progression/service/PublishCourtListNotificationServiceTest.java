@@ -34,7 +34,7 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.payloads.PublishCourtListPayload;
 
 import java.time.ZonedDateTime;
