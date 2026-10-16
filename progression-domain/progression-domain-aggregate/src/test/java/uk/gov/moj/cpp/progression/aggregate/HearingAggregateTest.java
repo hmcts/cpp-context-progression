@@ -1100,6 +1100,87 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotNpeWhenApplicationsResultedAndProsecutionCaseHasNullCaseStatus() {
+        final UUID caseWithStatusId = randomUUID();
+        final UUID caseWithoutStatusId = randomUUID();
+        final UUID defendantWithStatusId = randomUUID();
+        final UUID defendantWithoutStatusId = randomUUID();
+        final UUID offenceWithStatusId = randomUUID();
+        final UUID offenceWithoutStatusId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(caseWithStatusId)
+                                .withCaseStatus("ACTIVE")
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(defendantWithStatusId)
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(offenceWithStatusId)
+                                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                        .withCategory(JudicialResultCategory.FINAL)
+                                                        .build()))
+                                                .build()))
+                                        .build()))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(caseWithoutStatusId)
+                                .withCaseStatus(null)
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(defendantWithoutStatusId)
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(offenceWithoutStatusId)
+                                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                                                        .build()))
+                                                .build()))
+                                        .build()))
+                                .build()))
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(asList(
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseWithStatusId)
+                                        .withCaseStatus("ACTIVE")
+                                        .build(),
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseWithoutStatusId)
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                        .build()))
+                .build();
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now(), referenceResultIds).collect(toList());
+
+        final ApplicationsResulted applicationsResulted = (ApplicationsResulted) events.stream()
+                .filter(ApplicationsResulted.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        final ProsecutionCase updatedCaseWithoutStatus = applicationsResulted.getHearing().getProsecutionCases().stream()
+                .filter(prosecutionCase -> caseWithoutStatusId.equals(prosecutionCase.getId()))
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+        assertEquals("ACTIVE", updatedCaseWithoutStatus.getCaseStatus());
+
+        final CourtApplicationCase applicationCaseWithStatus = applicationsResulted.getHearing().getCourtApplications().get(0)
+                .getCourtApplicationCases().stream()
+                .filter(courtApplicationCase -> caseWithStatusId.equals(courtApplicationCase.getProsecutionCaseId()))
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+        assertEquals("INACTIVE", applicationCaseWithStatus.getCaseStatus());
+
+        final CourtApplicationCase applicationCaseWithoutStatus = applicationsResulted.getHearing().getCourtApplications().get(0)
+                .getCourtApplicationCases().stream()
+                .filter(courtApplicationCase -> caseWithoutStatusId.equals(courtApplicationCase.getProsecutionCaseId()))
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+        assertEquals("ACTIVE", applicationCaseWithoutStatus.getCaseStatus());
+    }
+
+    @Test
     public void shouldNotGenerateNextHearingWhenCaseInactiveWithAutoApplication() throws IOException{
         final UUID hearingId = randomUUID();
 

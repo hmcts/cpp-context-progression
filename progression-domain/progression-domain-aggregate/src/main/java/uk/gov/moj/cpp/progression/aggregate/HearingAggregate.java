@@ -43,6 +43,8 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isUnscheduledHearingDeleted;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.util.CaseHelper.addCaseToHearing;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
@@ -97,7 +99,6 @@ import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
 import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 
@@ -1414,7 +1415,9 @@ public class HearingAggregate implements Aggregate {
                 .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
                 .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
+                .withCaseStatus(allDefendantProceedingConcluded
+                        ? INACTIVE.getDescription()
+                        : ofNullable(prosecutionCase.getCaseStatus()).orElse(ACTIVE.getDescription()))
                 .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
                 .withIsCivil(prosecutionCase.getIsCivil())
                 .withIsGroupMember(prosecutionCase.getIsGroupMember())
@@ -3044,6 +3047,7 @@ public class HearingAggregate implements Aggregate {
 
         final Map<UUID, String> caseStatusByProsecutionCaseId = ofNullable(updatedProsecutionCases).map(Collection::stream).orElseGet(Stream::empty)
                 .filter(prosecutionCase -> nonNull(prosecutionCase.getId()))
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getCaseStatus()))
                 .collect(Collectors.toMap(ProsecutionCase::getId, ProsecutionCase::getCaseStatus, (existing, replacement) -> replacement));
 
         final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
