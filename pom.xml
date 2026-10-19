@@ -18,6 +18,8 @@
     <description>A applications for progression service</description>
 
     <modules>
+        <module>progression-common</module>
+        <module>progression-listing</module>
         <module>progression-query</module>
         <module>progression-viewstore</module>
         <module>progression-command</module>
@@ -68,7 +70,7 @@
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.104.137</referencedata.version>
         <listing.version>17.104.10</listing.version>
-        <hearing.version>17.104.200</hearing.version>
+        <hearing.version>17.104.203</hearing.version>
         <usersgroups.version>17.104.50</usersgroups.version>
         <defence.version>17.104.102</defence.version>
         <referencedata.offence.version>17.104.52</referencedata.offence.version>
@@ -171,11 +173,6 @@
                 <artifactId>podam</artifactId>
                 <version>${podam}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>uk.gov.moj.cpp.listing</groupId>
-                <artifactId>listing-common</artifactId>
-                <version>${listing.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
