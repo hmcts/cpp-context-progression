@@ -348,7 +348,18 @@ public class ReportsTransformer {
                                        final Defendant.Builder defendantBuilder, final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant, final Prosecutor prosecutor, final String extractType) {
         final UUID masterDefendantId = caseDefendant.getMasterDefendantId();
 
-        final Hearings latestHearing = hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0);
+        final Hearings latestHearing = isEmpty(hearingsList) ? null
+                : (hearingsList.size() > 1 ? transformationHelper.getLatestHearings(hearingsList) : hearingsList.get(0));
+
+        // CHD-2659: no hearing to render for this case (e.g. an application heard on a linked case's
+        // hearing) - degrade to the no-hearing-details extract instead of indexing an empty/null list.
+        if (latestHearing == null) {
+            courtExtract.withDefendant(transformDefendantWithoutHearingDetails(caseDefendant, defendantBuilder));
+            courtExtract.withProsecutingAuthority(prosecutor != null
+                    ? transformationHelper.transformProsecutor(prosecutor)
+                    : transformationHelper.transformProsecutingAuthority(hearingsAtAGlance.getProsecutionCaseIdentifier(), userId));
+            return;
+        }
 
         courtExtract.withDefendant(transformDefendants(latestHearing.getDefendants(), defendantId, masterDefendantId, userId, defendantBuilder, hearingsList, caseDefendant, hearingsAtAGlance, extractType));
 
