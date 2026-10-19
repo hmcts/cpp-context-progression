@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
@@ -17,13 +18,11 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -77,9 +76,9 @@ public class StagingEnforcementResponseHandlerTest {
 
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String accountNumber = "1234";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("accountNumber", accountNumber)
+                .add("acknowledgement", createObjectBuilder().add("accountNumber", accountNumber)
                         .build())
                 .add("requestId", requestId.toString())
                 .add("materialId", materialId.toString()).build();
@@ -100,9 +99,9 @@ public class StagingEnforcementResponseHandlerTest {
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String errorCode = "ERR1234";
         final String errorMessage = "post code is invalid";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("errorCode", errorCode)
+                .add("acknowledgement", createObjectBuilder().add("errorCode", errorCode)
                         .add("errorMessage", errorMessage)
                         .build())
                 .add("requestId", requestId.toString())

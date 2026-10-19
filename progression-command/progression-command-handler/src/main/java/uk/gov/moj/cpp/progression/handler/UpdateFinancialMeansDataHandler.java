@@ -14,6 +14,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
 import java.util.List;
@@ -77,13 +78,18 @@ public class UpdateFinancialMeansDataHandler {
 
     private void updateEventStream(final UUID prosecutionCaseId, final UUID defendantId, final UUID applicationId,
                                    final List<Material> materials,
-                                   final Envelope<CreateCourtDocument> createCourtDocumentEnvelope)
-            throws EventStreamException {
-
-        final EventStream eventStream = eventSource.getStreamById(prosecutionCaseId);
-        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.addFinancialMeansData(prosecutionCaseId, defendantId, applicationId, materials.get(0));
-        eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(createCourtDocumentEnvelope)));
+                                   final Envelope<CreateCourtDocument> createCourtDocumentEnvelope) throws EventStreamException {
+        if (prosecutionCaseId != null) {
+            final EventStream eventStream = eventSource.getStreamById(prosecutionCaseId);
+            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+            final Stream<Object> events = caseAggregate.addFinancialMeansData(prosecutionCaseId, defendantId, applicationId, materials.get(0));
+            eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(createCourtDocumentEnvelope)));
+        } else if (prosecutionCaseId == null && applicationId != null) {
+            final EventStream eventStream = eventSource.getStreamById(applicationId);
+            final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+            final Stream<Object> events = applicationAggregate.addFinancialMeansData(prosecutionCaseId, defendantId, applicationId, materials.get(0));
+            eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(createCourtDocumentEnvelope)));
+        }
     }
 
 }

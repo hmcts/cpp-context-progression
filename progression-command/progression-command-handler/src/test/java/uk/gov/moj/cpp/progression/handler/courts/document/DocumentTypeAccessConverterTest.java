@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler.courts.document;
 
 import static java.util.UUID.fromString;
-import static javax.json.Json.createReader;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

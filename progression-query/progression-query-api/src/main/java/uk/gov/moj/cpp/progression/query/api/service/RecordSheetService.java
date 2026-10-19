@@ -6,7 +6,6 @@ import uk.gov.justice.api.resource.utils.ReportsTransformer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -16,8 +15,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Collections.emptyList;
-import static javax.json.Json.createObjectBuilder;
-
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 public class RecordSheetService {
     public static final String DEFENDANT_ID = "defendantId";
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordSheetService.class);
@@ -57,7 +56,7 @@ public class RecordSheetService {
     }
 
     public JsonEnvelope getTrialRecordSheetPayloadForApplication(final JsonEnvelope envelope, final JsonEnvelope document, final UUID userId) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final JsonObject payloadAsJsonObject = envelope.payloadAsJsonObject();
         final String caseId = payloadAsJsonObject.getString(CASE_ID);
         final List<String> offenceIds = Arrays.stream(payloadAsJsonObject.getString(OFFENCE_IDS).split(",")).toList();
@@ -70,7 +69,7 @@ public class RecordSheetService {
                 JsonObject result = reportsTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, emptyList(), userId);
                 LOGGER.info("Successfully fetched transformed payload for defendantId: {} and caseId: {}", defendantId, caseId);
 
-                jsonArrayBuilder.add(Json.createObjectBuilder()
+                jsonArrayBuilder.add(createObjectBuilder()
                         .add(PAYLOAD, result)
                         .add(DEFENDANT_NAME, getDefendantName(result))
                         .build());
@@ -81,7 +80,7 @@ public class RecordSheetService {
 
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
-                Json.createObjectBuilder().add(PAYLOADS, jsonArrayBuilder.build()).build());
+                createObjectBuilder().add(PAYLOADS, jsonArrayBuilder.build()).build());
     }
 
     private static String getDefendantName(final JsonObject result) {

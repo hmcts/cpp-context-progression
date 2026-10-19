@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Locale.UK;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.Is.is;
@@ -34,7 +34,7 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.payloads.PublishCourtListPayload;
 
 import java.time.ZonedDateTime;

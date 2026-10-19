@@ -6,6 +6,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.DefenceOrganisation;
@@ -29,7 +32,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -111,9 +113,9 @@ public class DefendantDefenceOrganisationChangedProcessorTest {
                 .withId(prosecutionCaseId)
                 .withDefendants(getDefendants(defendantId, prosecutionCaseId, associatedDefenceOrganisation))
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString()).build())
                                 .build())
                         .build()).build();
@@ -149,7 +151,7 @@ public class DefendantDefenceOrganisationChangedProcessorTest {
     private JsonObject jsonFromString(final String jsonObjectStr) {
 
         JsonObject object;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
 

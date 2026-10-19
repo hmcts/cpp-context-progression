@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -13,14 +14,13 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.listener.material.MaterialAddedProcessor;
 
 import java.nio.charset.Charset;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -73,10 +73,10 @@ public class MaterialAddedProcessorTest {
 
     @Test
     public void shouldForwardCourtOriginUpdateWhenOriginatorIsCourt() {
-        final JsonObject metaDataJson = Json.createObjectBuilder()
+        final JsonObject metaDataJsonLocal = createObjectBuilder()
                 .add(MaterialAddedProcessor.ORIGINATOR, MaterialAddedProcessor.ORIGINATOR_VALUE)
                 .add("id", UUID.randomUUID().toString()).build();
-        when(metadata.asJsonObject()).thenReturn(metaDataJson);
+        when(metadata.asJsonObject()).thenReturn(metaDataJsonLocal);
         when(event.metadata()).thenReturn(metadata);
         when(event.payloadAsJsonObject()).thenReturn(payloadJson);
         final UUID materialId = UUID.randomUUID();

@@ -5,7 +5,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.json.JsonObject;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 public class MaterialService {

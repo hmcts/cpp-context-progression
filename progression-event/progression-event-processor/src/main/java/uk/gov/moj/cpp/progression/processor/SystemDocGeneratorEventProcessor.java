@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -12,6 +12,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaDocument;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaFinancialDocument;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import org.slf4j.Logger;
@@ -45,7 +46,6 @@ import java.util.UUID;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -149,7 +149,7 @@ public class SystemDocGeneratorEventProcessor {
             final FileReference payloadFileReference = fileService.retrieve(payloadFileId).orElseThrow(() -> new BadRequestException("Failed to retrieve file"));
             LOGGER.info("Retrieved file reference '{}' successfully", payloadFileReference);
 
-            try (JsonReader reader = Json.createReader(payloadFileReference.getContentStream())) {
+            try (JsonReader reader = createReader(payloadFileReference.getContentStream())) {
                 final JsonObject rawPayload = reader.readObject();
                 LOGGER.info("Read payload '{}'", rawPayload);
                 this.sender.send(envelopeFrom(metadataFrom(documentAvailableEvent.metadata()).withName("progression.command.handle-online-plea-document-creation").build(),

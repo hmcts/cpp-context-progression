@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource.service;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
@@ -12,13 +12,12 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class ListingQueryService {
@@ -31,7 +30,7 @@ public class ListingQueryService {
     public Hearing searchHearing(final UUID userId, final UUID hearingId) {
 
         final Metadata metadata = metadataWithNewActionName(getListingQueryJsonEnvelop(userId).metadata(), LISTING_SEARCH_HEARING);
-        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+        final JsonObject jsonPayLoad = createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
         return requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), Hearing.class).payload();

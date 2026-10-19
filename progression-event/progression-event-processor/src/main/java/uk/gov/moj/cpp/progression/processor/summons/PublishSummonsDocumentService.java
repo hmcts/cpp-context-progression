@@ -6,7 +6,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.notification.EmailChannel;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -48,7 +48,7 @@ public class PublishSummonsDocumentService {
     public void generateCaseSummonsCourtDocument(final JsonEnvelope jsonEnvelope,
                                                  final UUID defendantId,
                                                  final UUID caseId,
-                                                 final SummonsDocumentContent summonsDocumentContent,
+                                                 final SummonsDocument summonsDocumentContent,
                                                  final String templateName,
                                                  final boolean sendForRemotePrinting,
                                                  final EmailChannel emailChannel,
@@ -65,7 +65,7 @@ public class PublishSummonsDocumentService {
 
     public void generateApplicationSummonsCourtDocument(final JsonEnvelope jsonEnvelope,
                                                         final UUID applicationId,
-                                                        final SummonsDocumentContent summonsDocumentContent,
+                                                        final SummonsDocument summonsDocumentContent,
                                                         final String templateName,
                                                         final boolean sendForRemotePrinting,
                                                         final EmailChannel emailChannel,
@@ -83,7 +83,7 @@ public class PublishSummonsDocumentService {
     private void generateSummonsDocument(final JsonEnvelope jsonEnvelope,
                                          final UUID caseId,
                                          final UUID applicationId,
-                                         final SummonsDocumentContent summonsDocumentContent,
+                                         final SummonsDocument summonsDocumentContent,
                                          final String templateName,
                                          final boolean sendForRemotePrinting,
                                          final EmailChannel emailChannel,

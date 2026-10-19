@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api.service;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.services.core.requester.Requester;

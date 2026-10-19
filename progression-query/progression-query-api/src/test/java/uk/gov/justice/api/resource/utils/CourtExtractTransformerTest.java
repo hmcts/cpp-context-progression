@@ -17,6 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,7 @@ import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.progression.courts.Offences.offences;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -111,10 +113,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.progression.listing.domain.ListedCase;
+import uk.gov.moj.cpp.progression.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
@@ -132,7 +134,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -450,6 +451,19 @@ public class CourtExtractTransformerTest {
         final CourtExtractRequested courtExtract2ndDefendant = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream().map(DefendantResults::getResult)).toList();
         assertThat(defendant2ndResults.size(), is(2));
+    }
+
+    @Test
+    void testTransformToCourtExtract_shouldReturnIsCivilFlag(){
+        String defendantId = "5c75653a-e264-4b59-a419-66221b725a58";
+
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-multiple-defendants.json"));
+        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
+        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+        ProsecutionCase prosecutionCase1 = createProsecutionCase(true);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "RecordSheet", emptyList(), randomUUID(), prosecutionCase1);
+        assertTrue(courtExtractRequested.getIsCivil());
     }
 
     private static void assertAttendanceDays(final List<AttendanceDayAndType> attendanceDays) {
@@ -1841,6 +1855,10 @@ public class CourtExtractTransformerTest {
     }
 
     private ProsecutionCase createProsecutionCase() {
+        return createProsecutionCase(false);
+    }
+
+    private ProsecutionCase createProsecutionCase(boolean isCivil) {
         final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
                 .withPersonDefendant(createPersonDefendant())
                 .withAssociatedPersons(asList(AssociatedPerson.associatedPerson()
@@ -1883,7 +1901,7 @@ public class CourtExtractTransformerTest {
             add(defendant_2nd);
         }};
 
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+        return ProsecutionCase.prosecutionCase()
                 .withId(CASE_ID)
                 .withDefendants(defendants)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
@@ -1891,9 +1909,8 @@ public class CourtExtractTransformerTest {
                         .withProsecutionAuthorityCode("code")
                         .withProsecutionAuthorityReference(PAR)
                         .build())
+                .withIsCivil(isCivil)
                 .build();
-
-        return prosecutionCase;
     }
 
     private GetHearingsAtAGlance createHearingsAtGlance() {
@@ -2842,7 +2859,7 @@ public class CourtExtractTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }
@@ -2850,9 +2867,9 @@ public class CourtExtractTransformerTest {
     private static Hearing getHearingFromListing(final UUID hearingId, final UUID seedingHearingId, final UUID defendantId, final UUID offenceId) {
         return Hearing.hearing().withId(hearingId)
                 .withListedCases(singletonList(ListedCase.listedCase()
-                        .withDefendants(singletonList(uk.gov.moj.cpp.listing.domain.Defendant.defendant()
+                        .withDefendants(singletonList(uk.gov.moj.cpp.progression.listing.domain.Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(singletonList(uk.gov.moj.cpp.listing.domain.Offence.offence()
+                                .withOffences(singletonList(uk.gov.moj.cpp.progression.listing.domain.Offence.offence()
                                         .withId(offenceId)
                                         .withSeedingHearing(Optional.of(SeedingHearing.seedingHearing()
                                                 .withJurisdictionType(JurisdictionType.MAGISTRATES)

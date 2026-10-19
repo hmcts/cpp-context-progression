@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 
 import uk.gov.justice.core.courts.CourtApplication;

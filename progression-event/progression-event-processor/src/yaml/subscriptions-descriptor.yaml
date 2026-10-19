@@ -841,9 +841,6 @@ subscriptions_descriptor:
         - name: public.events.hearing.prosecution-case-created-in-hearing
           schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.prosecution-case-created-in-hearing.json
 
-        - name: public.events.listing.hearing-days-without-court-centre-corrected
-          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-days-without-court-centre-corrected.json
-
         - name: public.listing.vacated-trial-updated
           schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
 

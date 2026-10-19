@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.nonNull;
 
+import uk.gov.justice.core.courts.AmendSummonsData;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.PrepareSummonsData;
@@ -51,6 +52,22 @@ public class PrepareSummonsDataHandler {
         final Stream<Object> events = hearingAggregate.createSummonsData(requestSummons.getCourtCentre(), requestSummons.getHearingDateTime(), requestSummons.getConfirmedProsecutionCaseIds(), requestSummons.getConfirmedApplicationIds());
         if (events != null) {
             appendEventsToStream(prepareSummonsDataEnvelope, eventStream, events);
+        }
+    }
+
+    @Handles("progression.command.amend-summons-data")
+    public void amendSummonsData(final Envelope<AmendSummonsData> amendSummonsDataEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.amend-summons-data {}", amendSummonsDataEnvelope);
+
+        final AmendSummonsData requestSummons = amendSummonsDataEnvelope.payload();
+        final UUID hearingId = requestSummons.getHearingId();
+
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+
+        final Stream<Object> events = hearingAggregate.amendSummonsData(requestSummons.getSummonsApprovedOutcome());
+        if (nonNull(events)) {
+            appendEventsToStream(amendSummonsDataEnvelope, eventStream, events);
         }
     }
 

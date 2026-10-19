@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.emptySet;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.Defendant;

@@ -77,6 +77,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -114,6 +115,8 @@ import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
+import uk.gov.justice.core.courts.FinancialDataAdded;
+import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
@@ -154,11 +157,12 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908502L;
+    private static final long serialVersionUID = 1331113876243908503L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
+    private boolean summonsPreviouslyApproved;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisations = new ArrayList<>();
@@ -168,6 +172,7 @@ public class ApplicationAggregate implements Aggregate {
     private final Map<UUID, LaaReference> offenceLaaReference = new HashMap<>();
     private LaaReference laaReference;//cloned by child applications. This has to be overridden each time LaaReference updated for application or any offence.
     private final Map<UUID, Boolean> applicationOrganisationAsscociatedByRepOrder = new HashMap<>();
+    private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
 
     @Override
     public Object apply(final Object event) {
@@ -199,6 +204,7 @@ public class ApplicationAggregate implements Aggregate {
                 }),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
+                when(CourtApplicationSummonsApproved.class).apply(e -> this.summonsPreviouslyApproved = true),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
                     setCourtApplication(e.getCourtApplication());
@@ -251,6 +257,7 @@ public class ApplicationAggregate implements Aggregate {
                                 .build();
                     }
                 }),
+                when(FinancialDataAdded.class).apply(this::populateFinancialData),
                 otherwiseDoNothing());
     }
 
@@ -802,6 +809,7 @@ public class ApplicationAggregate implements Aggregate {
         streams.add(courtApplicationSummonsApproved()
                 .withApplicationId(courtApplication.getId())
                 .withLinkType(courtApplication.getType().getLinkType())
+                .withIsSummonsAmended(summonsPreviouslyApproved || LISTED.equals(this.applicationStatus))
                 .withCaseIds(getCaseIds())
                 .withSummonsApprovedOutcome(summonsApprovedOutcome)
                 .build());
@@ -1554,6 +1562,24 @@ public class ApplicationAggregate implements Aggregate {
 
     private void setLaaReference(final LaaReference laaReference) {
         this.laaReference = laaReference;
+    }
+
+    public Stream<Object> addFinancialMeansData(final UUID prosecutionCaseId, final UUID defendantId, final UUID applicationId, final Material material) {
+        final List<UUID> materialIds = new ArrayList<>();
+        materialIds.add(material.getId());
+        return apply(Stream.of(FinancialDataAdded.financialDataAdded()
+                .withCaseId(prosecutionCaseId)
+                .withApplicationId(applicationId)
+                .withDefendantId(defendantId)
+                .withMaterialIds(materialIds)
+                .build())
+        );
+    }
+
+    private void populateFinancialData(final FinancialDataAdded financialDataAdded) {
+        if (financialDataAdded.getApplicationId() != null) {
+            this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
+        }
     }
 
 }

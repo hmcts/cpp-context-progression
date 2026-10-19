@@ -31,6 +31,7 @@ import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.progression.courts.Offences.offences;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -113,10 +114,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.listing.domain.Hearing;
-import uk.gov.moj.cpp.listing.domain.JurisdictionType;
-import uk.gov.moj.cpp.listing.domain.ListedCase;
-import uk.gov.moj.cpp.listing.domain.SeedingHearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.progression.listing.domain.ListedCase;
+import uk.gov.moj.cpp.progression.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import java.io.IOException;
@@ -131,7 +132,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -2176,7 +2176,7 @@ public class ReportsTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }
@@ -2184,9 +2184,9 @@ public class ReportsTransformerTest {
     private static Hearing getHearingFromListing(final UUID hearingId, final UUID seedingHearingId, final UUID defendantId, final UUID offenceId) {
         return Hearing.hearing().withId(hearingId)
                 .withListedCases(singletonList(ListedCase.listedCase()
-                        .withDefendants(singletonList(uk.gov.moj.cpp.listing.domain.Defendant.defendant()
+                        .withDefendants(singletonList(uk.gov.moj.cpp.progression.listing.domain.Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(singletonList(uk.gov.moj.cpp.listing.domain.Offence.offence()
+                                .withOffences(singletonList(uk.gov.moj.cpp.progression.listing.domain.Offence.offence()
                                         .withId(offenceId)
                                         .withSeedingHearing(Optional.of(SeedingHearing.seedingHearing()
                                                 .withJurisdictionType(JurisdictionType.MAGISTRATES)

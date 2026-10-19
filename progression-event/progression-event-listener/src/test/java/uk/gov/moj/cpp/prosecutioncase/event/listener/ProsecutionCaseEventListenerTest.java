@@ -12,6 +12,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
@@ -64,7 +66,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -274,10 +275,10 @@ public class ProsecutionCaseEventListenerTest {
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
         when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder()
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder()
                 .add("id", randomUUID().toString())
-                .add("prosecutionCases", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("prosecutionCases", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
                                 .add(TRIAL_RECEIPT_TYPE, "Transfer")
@@ -379,10 +380,10 @@ public class ProsecutionCaseEventListenerTest {
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
         when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder()
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder()
                 .add("id", randomUUID().toString())
-                .add("prosecutionCases", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("prosecutionCases", createArrayBuilder()
+                        .add(createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
                                 .add(TRIAL_RECEIPT_TYPE, "Transfer")

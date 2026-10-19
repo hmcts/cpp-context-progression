@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -9,8 +10,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
-
 import java.time.LocalDate;
 
 import javax.inject.Inject;
@@ -32,7 +31,7 @@ public class CourtRegisterApi {
     @Handles("progression.generate-court-register")
     public void handleGenerateCourtRegister(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        final JsonObject wrappedPayload = JsonObjects.createObjectBuilder(payload).add("registerDate", LocalDate.now().toString()).build();
+        final JsonObject wrappedPayload = createObjectBuilder(payload).add("registerDate", LocalDate.now().toString()).build();
         this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.generate-court-register").build(),
                 wrappedPayload));
     }

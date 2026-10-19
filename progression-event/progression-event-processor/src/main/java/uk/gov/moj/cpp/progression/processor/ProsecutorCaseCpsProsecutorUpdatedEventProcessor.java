@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -16,7 +17,6 @@ import uk.gov.moj.cpp.progression.events.CaseCpsProsecutorUpdated;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -61,7 +61,7 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessor {
 
     private JsonArray getHearingIdsForCase(final JsonEnvelope event) {
         final String prosecutionCaseId = event.payloadAsJsonObject().getString("prosecutionCaseId");
-        final JsonArrayBuilder hearingIdsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder hearingIdsBuilder = createArrayBuilder();
         progressionService.getCaseHearings(prosecutionCaseId).ifPresent(caseHearingsResponse -> caseHearingsResponse.getJsonArray(HEARINGS)
         .getValuesAs(JsonObject.class).stream().map(hearing ->
                 jsonObjectToObjectConverter.convert(hearing, Hearings.class))

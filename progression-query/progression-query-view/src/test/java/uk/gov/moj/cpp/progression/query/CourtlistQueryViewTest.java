@@ -13,6 +13,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -43,7 +46,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -105,11 +107,18 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertThat(actual, is(expected));
+
+        final JsonObject defendant = actual.getJsonArray("hearingDates").getJsonObject(0)
+                .getJsonArray("courtRooms").getJsonObject(0)
+                .getJsonArray("timeslots").getJsonObject(0)
+                .getJsonArray("hearings").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0);
+        assertThat(defendant.getString("pncId"), is("1234567"));
     }
 
     @Test
@@ -128,7 +137,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-for-bulk-civil-cases.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -151,7 +160,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -173,7 +182,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases-ushers-list.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -196,7 +205,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertPleaValue(actual, false);
@@ -217,7 +226,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertIndicatedPleaValue(actual, true);
@@ -238,7 +247,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertIndicatedPleaValue(actual, false);
@@ -259,7 +268,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases-without-listing-number.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -278,7 +287,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-court-applications.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -299,7 +308,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getAndReplaceJsonPayload("courtlist-expected-with-court-applications-with-restricted-defendant.json",  defendantId.toString(), defendantId2.toString());
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -314,7 +323,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -336,7 +345,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.prison.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
         final JsonObject actual = courtlistQueryView.searchPrisonCourtlist(query).payloadAsJsonObject();
@@ -352,7 +361,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -371,7 +380,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -391,7 +400,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -420,7 +429,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -443,7 +452,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -470,7 +479,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
@@ -487,7 +496,7 @@ public class CourtlistQueryViewTest {
 
     @Test
     public void getApplicationOffenceListingNumbers_shouldReturnEmptyListWhenNoApplicationOffences() throws Exception {
-        final JsonObject hearingJson = Json.createObjectBuilder().build();
+        final JsonObject hearingJson = createObjectBuilder().build();
         final List<UUID> result = invokePrivateMethod("getApplicationOffenceListingNumbers", new Class<?>[]{JsonObject.class}, hearingJson);
         assertThat(result.isEmpty(), is(true));
     }
@@ -496,10 +505,10 @@ public class CourtlistQueryViewTest {
     public void getApplicationOffenceListingNumbers_shouldReturnOffenceIdsWhenApplicationOffencesPresent() throws Exception {
         final String id1 = "072319bf-73c2-41b5-b309-c8c86c9b077b";
         final String id2 = "651fc68b-8b9f-4cf2-912a-0b55d536323c";
-        final JsonObject hearingJson = Json.createObjectBuilder()
-                .add("applicationOffences", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("id", id1).build())
-                        .add(Json.createObjectBuilder().add("id", id2).build())
+        final JsonObject hearingJson = createObjectBuilder()
+                .add("applicationOffences", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", id1).build())
+                        .add(createObjectBuilder().add("id", id2).build())
                         .build())
                 .build();
         final List<UUID> result = invokePrivateMethod("getApplicationOffenceListingNumbers", new Class<?>[]{JsonObject.class}, hearingJson);
@@ -510,13 +519,13 @@ public class CourtlistQueryViewTest {
 
     @Test
     public void addWelshOffenceTitleFromListingIfMissing_shouldUseListingWelshTitleWhenProgressionHasNone() throws Exception {
-        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
         final Offence offenceWithoutWelsh = Offence.offence()
                 .withId(randomUUID())
                 .withOffenceCode("TTH105HY")
                 .withOffenceTitle("ROBBERY")
                 .build();
-        final JsonObject offenceFromListing = Json.createObjectBuilder()
+        final JsonObject offenceFromListing = createObjectBuilder()
                 .add("welshOffenceTitle", "Listing Welsh Title")
                 .build();
 
@@ -530,14 +539,14 @@ public class CourtlistQueryViewTest {
 
     @Test
     public void addWelshOffenceTitleFromListingIfMissing_shouldNotAddWhenProgressionAlreadyHasWelshTitle() throws Exception {
-        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
         final Offence offenceWithWelsh = Offence.offence()
                 .withId(randomUUID())
                 .withOffenceCode("TTH105HY")
                 .withOffenceTitle("ROBBERY")
                 .withOffenceTitleWelsh("Progression Welsh Title")
                 .build();
-        final JsonObject offenceFromListing = Json.createObjectBuilder()
+        final JsonObject offenceFromListing = createObjectBuilder()
                 .add("welshOffenceTitle", "Listing Welsh Title")
                 .build();
 
@@ -583,6 +592,7 @@ public class CourtlistQueryViewTest {
                                 .withDateOfBirth(LocalDate.of(1990, 1, 15))
                                 .build())
                         .build())
+                .withPncId("PNC-RESP-001")
                 .withMasterDefendantId(randomUUID())
                 .build();
         final CourtApplicationParty party = CourtApplicationParty.courtApplicationParty()
@@ -591,6 +601,7 @@ public class CourtlistQueryViewTest {
         final JsonObject result = invokePrivateMethod("buildCourtApplicationParty", new Class<?>[]{CourtApplicationParty.class}, party);
         assertThat(result.getString("name"), is("John Doe"));
         assertThat(result.getString("dateOfBirth"), is("15 Jan 1990"));
+        assertThat(result.getString("pncId"), is("PNC-RESP-001"));
     }
 
     @Test
@@ -599,6 +610,7 @@ public class CourtlistQueryViewTest {
                 .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation().withName("Acme Ltd").build())
                         .build())
+                .withPncId("PNC-RESP-ORG-001")
                 .withMasterDefendantId(randomUUID())
                 .build();
         final CourtApplicationParty party = CourtApplicationParty.courtApplicationParty()
@@ -606,6 +618,7 @@ public class CourtlistQueryViewTest {
                 .build();
         final JsonObject result = invokePrivateMethod("buildCourtApplicationParty", new Class<?>[]{CourtApplicationParty.class}, party);
         assertThat(result.getString("name"), is("Acme Ltd"));
+        assertThat(result.getString("pncId"), is("PNC-RESP-ORG-001"));
     }
 
     @Test
@@ -708,6 +721,7 @@ public class CourtlistQueryViewTest {
         when(personDefendant.getArrestSummonsNumber()).thenReturn("APPLICANT-ASN-001");
         final MasterDefendant masterDefendant = mock(MasterDefendant.class);
         when(masterDefendant.getPersonDefendant()).thenReturn(personDefendant);
+        when(masterDefendant.getPncId()).thenReturn("APPLICANT-PNC-001");
         final CourtApplicationParty applicant = mock(CourtApplicationParty.class);
         when(applicant.getMasterDefendant()).thenReturn(masterDefendant);
         final CourtApplication courtApplication = mock(CourtApplication.class);
@@ -719,6 +733,7 @@ public class CourtlistQueryViewTest {
         assertThat(result.getString("dateOfBirth"), is("5 Jul 1988"));
         assertThat(result.getString("asn"), is("APPLICANT-ASN-001"));
         assertThat(result.getString("gender"), is("MALE"));
+        assertThat(result.getString("pncId"), is("APPLICANT-PNC-001"));
     }
 
     @Test
@@ -730,6 +745,7 @@ public class CourtlistQueryViewTest {
         final MasterDefendant masterDefendant = mock(MasterDefendant.class);
         when(masterDefendant.getPersonDefendant()).thenReturn(null);
         when(masterDefendant.getLegalEntityDefendant()).thenReturn(legalEntityDefendant);
+        when(masterDefendant.getPncId()).thenReturn("APPLICANT-ORG-PNC-001");
         final CourtApplicationParty applicant = mock(CourtApplicationParty.class);
         when(applicant.getMasterDefendant()).thenReturn(masterDefendant);
         final CourtApplication courtApplication = CourtApplication.courtApplication()
@@ -746,6 +762,7 @@ public class CourtlistQueryViewTest {
         assertThat(result.containsKey("nationality"), is(false));
         assertThat(result.containsKey("asn"), is(false));
         assertThat(result.containsKey("gender"), is(false));
+        assertThat(result.getString("pncId"), is("APPLICANT-ORG-PNC-001"));
     }
 
     @Test
@@ -812,9 +829,42 @@ public class CourtlistQueryViewTest {
                 hearingFromListing, courtApplication, hearing, offencesForApplications);
         assertThat(result.containsKey("id"), is(true));
         assertThat(result.getString("asn"), is("Arrest456"));
+        assertThat(result.getString("pncId"), is("PNC-APP-001"));
         assertThat(result.containsKey("offences"), is(true));
         assertThat(result.getJsonArray("offences").size(), is(2));
         assertThat(result.containsKey("defenceOrganization"), is(true));
+    }
+
+    @Test
+    public void buildDefendantFromCourtApplication_shouldSurfacePncIdForLegalEntitySubject() throws Exception {
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation().withName("Acme Ltd").build())
+                        .build())
+                .withPncId("PNC-SUBJ-ORG-001")
+                .build();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .withMasterDefendant(masterDefendant)
+                        .build())
+                .withDefendantASN("SUBJ-ASN-001")
+                .build();
+        final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
+        final JsonObject hearingFromListing = createObjectBuilder()
+                .add("defendants", createArrayBuilder().build())
+                .build();
+
+        final JsonObject result = invokePrivateMethod("buildDefendantFromCourtApplication",
+                new Class<?>[]{JsonObject.class, CourtApplication.class, Hearing.class, List.class},
+                hearingFromListing, courtApplication, hearing, emptyList());
+
+        // Legal-entity subject has no personDefendant, so the person block is skipped; pncId must still surface.
+        assertThat(result.getString("pncId"), is("PNC-SUBJ-ORG-001"));
+        assertThat(result.getString("asn"), is("SUBJ-ASN-001"));
+        assertThat(result.containsKey("id"), is(false));
     }
 
     @Test
@@ -850,7 +900,7 @@ public class CourtlistQueryViewTest {
                 JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
                         .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
 
@@ -871,14 +921,14 @@ public class CourtlistQueryViewTest {
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
-        return Json.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }
 
     private List<Hearing> getHearings(final String resourceName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(resourceName), defaultCharset());
-        return Json.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
@@ -887,7 +937,7 @@ public class CourtlistQueryViewTest {
 
     private List<Hearing> getHearings(final String resourceName, final String defId, final String defId2) throws IOException {
         final String jsonString = getStringFromResourceAndReplaceValues(resourceName, defId, defId2);
-        return Json.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
@@ -896,7 +946,7 @@ public class CourtlistQueryViewTest {
 
     private JsonObject getAndReplaceJsonPayload(final String fileName, final String defId, final String defId2) throws IOException {
         final String jsonString = getStringFromResourceAndReplaceValues(fileName, defId, defId2);
-        return Json.createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
+        return createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
     }
 
     private String getStringFromResourceAndReplaceValues(final String fileName, final String defId, final String defId2) throws IOException {
@@ -907,7 +957,7 @@ public class CourtlistQueryViewTest {
 
     private List<Hearing> getBulkCivilCasesHearings() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("courtlists.hearings.repository.bulk.civil.cases.json"), defaultCharset());
-        return Json.createReader(
+        return createReader(
                 new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
@@ -916,7 +966,7 @@ public class CourtlistQueryViewTest {
 
     private List<Hearing> getHearingsWithoutCase() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("courtlists.hearings.repository.without.case.json"), defaultCharset());
-        return Json.createReader(
+        return createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))

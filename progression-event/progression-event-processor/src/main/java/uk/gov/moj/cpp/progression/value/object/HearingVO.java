@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.value.object;
 
+import uk.gov.justice.core.courts.JurisdictionType;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,6 +17,6 @@ public class HearingVO {
     private UUID courtCenterId;
     private String hearingDate;
     private String courtName;
-
+    private JurisdictionType latestHearingJurisdictionType;
 
 }

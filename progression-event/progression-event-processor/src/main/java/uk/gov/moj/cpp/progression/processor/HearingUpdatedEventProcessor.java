@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -48,7 +48,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -236,17 +235,6 @@ public class HearingUpdatedEventProcessor {
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
     }
 
-    @Handles("public.events.listing.hearing-days-without-court-centre-corrected")
-    public void handlerHearingChangedToProbationCaseWorker(final JsonEnvelope event) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("public.events.listing.hearing-days-without-court-centre-corrected event received with  {}", event.toObfuscatedDebugString());
-        }
-
-        sender.send(envelop(event.payloadAsJsonObject())
-                .withName("progression.command.correct-hearing-days-without-court-centre")
-                .withMetadataFrom(event));
-    }
-
     @Handles("progression.event.all-hearing-offences-updated-v2")
     public void handleAllHearingOffenceUpdated(final JsonEnvelope event) {
         if (LOGGER.isDebugEnabled()) {
@@ -257,7 +245,7 @@ public class HearingUpdatedEventProcessor {
 
 
         allHearingOffencesUpdated.getHearingIds().forEach(hearingId -> {
-                   final JsonObjectBuilder payload = Json.createObjectBuilder()
+                   final JsonObjectBuilder payload = createObjectBuilder()
                            .add("defendantId", allHearingOffencesUpdated.getDefendantId().toString())
                            .add(HEARING_ID, hearingId.toString());
                    if(privateEventPayload.containsKey(UPDATED_OFFENCES)){

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation.applicationCaseDefendantOrganisation;
 

@@ -44,6 +44,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FeatureStubUtil.setFeatureToggle;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -76,6 +77,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         final String materialId = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
         setupMaterialStub(materialId);
         stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         caseId = randomUUID().toString();
         defendantId1 = randomUUID().toString();
         courtCentreId = randomUUID().toString();

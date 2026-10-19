@@ -46,6 +46,29 @@
                           "type": "object",
                           "description": "Hearing entry; when courtApplicationId is present, courtApplication contains application details",
                           "properties": {
+                            "defendants": {
+                              "type": "array",
+                              "description": "Defendants on the hearing",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "firstName": { "type": "string" },
+                                  "surname": { "type": "string" },
+                                  "dateOfBirth": { "type": "string" },
+                                  "age": { "type": "string" },
+                                  "nationality": { "type": "string" },
+                                  "asn": { "type": "string" },
+                                  "pncId": {
+                                    "type": "string",
+                                    "description": "PNC ID (Police National Computer identifier) of the defendant, when available"
+                                  },
+                                  "gender": { "type": "string" },
+                                  "address": { "type": "object" },
+                                  "defenceOrganization": { "type": "string" },
+                                  "offences": { "type": "array" }
+                                }
+                              }
+                            },
                             "courtApplication": {
                               "type": "object",
                               "description": "Present for application hearings; application type, particulars, applicant and respondents",
