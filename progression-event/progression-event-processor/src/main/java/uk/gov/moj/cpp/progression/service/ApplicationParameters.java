@@ -82,10 +82,6 @@ public class ApplicationParameters {
     private String prisonCourtRegisterEmailTemplateId;
 
     @Inject
-    @Value(key = "cr_email_template_id")
-    private String courtRegisterEmailTemplateId;
-
-    @Inject
     @Value(key = "ir_email_template_id")
     private String informantRegisterEmailTemplateId;
 
@@ -320,7 +316,6 @@ public class ApplicationParameters {
         final Map<String, String> emailTemplatesMap = new HashMap<>();
         emailTemplatesMap.put("pcr_standard", this.prisonCourtRegisterEmailTemplateId);
         emailTemplatesMap.put("ir_standard", this.informantRegisterEmailTemplateId);
-        emailTemplatesMap.put("cr_standard", this.courtRegisterEmailTemplateId);
         emailTemplatesMap.put("now_standard_template", this.nowEmailTemplateId);
         emailTemplatesMap.put("now_sla_template", this.nowSlaEmailTemplateId);
         emailTemplatesMap.put("now_extradition_standard_template", this.nowExtraditionEmailTemplateId);

@@ -993,25 +993,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/court-register:
-  post:
-      description: |
-        add court register
-        ...
-        (mapping):
-            requestType: application/vnd.progression.add-court-register+json
-            name: progression.add-court-register
-        ...
-      body:
-        application/vnd.progression.add-court-register+json:
-            example:
-              !include json/progression.add-court-register.json
-            schema:
-              !include json/schema/progression.add-court-register.json
-      responses:
-        202:
-          description: OK
-
 /prison-court-register:
   post:
     description: |
@@ -1032,29 +1013,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         description: Accepted
       500:
         description: Internal Server Error
-
-/court-register/generate:
-  post:
-      description: |
-        Request for generation of court register per court center
-        ...
-        (mapping):
-            requestType: application/vnd.progression.generate-court-register+json
-            name: progression.generate-court-register
-        (mapping):
-            requestType: application/vnd.progression.generate-court-register-by-date+json
-            name: progression.generate-court-register-by-date
-        ...
-      body:
-        application/vnd.progression.generate-court-register+json: !!null
-        application/vnd.progression.generate-court-register-by-date+json:
-          example:
-            !include json/progression.generate-court-register-by-date.json
-          schema:
-            !include json/schema/progression.generate-court-register-by-date.json
-      responses:
-            202:
-                description: OK
 
 /prosecutioncases/{caseId}/form:
   uriParameters:

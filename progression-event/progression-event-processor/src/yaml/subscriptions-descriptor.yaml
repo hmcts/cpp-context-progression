@@ -171,13 +171,6 @@ subscriptions_descriptor:
         - name: progression.event.application-hearing-defendant-updated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
 
-        # Generate Court Register
-        - name: progression.event.court-register-generated
-          schema_uri: http://justice.gov.uk/progression/courts/court-register-generated.json
-
-        - name: progression.event.court-register-requested
-          schema_uri: http://justice.gov.uk/progression/courts/court-register-requested.json
-
           # Generate Prison Court Register
         - name: progression.event.prison-court-register-recorded
           schema_uri: http://justice.gov.uk/progression/courts/prison-court-register-recorded.json
@@ -193,12 +186,6 @@ subscriptions_descriptor:
 
         - name: progression.event.nows-document-generated
           schema_uri: http://justice.gov.uk/core/courts/nows-document-generated.json
-
-        - name: progression.event.court-register-notified
-          schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
-
-        - name: progression.event.court-register-notified-v2
-          schema_uri: http://justice.gov.uk/progression/courts/court-register-notified-v2.json
 
         - name: progression.event.hearing-resulted
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-resulted.json

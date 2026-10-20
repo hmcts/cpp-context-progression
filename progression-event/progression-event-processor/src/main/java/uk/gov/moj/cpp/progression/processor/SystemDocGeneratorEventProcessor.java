@@ -21,7 +21,6 @@ import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -65,7 +64,6 @@ public class SystemDocGeneratorEventProcessor {
 
     private static final String PUBLIC_DOCUMENT_AVAILABLE_EVENT_NAME = "public.systemdocgenerator.events.document-available";
     private static final String DOCUMENT_GENERATION_FAILED_EVENT_NAME = "public.systemdocgenerator.events.generation-failed";
-    private static final String COURT_REGISTER = "CourtRegister";
     private static final String  PCR_FILE_NAME_FORMAT = "PCR_%s_%s.pdf";
     private static final String PRISON_COURT_REGISTER = "PRISON_COURT_REGISTER";
     private static final String NOWS = "NOWs";
@@ -135,16 +133,7 @@ public class SystemDocGeneratorEventProcessor {
         final String originatingSource = documentAvailablePayload.getString(ORIGINATING_SOURCE, "");
         final String fileId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID);
 
-        if (COURT_REGISTER.equalsIgnoreCase(originatingSource)) {
-
-            final String courtCenterStreamId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
-            final NotifyCourtRegister notifyCourtRegister = new NotifyCourtRegister.Builder()
-                    .withCourtRegisterId(fromString(courtCenterStreamId))
-                    .withSystemDocGeneratorId(fromString(fileId))
-                    .build();
-            this.sender.send(envelopeFrom(metadataFrom(documentAvailableEvent.metadata()).withName("progression.command.notify-court-register").build(),
-                    this.objectToJsonObjectConverter.convert(notifyCourtRegister)));
-        } else if (isForPleaDocument(originatingSource)) {
+        if (isForPleaDocument(originatingSource)) {
             final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
             final FileReference payloadFileReference = fileService.retrieve(payloadFileId).orElseThrow(() -> new BadRequestException("Failed to retrieve file"));
             LOGGER.info("Retrieved file reference '{}' successfully", payloadFileReference);

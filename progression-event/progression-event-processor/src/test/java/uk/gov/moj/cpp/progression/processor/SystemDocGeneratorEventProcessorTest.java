@@ -124,20 +124,6 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleDocumentAvailable() throws FileServiceException {
-        final UUID courtCentreId = UUID.randomUUID();
-        final JsonObject docPayload = documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID(), "CourtRegister");
-        when(envelope.payloadAsJsonObject()).thenReturn(docPayload);
-        when(envelope.metadata()).thenReturn(getMetadataFrom(randomUUID().toString(), courtCentreId));
-        systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
-
-        assertThat(publicEvent.metadata().name(), is("progression.command.notify-court-register"));
-    }
-
-    @Test
     public void shouldThrowExceptionOnHandleDocument() throws FileServiceException, IOException {
         final UUID courtCentreId = UUID.randomUUID();
         final JsonObject docPayload = documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID(), "IndividualOnlinePlea");
@@ -383,15 +369,6 @@ public class SystemDocGeneratorEventProcessorTest {
         systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
 
         verifyNoInteractions(sender);
-    }
-
-    private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
-        return metadataFrom(createObjectBuilder()
-                .add("court_register", courtCentreId.toString())
-                .add(JsonMetadata.ID, randomUUID().toString())
-                .add(HeaderConstants.USER_ID, userId)
-                .add(NAME, "public.systemdocgenerator.events.document-available")
-                .build()).build();
     }
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId, final String originatingSource) {

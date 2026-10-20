@@ -31,7 +31,6 @@ class ApplicationParametersTest {
     private static final String NOTIFY_HEARING_TEMPLATE_ID = "notify-hearing-id";
     private static final String END_CLIENT_HOST = "https://end-client.example.com";
     private static final String PRISON_COURT_REGISTER_EMAIL_TEMPLATE_ID = "pcr-email-id";
-    private static final String COURT_REGISTER_EMAIL_TEMPLATE_ID = "cr-email-id";
     private static final String INFORMANT_REGISTER_EMAIL_TEMPLATE_ID = "ir-email-id";
     private static final String NOW_EMAIL_TEMPLATE_ID = "now-email-id";
     private static final String NOW_SLA_EMAIL_TEMPLATE_ID = "now-sla-email-id";
@@ -75,7 +74,6 @@ class ApplicationParametersTest {
         setField(applicationParameters, "notifyHearingTemplateId", NOTIFY_HEARING_TEMPLATE_ID);
         setField(applicationParameters, "endClientHost", END_CLIENT_HOST);
         setField(applicationParameters, "prisonCourtRegisterEmailTemplateId", PRISON_COURT_REGISTER_EMAIL_TEMPLATE_ID);
-        setField(applicationParameters, "courtRegisterEmailTemplateId", COURT_REGISTER_EMAIL_TEMPLATE_ID);
         setField(applicationParameters, "informantRegisterEmailTemplateId", INFORMANT_REGISTER_EMAIL_TEMPLATE_ID);
         setField(applicationParameters, "nowEmailTemplateId", NOW_EMAIL_TEMPLATE_ID);
         setField(applicationParameters, "nowSlaEmailTemplateId", NOW_SLA_EMAIL_TEMPLATE_ID);
@@ -273,11 +271,6 @@ class ApplicationParametersTest {
     @Test
     void getEmailTemplateIdShouldReturnInformantRegisterTemplateIdForIrStandard() {
         assertThat(applicationParameters.getEmailTemplateId("ir_standard"), is(INFORMANT_REGISTER_EMAIL_TEMPLATE_ID));
-    }
-
-    @Test
-    void getEmailTemplateIdShouldReturnCourtRegisterTemplateIdForCrStandard() {
-        assertThat(applicationParameters.getEmailTemplateId("cr_standard"), is(COURT_REGISTER_EMAIL_TEMPLATE_ID));
     }
 
     @Test
