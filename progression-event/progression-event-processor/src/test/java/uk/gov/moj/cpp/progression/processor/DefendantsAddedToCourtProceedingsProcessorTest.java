@@ -61,7 +61,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.jobstore.api.ExecutionService;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
-import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.listing.domain.Hearing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
@@ -379,7 +379,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         return singletonList(
                 Hearing.hearing()
                         .withHearingDays(
-                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.progression.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(ZonedDateTime.now().plusDays(3))
                                         .build())
                         ).build()
@@ -620,7 +620,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         return Arrays.asList(
                 Hearing.hearing()
                         .withHearingDays(
-                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.progression.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(existingHearingSittingDay)
                                         .build())
                         )
@@ -629,7 +629,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                         .build(),
                 Hearing.hearing()
                         .withHearingDays(
-                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.progression.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(existingHearingSittingDay)
                                         .build())
                         )
@@ -638,7 +638,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
                         .build(),
                 Hearing.hearing()
                         .withHearingDays(
-                                singletonList(uk.gov.moj.cpp.listing.domain.HearingDay.hearingDay()
+                                singletonList(uk.gov.moj.cpp.progression.listing.domain.HearingDay.hearingDay()
                                         .withStartTime(ZonedDateTime.now().plusDays(3))
                                         .build())
                         )
