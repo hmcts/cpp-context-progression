@@ -12,6 +12,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.mock;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
@@ -95,6 +98,7 @@ import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
+import uk.gov.justice.progression.courts.HearingRegisteredForApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -117,6 +121,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -586,6 +591,48 @@ public class ApplicationAggregateTest {
     }
 
     @Test
+    public void shouldRaiseCourtApplicationProceedingsEditedWithLinkedCourtHearings() {
+        final UUID applicationId = randomUUID();
+        final UUID firstHearingId = randomUUID();
+        final UUID secondHearingId = randomUUID();
+        final UUID deletedHearingId = randomUUID();
+        final UUID boxHearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(firstHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(secondHearingId, null), applicationId, HearingListingStatus.SENT_FOR_LISTING).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(deletedHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(boxHearingId, TRUE), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.deleteHearingRelatedToCourtApplication(deletedHearingId, applicationId).collect(toList());
+
+        final List<Object> eventStream = aggregate.editCourtApplicationProceedings(EditCourtApplicationProceedings
+                        .editCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication().withId(applicationId).build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(firstHearingId).build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), null)
+                .collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = (CourtApplicationProceedingsEdited) eventStream.get(0);
+        assertThat(courtApplicationProceedingsEdited.getHearingIds(), containsInAnyOrder(firstHearingId, secondHearingId));
+    }
+
+    @Test
+    public void shouldRaiseCourtApplicationProceedingsEditedWithEmptyHearingIdsWhenApplicationHasNoCourtHearings() {
+        final List<Object> eventStream = aggregate.editCourtApplicationProceedings(EditCourtApplicationProceedings
+                        .editCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication().withId(randomUUID()).build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), null)
+                .collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = (CourtApplicationProceedingsEdited) eventStream.get(0);
+        assertThat(courtApplicationProceedingsEdited.getHearingIds(), is(notNullValue()));
+        assertThat(courtApplicationProceedingsEdited.getHearingIds(), is(empty()));
+    }
+
+    @Test
     public void shouldReturnAddConvictionDateEventAndUpdateOffenceUnderCourtApplicationCase() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -796,6 +843,288 @@ public class ApplicationAggregateTest {
         final HearingDeletedForCourtApplication hearingDeletedForCourtApplication = (HearingDeletedForCourtApplication) object;
         assertThat(hearingDeletedForCourtApplication.getHearingId(), is(equalTo(hearingId)));
         assertThat(hearingDeletedForCourtApplication.getCourtApplicationId(), is(equalTo(courtApplicationId)));
+    }
+
+    @Test
+    public void shouldHaveNoCourtHearingsWhenApplicationIsNotLinkedToAnyHearing() {
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), is(empty()));
+    }
+
+    @Test
+    public void shouldStoreCourtHearingWhenHearingApplicationLinkCreated() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+        assertThat(aggregate.getBoxHearingId(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldStoreCourtHearingWhenHearingIsExplicitlyNotBoxHearing() {
+        final UUID hearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, FALSE), randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+        assertThat(aggregate.getBoxHearingId(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldStoreEachCourtHearingOnceWhenSameHearingLinkedMoreThanOnce() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), applicationId, HearingListingStatus.SENT_FOR_LISTING).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), hasSize(1));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldStoreAllCourtHearingsOfTheApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID firstHearingId = randomUUID();
+        final UUID secondHearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(firstHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(secondHearingId, null), applicationId, HearingListingStatus.SENT_FOR_LISTING).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(firstHearingId, secondHearingId));
+    }
+
+    @Test
+    public void shouldNotStoreBoxHearingAsCourtHearing() {
+        final UUID applicationId = randomUUID();
+        final UUID boxHearingId = randomUUID();
+        final UUID courtHearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(boxHearingId, TRUE), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(courtHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        assertThat(aggregate.getBoxHearingId(), is(boxHearingId));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(courtHearingId));
+    }
+
+    @Test
+    public void shouldRemoveCourtHearingWhenHearingDeletedForCourtApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID deletedHearingId = randomUUID();
+        final UUID remainingHearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(deletedHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+        aggregate.createHearingApplicationLink(linkedHearing(remainingHearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        aggregate.deleteHearingRelatedToCourtApplication(deletedHearingId, applicationId).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(remainingHearingId));
+    }
+
+    @Test
+    public void shouldIgnoreHearingDeletedForCourtApplicationWhenHearingIsNotStored() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        aggregate.deleteHearingRelatedToCourtApplication(randomUUID(), applicationId).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldRebuildCourtHearingsFromEventStream() {
+        final UUID applicationId = randomUUID();
+        final UUID deletedHearingId = randomUUID();
+        final UUID remainingHearingId = randomUUID();
+
+        aggregate.apply(Stream.of(
+                HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                        .withHearing(linkedHearing(deletedHearingId, null))
+                        .withApplicationId(applicationId)
+                        .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                        .build(),
+                HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                        .withHearing(linkedHearing(remainingHearingId, null))
+                        .withApplicationId(applicationId)
+                        .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                        .build(),
+                HearingDeletedForCourtApplication.hearingDeletedForCourtApplication()
+                        .withHearingId(deletedHearingId)
+                        .withCourtApplicationId(applicationId)
+                        .build()));
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(remainingHearingId));
+    }
+
+    @Test
+    public void shouldNotStoreCourtHearingWhenLinkedHearingHasNoId() {
+        aggregate.createHearingApplicationLink(linkedHearing(null, null), randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), is(empty()));
+    }
+
+    @Test
+    public void shouldNotStoreCourtHearingWhenLinkCreatedWithoutHearing() {
+        aggregate.apply(Stream.of(HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                .withApplicationId(randomUUID())
+                .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                .build()));
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), is(empty()));
+        assertThat(aggregate.getBoxHearingId(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldNotExposeCourtHearingsForModification() {
+        final UUID hearingId = randomUUID();
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        final Set<UUID> courtHearings = aggregate.getCourtHearingsOfTheApplication();
+        courtHearings.add(randomUUID());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldRegisterHearingForApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final List<Object> eventStream = aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingRegisteredForApplication hearingRegisteredForApplication = (HearingRegisteredForApplication) eventStream.get(0);
+        assertThat(hearingRegisteredForApplication.getApplicationId(), is(applicationId));
+        assertThat(hearingRegisteredForApplication.getHearingId(), is(hearingId));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldNotRegisterHearingForApplicationWhenHearingIsAlreadyRegistered() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+
+        final List<Object> eventStream = aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+
+        assertThat(eventStream, is(empty()));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldNotRegisterHearingForApplicationWhenHearingIsAlreadyLinked() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        aggregate.createHearingApplicationLink(linkedHearing(hearingId, null), applicationId, HearingListingStatus.HEARING_INITIALISED).collect(toList());
+
+        final List<Object> eventStream = aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+
+        assertThat(eventStream, is(empty()));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(hearingId));
+    }
+
+    @Test
+    public void shouldRemoveRegisteredHearingWhenHearingDeletedForCourtApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+
+        aggregate.deleteHearingRelatedToCourtApplication(hearingId, applicationId).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), is(empty()));
+    }
+
+    @Test
+    public void shouldIncludeRegisteredHearingInCourtApplicationProceedingsEdited() {
+        final UUID applicationId = randomUUID();
+        final UUID linkedHearingId = randomUUID();
+        final UUID registeredHearingId = randomUUID();
+        aggregate.apply(Stream.of(
+                HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                        .withHearing(linkedHearing(linkedHearingId, null))
+                        .withApplicationId(applicationId)
+                        .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                        .build(),
+                HearingRegisteredForApplication.hearingRegisteredForApplication()
+                        .withApplicationId(applicationId)
+                        .withHearingId(registeredHearingId)
+                        .build()));
+
+        final List<Object> eventStream = aggregate.editCourtApplicationProceedings(EditCourtApplicationProceedings
+                        .editCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication().withId(applicationId).build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), null)
+                .collect(toList());
+
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = (CourtApplicationProceedingsEdited) eventStream.get(0);
+        assertThat(courtApplicationProceedingsEdited.getHearingIds(), containsInAnyOrder(linkedHearingId, registeredHearingId));
+    }
+
+    @Test
+    public void shouldStoreExistingHearingWhenApplicationReferredToExistingHearing() {
+        final UUID applicationId = randomUUID();
+        final UUID existingHearingId = randomUUID();
+
+        aggregate.apply(referredToExistingHearing(applicationId, existingHearingId));
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(existingHearingId));
+    }
+
+    @Test
+    public void shouldStoreExistingHearingOnceWhenApplicationReferredToAndLinkedToSameHearing() {
+        final UUID applicationId = randomUUID();
+        final UUID existingHearingId = randomUUID();
+
+        aggregate.apply(referredToExistingHearing(applicationId, existingHearingId));
+        aggregate.createHearingApplicationLink(linkedHearing(existingHearingId, null), applicationId, HearingListingStatus.SENT_FOR_LISTING).collect(toList());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), containsInAnyOrder(existingHearingId));
+    }
+
+    @Test
+    public void shouldNotStoreHearingWhenApplicationReferredToExistingHearingWithoutHearingId() {
+        aggregate.apply(ApplicationReferredToExistingHearing.applicationReferredToExistingHearing()
+                .withApplication(courtApplication().withId(randomUUID()).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .build());
+
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), is(empty()));
+    }
+
+    @Test
+    public void shouldIncludeExistingHearingInCourtApplicationProceedingsEditedWhenApplicationReferredToIt() {
+        final UUID applicationId = randomUUID();
+        final UUID existingHearingId = randomUUID();
+        aggregate.apply(referredToExistingHearing(applicationId, existingHearingId));
+
+        final List<Object> eventStream = aggregate.editCourtApplicationProceedings(EditCourtApplicationProceedings
+                        .editCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication().withId(applicationId).build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(existingHearingId).build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), null)
+                .collect(toList());
+
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = (CourtApplicationProceedingsEdited) eventStream.get(0);
+        assertThat(courtApplicationProceedingsEdited.getHearingIds(), containsInAnyOrder(existingHearingId));
+    }
+
+    private static ApplicationReferredToExistingHearing referredToExistingHearing(final UUID applicationId, final UUID hearingId) {
+        return ApplicationReferredToExistingHearing.applicationReferredToExistingHearing()
+                .withApplication(courtApplication().withId(applicationId).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(hearingId).build())
+                .build();
+    }
+
+    private static Hearing linkedHearing(final UUID hearingId, final Boolean isBoxHearing) {
+        return Hearing.hearing()
+                .withId(hearingId)
+                .withIsBoxHearing(isBoxHearing)
+                .build();
     }
 
 

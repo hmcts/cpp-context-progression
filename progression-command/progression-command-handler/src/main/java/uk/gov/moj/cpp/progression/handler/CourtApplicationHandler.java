@@ -319,7 +319,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final UUID hearingId = updateCourtApplicationToHearingEnvelope.payload().getHearingId();
         final EventStream eventStream = eventSource.getStreamById(hearingId);
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateApplication(courtApplication);
+        final Stream<Object> events = hearingAggregate.updateApplication(courtApplication, hearingId);
         appendEventsToStream(updateCourtApplicationToHearingEnvelope, eventStream, events);
     }
 
