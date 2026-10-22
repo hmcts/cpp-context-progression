@@ -1776,7 +1776,8 @@ public class CaseAggregate implements Aggregate {
             //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
             if (nonNull(updatedProsecutionCase) && nonNull(updatedProsecutionCase.getDefendants())) {
                 updatedProsecutionCase.getDefendants().forEach(defendant -> {
-                    if (Boolean.TRUE.equals(defendant.getProceedingsConcluded())) {
+                    if (Boolean.TRUE.equals(defendant.getProceedingsConcluded())
+                        && isProceedingConcludedEventTriggered(defendant, offenceProceedingConcluded, defendantProceedingConcluded.get(prosecutionCase.getId()))) {
                         streamBuilder.add(DefendantTrialRecordSheetRequested.defendantTrialRecordSheetRequested()
                                 .withCaseId(prosecutionCase.getId())
                                 .withDefendantId(defendant.getId())
