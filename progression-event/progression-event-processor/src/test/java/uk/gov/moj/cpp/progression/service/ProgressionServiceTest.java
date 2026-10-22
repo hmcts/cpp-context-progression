@@ -1536,7 +1536,40 @@ public class ProgressionServiceTest {
         assertThat(hearing.getNumberOfGroupCases(), nullValue());
     }
 
+    @Test
+    void transformConfirmedHearingShouldFallBackToProgressionGroupFlagWhenNotConfirmed() {
+        final Hearing hearingInProgression = Hearing.hearing().withIsGroupProceedings(true).build();
+
+        final Hearing hearing = progressionService.transformConfirmedHearing(
+                confirmedGroupHearing(null, 100), finalEnvelope, null, hearingInProgression);
+
+        assertThat(hearing.getIsGroupProceedings(), is(true));
+        assertThat(hearing.getNumberOfGroupCases(), is(100));
+    }
+
+    @Test
+    void transformConfirmedHearingShouldPreferConfirmedGroupFlagOverProgressionHearing() {
+        final Hearing hearingInProgression = Hearing.hearing().withIsGroupProceedings(true).build();
+
+        final Hearing hearing = progressionService.transformConfirmedHearing(
+                confirmedGroupHearing(false, 100), finalEnvelope, null, hearingInProgression);
+
+        assertThat(hearing.getIsGroupProceedings(), is(false));
+    }
+
+    @Test
+    void transformConfirmedHearingShouldLeaveGroupFlagNullWhenNeitherSourceHasIt() {
+        final Hearing hearing = progressionService.transformConfirmedHearing(
+                confirmedGroupHearing(null, null), finalEnvelope, null, null);
+
+        assertThat(hearing.getIsGroupProceedings(), nullValue());
+    }
+
     private ConfirmedHearing confirmedGroupHearingWithNumberOfGroupCases(final Integer numberOfGroupCases) {
+        return confirmedGroupHearing(true, numberOfGroupCases);
+    }
+
+    private ConfirmedHearing confirmedGroupHearing(final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         final UUID courtCentreId = randomUUID();
         final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
         final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
@@ -1549,7 +1582,7 @@ public class ProgressionServiceTest {
                 .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId)
                         .withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant().withId(defendantId)
                                 .withOffences(singletonList(ConfirmedOffence.confirmedOffence().withId(randomUUID()).build())).build())).build()))
-                .withIsGroupProceedings(true)
+                .withIsGroupProceedings(isGroupProceedings)
                 .withNumberOfGroupCases(numberOfGroupCases)
                 .build();
     }
