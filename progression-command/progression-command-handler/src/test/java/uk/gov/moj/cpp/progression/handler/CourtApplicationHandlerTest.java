@@ -73,6 +73,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
@@ -1046,6 +1047,57 @@ public class CourtApplicationHandlerTest {
                         ).isJson(allOf(
                                 withJsonPath("$.courtHearing", notNullValue())))
 
+                )
+        ));
+    }
+
+    @Test
+    public void shouldProcessEditCourtProceedingsForApplicationCommandWithLinkedCourtHearings() throws Exception {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final EditCourtApplicationProceedings editCourtApplicationProceedings =
+                EditCourtApplicationProceedings.editCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationParty(randomUUID()))
+                                .withSubject(buildCourtApplicationParty(randomUUID()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(hearingId).build())
+                        .withSummonsApprovalRequired(false)
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.edit-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+        applicationAggregate.createHearingApplicationLink(Hearing.hearing().withId(hearingId).build(), applicationId, HearingListingStatus.HEARING_INITIALISED)
+                .toList();
+
+        courtApplicationHandler.editCourtApplicationProceedings(envelopeFrom(metadata, editCourtApplicationProceedings));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-edited"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication.id", is(applicationId.toString())),
+                                withJsonPath("$.hearingIds[0]", is(hearingId.toString()))
+                        ))
                 )
         ));
     }
@@ -2687,6 +2739,7 @@ public class CourtApplicationHandlerTest {
                         metadata()
                                 .withName("progression.event.hearing-updated-with-court-application"),
                         payload().isJson(allOf(
+                                withJsonPath("$.hearingId", is(hearingId.toString())),
                                 withJsonPath("$.courtApplication.id", is(applicationId.toString())),
                                 withJsonPath("$.courtApplication.applicationReference", is("B"))
                         ))),

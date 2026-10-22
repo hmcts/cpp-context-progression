@@ -3,6 +3,10 @@
   "id": "http://justice.gov.uk/core/courts/progression.event.hearing-updated-with-court-application.json",
   "type": "object",
   "properties": {
+    "hearingId": {
+      "description": "The hearing the court application has been updated on",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "courtApplication": {
       "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
     }

@@ -7,6 +7,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
+import uk.gov.justice.progression.courts.RegisterHearingForApplication;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -58,6 +59,17 @@ public class CreateHearingApplicationLinkHandler {
         }
     }
 
+
+    @Handles("progression.command.register-hearing-for-application")
+    public void registerHearingForApplication(final Envelope<RegisterHearingForApplication> registerHearingForApplicationEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.register-hearing-for-application {}", registerHearingForApplicationEnvelope.payload());
+
+        final RegisterHearingForApplication registerHearingForApplication = registerHearingForApplicationEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(registerHearingForApplication.getApplicationId());
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final Stream<Object> events = applicationAggregate.registerHearingForApplication(registerHearingForApplication.getApplicationId(), registerHearingForApplication.getHearingId());
+        appendEventsToStream(registerHearingForApplicationEnvelope, eventStream, events);
+    }
 
     @Handles("progression.command.update-hearing-for-allocation-fields")
     public void handleForAllocationFields(final Envelope<UpdateHearingForAllocationFields> updateHearingForAllocationFieldsEnvelope) throws EventStreamException {

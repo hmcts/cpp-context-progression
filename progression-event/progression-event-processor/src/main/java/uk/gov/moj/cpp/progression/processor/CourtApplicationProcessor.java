@@ -14,6 +14,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
@@ -160,6 +161,7 @@ public class CourtApplicationProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
     private static final String HEARING_ID = "hearingId";
+    private static final String HEARING_IDS = "hearingIds";
     private static final String HEARINGS = "hearings";
     public static final String PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING = "public.progression.breach-applications-to-be-added-to-hearing";
     public static final String INACTIVE = "INACTIVE";
@@ -476,18 +478,17 @@ public class CourtApplicationProcessor {
     @Handles("progression.event.court-application-proceedings-edited")
     public void processCourtApplicationEdited(final JsonEnvelope event) {
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
-        if (nonNull(courtApplicationProceedingsEdited.getCourtHearing())) {
+        final JsonObject application = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication());
+        ofNullable(courtApplicationProceedingsEdited.getHearingIds()).orElse(emptyList()).forEach( hearingId ->{
             final JsonObjectBuilder updateHearingPayload = createObjectBuilder();
-            updateHearingPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
-            updateHearingPayload.add("hearingId", courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
+            updateHearingPayload.add("courtApplication", application);
+            updateHearingPayload.add("hearingId", hearingId.toString());
             sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_TO_HEARING), updateHearingPayload.build()));
-        }
-
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED), event.payloadAsJsonObject()));
+        });
 
         final BoxHearingRequest boxHearingRequest = courtApplicationProceedingsEdited.getBoxHearing();
-        final JsonObjectBuilder publicPayload = createObjectBuilder();
         if (boxHearingRequest != null) {
+            final JsonObjectBuilder publicPayload = createObjectBuilder();
             final ZonedDateTime sittingDay = nonNull(boxHearingRequest.getVirtualAppointmentTime()) ?
                     boxHearingRequest.getVirtualAppointmentTime() :
                     boxHearingRequest.getApplicationDueDate().atStartOfDay(ZoneOffset.UTC);
@@ -500,9 +501,7 @@ public class CourtApplicationProcessor {
             publicPayload.add("jurisdictionType", boxHearingRequest.getJurisdictionType().toString());
             publicPayload.add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
             publicPayload.add("isBoxWorkRequest", true);
-        } else if (courtApplicationProceedingsEdited.getCourtHearing() != null) {
-            publicPayload.add(HEARING_ID, courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
-            publicPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+            sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
         }
 
         if (nonNull(courtApplicationProceedingsEdited.getCourtApplication()) && nonNull(courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases())) {
@@ -519,7 +518,23 @@ public class CourtApplicationProcessor {
                                 updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
                             }));
         }
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
+
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENT_APPLICATION_PROCEEDINGS_EDITED),
+                createObjectBuilderWithFilter(event.payloadAsJsonObject(), key -> !HEARING_IDS.equals(key)).build()));
+    }
+
+    @Handles("progression.event.hearing-updated-with-court-application")
+    public void processHearingUpdatedWithCourtApplication(final JsonEnvelope event) {
+        final String hearingId = event.payloadAsJsonObject().getString(HEARING_ID, null);
+        if (isNull(hearingId)) {
+            // events raised before hearingId was added cannot be published, as the public event requires it
+            LOGGER.warn("progression.event.hearing-updated-with-court-application received without hearing id, not publishing {}", PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
+            return;
+        }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("progression.event.hearing-updated-with-court-application received for hearing id {}", hearingId);
+        }
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), event.payloadAsJsonObject()));
     }
 
 

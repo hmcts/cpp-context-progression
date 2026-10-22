@@ -119,6 +119,7 @@ import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
+import uk.gov.justice.progression.courts.HearingRegisteredForApplication;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
@@ -141,10 +142,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -157,7 +160,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908503L;
+    private static final long serialVersionUID = 1331113876243908504L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -173,6 +176,7 @@ public class ApplicationAggregate implements Aggregate {
     private LaaReference laaReference;//cloned by child applications. This has to be overridden each time LaaReference updated for application or any offence.
     private final Map<UUID, Boolean> applicationOrganisationAsscociatedByRepOrder = new HashMap<>();
     private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
+    private final Set<UUID> courtHearingsOfTheApplication = new HashSet<>();
 
     @Override
     public Object apply(final Object event) {
@@ -193,11 +197,20 @@ public class ApplicationAggregate implements Aggregate {
                         e -> {
                             if (isBoxWorkHearing(e)) {
                                 boxHearingId = e.getHearing().getId();
+                            } else if (nonNull(e.getHearing()) && nonNull(e.getHearing().getId())) {
+                                courtHearingsOfTheApplication.add(e.getHearing().getId());
                             }
                         }
                 ),
+                when(HearingDeletedForCourtApplication.class).apply(e -> courtHearingsOfTheApplication.remove(e.getHearingId())),
+                when(HearingRegisteredForApplication.class).apply(e -> courtHearingsOfTheApplication.add(e.getHearingId())),
                 when(ApplicationReferredToBoxwork.class).apply(e -> this.applicationStatus = IN_PROGRESS),
-                when(ApplicationReferredToExistingHearing.class).apply(e -> this.applicationStatus = LISTED),
+                when(ApplicationReferredToExistingHearing.class).apply(e -> {
+                    this.applicationStatus = LISTED;
+                    if (nonNull(e.getCourtHearing()) && nonNull(e.getCourtHearing().getId())) {
+                        courtHearingsOfTheApplication.add(e.getCourtHearing().getId());
+                    }
+                }),
                 when(CourtApplicationProceedingsEdited.class).apply(courtApplicationProceedingsEdited -> {
                     handleEditCourtApplicationProceedings(courtApplicationProceedingsEdited);
                     setApplicationCaseDefendants(courtApplicationProceedingsEdited.getCourtApplication());
@@ -727,6 +740,7 @@ public class ApplicationAggregate implements Aggregate {
                                 .withCourtHearing(editCourtApplicationProceedings.getCourtHearing())
                                 .withBoxHearing(editCourtApplicationProceedings.getBoxHearing())
                                 .withSummonsApprovalRequired(editCourtApplicationProceedings.getSummonsApprovalRequired())
+                                .withHearingIds(this.courtHearingsOfTheApplication.stream().toList())
                                 .build()));
 
     }
@@ -903,6 +917,16 @@ public class ApplicationAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> registerHearingForApplication(final UUID applicationId, final UUID hearingId) {
+        if (courtHearingsOfTheApplication.contains(hearingId)) {
+            return Stream.empty();
+        }
+        return apply(Stream.of(HearingRegisteredForApplication.hearingRegisteredForApplication()
+                .withApplicationId(applicationId)
+                .withHearingId(hearingId)
+                .build()));
+    }
+
     public Stream<Object> deleteCourtApplication(final UUID courtApplicationId, final UUID seedingHearingId) {
         return apply(Stream.of(DeleteCourtApplicationHearingRequested.deleteCourtApplicationHearingRequested()
                 .withApplicationId(courtApplicationId)
@@ -978,6 +1002,10 @@ public class ApplicationAggregate implements Aggregate {
 
     public UUID getBoxHearingId() {
         return boxHearingId;
+    }
+
+    public Set<UUID> getCourtHearingsOfTheApplication() {
+        return new HashSet<>(courtHearingsOfTheApplication);
     }
 
     public List<ApplicationCaseDefendantOrganisation> getApplicationCaseDefendantOrganisations() {
