@@ -255,7 +255,8 @@ public class DefendantHelper {
     }
 
     public static boolean isProceedingConcludedEventTriggered(Defendant defendant, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, Map<UUID, Boolean> defendantProceedingConcluded) {
-        return nonNull(defendant.getProceedingsConcluded() && (!defendant.getProceedingsConcluded().equals(defendantProceedingConcluded.get(defendant.getId())) || isAnyChangeInProceedingConcludedFromPreviousState(defendant.getOffences(), offenceProceedingConcluded.get(defendant.getId()))));
+        final Boolean previousProceedingsConcluded = isNull(defendantProceedingConcluded) ? null : defendantProceedingConcluded.get(defendant.getId());
+        return nonNull(defendant.getProceedingsConcluded() && (!defendant.getProceedingsConcluded().equals(previousProceedingsConcluded) || isAnyChangeInProceedingConcludedFromPreviousState(defendant.getOffences(), offenceProceedingConcluded.get(defendant.getId()))));
     }
 
     private static boolean isAnyChangeInProceedingConcludedFromPreviousState(List<Offence> existingOffence, List<Offence> previousOffence) {
