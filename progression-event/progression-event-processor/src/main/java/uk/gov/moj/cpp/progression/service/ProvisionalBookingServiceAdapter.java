@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.stream.Collectors.joining;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
+import uk.gov.moj.cpp.progression.listing.common.service.ProvisionalBookingService;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -187,8 +187,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
     }
 
     private void verifyCourtApplicationCreatedEventPublished(final String applicationId) {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent(), "Expected court-application-created event on JMS topic");
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated, courtApplicationIdMatches(applicationId));
+        assertTrue(message.isPresent(), "Expected court-application-created event on JMS topic for applicationId " + applicationId);
         final String idFromEvent = message.get().getJsonObject("courtApplication").getString("id");
         assertThat(idFromEvent, equalTo(applicationId));
     }

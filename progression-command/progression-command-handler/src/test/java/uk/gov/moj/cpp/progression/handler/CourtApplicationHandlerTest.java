@@ -3237,10 +3237,10 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        final ApplicationAggregate applicationAggregateLocal = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregateLocal);
+        applicationAggregateLocal.apply(new CourtApplicationProceedingsInitiated.Builder()
                 .withCourtHearing(new CourtHearingRequest.Builder().build())
                 .withBoxHearing(new BoxHearingRequest.Builder().build())
                 .build());
