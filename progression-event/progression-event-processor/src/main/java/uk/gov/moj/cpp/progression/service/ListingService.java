@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -30,6 +31,7 @@ import uk.gov.moj.cpp.progression.processor.CasesReferredToCourtProcessor;
 import uk.gov.moj.cpp.progression.service.dto.HearingList;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +41,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +58,8 @@ public class ListingService {
     private static final String LISTING_COMMAND_SEND_UNSCHEDULED_NEXT_COURT_HEARINGS = "listing.list-unscheduled-next-hearings";
     private static final String LISTING_SEARCH_HEARING = "listing.search.hearing";
     private static final String LISTING_ANY_ALLOCATION_SEARCH_HEARINGS = "listing.any-allocation.search.hearings";
+    private static final String LISTING_SEARCH_HEARING_SLOTS = "listing.search.hearing.slots";
+    private static final int HEARING_SLOTS_SEARCH_PAGE_SIZE = 20;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
@@ -154,6 +162,93 @@ public class ListingService {
                 .filter(hearing -> hearing.getHearingDays() != null && hearing.getHearingDays().stream()
                         .anyMatch(hearingDay -> hearingDay.getStartTime().compareTo(utcClock.now()) >= 0))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Searches for an available Enforcement hearing slot. {@code courtRoomId}, when present,
+     * constrains the search to that one specific courtroom (Courtscheduler's {@code courtRoomId}
+     * filter) rather than any courtroom within {@code ouCode} - used when the caller already knows
+     * a genuinely-requested specific courtroom must be matched exactly, with no fallback to a
+     * different room. {@code exactHearingStartDateTime}, when present, additionally constrains the
+     * search to a session whose window contains it - Listing/Courtscheduler's own range-containment
+     * filter (wire param {@code hearingStartTime}, matched against the session's start/end time),
+     * used for a single specific dateOfHearing+timeOfHearing submission, where the slot must
+     * genuinely cover that exact time rather than merely exist somewhere in the date range.
+     */
+    public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
+                                                                    final String ouCode,
+                                                                    final String businessType,
+                                                                    final String panel,
+                                                                    final LocalDate sessionStartDate,
+                                                                    final LocalDate sessionEndDate,
+                                                                    final String courtRoomId,
+                                                                    final ZonedDateTime exactHearingStartDateTime) {
+        int pageNumber = 1;
+        while (true) {
+            final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING_SLOTS);
+            final JsonObjectBuilder jsonPayLoadBuilder = Json.createObjectBuilder()
+                    .add("ouCode", ouCode)
+                    .add("businessType", businessType)
+                    .add("panel", panel)
+                    .add("sessionStartDate", sessionStartDate.toString())
+                    .add("sessionEndDate", sessionEndDate.toString())
+                    .add("pageSize", String.valueOf(HEARING_SLOTS_SEARCH_PAGE_SIZE))
+                    .add("pageNumber", String.valueOf(pageNumber));
+            if (nonNull(courtRoomId)) {
+                jsonPayLoadBuilder.add("courtRoomId", courtRoomId);
+            }
+            if (nonNull(exactHearingStartDateTime)) {
+                jsonPayLoadBuilder.add("hearingStartTime", exactHearingStartDateTime.toString());
+            }
+            final JsonObject jsonPayLoad = jsonPayLoadBuilder.build();
+            final JsonObject response = requester.requestAsAdmin(envelopeFrom(metadata, jsonPayLoad), JsonObject.class).payload();
+
+            if (isNull(response) || !response.containsKey("hearingSlots")) {
+                return empty();
+            }
+
+            final Optional<AvailableHearingSlot> availableSlot = response.getJsonArray("hearingSlots").stream()
+                    .map(JsonValue::asJsonObject)
+                    .filter(hearingSlot -> hearingSlot.getInt("availableSlots", 0) > 0)
+                    .map(ListingService::toAvailableHearingSlot)
+                    .flatMap(Optional::stream)
+                    .findFirst();
+
+            if (availableSlot.isPresent()) {
+                return availableSlot;
+            }
+
+            final int pageCount = response.getInt("pageCount", 1);
+            if (pageNumber >= pageCount) {
+                return empty();
+            }
+            pageNumber++;
+        }
+    }
+
+    /**
+     * The caller already establishes genuine capacity via the hearingSlot's top-level
+     * availableSlots (max_slot minus total bookings across the WHOLE session, computed in
+     * Courtscheduler's SQL) before this is called - capacity in this domain is session-wide, not
+     * per hour, and Courtscheduler exposes no per-bucket capacity/max field at all. Each
+     * slotStartTimes[] entry's own count is NOT a measure of remaining availability - Courtscheduler
+     * computes it as the amount ALREADY BOOKED in that specific hour window (summed from
+     * allocated_listings; see CourtScheduleRepositoryImpl#getSlotStartTimes in
+     * cpp-context-listing-courtscheduler). A fully-open session with zero existing bookings
+     * therefore has count=0 in every bucket - filtering on count > 0 rejected genuinely available
+     * sessions outright (a live bug: a fully-open ENF_AUTO session with 20/20 available_slot was
+     * reported as having no available slot at all). Once the session itself has room, any bucket
+     * is a legitimate candidate start time; the earliest one is used.
+     */
+    private static Optional<AvailableHearingSlot> toAvailableHearingSlot(final JsonObject hearingSlot) {
+        final String courtRoomId = hearingSlot.getString("courtRoomId");
+        final String courtScheduleId = hearingSlot.getString("courtScheduleId", null);
+        final JsonArray slotStartTimes = hearingSlot.getJsonArray("slotStartTimes");
+        if (slotStartTimes == null || slotStartTimes.isEmpty()) {
+            return empty();
+        }
+        final JsonObject earliestSlotStartTime = slotStartTimes.getJsonObject(0);
+        return Optional.of(new AvailableHearingSlot(courtRoomId, ZonedDateTime.parse(earliestSlotStartTime.getString("sessionStartTime")), courtScheduleId));
     }
 
     public Optional<CommittingCourt> getCommittingCourt(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
