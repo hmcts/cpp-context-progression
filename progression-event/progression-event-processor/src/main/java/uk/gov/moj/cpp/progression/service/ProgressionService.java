@@ -1410,7 +1410,8 @@ public class ProgressionService {
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
-                .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
+                .withIsGroupProceedings(ofNullable(confirmedHearing.getIsGroupProceedings())
+                        .orElseGet(() -> nonNull(hearingInProgression) ? hearingInProgression.getIsGroupProceedings() : null))
                 .withNumberOfGroupCases(confirmedHearing.getNumberOfGroupCases())
                 .build();
 
