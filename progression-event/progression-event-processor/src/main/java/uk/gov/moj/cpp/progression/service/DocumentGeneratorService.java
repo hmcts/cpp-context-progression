@@ -26,7 +26,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
