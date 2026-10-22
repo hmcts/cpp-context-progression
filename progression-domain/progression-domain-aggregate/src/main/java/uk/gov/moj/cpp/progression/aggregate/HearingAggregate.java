@@ -1387,6 +1387,9 @@ public class HearingAggregate implements Aggregate {
     }
 
     private void handleCourtApplicationUpdate(final HearingUpdatedWithCourtApplication hearingUpdatedWithCourtApplication) {
+        if (isNull(hearing) || isNull(hearing.getCourtApplications())) {
+            return;
+        }
         hearing = Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(hearing.getCourtApplications().stream()
                         .map(application -> application.getId().equals(hearingUpdatedWithCourtApplication.getCourtApplication().getId()) ? hearingUpdatedWithCourtApplication.getCourtApplication() : application)
@@ -1639,9 +1642,14 @@ public class HearingAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> updateApplication(final CourtApplication courtApplication) {
+    public Stream<Object> updateApplication(final CourtApplication courtApplication, final UUID hearingId) {
+        if (isNull(hearing) || deleted || duplicate || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
+            return Stream.empty();
+        }
+
         final Stream<Object> event1 = apply(Stream.of(HearingUpdatedWithCourtApplication.hearingUpdatedWithCourtApplication()
                 .withCourtApplication(courtApplication)
+                .withHearingId(hearingId)
                 .build()));
 
         return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
