@@ -326,6 +326,9 @@ public class ApplicationAtAGlanceHelper {
 
         if (isApplicationSubjectDefendant(courtApplication, defendantId)){
             final List<UUID> applicationHearingIds =  hearingService.getApplicationHearings(courtApplication.getId());
+            if (applicationHearingIds.isEmpty()) {
+                return Pair.of(courtApplication, emptyList());
+            }
             final List<HearingEntity> applicationHearingEntities = hearingRepository.findByHearingIds(applicationHearingIds);
             final List<JsonObject> hearings = applicationHearingEntities.stream()
                     .filter(hearing -> HEARING_RESULTED == hearing.getListingStatus()).distinct()
