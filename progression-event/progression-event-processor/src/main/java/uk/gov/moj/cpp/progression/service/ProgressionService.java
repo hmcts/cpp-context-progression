@@ -187,6 +187,7 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK = "progression.command-link-prosecution-cases-to-hearing";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION = "progression.command.register-hearing-for-application";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
@@ -1067,6 +1068,19 @@ public class ProgressionService {
 
                 sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3),
                         hearingListingStatusCommand));
+
+                // A next hearing carrying prosecution cases is listed as a case hearing above and is not linked to
+                // its applications; register it against them so that application edits still reach it
+                ofNullable(hearing.getCourtApplications()).stream().flatMap(Collection::stream)
+                        .map(CourtApplication::getId)
+                        .collect(toSet())
+                        .forEach(applicationId ->
+                                sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION),
+                                        createObjectBuilder()
+                                                .add(APPLICATION_ID, applicationId.toString())
+                                                .add(HEARING_ID, hearing.getId().toString())
+                                                .build()))
+                        );
             } else {
                 final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)

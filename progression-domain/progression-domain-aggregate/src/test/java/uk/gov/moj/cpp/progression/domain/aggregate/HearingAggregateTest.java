@@ -25,6 +25,7 @@ import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
@@ -719,8 +720,9 @@ public class HearingAggregateTest {
 
         setField(hearingAggregate, "hearing", hearing);
 
-        final List<Object> eventStream1 = hearingAggregate.updateApplication(hearing.getCourtApplications().get(0)).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.updateApplication(hearing.getCourtApplications().get(0), hearingId).collect(toList());
         assertThat(eventStream1.size(), is(3));
+        assertThat(((HearingUpdatedWithCourtApplication) eventStream1.get(0)).getHearingId(), is(hearingId));
     }
 
     @Test

@@ -96,6 +96,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -1831,12 +1832,154 @@ public class HearingAggregateTest {
                 .withId(applicationId)
                 .withApplicationReference("B")
                 .withSubject(CourtApplicationParty.courtApplicationParty().build())
-                .build()).collect(toList());
+                .build(), hearingId).collect(toList());
 
         assertThat(((HearingUpdatedWithCourtApplication) events.get(0)).getCourtApplication().getApplicationReference(), is("B"));
+        assertThat(((HearingUpdatedWithCourtApplication) events.get(0)).getHearingId(), is(hearingId));
         assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(0).getApplicationReference(), is("B"));
         assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getId(), is(hearingId));
 
+    }
+
+    @Test
+    public void shouldNotUpdateApplicationWhenHearingIsResulted() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                                .withId(applicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_RESULTED);
+
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("B")
+                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                .build(), hearingId).collect(toList());
+
+        assertThat(events, is(empty()));
+        assertThat(hearingAggregate.getHearing().getCourtApplications().get(0).getApplicationReference(), is("A"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"deleted", "duplicate"})
+    public void shouldNotUpdateApplicationWhenHearingIsDeletedOrDuplicate(final String hearingFlag) {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                                .withId(applicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+        setField(hearingAggregate, hearingFlag, true);
+
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("B")
+                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                .build(), hearingId).collect(toList());
+
+        assertThat(events, is(empty()));
+        assertThat(hearingAggregate.getHearing().getCourtApplications().get(0).getApplicationReference(), is("A"));
+    }
+
+    @Test
+    public void shouldNotUpdateApplicationWhenHearingIsNotKnown() {
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .build(), randomUUID()).collect(toList());
+
+        assertThat(events, is(empty()));
+        assertThat(hearingAggregate.getHearing(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldRaiseHearingUpdatedWithCourtApplicationWhenHearingHasNoCourtApplications() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .build())
+                .build());
+
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(applicationId)
+                .build(), hearingId).collect(toList());
+
+        final HearingUpdatedWithCourtApplication hearingUpdatedWithCourtApplication = (HearingUpdatedWithCourtApplication) events.get(0);
+        assertThat(hearingUpdatedWithCourtApplication.getHearingId(), is(hearingId));
+        assertThat(hearingUpdatedWithCourtApplication.getCourtApplication().getId(), is(applicationId));
+        assertThat(hearingAggregate.getHearing().getCourtApplications(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldRaiseHearingUpdatedWithCourtApplicationWithoutChangingHearingWhenApplicationIsNotOnHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationOnHearingId = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                                .withId(applicationOnHearingId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+
+        final UUID editedApplicationId = randomUUID();
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(editedApplicationId)
+                .withApplicationReference("B")
+                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                .build(), hearingId).collect(toList());
+
+        final HearingUpdatedWithCourtApplication hearingUpdatedWithCourtApplication = (HearingUpdatedWithCourtApplication) events.get(0);
+        assertThat(hearingUpdatedWithCourtApplication.getHearingId(), is(hearingId));
+        assertThat(hearingUpdatedWithCourtApplication.getCourtApplication().getId(), is(editedApplicationId));
+        assertThat(hearingAggregate.getHearing().getCourtApplications().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getCourtApplications().get(0).getId(), is(applicationOnHearingId));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = HearingListingStatus.class, names = {"HEARING_RESULTED"}, mode = EnumSource.Mode.EXCLUDE)
+    public void shouldUpdateApplicationWhenHearingIsNotResulted(final HearingListingStatus hearingListingStatus) {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                                .withId(applicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+
+        final List<Object> events = hearingAggregate.updateApplication(CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("B")
+                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                .build(), hearingId).collect(toList());
+
+        final HearingUpdatedWithCourtApplication hearingUpdatedWithCourtApplication = (HearingUpdatedWithCourtApplication) events.get(0);
+        assertThat(hearingUpdatedWithCourtApplication.getHearingId(), is(hearingId));
+        assertThat(hearingUpdatedWithCourtApplication.getCourtApplication().getApplicationReference(), is("B"));
+        assertThat(hearingAggregate.getHearing().getCourtApplications().get(0).getApplicationReference(), is("B"));
     }
 
     @Test

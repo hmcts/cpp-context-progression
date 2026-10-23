@@ -326,6 +326,9 @@ subscriptions_descriptor:
         - name: progression.event.court-application-proceedings-edited
           schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
 
+        - name: progression.event.hearing-updated-with-court-application
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-with-court-application.json
+
         - name: progression.event.breach-application-creation-requested
           schema_uri: http://justice.gov.uk/core/courts/breach-application-creation-requested.json
 

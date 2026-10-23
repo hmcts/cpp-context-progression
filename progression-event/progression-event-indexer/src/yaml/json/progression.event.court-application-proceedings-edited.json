@@ -465,5 +465,9 @@
     "courtCentre": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
     }
-  }
+  },
+  "hearingIds": [
+    "1f5ae0a8-3b5d-4c2e-9d7a-2e6b8c4f1a01",
+    "6b9c2d4e-7f18-4a3b-8c5d-0e1f2a3b4c02"
+  ]
 }

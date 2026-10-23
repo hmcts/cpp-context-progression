@@ -8,6 +8,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -189,6 +190,7 @@ public class ProgressionServiceTest {
     private static final String JUDICIARY_TYPE_1 = "RECORDER";
     private static final String JUDICIARY_TYPE_2 = "MAGISTRATE";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION = "progression.command.register-hearing-for-application";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK = "progression.command-link-prosecution-cases-to-hearing";
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
@@ -1819,6 +1821,44 @@ public class ProgressionServiceTest {
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(jsonObject.getJsonObject("hearing").getJsonArray("courtApplications").getJsonObject(0).getString("id"), is(applicationId.toString()));
         assertThat(jsonObject.getString(HEARING_LISTING_STATUS), is(SENT_FOR_LISTING));
+    }
+
+    @Test
+    public void shouldRegisterNextHearingForApplicationsWhenNextHearingHasProsecutionCasesAndApplications() {
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
+        final UUID hearingId = randomUUID();
+        final UUID firstApplicationId = randomUUID();
+        final UUID secondApplicationId = randomUUID();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(randomUUID())
+                .withSittingDay(LocalDate.now().toString())
+                .build();
+        final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
+                .withSeedingHearing(seedingHearing)
+                .withHearingId(seedingHearing.getSeedingHearingId())
+                .withAdjournedFromDate(LocalDate.now())
+                .withHearings(singletonList(HearingListingNeeds.hearingListingNeeds()
+                        .withId(hearingId)
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build()))
+                        .withCourtApplications(asList(courtApplication().withId(firstApplicationId).build(), courtApplication().withId(secondApplicationId).build()))
+                        .build()))
+                .build();
+
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings);
+
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+        final List<Envelope<JsonObject>> sentEnvelopes = envelopeCaptor.getAllValues();
+        assertThat(sentEnvelopes.get(0).metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3));
+
+        final List<JsonObject> hearingRegistrations = sentEnvelopes.stream()
+                .filter(envelope -> PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION.equals(envelope.metadata().name()))
+                .map(Envelope::payload)
+                .toList();
+        assertThat(hearingRegistrations.size(), is(2));
+        assertThat(hearingRegistrations.stream().map(registration -> registration.getString("applicationId")).collect(toSet()),
+                is(Set.of(firstApplicationId.toString(), secondApplicationId.toString())));
+        hearingRegistrations.forEach(registration -> assertThat(registration.getString("hearingId"), is(hearingId.toString())));
+        assertThat(sentEnvelopes.stream().noneMatch(envelope -> PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK.equals(envelope.metadata().name())), is(true));
     }
 
     @Test

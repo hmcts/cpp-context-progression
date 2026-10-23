@@ -2,7 +2,10 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +29,8 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
+import uk.gov.justice.progression.courts.HearingRegisteredForApplication;
+import uk.gov.justice.progression.courts.RegisterHearingForApplication;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -65,7 +70,7 @@ public class CreateHearingApplicationLinkHandlerTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CourtApplicationCreated.class, HearingApplicationLinkCreated.class,
-            HearingUpdatedForAllocationFields.class);
+            HearingUpdatedForAllocationFields.class, HearingRegisteredForApplication.class);
 
     @InjectMocks
     private CreateHearingApplicationLinkHandler createHearingApplicationLinkHandler;
@@ -75,6 +80,8 @@ public class CreateHearingApplicationLinkHandlerTest {
 
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK
             = "progression.command.create-hearing-application-link";
+    private static final String PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION
+            = "progression.command.register-hearing-for-application";
 
     @BeforeEach
     public void setup() {
@@ -129,6 +136,61 @@ public class CreateHearingApplicationLinkHandlerTest {
 
                 )
         );
+    }
+
+    @Test
+    public void shouldHandleRegisterHearingForApplicationCommand() {
+        assertThat(new CreateHearingApplicationLinkHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("registerHearingForApplication")
+                        .thatHandles(PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION)
+                ));
+    }
+
+    @Test
+    public void shouldRegisterHearingForApplication() throws EventStreamException {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
+
+        createHearingApplicationLinkHandler.registerHearingForApplication(registerHearingForApplicationEnvelope(applicationId, hearingId));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.hearing-registered-for-application"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.applicationId", is(applicationId.toString())),
+                                withJsonPath("$.hearingId", is(hearingId.toString()))
+                        )))
+        ));
+        assertThat(aggregate.getCourtHearingsOfTheApplication(), hasItem(hearingId));
+    }
+
+    @Test
+    public void shouldNotRaiseEventWhenHearingAlreadyRegisteredForApplication() throws EventStreamException {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        aggregate.registerHearingForApplication(applicationId, hearingId).collect(toList());
+        when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
+
+        createHearingApplicationLinkHandler.registerHearingForApplication(registerHearingForApplicationEnvelope(applicationId, hearingId));
+
+        assertThat(verifyAppendAndGetArgumentFrom(eventStream).count(), is(0L));
+    }
+
+    private Envelope<RegisterHearingForApplication> registerHearingForApplicationEnvelope(final UUID applicationId, final UUID hearingId) {
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName(PROGRESSION_COMMAND_REGISTER_HEARING_FOR_APPLICATION)
+                .withId(randomUUID())
+                .build();
+        return envelopeFrom(metadata, RegisterHearingForApplication.registerHearingForApplication()
+                .withApplicationId(applicationId)
+                .withHearingId(hearingId)
+                .build());
     }
 
     @Test

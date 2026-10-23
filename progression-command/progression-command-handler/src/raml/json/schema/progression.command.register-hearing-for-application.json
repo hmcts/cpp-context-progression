@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/register-hearing-for-application.json",
+  "type": "object",
+  "description": "Register a hearing against an application so that application edits reach it",
+  "properties": {
+    "applicationId": {
+      "description": "Application Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "description": "Hearing Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "applicationId",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}
