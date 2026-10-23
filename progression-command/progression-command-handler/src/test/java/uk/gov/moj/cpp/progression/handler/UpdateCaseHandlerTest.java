@@ -42,6 +42,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -64,6 +65,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -321,6 +324,66 @@ public class UpdateCaseHandlerTest {
                                         allOf(
                                                 withJsonPath("$.caseId", notNullValue()),
                                                 withJsonPath("$.defendantId", notNullValue())
+                                        )
+                                ))
+                )));
+    }
+
+    @Test
+    public void shouldNotReprocessMemberCases_whenProsecutionCaseIsGroupMaster() throws Exception {
+        final UUID masterCaseId = randomUUID();
+        final UUID groupId = randomUUID();
+
+        final Offence offence = getOffence(JudicialResultCategory.FINAL);
+        final Defendant defendant = getDefendant(masterCaseId, singletonList(offence), emptyList());
+        final ProsecutionCase masterProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(masterCaseId)
+                .withGroupId(groupId)
+                .withIsGroupMaster(true)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withDefendants(singletonList(defendant))
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(masterProsecutionCase)
+                .build();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        this.aggregate.apply(prosecutionCaseCreated);
+
+        final HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
+                .withHearingId(randomUUID())
+                .withProsecutionCase(masterProsecutionCase)
+                .withCourtCentre(getCourtCentre())
+                .withHearingDays(List.of(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .build();
+
+        final Envelope<HearingResultedUpdateCase> envelope =
+                envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case", randomUUID()),
+                        hearingResultedUpdateCase);
+
+        updateCaseHandler.handle(envelope);
+
+        verify(eventSource, times(1)).getStreamById(any());
+        verify(eventStream, times(1)).append(any());
+        verify(aggregateService, never()).get(any(), eq(GroupCaseAggregate.class));
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.hearing-resulted-case-updated"),
+                                payloadIsJson(
+                                        withJsonPath("$.prosecutionCase.id", is(masterCaseId.toString()))
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.defendant-trial-record-sheet-requested"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.caseId", is(masterCaseId.toString())),
+                                                withJsonPath("$.defendantId", is(defendant.getId().toString()))
                                         )
                                 ))
                 )));

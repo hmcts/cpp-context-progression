@@ -6,7 +6,6 @@ import static java.util.Objects.nonNull;
 
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.UpdateListingNumberToProsecutionCase;
 import uk.gov.justice.progression.courts.IncreaseListingNumberToProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -20,10 +19,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 
-import java.util.Collections;
-import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.List;
 
@@ -65,28 +61,6 @@ public class UpdateCaseHandler {
                 hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds());
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
-
-        if (nonNull(hearingUpdate.getProsecutionCase().getIsGroupMaster()) && hearingUpdate.getProsecutionCase().getIsGroupMaster()) {
-            final EventStream groupCaseStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getGroupId());
-            final GroupCaseAggregate groupCaseAggregate = aggregateService.get(groupCaseStream, GroupCaseAggregate.class);
-            for (final UUID memberCaseId : groupCaseAggregate.getMemberCases()) {
-                if (hearingUpdate.getProsecutionCase().getId().compareTo(memberCaseId) != 0) {
-                    final EventStream caseEventStream = eventSource.getStreamById(memberCaseId);
-                    final CaseAggregate memberCaseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
-                    final ProsecutionCase memberCase = ProsecutionCase.prosecutionCase()
-                            .withValuesFrom(memberCaseAggregate.getProsecutionCase())
-                            .withCaseStatus(hearingUpdate.getProsecutionCase().getCaseStatus())
-                            .build();
-                    final Stream<Object> memberCaseEvent = memberCaseAggregate.updateCase(memberCase,
-                            isNotEmpty(hearingUpdate.getDefendantJudicialResults()) ? hearingUpdate.getDefendantJudicialResults() : Collections.emptyList(),
-                            hearingUpdate.getCourtCentre(), hearingUpdate.getHearingId(), hearingUpdate.getHearingDays(), hearingUpdate.getHearingType(),
-                            hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds()
-                    );
-
-                    appendEventsToStream(hearingResultedUpdateCaseEnvelope, caseEventStream, memberCaseEvent);
-                }
-            }
-        }
     }
 
     @Handles("progression.command.update-listing-number-to-prosecution-case")
