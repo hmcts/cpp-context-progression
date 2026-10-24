@@ -263,10 +263,14 @@ public class HearingResultedEventProcessor {
                 .filter(Objects::nonNull)
                 .collect(toSet());
 
-        combinedBookingReferencesWithCourtScheduleIds.keySet().stream()
+        final Set<UUID> surplus = combinedBookingReferencesWithCourtScheduleIds.keySet().stream()
                 .filter(bookingReference -> !alreadyConfirmedBookingReferences.contains(bookingReference))
                 .filter(bookingReference -> !listedAgainst.contains(bookingReference))
-                .forEach(surplusReservationReleaseService::release);
+                .collect(toSet());
+
+        if (!surplus.isEmpty()) {
+            surplusReservationReleaseService.release(surplus);
+        }
     }
 
     @Handles("progression.event.hearing-for-application-created")

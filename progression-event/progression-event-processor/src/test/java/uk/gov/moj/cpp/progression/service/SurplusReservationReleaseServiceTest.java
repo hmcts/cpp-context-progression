@@ -3,8 +3,9 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,14 +16,22 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+
+import javax.json.JsonObject;
+import javax.json.JsonString;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,43 +67,42 @@ class SurplusReservationReleaseServiceTest {
         setField(service, "systemUserProvider", systemUserProvider);
     }
 
+    /**
+     * The batch release, not DELETE /sessions/{id}: that one also releases by hearing_id, where a
+     * confirmed listing lives. This one gives back only holds no share has confirmed, which is
+     * exactly what a surplus reservation is.
+     */
     @Test
-    void shouldDeleteTheSessionsHeldByTheBooking() throws Exception {
-        final UUID bookingReference = randomUUID();
+    void shouldReleaseEverySurplusBookingInOneBatchCall() throws Exception {
+        final UUID bookingA = randomUUID();
+        final UUID bookingB = randomUUID();
         final UUID systemUserId = randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(systemUserId));
         givenResponseStatus(202);
 
-        service.release(bookingReference);
+        service.release(new LinkedHashSet<>(List.of(bookingA, bookingB)));
 
-        final ArgumentCaptor<HttpDelete> captor = ArgumentCaptor.forClass(HttpDelete.class);
+        final ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
         verify(service).execute(captor.capture());
 
-        final HttpDelete sent = captor.getValue();
-        assertThat(sent.getURI().toString(), is(BASE_URI + "/sessions/" + bookingReference));
+        final HttpPost sent = captor.getValue();
+        assertThat(sent.getURI().toString(), is(BASE_URI + "/unconfirmedBooking/release"));
         assertThat(sent.getFirstHeader("Content-Type").getValue(),
-                is("application/vnd.courtscheduler.release.sessions+json"));
+                is("application/vnd.courtscheduler.release.unconfirmed.bookings+json"));
         assertThat(sent.getFirstHeader("CJSCPPUID").getValue(), is(systemUserId.toString()));
+
+        final JsonObject body = new StringToJsonObjectConverter().convert(EntityUtils.toString(sent.getEntity()));
+        assertThat(body.getJsonArray("bookingIds").getValuesAs(JsonString.class).stream()
+                        .map(JsonString::getString).collect(toList()),
+                containsInAnyOrder(bookingA.toString(), bookingB.toString()));
+        assertThat(body.size(), is(1));
     }
 
-    /**
-     * The booking id goes in the path, so a release aimed at one booking must never be able to
-     * reach another. Guards against the id being appended unescaped onto a path that already has
-     * one.
-     */
     @Test
-    void shouldAddressExactlyTheOneBooking() throws Exception {
-        final UUID bookingReference = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
-        givenResponseStatus(202);
+    void shouldNotCallCourtschedulerWithNothingToRelease() throws Exception {
+        service.release(Set.of());
 
-        service.release(bookingReference);
-
-        final ArgumentCaptor<HttpDelete> captor = ArgumentCaptor.forClass(HttpDelete.class);
-        verify(service).execute(captor.capture());
-        final String uri = captor.getValue().getURI().toString();
-        assertThat(uri, containsString("/sessions/" + bookingReference));
-        assertThat(uri.endsWith(bookingReference.toString()), is(true));
+        verify(service, never()).execute(any(HttpPost.class));
     }
 
     /**
@@ -106,20 +114,19 @@ class SurplusReservationReleaseServiceTest {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
         givenResponseStatus(500);
 
-        service.release(randomUUID());
+        service.release(Set.of(randomUUID()));
 
-        verify(service).execute(any(HttpDelete.class));
+        verify(service).execute(any(HttpPost.class));
     }
 
     @Test
     void shouldNotThrowWhenTheCallItselfFails() throws Exception {
-        final UUID bookingReference = randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
-        doThrow(new IOException("courtscheduler unreachable")).when(service).execute(any(HttpDelete.class));
+        doThrow(new IOException("courtscheduler unreachable")).when(service).execute(any(HttpPost.class));
 
-        assertDoesNotThrow(() -> service.release(bookingReference));
+        assertDoesNotThrow(() -> service.release(Set.of(randomUUID())));
 
-        verify(service).execute(any(HttpDelete.class));
+        verify(service).execute(any(HttpPost.class));
     }
 
     /**
@@ -130,15 +137,15 @@ class SurplusReservationReleaseServiceTest {
     void shouldNotCallCourtschedulerWhenThereIsNoSystemUser() throws Exception {
         when(systemUserProvider.getContextSystemUserId()).thenReturn(empty());
 
-        service.release(randomUUID());
+        service.release(Set.of(randomUUID()));
 
-        verify(service, never()).execute(any(HttpDelete.class));
+        verify(service, never()).execute(any(HttpPost.class));
     }
 
     private void givenResponseStatus(final int status) throws IOException {
         when(statusLine.getStatusCode()).thenReturn(status);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        doReturn(httpResponse).when(service).execute(any(HttpDelete.class));
+        doReturn(httpResponse).when(service).execute(any(HttpPost.class));
     }
 
     /** The spy is a subclass, so the declared field lives on SurplusReservationReleaseService. */

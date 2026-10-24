@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -373,9 +374,43 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.handleNextHearingsRequested(event);
 
-        verify(surplusReservationReleaseService).release(surplusReference);
-        verify(surplusReservationReleaseService, never()).release(listedAgainstReference);
-        verify(surplusReservationReleaseService, never()).release(alreadyConfirmedReference);
+        // one batch call naming only the surplus booking, never the listed or confirmed ones
+        verify(surplusReservationReleaseService).release(Set.of(surplusReference));
+        verifyNoMoreInteractions(surplusReservationReleaseService);
+    }
+
+    @Test
+    public void shouldNotCallTheReleaseWhenNothingIsSurplus() {
+        final UUID hearingId = randomUUID();
+        final UUID courtScheduleId = randomUUID();
+        final UUID listedAgainstReference = randomUUID();
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(randomUUID())
+                .withSittingDay(LocalDate.now().toString())
+                .build();
+        final Map<UUID, Set<UUID>> combined = new HashMap<>();
+        combined.put(listedAgainstReference, new HashSet<>(Arrays.asList(courtScheduleId)));
+
+        final NextHearingsRequested hearingResulted = NextHearingsRequested.nextHearingsRequested()
+                .withSeedingHearing(seedingHearing)
+                .withPreviousBookingReferencesWithCourtScheduleIds(Collections.emptyList())
+                .withHearing(Hearing.hearing().withId(hearingId).build())
+                .build();
+        final List<HearingListingNeeds> hearings = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withBookingReference(listedAgainstReference)
+                .build());
+
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
+        when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(combined);
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(hearingResulted);
+
+        this.eventProcessor.handleNextHearingsRequested(envelopeFrom(
+                metadataWithRandomUUID("progression.event.next-hearings-requested"),
+                createObjectBuilder().build()));
+
+        verifyNoInteractions(surplusReservationReleaseService);
     }
 
     @Test
