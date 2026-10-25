@@ -95,7 +95,10 @@ class SurplusReservationReleaseServiceTest {
         assertThat(body.getJsonArray("bookingIds").getValuesAs(JsonString.class).stream()
                         .map(JsonString::getString).collect(toList()),
                 containsInAnyOrder(bookingA.toString(), bookingB.toString()));
-        assertThat(body.size(), is(1));
+        // LPT-2611: courtscheduler records why, so its booking log can tell a hold a share made
+        // surplus from a line the clerk dropped.
+        assertThat(body.getString("reason"), is("SURPLUS"));
+        assertThat(body.size(), is(2));
     }
 
     @Test

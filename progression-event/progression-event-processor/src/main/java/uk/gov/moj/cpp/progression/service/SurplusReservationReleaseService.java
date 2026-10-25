@@ -67,6 +67,7 @@ public class SurplusReservationReleaseService {
     private static final String RELEASE_RESOURCE = "/unconfirmedBooking/release";
     private static final String COURTSCHEDULER_RELEASE_UNCONFIRMED_BOOKINGS_TYPE = "application/vnd.courtscheduler.release.unconfirmed.bookings+json";
     private static final String CJS_CPP_UID = "CJSCPPUID";
+    private static final String RELEASE_REASON_SURPLUS = "SURPLUS";
 
     @Inject
     @Value(key = "courtscheduler.base.url", defaultValue = "http://localhost:8080/listingcourtscheduler-api/rest/courtscheduler")
@@ -87,7 +88,11 @@ public class SurplusReservationReleaseService {
             final HttpPost httpPost = new HttpPost(new URIBuilder(baseUri + RELEASE_RESOURCE).build());
             httpPost.addHeader(CONTENT_TYPE, COURTSCHEDULER_RELEASE_UNCONFIRMED_BOOKINGS_TYPE);
             httpPost.addHeader(CJS_CPP_UID, getUserId().toString());
-            httpPost.setEntity(new StringEntity(createObjectBuilder().add("bookingIds", bookingIds).build().toString(), UTF_8));
+            // LPT-2611: courtscheduler records why each hold went; these were made surplus by a share.
+            httpPost.setEntity(new StringEntity(createObjectBuilder()
+                    .add("bookingIds", bookingIds)
+                    .add("reason", RELEASE_REASON_SURPLUS)
+                    .build().toString(), UTF_8));
 
             final HttpResponse httpResponse = execute(httpPost);
             final int status = httpResponse.getStatusLine().getStatusCode();
