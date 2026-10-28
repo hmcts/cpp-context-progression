@@ -49,6 +49,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
@@ -70,6 +71,8 @@ import org.junit.jupiter.api.Test;
 public class ListNewHearingIT extends AbstractIT {
 
     private static final String PROGRESSION_EVENT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
+    private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
+    private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated.json";
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private String prosecutorEmail;
 
@@ -223,6 +226,63 @@ public class ListNewHearingIT extends AbstractIT {
         assertThat(message.prettify(), isJson(allOf(
                 withJsonPath("$.hearingId", is(hearingPayload.getString("id"))),
                 withJsonPath("$.prosecutionCases[?(@.id=='" + caseId2 + "')].defendants[0].isYouth", hasItem(true))
+        )));
+    }
+
+    @Test
+    public void shouldCarryResultedCaseStatusWhenExtendingAdhocHearingToExistingHearing() throws IOException, JSONException {
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+
+        final String caseId2 = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
+
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId2);
+
+        final JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME)
+                .withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED)
+                .getMessageConsumerClient();
+        initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString(),
+                ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString());
+
+        pollProsecutionCasesProgressionFor(caseId,
+                getProsecutionCaseMatchers(caseId, defendantId, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+        final JsonObject payload = retrieveMessageBody(messageConsumerListHearingRequested).get();
+        final JsonObject hearingPayload = payload.getJsonObject("hearing");
+        final JsonObject listHearingRequests = payload.getJsonArray("listHearingRequests").getJsonObject(0);
+
+        PreAndPostConditionHelper.addProsecutionCaseToCrownCourt(caseId2, defendantId2);
+        final String resultedHearingId = pollCaseAndGetHearingForDefendant(caseId2, defendantId2);
+
+        final JsonObject hearingResulted = new StringToJsonObjectConverter().convert(getPayload(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2)
+                .replaceAll("CASE_ID", caseId2)
+                .replaceAll("HEARING_ID", resultedHearingId)
+                .replaceAll("DEFENDANT_ID", defendantId2)
+                .replaceAll("COURT_CENTRE_ID", "999bdd2a-6b7a-4002-bc8c-5c6f93844f40")
+                .replaceAll("BAIL_STATUS_ID", "2593cf09-ace0-4b7d-a746-0703a29f33b5")
+                .replaceAll("BAIL_STATUS_CODE", "C")
+                .replaceAll("BAIL_STATUS_DESCRIPTION", "Remanded into Custody"));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2,
+                JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, randomUUID().toString()), hearingResulted));
+
+        final String resultedCase = pollProsecutionCasesProgressionFor(caseId2, withJsonPath("$.prosecutionCase.caseStatus", is("INACTIVE")));
+        final JsonArray casePayload = createArrayBuilder()
+                .add(new StringToJsonObjectConverter().convert(resultedCase).getJsonObject("prosecutionCase"))
+                .build();
+
+        final JmsMessageConsumerClient publicEvent = newPublicJmsMessageConsumerClientProvider()
+                .withEventNames("public.progression.related-hearing-updated-for-adhoc-hearing")
+                .getMessageConsumerClient();
+
+        postCommand(getWriteUrl("/listnewhearing"), "application/vnd.progression.list-new-hearing+json",
+                prepareAdhocHearingPayload(hearingPayload, listHearingRequests, casePayload).build().toString());
+
+        final JsonPath message = retrieveMessageAsJsonPath(publicEvent);
+        assertNotNull(message);
+        assertThat(message.prettify(), isJson(allOf(
+                withJsonPath("$.hearingId", is(hearingPayload.getString("id"))),
+                withJsonPath("$.prosecutionCases[?(@.id=='" + caseId2 + "')].caseStatus", hasItem("INACTIVE"))
         )));
     }
 
