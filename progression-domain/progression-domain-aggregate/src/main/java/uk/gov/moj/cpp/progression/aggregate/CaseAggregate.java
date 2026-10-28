@@ -418,7 +418,7 @@ public class CaseAggregate implements Aggregate {
         return match(event).with(
                 when(CaseEjected.class)
                         .apply(e ->
-                                this.caseStatus = CASE_STATUS_EJECTED
+                                applyCaseStatus(CASE_STATUS_EJECTED)
                         ),
                 when(ProsecutionCaseCreated.class)
                         .apply(e -> {
@@ -996,6 +996,7 @@ public class CaseAggregate implements Aggregate {
             previousNotInactiveCaseStatus = pc.getCaseStatus();
         }
 
+        applyCaseStatus(currentProsecutionCaseStatus);
     }
 
     private void addToDefendantCaseOffences(final UUID defendantId, final List<Offence> concludedPlusOngoingOffences) {
@@ -3139,7 +3140,20 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void hearingConfirmedCaseStatusUpdated(final HearingConfirmedCaseStatusUpdated hearingConfirmedCaseStatusUpdated) {
-        this.caseStatus = hearingConfirmedCaseStatusUpdated.getProsecutionCase().getCaseStatus();
+        applyCaseStatus(hearingConfirmedCaseStatusUpdated.getCaseStatus());
+    }
+
+    private void applyCaseStatus(final String status) {
+        if (isNull(status)) {
+            return;
+        }
+        this.caseStatus = status;
+        if (nonNull(this.prosecutionCase)) {
+            this.prosecutionCase = ProsecutionCase.prosecutionCase()
+                    .withValuesFrom(this.prosecutionCase)
+                    .withCaseStatus(status)
+                    .build();
+        }
     }
 
     private void removeDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationDisassociated defendantDefenceOrganisationDisassociated) {

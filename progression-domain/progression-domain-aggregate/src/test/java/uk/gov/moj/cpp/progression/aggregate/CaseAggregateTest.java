@@ -8331,6 +8331,91 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldUpdateProsecutionCaseStatusWhenHearingResultedCaseUpdated() {
+        final ProsecutionCase prosecutionCase = createCaseWithoutCaseStatus();
+
+        caseAggregate.apply(hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase().withValuesFrom(prosecutionCase).withCaseStatus(ACTIVE.getDescription()).build())
+                .build());
+
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+    }
+
+    @Test
+    public void shouldNotOverwriteProsecutionCaseStatusWithNullWhenHearingResultedCaseUpdated() {
+        final ProsecutionCase prosecutionCase = createCaseWithoutCaseStatus();
+        caseAggregate.apply(hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase().withValuesFrom(prosecutionCase).withCaseStatus(ACTIVE.getDescription()).build())
+                .build());
+
+        caseAggregate.apply(hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase).build());
+
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+    }
+
+    @Test
+    public void shouldUpdateProsecutionCaseStatusFromEventCaseStatusWhenHearingConfirmedCaseStatusUpdated() {
+        final ProsecutionCase prosecutionCase = createCaseWithoutCaseStatus();
+
+        caseAggregate.apply(HearingConfirmedCaseStatusUpdated.hearingConfirmedCaseStatusUpdated()
+                .withProsecutionCase(prosecutionCase().withValuesFrom(prosecutionCase).withCaseStatus(INACTIVE.getDescription()).build())
+                .withCaseStatus(ACTIVE.getDescription())
+                .build());
+
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+    }
+
+    @Test
+    public void shouldUpdateProsecutionCaseStatusWhenCaseEjected() {
+        final ProsecutionCase prosecutionCase = createCaseWithoutCaseStatus();
+
+        caseAggregate.apply(CaseEjected.caseEjected().withProsecutionCaseId(prosecutionCase.getId()).withRemovalReason("Legal").build());
+
+        assertThat(caseAggregate.getProsecutionCase().getCaseStatus(), is("EJECTED"));
+    }
+
+    @Test
+    public void shouldPopulateCaseStatusWhenRaisingRelatedCaseRequestedForAdhocHearingEvent() {
+        final ProsecutionCase prosecutionCase = createCaseWithoutCaseStatus();
+        caseAggregate.apply(hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase().withValuesFrom(prosecutionCase).withCaseStatus(ACTIVE.getDescription()).build())
+                .build());
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                .withListDefendantRequests(singletonList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendant.getId())
+                        .withProsecutionCaseId(prosecutionCase.getId())
+                        .withDefendantOffences(singletonList(defendant.getOffences().get(0).getId()))
+                        .build()))
+                .build();
+
+        final RelatedCaseRequestedForAdhocHearing relatedCaseRequestedForAdhocHearing = caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true)
+                .filter(RelatedCaseRequestedForAdhocHearing.class::isInstance)
+                .map(RelatedCaseRequestedForAdhocHearing.class::cast)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+
+        assertThat(relatedCaseRequestedForAdhocHearing.getProsecutionCase().getCaseStatus(), is(ACTIVE.getDescription()));
+    }
+
+    private ProsecutionCase createCaseWithoutCaseStatus() {
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .withDefendants(singletonList(defendant()
+                        .withId(randomUUID())
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(offence().withId(randomUUID()).build()))
+                        .build()))
+                .build();
+        caseAggregate.apply(prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build());
+        assertNull(caseAggregate.getProsecutionCase().getCaseStatus());
+        return prosecutionCase;
+    }
+
+    @Test
     public void shouldRequestAndRemovedCustodialEstablishmentForDefendant() {
         final UUID caseId = randomUUID();
         final UUID hearingId = randomUUID();
