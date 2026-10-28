@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query.view;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -11,8 +12,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
@@ -1193,5 +1197,32 @@ public class ApplicationAtAGlanceHelperTest {
         assertThat(linkedApplicationHearingsForCourtExtract.getLeft().getId(), is(applicationId));
         final List<JsonObject> applicationHearings = linkedApplicationHearingsForCourtExtract.getRight();
         assertThat(applicationHearings.size(), is(1));
+    }
+
+    @Test
+    void shouldReturnNoLinkedApplicationHearingsWhenHearingContextHasNoneForTheApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setApplicationId(applicationId);
+        courtApplicationEntity.setPayload("{}");
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        final JsonObject jsonPayload = mock(JsonObject.class);
+        when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(jsonPayload);
+        when(jsonObjectToObjectConverter.convert(jsonPayload, CourtApplication.class)).thenReturn(courtApplication()
+                .withId(applicationId)
+                .withSubject(courtApplicationParty().withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                        .build()).build())
+                .build());
+        when(hearingService.getApplicationHearings(applicationId)).thenReturn(emptyList());
+
+        final Pair<CourtApplication, List<JsonObject>> linkedApplicationHearingsForCourtExtract = applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId, defendantId);
+
+        assertThat(linkedApplicationHearingsForCourtExtract.getLeft().getId(), is(applicationId));
+        assertThat(linkedApplicationHearingsForCourtExtract.getRight(), is(empty()));
+        verify(hearingRepository, never()).findByHearingIds(anyList());
     }
 }

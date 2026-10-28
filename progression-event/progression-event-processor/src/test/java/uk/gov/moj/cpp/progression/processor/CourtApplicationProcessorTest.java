@@ -15,7 +15,9 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +25,7 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -1580,13 +1583,37 @@ public class CourtApplicationProcessorTest {
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
         verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
+    }
 
+    @Test
+    public void shouldNotInitiateHearingUntilListingConfirmsWhenApplicationReferredToCourtHearing() throws IOException {
+        final UUID applicationId = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        final String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset())
+                .replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, stringToJsonObjectConverter.convert(inputPayload));
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase",
+                        createObjectBuilder().add("id", caseId_1)
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString())))
+                                ))).build()));
+
+        courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
+
+        verify(listingService).listCourtHearing(any(), any(ListCourtHearing.class));
         final ArgumentCaptor<Envelope> senderCaptor = forClass(Envelope.class);
-        verify(sender).send(senderCaptor.capture());
-        final Envelope hearingInitiateEnvelope = senderCaptor.getValue();
-        assertThat(hearingInitiateEnvelope.metadata().name(), is("hearing.initiate"));
-        assertThat(hearingInitiateEnvelope.payload().toString(),
-                isJson(withJsonPath("$.hearing.courtApplications[0].id", equalTo(applicationId.toString()))));
+        verify(sender, atLeast(0)).send(senderCaptor.capture());
+        final List<String> sentNames = senderCaptor.getAllValues().stream().map(envelope -> envelope.metadata().name()).toList();
+        assertThat(sentNames, not(hasItem("hearing.initiate")));
     }
 
     @Test
