@@ -105,20 +105,21 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
     @Test
     public void shouldFindByHearingIdProsecutionCaseIdAndDefendantId() {
-        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
+        final List<MatchDefendantCaseHearingEntity> entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(HEARING_ID, PROSECUTION_CASE_ID, DEFENDANT_ID);
 
         assertThat(entity, is(notNullValue()));
-        assertThat(entity.getDefendantId(), is(DEFENDANT_ID));
-        assertThat(entity.getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
-        assertThat(entity.getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
-        assertThat(entity.getHearingId(), is(HEARING_ID));
+        assertThat(entity.isEmpty(), is(false));
+        assertThat(entity.get(0).getDefendantId(), is(DEFENDANT_ID));
+        assertThat(entity.get(0).getMasterDefendantId(), is(MASTER_DEFENDANT_ID));
+        assertThat(entity.get(0).getProsecutionCaseId(), is(PROSECUTION_CASE_ID));
+        assertThat(entity.get(0).getHearingId(), is(HEARING_ID));
     }
 
     @Test
     public void shouldNotFindByHearingIdProsecutionCaseIdAndDefendantIdWhenRecordNotExists() {
-        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(randomUUID(), PROSECUTION_CASE_ID, DEFENDANT_ID);
+        final List<MatchDefendantCaseHearingEntity> entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(randomUUID(), PROSECUTION_CASE_ID, DEFENDANT_ID);
 
-        assertThat(entity, is(nullValue()));
+        assertThat(entity.isEmpty(), is(true));
     }
 
     @Test
@@ -198,9 +199,9 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
     private void removeEntity(final UUID hearingId, final UUID prosecutionCaseId, final UUID defendantId) {
         try {
-            final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
-            if (Objects.nonNull(entity)) {
-                matchDefendantCaseHearingRepository.remove(entity);
+            final List<MatchDefendantCaseHearingEntity> entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+            if (Objects.nonNull(entity) && !entity.isEmpty()) {
+                matchDefendantCaseHearingRepository.remove(entity.get(0));
             }
         } catch (NonUniqueResultException e) {
             // do nothing
