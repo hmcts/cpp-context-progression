@@ -18,6 +18,8 @@
     <description>A applications for progression service</description>
 
     <modules>
+        <module>progression-common</module>
+        <module>progression-listing</module>
         <module>progression-query</module>
         <module>progression-viewstore</module>
         <module>progression-command</module>
@@ -173,11 +175,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>uk.gov.moj.cpp.listing</groupId>
-                <artifactId>listing-common</artifactId>
-                <version>${listing.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${httpmime.version}</version>
@@ -197,7 +194,3 @@
         </dependencies>
     </dependencyManagement>
 </project>
-
-
-
-

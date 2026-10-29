@@ -1,0 +1,25 @@
+{
+  "confirmedHearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "hearingDays": [
+      {
+        "sittingDay": "2020-12-21T09:00:00.000Z",
+        "listedDurationMinutes": 20,
+        "listingSequence": 0
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME"
+    },
+    "courtApplicationIds": [
+      "APPLICATION_ID"
+    ]
+  }
+}
