@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>25.104.0-M1-SNAPSHOT</version>
+        <version>25.104.0-M1-CADB-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-processor</artifactId>
     <packaging>war</packaging>
@@ -43,6 +43,16 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
             <artifactId>progression-domain-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-listing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-common-material-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -525,6 +535,14 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>uk.gov.moj.cpp.listing:listing-common</artifact>
+                                    <excludes>
+                                        <exclude>uk/gov/justice/core/courts/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

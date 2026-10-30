@@ -11,13 +11,15 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>25.104.0-M1-SNAPSHOT</version>
+    <version>25.104.0-M1-CADB-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
     <description>A applications for progression service</description>
 
     <modules>
+        <module>progression-common</module>
+        <module>progression-listing</module>
         <module>progression-query</module>
         <module>progression-viewstore</module>
         <module>progression-command</module>
@@ -91,7 +93,7 @@
         <!-- listing's schemas-only contract artifact, used to generate progression's own
              view of the listing hearing model instead of compiling against listing-common. -->
         <listing.json.version>17.104.8</listing.json.version>
-        <hearing.version>17.104.200</hearing.version>
+        <hearing.version>17.104.203</hearing.version>
         <usersgroups.version>17.104.50</usersgroups.version>
         <defence.version>17.104.102</defence.version>
         <referencedata.offence.version>17.104.52</referencedata.offence.version>
@@ -100,13 +102,12 @@
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.104.116</results.version>
         <notification.notify.version>17.104.44</notification.notify.version>
-        <unifiedsearch.version>17.0.26</unifiedsearch.version>
+        <unifiedsearch.version>17.104.2</unifiedsearch.version>
         <systemdocgenerator.version>17.104.114</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.70</applicationscourtorders.version>
         <sjp.version>17.104.193</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.29</stagingpubhub.version>
-        <pdfbox.version>2.0.11</pdfbox.version>
         <correspondence.version>17.0.59</correspondence.version>
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
@@ -117,6 +118,7 @@
         <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
         <jmeter-lightning-maven-plugin>0.1.1</jmeter-lightning-maven-plugin>
         <powermock-reflect>2.0.2</powermock-reflect>
+        <!-- <byte-buddy.version>1.12.22</byte-buddy.version> -->
         <podam>7.1.0.RELEASE</podam>
         <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
         <liquibase.core.version>3.6.1</liquibase.core.version>
@@ -195,11 +197,23 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>uk.gov.moj.cpp.listing</groupId>
+                <artifactId>listing-common</artifactId>
+                <version>${listing.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${httpmime.version}</version>
                 <scope>compile</scope>
             </dependency>
+            <!--
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            -->
             <dependency>
                 <groupId>com.github.javafaker</groupId>
                 <artifactId>javafaker</artifactId>
