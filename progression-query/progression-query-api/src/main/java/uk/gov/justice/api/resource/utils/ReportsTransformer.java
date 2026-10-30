@@ -209,6 +209,7 @@ public class ReportsTransformer {
 
         courtExtract.withExtractType(extractType);
         courtExtract.withCaseReference(transformationHelper.getCaseReference(hearingsAtAGlance.getProsecutionCaseIdentifier()));
+        courtExtract.withIsCivil(prosecutionCase.getIsCivil());
 
         if (caseDefendant.isPresent()) {
             final List<AssociatedPerson> associatedPersons = caseDefendant.get().getAssociatedPersons();
