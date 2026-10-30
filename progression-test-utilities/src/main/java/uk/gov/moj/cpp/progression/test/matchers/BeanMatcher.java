@@ -100,6 +100,8 @@ public class BeanMatcher<T> extends BaseMatcher<T> {
                     return method.invoke(item, args);
                 })).make()) {
             loadedProxyClazz = unloaded.load(clazz.getClassLoader()).getLoaded();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create proxy for class: " + clazz.getName(), e);
         }
 
         try {

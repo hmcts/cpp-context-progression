@@ -1379,8 +1379,9 @@ public class HearingAggregate implements Aggregate {
             if (courtApplications.stream().anyMatch(app -> app.getId().equals(courtApplication.getId()))) {
                 return courtApplications.stream().map(app -> app.getId().equals(courtApplication.getId()) ? courtApplication : app).collect(toList());
             } else {
-                courtApplications.add(courtApplication);
-                return courtApplications;
+                final List<CourtApplication> updatedApplications = new ArrayList<>(courtApplications);
+                updatedApplications.add(courtApplication);
+                return updatedApplications;
             }
         }
     }

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.application.event.listener;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationHearingDeleted;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -48,5 +49,16 @@ public class CourtApplicationDeletedEventListener {
         courtApplicationCaseRepository.removeByApplicationId(applicationId);
         courtApplicationRepository.removeByApplicationId(applicationId);
         hearingRepository.removeByHearingId(hearingId);
+    }
+
+    @Handles("progression.event.court-application-deleted-bdf")
+    public void processCourtApplicationDeletedByBdfEvent(final Envelope<CourtApplicationDeletedBdf> event) {
+        final UUID applicationId = event.payload().getApplicationId();
+
+        LOGGER.info("Received event 'progression.event.court-application-deleted-bdf' application: {}", applicationId);
+
+        hearingApplicationRepository.removeByApplicationId(applicationId);
+        courtApplicationCaseRepository.removeByApplicationId(applicationId);
+        courtApplicationRepository.removeByApplicationId(applicationId);
     }
 }
