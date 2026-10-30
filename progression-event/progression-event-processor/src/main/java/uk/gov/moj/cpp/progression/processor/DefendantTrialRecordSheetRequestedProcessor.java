@@ -46,13 +46,10 @@ import javax.json.JsonObject;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantTrialRecordSheetRequestedProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantTrialRecordSheetRequestedProcessor.class);
     public static final String DEFENDANT = "defendant";
     public static final String PAYLOAD = "payload";
     @Inject
@@ -94,8 +91,6 @@ public class DefendantTrialRecordSheetRequestedProcessor {
         if(isNull(recordSheetPayload)){
             return;
         }
-
-        LOGGER.info("recordSheetPayload {} ", recordSheetPayload);
 
         Optional.ofNullable(recordSheetPayload)
                 .filter(r -> r.containsKey(DEFENDANT))
