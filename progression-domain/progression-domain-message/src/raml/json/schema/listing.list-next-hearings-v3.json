@@ -27,6 +27,13 @@
     },
     "seedingHearing": {
       "$ref": "http://justice.gov.uk/core/courts/seedingHearing.json#"
+    },
+    "bookingReferencesWithCourtScheduleIds": {
+      "description": "bookingReferences progression resolved and stored at an earlier share, with the court schedule ids each one holds. Populated only on a re-share, where freeing the previous hearing's slots has erased the rows that tied those references to their sessions, leaving this replayed copy as the only record; listing falls back to it when courtscheduler no longer knows a reference. Empty for a first share, and for a booking that expired before it was ever shared, so neither changes behaviour. Optional: absent on commands built before this field existed.",
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/progression/courts/booking-reference-court-schedule-ids.json"
+      }
     }
   },
   "required": [
