@@ -46,7 +46,6 @@ public class RecordSheetService {
             LOGGER.info("Prosecution case for Record sheet for a defendant {} with caseId {} ", defendantId, caseId);
             JsonObject result = reportsTransformer.getTransformedPayload(document, defendantId, RECORD_SHEET, Arrays.asList(), userId);
             LOGGER.info("Successfully fetched transformed payload for defendantId: {} and caseId: {}", defendantId, caseId);
-            LOGGER.info("PAYLOAD : {}", result);
             jsonObjectBuilder.add(PAYLOAD, result);
         } catch (final Exception e) {
             LOGGER.error("Error generating record sheet for case id : {}, defendant id : {}", caseId, defendantId, e);
