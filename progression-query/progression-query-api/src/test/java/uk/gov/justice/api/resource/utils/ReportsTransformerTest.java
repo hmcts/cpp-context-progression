@@ -17,6 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -389,6 +390,15 @@ public class ReportsTransformerTest {
         assertThat(defendant.getHearings().get(0).getOffences().get(0).getResults().size(), is(1));
         assertThat(defendant.getHearings().get(1).getOffences().size(), is(1));
         assertThat(defendant.getHearings().get(1).getOffences().get(0).getResults().size(), is(1));
+    }
+
+    @Test
+    public void shouldReturnIsCivilFlagTrue_whenGetCourtExtractRequestedInvokedWithRecordSheetAndCivilProsecutionCase() {
+        final ProsecutionCase civilProsecutionCase = createProsecutionCase(true);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createHearingsAtGlance(), DEFENDANT_ID.toString(), "RecordSheet", emptyList(), randomUUID(), civilProsecutionCase);
+
+        assertTrue(courtExtractRequested.getIsCivil());
     }
 
     @Test
@@ -1231,6 +1241,10 @@ public class ReportsTransformerTest {
     }
 
     private ProsecutionCase createProsecutionCase() {
+        return createProsecutionCase(false);
+    }
+
+    private ProsecutionCase createProsecutionCase(final boolean isCivil) {
         final Defendant defendant = Defendant.defendant().withId(DEFENDANT_ID)
                 .withPersonDefendant(createPersonDefendant())
                 .withAssociatedPersons(asList(AssociatedPerson.associatedPerson()
@@ -1281,6 +1295,7 @@ public class ReportsTransformerTest {
                         .withProsecutionAuthorityCode("code")
                         .withProsecutionAuthorityReference(PAR)
                         .build())
+                .withIsCivil(isCivil)
                 .build();
 
         return prosecutionCase;
