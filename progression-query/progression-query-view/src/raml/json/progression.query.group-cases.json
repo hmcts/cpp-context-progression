@@ -1,0 +1,47 @@
+{
+  "groupId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "leadCase": {
+    "caseId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "caseUrn": "TFL12345",
+    "defendantName": "John Smith",
+    "defendantDoB": "1990-01-01",
+    "address": {
+      "address1": "1 Example Street",
+      "address2": "Example Town",
+      "address3": "",
+      "address4": "",
+      "address5": "",
+      "postcode": "KE8 1PG"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "caseUrn": "TFL12345",
+      "defendantName": "John Smith",
+      "defendantDoB": "1990-01-01",
+      "address": {
+        "address1": "1 Example Street",
+        "address2": "Example Town",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "KE8 1PG"
+      }
+    },
+    {
+      "caseId": "4ab96f75-6828-4673-c4fd-3d074f77bfb7",
+      "caseUrn": "TFL67890",
+      "defendantName": "Jane Doe",
+      "defendantDoB": "1985-06-15",
+      "address": {
+        "address1": "2 Sample Road",
+        "address2": "Sample City",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "L1 1UY"
+      }
+    }
+  ]
+}

@@ -50,9 +50,11 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.MigrationCaseStatus;
 import uk.gov.justice.core.courts.MigrationSourceSystem;
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -77,6 +79,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
+import uk.gov.moj.cpp.progression.query.utils.GroupCaseConverter;
 import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
@@ -242,6 +245,8 @@ public class ProsecutionCaseQueryViewTest {
     private ResultTextFlagBuilder resultTextFlagBuilder;
     @Mock
     private RelatedReferenceRepository relatedReferenceRepository;
+    @Spy
+    private GroupCaseConverter groupCaseConverter;
 
     @BeforeEach
     public void setup() {
@@ -2543,6 +2548,158 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByGroupId(groupId)).thenReturn(singletonList(prosecutionCaseEntity));
         final JsonEnvelope response = prosecutionCaseQuery.getGroupMemberCases(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCases"), notNullValue());
+    }
+
+    @Test
+    public void shouldReturnGroupCasesIncludingLeadCase() {
+        final UUID groupId = randomUUID();
+        final UUID leadCaseId = randomUUID();
+        final UUID memberCaseId1 = randomUUID();
+        final UUID memberCaseId2 = randomUUID();
+        final JsonObject jsonObj = createObjectBuilder()
+                .add("groupId", groupId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.group-cases").build(),
+                jsonObj);
+
+        final ProsecutionCaseEntity leadCaseEntity = new ProsecutionCaseEntity();
+        leadCaseEntity.setPayload(objectToJsonObjectConverter.convert(ProsecutionCase.prosecutionCase()
+                .withId(leadCaseId)
+                .withGroupId(groupId)
+                .withIsGroupMaster(true)
+                .withIsGroupMember(true)
+                .withDefendants(emptyList())
+                .build()).toString());
+
+        final ProsecutionCaseEntity memberCaseEntity1 = new ProsecutionCaseEntity();
+        memberCaseEntity1.setPayload(objectToJsonObjectConverter.convert(ProsecutionCase.prosecutionCase()
+                .withId(memberCaseId1)
+                .withGroupId(groupId)
+                .withIsGroupMaster(false)
+                .withIsGroupMember(true)
+                .withDefendants(emptyList())
+                .build()).toString());
+
+        final ProsecutionCaseEntity memberCaseEntity2 = new ProsecutionCaseEntity();
+        memberCaseEntity2.setPayload(objectToJsonObjectConverter.convert(ProsecutionCase.prosecutionCase()
+                .withId(memberCaseId2)
+                .withGroupId(groupId)
+                .withIsGroupMaster(false)
+                .withIsGroupMember(true)
+                .withDefendants(emptyList())
+                .build()).toString());
+
+        when(prosecutionCaseRepository.findByGroupId(groupId))
+                .thenReturn(asList(leadCaseEntity, memberCaseEntity1, memberCaseEntity2));
+
+        final JsonEnvelope response = prosecutionCaseQuery.getGroupCases(jsonEnvelope);
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        assertThat(payload.getString("groupId"), is(groupId.toString()));
+        assertThat(payload.getJsonArray("cases").size(), is(3));
+        assertThat(payload.getJsonObject("leadCase").getString("caseId"), is(leadCaseId.toString()));
+    }
+
+    @Test
+    public void shouldUseFirstDefendantOnlyForGroupCaseSummary() {
+        final UUID groupId = randomUUID();
+        final UUID caseId = randomUUID();
+        final JsonObject jsonObj = createObjectBuilder()
+                .add("groupId", groupId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.group-cases").build(),
+                jsonObj);
+
+        final Person firstDefendantPersonDetails = Person.person()
+                .withFirstName("John")
+                .withLastName("Smith")
+                .withDateOfBirth(LocalDate.of(1990, 1, 1))
+                .withAddress(Address.address().withAddress1("1 Example Street").withPostcode("KE8 1PG").build())
+                .build();
+        final Person secondDefendantPersonDetails = Person.person()
+                .withFirstName("Jane")
+                .withLastName("Doe")
+                .withDateOfBirth(LocalDate.of(1985, 6, 15))
+                .withAddress(Address.address().withAddress1("2 Sample Road").withPostcode("L1 1UY").build())
+                .build();
+
+        final List<Defendant> defendants = asList(
+                Defendant.defendant().withId(randomUUID()).withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(firstDefendantPersonDetails).build()).build(),
+                Defendant.defendant().withId(randomUUID()).withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(secondDefendantPersonDetails).build()).build());
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withGroupId(groupId)
+                .withIsGroupMaster(true)
+                .withIsGroupMember(true)
+                .withDefendants(defendants)
+                .build()).toString());
+
+        when(prosecutionCaseRepository.findByGroupId(groupId)).thenReturn(singletonList(prosecutionCaseEntity));
+
+        final JsonEnvelope response = prosecutionCaseQuery.getGroupCases(jsonEnvelope);
+        final JsonObject caseSummary = response.payloadAsJsonObject().getJsonArray("cases").getJsonObject(0);
+
+        assertThat(caseSummary.getString("defendantName"), is("John Smith"));
+        assertThat(caseSummary.getString("defendantDoB"), is("1990-01-01"));
+        assertThat(caseSummary.getJsonObject("address").getString("postcode"), is("KE8 1PG"));
+    }
+
+    @Test
+    public void shouldPreferCaseUrnOverProsecutionAuthorityReference() {
+        final UUID groupId = randomUUID();
+        final UUID caseId = randomUUID();
+        final JsonObject jsonObj = createObjectBuilder()
+                .add("groupId", groupId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.group-cases").build(),
+                jsonObj);
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withGroupId(groupId)
+                .withIsGroupMaster(true)
+                .withIsGroupMember(true)
+                .withDefendants(emptyList())
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withCaseURN("CASE_URN_VALUE")
+                        .withProsecutionAuthorityReference("AUTHORITY_REFERENCE_VALUE")
+                        .build())
+                .build()).toString());
+
+        when(prosecutionCaseRepository.findByGroupId(groupId)).thenReturn(singletonList(prosecutionCaseEntity));
+
+        final JsonEnvelope response = prosecutionCaseQuery.getGroupCases(jsonEnvelope);
+        final JsonObject caseSummary = response.payloadAsJsonObject().getJsonArray("cases").getJsonObject(0);
+
+        assertThat(caseSummary.getString("caseUrn"), is("CASE_URN_VALUE"));
+    }
+
+    @Test
+    public void shouldReturnEmptyCasesForUnknownGroup() {
+        final UUID groupId = randomUUID();
+        final JsonObject jsonObj = createObjectBuilder()
+                .add("groupId", groupId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.group-cases").build(),
+                jsonObj);
+
+        when(prosecutionCaseRepository.findByGroupId(groupId)).thenReturn(emptyList());
+
+        final JsonEnvelope response = prosecutionCaseQuery.getGroupCases(jsonEnvelope);
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        assertThat(payload.getString("groupId"), is(groupId.toString()));
+        assertThat(payload.getJsonArray("cases").size(), is(0));
+        assertThat(payload.containsKey("leadCase"), is(false));
     }
 
     @Test
