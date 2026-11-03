@@ -368,12 +368,12 @@ public class HearingConfirmedEventProcessorTest {
         verify(documentGeneratorService,times(1)).generatePostalDocumentForOpa(any(),any(),any(),any(),any(),any(),any());
     }
 
-    @Disabled
     @Test
     public void shouldHandleHearingConfirmedWithCasesEventMessage_DoNotSendOnlinePleaWhenHearingDayIsInThePast() throws Exception {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
+        final UUID courtCentreId = randomUUID();
 
         final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
         final UUID hearingId = randomUUID();
@@ -404,6 +404,10 @@ public class HearingConfirmedEventProcessorTest {
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(true);
+        final JsonObject sampleJsonObject = createObjectBuilder().add("oucodeL3Name", "oucodeL3Name").build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(Optional.of(sampleJsonObject));
+        final JsonObject sampleJsonObject2 = createObjectBuilder().add("isWelsh", false).build();
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, envelope, requester)).thenReturn(Optional.of(sampleJsonObject2));
         when(progressionService.transformConfirmedHearing(any(), any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
@@ -415,6 +419,7 @@ public class HearingConfirmedEventProcessorTest {
                                 .withId(randomUUID())
                                 .withDescription("First hearing")
                                 .build())
+                        .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build())
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                                 .withDefendants(singletonList(Defendant.defendant()
                                         .withId(randomUUID())
