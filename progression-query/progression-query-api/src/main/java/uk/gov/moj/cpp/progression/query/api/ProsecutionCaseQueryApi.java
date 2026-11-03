@@ -89,6 +89,11 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getGroupMemberCases(query);
     }
 
+    @Handles("progression.query.group-cases")
+    public JsonEnvelope getGroupCases(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getGroupCases(query);
+    }
+
     @SuppressWarnings("squid:S3655")
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getCaseProsecutionCase(final JsonEnvelope query) {
