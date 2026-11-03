@@ -1932,4 +1932,8 @@ public class PreAndPostConditionHelper {
         return pollForResponse("/prosecutioncases/group/" + groupId, "application/vnd.progression.query.group-member-cases+json", matchers);
     }
 
+    public static String pollGroupCases(final String groupId, final Matcher<? super ReadContext>... matchers) {
+        return pollForResponse("/prosecutioncases/group/" + groupId, "application/vnd.progression.query.group-cases+json", matchers);
+    }
+
 }

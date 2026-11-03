@@ -54,6 +54,7 @@ import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForC
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollGroupCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollGroupMemberCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusResulted;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -177,6 +178,15 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         };
 
         pollGroupMemberCases(groupId, groupIdMatcher);
+
+        // group-cases includes the lead case: 4 cases - 2 removed = 2
+        final Matcher[] groupCasesMatchers = new Matcher[]{
+                withJsonPath("$.groupId", is(groupId)),
+                withJsonPath("$.cases.length()", is(caseCount - 2)),
+                withJsonPath("$.leadCase", notNullValue())
+        };
+
+        pollGroupCases(groupId, groupCasesMatchers);
     }
 
     @Test

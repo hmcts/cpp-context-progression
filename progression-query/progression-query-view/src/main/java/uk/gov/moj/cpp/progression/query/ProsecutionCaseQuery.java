@@ -43,6 +43,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.domain.pojo.Prosecutor;
+import uk.gov.moj.cpp.progression.query.utils.GroupCaseConverter;
 import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
@@ -117,6 +118,8 @@ public class ProsecutionCaseQuery {
     public static final String NUMBER_OF_GROUP_CASES = "numberOfGroupCases";
     public static final String PROSECUTION_CASE = "prosecutionCase";
     public static final String MASTER_CASE = "masterCase";
+    public static final String LEAD_CASE = "leadCase";
+    public static final String CASES = "cases";
     public static final String CASE_STATUS = "caseStatus";
     public static final String CASE_STATUS_ACTIVE = "ACTIVE";
     public static final String CASE_STATUS_INACTIVE = "INACTIVE";
@@ -190,6 +193,9 @@ public class ProsecutionCaseQuery {
     @Inject
     private RelatedReferenceRepository relatedReferenceRepository;
 
+    @Inject
+    private GroupCaseConverter groupCaseConverter;
+
     @Handles("progression.query.prosecutioncase-details")
     public JsonEnvelope getProsecutionCaseDetails(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
@@ -243,6 +249,27 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
+    }
+
+    @Handles("progression.query.group-cases")
+    public JsonEnvelope getGroupCases(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final Optional<UUID> groupId = getUUID(envelope.payloadAsJsonObject(), GROUP_ID);
+        jsonObjectBuilder.add(GROUP_ID, groupId.get().toString());
+        try {
+            final List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByGroupId(groupId.get());
+            final List<ProsecutionCase> prosecutionCases = prosecutionCaseEntities.stream()
+                    .map(o -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(o.getPayload()), ProsecutionCase.class))
+                    .collect(Collectors.toList());
+
+            groupCaseConverter.toLeadCase(prosecutionCases)
+                    .ifPresent(leadCase -> jsonObjectBuilder.add(LEAD_CASE, leadCase));
+            jsonObjectBuilder.add(CASES, groupCaseConverter.toCaseSummaries(prosecutionCases));
+        } catch (final NoResultException e) {
+            LOGGER.info("No group case found for groupId '{}'", groupId.get());
+        }
+
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
     private JsonArrayBuilder getMemberProsecutionCases(final List<ProsecutionCaseEntity> prosecutionCaseEntities) {

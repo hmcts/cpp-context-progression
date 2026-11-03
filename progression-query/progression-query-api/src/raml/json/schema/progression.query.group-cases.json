@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "groupId": {
+      "type": "string"
+    },
+    "leadCase": {
+      "$ref": "#/definitions/caseSummary"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/caseSummary"
+      }
+    }
+  },
+  "required": [
+    "groupId",
+    "cases"
+  ],
+  "definitions": {
+    "caseSummary": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "type": "string"
+        },
+        "caseUrn": {
+          "type": "string"
+        },
+        "defendantName": {
+          "type": "string"
+        },
+        "defendantDoB": {
+          "type": "string",
+          "format": "date"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address1": {
+              "type": "string"
+            },
+            "address2": {
+              "type": "string"
+            },
+            "address3": {
+              "type": "string"
+            },
+            "address4": {
+              "type": "string"
+            },
+            "address5": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "caseId"
+      ]
+    }
+  }
+}

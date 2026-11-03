@@ -284,6 +284,9 @@ protocols: [ HTTP, HTTPS ]
       (mapping):
           responseType: application/vnd.progression.query.mastercase-details+json
           name: progression.query.mastercase-details
+      (mapping):
+          responseType: application/vnd.progression.query.group-cases+json
+          name: progression.query.group-cases
 
       ...
     responses:
@@ -296,6 +299,9 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.mastercase-details+json:
              example:  !include json/progression.query.mastercase-details.json
              schema:  !include json/schema/progression.query.mastercase-details.json
+          application/vnd.progression.query.group-cases+json:
+             example:  !include json/progression.query.group-cases.json
+             schema:  !include json/schema/progression.query.group-cases.json
 
 /defendant-requests/{defendantId}:
   uriParameters:

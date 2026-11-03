@@ -155,6 +155,16 @@ rule "Query - Access control for  progression.query.group-member-cases"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.group-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.group-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.prosecutioncase.caag"
   when
     $outcome: Outcome();
