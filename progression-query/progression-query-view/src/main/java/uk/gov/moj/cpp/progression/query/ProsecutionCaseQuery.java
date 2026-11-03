@@ -260,6 +260,7 @@ public class ProsecutionCaseQuery {
             final List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByGroupId(groupId.get());
             final List<ProsecutionCase> prosecutionCases = prosecutionCaseEntities.stream()
                     .map(o -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(o.getPayload()), ProsecutionCase.class))
+                    .filter(ProsecutionCase::getIsGroupMember)
                     .collect(Collectors.toList());
 
             groupCaseConverter.toLeadCase(prosecutionCases)
