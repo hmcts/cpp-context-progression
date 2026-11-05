@@ -367,6 +367,56 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     }
 
     @Test
+    public void shouldDeleteExistingAssociatedPersonsWhenUpdateOmitsThem() {
+
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID selfDefinedEthnicityId = randomUUID();
+        final UUID observedEthnicityId = randomUUID();
+        final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate()
+                .withId(defendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(Person.person()
+                                .withFirstName("Mark")
+                                .withLastName("Robinson")
+                                .build())
+                        .build())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
+        when(defendant.getId()).thenReturn(defendantId);
+        when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("id", defendant.getId().toString()).build())
+                                .build())
+                        .build()).build();
+
+        final ProsecutionCase prosecutionCase1 = ProsecutionCase.prosecutionCase()
+                .withDefendants(new ArrayList<>(Arrays.asList(defendant1)))
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(repository.findByCaseId(defendantUpdate.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+
+        final ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor = ArgumentCaptor.forClass(ProsecutionCase.class);
+        when(objectToJsonObjectConverter.convert(prosecutionCaseArgumentCaptor.capture())).thenReturn(jsonObject);
+
+        eventListener.processProsecutionCaseDefendantUpdated(envelope);
+
+        final ProsecutionCase updatedCase = prosecutionCaseArgumentCaptor.getValue();
+        assertThat(updatedCase.getDefendants().get(0).getAssociatedPersons().isEmpty(), is(true));
+        assertThat(updatedCase.getDefendants().get(0).getPersonDefendant().getPersonDetails().getLastName(), is("Robinson"));
+    }
+
+    @Test
     public void shouldUpdateDefendantWithoutExistingPersonEthnicityWithNewValue() {
 
         final UUID defendantId = randomUUID();
