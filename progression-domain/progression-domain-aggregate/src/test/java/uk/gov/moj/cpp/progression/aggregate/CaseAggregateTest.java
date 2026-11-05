@@ -5074,6 +5074,48 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldRemoveAssociatedPersonsWhenUpdateDefendantDetailsOmitsThem() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final List<uk.gov.justice.core.courts.AssociatedPerson> associatedPersons = singletonList(
+                uk.gov.justice.core.courts.AssociatedPerson.associatedPerson()
+                        .withRole("ParentGuardian")
+                        .withPerson(uk.gov.justice.core.courts.Person.person()
+                                .withFirstName("Parent")
+                                .withLastName("Guardian")
+                                .build())
+                        .build());
+        defendantsMap.put(defendantId, Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withAssociatedPersons(associatedPersons)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                                .withFirstName("Mark")
+                                .withLastName("Robinson")
+                                .build())
+                        .build())
+                .build());
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                                .withFirstName("Mark")
+                                .withLastName("Robinson")
+                                .build())
+                        .build())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload, asList()).collect(toList());
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedPersons(), nullValue());
+    }
+
+    @Test
     public void shouldUpdateDefendantDetails_WhenPersonDefendantIsNonNull_CustodialInformationIsAbsent() {
         final UUID caseId = randomUUID();
         final Map<UUID, Defendant> defendantsMap = new HashMap<>();
