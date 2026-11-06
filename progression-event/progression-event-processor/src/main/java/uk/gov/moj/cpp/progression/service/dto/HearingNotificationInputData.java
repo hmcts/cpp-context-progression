@@ -13,6 +13,7 @@ public class HearingNotificationInputData {
     private String hearingType;
 
     private List<UUID> caseIds;
+    private List<UUID> linkedApplicationCaseIds = Collections.emptyList();
     private List<UUID> defendantIds;
     private UUID courtCenterId;
     private UUID courtRoomId;
@@ -54,6 +55,14 @@ public class HearingNotificationInputData {
     public void setCaseIds(final List<UUID> caseIds) {
         this.caseIds =Collections.unmodifiableList(caseIds);
     }
+    public List<UUID> getLinkedApplicationCaseIds() {
+        return Collections.unmodifiableList(linkedApplicationCaseIds);
+    }
+
+    public void setLinkedApplicationCaseIds(final List<UUID> linkedApplicationCaseIds) {
+        this.linkedApplicationCaseIds = Collections.unmodifiableList(linkedApplicationCaseIds);
+    }
+
     public List<UUID> getDefendantIds() {
         return Collections.unmodifiableList(defendantIds);
     }

@@ -398,6 +398,44 @@ public class ProgressionServiceTest {
     }
 
     @Test
+    public void shouldUseUpdatedNumberOfGroupCasesWhenUpdateHearingForHearingUpdatedCalled() throws IOException {
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
+        final ConfirmedHearing updatedHearing = updatedGroupHearingWithNumberOfGroupCases(2, jsonEnvelope);
+        final Hearing storedHearing = Hearing.hearing().withId(updatedHearing.getId()).withIsGroupProceedings(true).withNumberOfGroupCases(3).build();
+
+        final Hearing hearing = progressionService.updateHearingForHearingUpdated(updatedHearing, jsonEnvelope, storedHearing);
+
+        assertThat(hearing.getNumberOfGroupCases(), is(2));
+        assertThat(hearing.getIsGroupProceedings(), is(true));
+    }
+
+    @Test
+    public void shouldKeepStoredNumberOfGroupCasesWhenUpdatedHearingHasNoNumberOfGroupCases() throws IOException {
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
+        final ConfirmedHearing updatedHearing = updatedGroupHearingWithNumberOfGroupCases(null, jsonEnvelope);
+        final Hearing storedHearing = Hearing.hearing().withId(updatedHearing.getId()).withIsGroupProceedings(true).withNumberOfGroupCases(3).build();
+
+        final Hearing hearing = progressionService.updateHearingForHearingUpdated(updatedHearing, jsonEnvelope, storedHearing);
+
+        assertThat(hearing.getNumberOfGroupCases(), is(3));
+    }
+
+    private ConfirmedHearing updatedGroupHearingWithNumberOfGroupCases(final Integer numberOfGroupCases, final JsonEnvelope jsonEnvelope) throws IOException {
+        final ConfirmedHearing updatedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withType(HearingType.hearingType().withId(randomUUID()).build())
+                .withIsGroupProceedings(true)
+                .withNumberOfGroupCases(numberOfGroupCases)
+                .build();
+        when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), jsonEnvelope, requester)).thenReturn(of(generateCourtCentreJson()));
+        return updatedHearing;
+    }
+
+    @Test
     public void shouldReturnMixHearingWhenUpdateHearingForHearingUpdatedCalled() throws IOException {
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build())).withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build()).withJurisdictionType(JurisdictionType.CROWN).withId(randomUUID()).withHearingLanguage(HearingLanguage.ENGLISH).withReportingRestrictionReason("reportingRestrictionReason").withType(HearingType.hearingType().withId(randomUUID()).build()).build();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
@@ -1462,6 +1500,39 @@ public class ProgressionServiceTest {
     }
 
     @Test
+    void transformConfirmedHearingShouldCarryConfirmedNumberOfGroupCases() {
+        final Hearing hearing = progressionService.transformConfirmedHearing(confirmedGroupHearingWithNumberOfGroupCases(2), finalEnvelope);
+
+        assertThat(hearing.getIsGroupProceedings(), is(true));
+        assertThat(hearing.getNumberOfGroupCases(), is(2));
+    }
+
+    @Test
+    void transformConfirmedHearingShouldLeaveNumberOfGroupCasesNullWhenNotConfirmed() {
+        final Hearing hearing = progressionService.transformConfirmedHearing(confirmedGroupHearingWithNumberOfGroupCases(null), finalEnvelope);
+
+        assertThat(hearing.getNumberOfGroupCases(), nullValue());
+    }
+
+    private ConfirmedHearing confirmedGroupHearingWithNumberOfGroupCases(final Integer numberOfGroupCases) {
+        final UUID courtCentreId = randomUUID();
+        final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
+        final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
+        mockCourtCentre(courtCentreId);
+        mockProsecutionCaseLookup();
+        return ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build())
+                .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId)
+                        .withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant().withId(defendantId)
+                                .withOffences(singletonList(ConfirmedOffence.confirmedOffence().withId(randomUUID()).build())).build())).build()))
+                .withIsGroupProceedings(true)
+                .withNumberOfGroupCases(numberOfGroupCases)
+                .build();
+    }
+
+    @Test
     void transformConfirmedHearingShouldKeepConfirmedCaseOffencesWhenAllApplicationOffencesConcluded() {
         final UUID courtCentreId = randomUUID();
         final UUID caseId = fromString("63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95");
@@ -2052,5 +2123,39 @@ public class ProgressionServiceTest {
 
         assertThat(result, is(payloads));
 
+    }
+
+    @Test
+    void shouldReturnMasterProsecutionCaseWhenPresentForGroupId() {
+        final UUID groupId = randomUUID();
+        final JsonEnvelope inputEnvelope = envelopeFrom(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.court-application-summons-approved")
+                .build(), createObjectBuilder().build());
+
+        final JsonObject masterCaseJson = createObjectBuilder().add("id", randomUUID().toString()).build();
+        final JsonObject responsePayload = createObjectBuilder().add("masterCase", masterCaseJson).build();
+
+        when(requester.requestAsAdmin(any())).thenReturn(JsonEnvelope.envelopeFrom(inputEnvelope.metadata(), responsePayload));
+
+        final Optional<JsonObject> result = progressionService.getMasterProsecutionCaseByGroupId(inputEnvelope, groupId);
+
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is(masterCaseJson));
+    }
+
+    @Test
+    void shouldReturnEmptyWhenNoMasterProsecutionCaseFoundForGroupId() {
+        final UUID groupId = randomUUID();
+        final JsonEnvelope inputEnvelope = envelopeFrom(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.court-application-summons-approved")
+                .build(), createObjectBuilder().build());
+
+        when(requester.requestAsAdmin(any())).thenReturn(JsonEnvelope.envelopeFrom(inputEnvelope.metadata(), createObjectBuilder().build()));
+
+        final Optional<JsonObject> result = progressionService.getMasterProsecutionCaseByGroupId(inputEnvelope, groupId);
+
+        assertThat(result.isPresent(), is(false));
     }
 }
