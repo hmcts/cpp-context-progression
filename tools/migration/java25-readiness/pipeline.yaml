@@ -1,0 +1,53 @@
+stages:
+  - stage: Java25Readiness
+    displayName: Isolated Java 25 prerequisite checks
+    dependsOn: []
+    condition: not(canceled())
+    jobs:
+      - job: ProbeTargetPlatform
+        timeoutInMinutes: 30
+        pool:
+          name: MDV-ADO-AGENT-AKS-01
+          demands:
+            - identifier -equals ubuntu-j25
+        steps:
+          - checkout: self
+          - task: DownloadSecureFile@1
+            name: targetSettings
+            inputs:
+              secureFile: settings.xml
+          - task: DownloadSecureFile@1
+            name: targetSecuritySettings
+            inputs:
+              secureFile: settings-security.xml
+          - bash: |
+              set -euo pipefail
+              mkdir -p ~/.m2
+              cp "$(targetSettings.secureFilePath)" ~/.m2/settings.xml
+              cp "$(targetSecuritySettings.secureFilePath)" ~/.m2/settings-security.xml
+              python3 -B -m unittest discover -s tools/migration/java25-readiness -p 'test_*.py'
+              mvn -B -C -U -V -f tools/migration/java25-readiness/pom.xml \
+                dependency:build-classpath verify \
+                -Dmdep.outputFile="$(Build.SourcesDirectory)/tools/migration/java25-readiness/target/classpath.txt"
+            displayName: Resolve and test the standalone target classpath
+          - bash: |
+              python3 -B tools/migration/java25-readiness/inspect_mi_target.py \
+                --classpath tools/migration/java25-readiness/target/classpath.txt \
+                --output tools/migration/java25-readiness/target/readiness.json \
+                --mi-version RELEASE
+            displayName: Inspect both MI contract classifiers
+            condition: succeededOrFailed()
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: tools/migration/java25-readiness/target/surefire-reports/TEST-*.xml
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
+              publishRunAttachments: false
+              testRunTitle: Java 25 platform prerequisite probe
+          - task: PublishPipelineArtifact@1
+            condition: succeededOrFailed()
+            inputs:
+              targetPath: tools/migration/java25-readiness/target/readiness.json
+              artifact: java25-readiness-metadata

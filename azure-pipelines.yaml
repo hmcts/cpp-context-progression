@@ -43,6 +43,7 @@ stages:
           sonarqube_project: ${{ variables['sonarqubeProject'] }}
           sonarQubeType: 'sonarQubeAKS'
           enableMavenCache: false
+      - template: tools/migration/java25-readiness/pipeline.yaml
 
   - ${{ if eq(variables['Build.Reason'], 'IndividualCI') }}:
       - template: pipelines/context-validation.yaml@cppAzureDevOpsTemplates
