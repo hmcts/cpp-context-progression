@@ -1,9 +1,9 @@
 step,repository,branch,base,dependencies,phase,status
 00,cpp-context-progression,plan/progression-java17-first-migration,origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a,none,Plan,planning branch created; documentation only
-01,cpp-context-progression,migration/progression-01-j17-baseline,origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a,00,Java 17 preparation,draft PR 684; baseline evidence pending
-02,cpp-context-progression,migration/progression-02-contract-characterisation,migration/progression-01-j17-baseline at eef3c57ed,01,Java 17 preparation,draft PR 685; initial characterization only; acceptance open
-03,cpp-context-progression,migration/progression-03-j17-persistence-harness,migration/progression-02-contract-characterisation at c376ffc73,02,Java 17 preparation,draft PR 686; H2 fixture only; PostgreSQL/JTA gates open
-04,cpp-context-progression,migration/progression-04-jpa-lifecycle,migration/progression-03-j17-persistence-harness at ec3755e59,03,Java 17 preparation,draft PR 687; partial query pilot only; lifecycle gate open
+01,cpp-context-progression,migration/progression-01-j17-baseline,origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a,00,Java 17 preparation,draft PR 684; qualified command RAML baseline fix; fresh CI pending
+02,cpp-context-progression,migration/progression-02-contract-characterisation,stacked on Step 01 at 0b614d184155ef3cea3fb721f1dfab8a2e5cefd9; predecessor fix merged forward,01,Java 17 preparation,draft PR 685; initial characterization only; acceptance open
+03,cpp-context-progression,migration/progression-03-j17-persistence-harness,stacked on Step 02 at 8279e3286d3d840b332bdd5672dcad1f103aba20; predecessor fix merged forward,02,Java 17 preparation,draft PR 686; H2 fixture only; PostgreSQL/JTA gates open
+04,cpp-context-progression,migration/progression-04-jpa-lifecycle,stacked on Step 03 at 39b8fc33b5bec92d9f69c292fecbd4a7e0b49313; predecessor fix merged forward,03,Java 17 preparation,draft PR 687; partial query pilot only; lifecycle gate open
 05,cpp-context-progression,migration/progression-05-jpa-cases-hearings,latest main after preceding accepted steps,04,Java 17 persistence,proposed branch; not created
 06,cpp-context-progression,migration/progression-06-jpa-documents,latest main after preceding accepted steps,05,Java 17 persistence,proposed branch; not created
 07,cpp-context-progression,migration/progression-07-jpa-registers-remaining,latest main after preceding accepted steps,06,Java 17 persistence,proposed branch; not created

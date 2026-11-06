@@ -1,8 +1,9 @@
 # Initial implementation status
 
 The first four implementation branches are separate stacked drafts from the
-pinned Java 17 main baseline. Each PR shows only its own increment. No merge,
-deployment, schema migration or message recovery has been performed.
+pinned Java 17 main baseline. Each PR shows only its own increment. Parent fixes
+are merged forward within the stack without rewriting history. No PR has been
+merged to main; no deployment, schema migration or message recovery was performed.
 
 ```mermaid
 flowchart LR
@@ -16,7 +17,7 @@ flowchart LR
 
 | Step | Draft PR | Prepared work | Still required for the full roadmap gate |
 |---|---|---|---|
-| 01 | [684](https://github.com/hmcts/cpp-context-progression/pull/684) | Bounded baseline collector and existing PR verification entry point | Executed baseline, effective dependency/runtime manifest, test reconciliation and relevant journeys |
+| 01 | [684](https://github.com/hmcts/cpp-context-progression/pull/684) | Bounded baseline collector, PR verification and qualified command-RAML refresh | Executed baseline, effective dependency/runtime manifest, test reconciliation and relevant journeys |
 | 02 | [685](https://github.com/hmcts/cpp-context-progression/pull/685) | Seven initial repository characterization tests | Actual execution; remaining lifecycle, event, Material/Listing and MI contract population |
 | 03 | [686](https://github.com/hmcts/cpp-context-progression/pull/686) | Isolated javax JPA/H2 fixture with commit, flushed rollback and isolation tests | Resolved-classpath execution, same outcome comparison, PostgreSQL and container/JTA coverage |
 | 04 | [687](https://github.com/hmcts/cpp-context-progression/pull/687) | One explicit JPQL finder while retaining DeltaSpike CRUD/context/transaction strategy | Full reactor/CDI/query parity; actual framework lifecycle, identity, flush, rollback and concurrency proof before replacement |
@@ -30,16 +31,28 @@ work-packages.json remain unchanged.
 
 | PR | Verification run |
 |---|---|
-| 684 | [949881](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949881) |
-| 685 | [949911](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949911) |
-| 686 | [949913](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949913) |
-| 687 | [949915](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949915) |
+| 684 | [949980](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949980) |
+| 685 | [949979](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949979) |
+| 686 | [949975](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949975) |
+| 687 | [949978](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=949978) |
 
 These are run references, not passing results. The existing template runs Maven
 verify and Sonar. Its persistence-test flag must be interpreted using actual
 resolved artifacts and execution reports; neither the flag's name nor a green
-overall status proves the new CDI tests ran. No template, POM, test selection or
-runtime setting was changed for this work.
+overall status proves the new CDI tests ran. Template, test selection and runtime
+settings are unchanged. The qualified baseline fix below changes only the two
+POM entries needed to isolate and refresh the command RAML artifact.
+
+The first baseline Maven attempt in run 949881 failed interface enforcement:
+listing-command-api 17.104.10 was behind released 17.104.16. The used Listing
+command schemas/examples and root RAML/media mappings are byte-identical between
+those releases. Three other schemas add only an optional MANUAL/AUTO field.
+Step 01 now sets listing.command.api.version to 17.104.16 solely for the existing
+command RAML generator dependency, retaining transitive exclusions. Listing query
+dependencies remain at 17.104.10. The normal enforcer remains enabled. The fix is
+carried forward through the stack, and the table links fresh verification runs.
+Old runs were automatically cancelled after source updates; no green result is
+inferred from the cancellation or the source contract comparison.
 
 Baseline run 949881 reports Maven 3.9.5 and Eclipse Adoptium Java 17.0.15.
 OpenEJB/CDI repository tests were observed executing. The resolved template is
@@ -49,7 +62,7 @@ execution started; they do not establish a passing run or complete coverage.
 Its test logs also identify DeltaSpike JPA/OpenEJB components at 1.9.6; this is
 test-classpath evidence, not a deployed WildFly dependency manifest.
 
-Pilot run 949915, merge revision
+The earlier pilot run 949915, merge revision
 2c2ce6b446873096e402b9e547b31a101eb4a39c, reports these affected suites:
 
 | Suite | Executed | Failures | Errors | Skipped |
@@ -72,8 +85,11 @@ run because approved private artifact settings are unavailable.
   dependency manifest; provide the authorized CI report/effective-POM route.
 - Test and contract owners: reconcile executed/skipped tests and supply the
   remaining representative business/event/MI assertions and fixtures.
-- Platform and database owners: provide an approved isolated PostgreSQL and
-  current-runtime container/JTA test route without deploying to a shared service.
+- Build/test/platform developers: add isolated PostgreSQL and current-runtime
+  container/JTA test support. No ready-made gate or prepared environment is
+  established. Select a qualified current runtime image/provider, create isolated
+  stores/fixtures, add commit/rollback/context/flush assertions and wire a separate
+  CI test job before accepting Steps 03/04.
 - Framework and persistence reviewers: qualify the consumed EntityManager
   producer, flush/transaction policy and context identity before replacing them.
 
