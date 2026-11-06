@@ -1,0 +1,16 @@
+step,repository,branch,base,dependencies,phase,status
+00,cpp-context-progression,plan/progression-java17-first-migration,origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a,none,Plan,planning branch created; documentation only
+01,cpp-context-progression,migration/progression-01-j17-baseline,latest main after preceding accepted steps,00,Java 17 preparation,proposed branch; not created
+02,cpp-context-progression,migration/progression-02-contract-characterisation,latest main after preceding accepted steps,01,Java 17 preparation,proposed branch; not created
+03,cpp-context-progression,migration/progression-03-j17-persistence-harness,latest main after preceding accepted steps,02,Java 17 preparation,proposed branch; not created
+04,cpp-context-progression,migration/progression-04-jpa-lifecycle,latest main after preceding accepted steps,03,Java 17 preparation,proposed branch; not created
+05,cpp-context-progression,migration/progression-05-jpa-cases-hearings,latest main after preceding accepted steps,04,Java 17 persistence,proposed branch; not created
+06,cpp-context-progression,migration/progression-06-jpa-documents,latest main after preceding accepted steps,05,Java 17 persistence,proposed branch; not created
+07,cpp-context-progression,migration/progression-07-jpa-registers-remaining,latest main after preceding accepted steps,06,Java 17 persistence,proposed branch; not created
+08,cpp-context-progression,migration/progression-08-remove-deltaspike,latest main after preceding accepted steps,07,Java 17 persistence,proposed branch; not created
+09,cpp-context-progression,migration/progression-09-j17-release-evidence,latest main after preceding accepted steps,08,Java 17 checkpoint,proposed branch; not created
+10,cpp-context-progression,migration/progression-10-target-prerequisites,main at Step 10 start after Step 01; refresh before integration,01,Target preparation,proposed branch; not created
+11,cpp-context-progression,migration/progression-11-target-application,latest main after preceding accepted steps,"09,10",Target transition,proposed branch; not created
+12,cpp-aks-deploy,migration/progression-12-wildfly40-runtime,"current main of cpp-aks-deploy, refreshed by its owner",10,Target transition,proposed branch; not created
+13,cpp-context-progression,migration/progression-13-target-assurance,migration/progression-11-target-application until its parent changes merge,"11,12",Target assurance,proposed branch; not created
+14,cpp-context-progression,migration/progression-14-rollout-evidence,accepted target source on main,13,Release,proposed branch; not created
