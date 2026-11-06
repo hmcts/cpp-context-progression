@@ -34,7 +34,7 @@
       "human_work": "Build owner supplies authorised private artifact access and a repeatable environment. Test lead distinguishes baseline defects, environmental failures and migration regressions; check owners triage failed gates.",
       "done_when": "Clean pinned baseline build and relevant journeys run in the owning environment, with retained logs and explicit failure disposition. No tests silently disappear.",
       "release_rule": "Remain on Java 17 and the existing API/runtime stack. Evidence or safe build fixes only.",
-      "status": "draft PR 684; qualified command RAML baseline fix; fresh CI pending"
+      "status": "draft PR 684; qualified command RAML/cache-only baseline fixes; fresh CI pending"
     },
     {
       "id": "02",
@@ -42,7 +42,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-02-contract-characterisation",
-      "branch_base": "stacked on Step 01 at 0b614d184155ef3cea3fb721f1dfab8a2e5cefd9; predecessor fix merged forward",
+      "branch_base": "stacked on Step 01 at 010ca5bb632f9d47eff7f9c2bdd03252800561b5; predecessor fixes merged forward",
       "depends_on": [
         "01"
       ],
@@ -58,7 +58,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-03-j17-persistence-harness",
-      "branch_base": "stacked on Step 02 at 8279e3286d3d840b332bdd5672dcad1f103aba20; predecessor fix merged forward",
+      "branch_base": "stacked on Step 02 at 60f7e8ea7a6102c7cde1fe5110e5907f41a9bfa4; predecessor fixes merged forward",
       "depends_on": [
         "02"
       ],
@@ -74,7 +74,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-04-jpa-lifecycle",
-      "branch_base": "stacked on Step 03 at 39b8fc33b5bec92d9f69c292fecbd4a7e0b49313; predecessor fix merged forward",
+      "branch_base": "stacked on Step 03 at 0ba20fd468ff1bd8ce7ccfe0b160888e72665020; predecessor fixes merged forward",
       "depends_on": [
         "03"
       ],
