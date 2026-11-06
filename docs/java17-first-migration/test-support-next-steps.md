@@ -24,6 +24,12 @@ Do not infer this from a cached entity, an H2 resource-local rollback or a mocke
 transaction annotation. Establish current save/remove and context identity
 behaviour before replacing lifecycle ownership.
 
+The partial query pilot bypasses DeltaSpike's derived-query processors and
+exception path while retaining inherited CRUD and manager lookup. Include
+pending-write visibility and actual exception propagation in the comparison.
+Released framework 17.104.0 has a separate conditional post-listener flush hook;
+preserve and exercise that outer listener path as well as repository calls.
+
 The source image-build rule selects a WildFly 26.1.3/Java 17 tag prefix for the
 current major version. Its final suffix and digest still need qualification.
 Using a newer WildFly/Hibernate version here would combine the baseline check

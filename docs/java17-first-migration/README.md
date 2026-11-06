@@ -244,11 +244,13 @@ Merge and release rule: Documentation/evidence branch. Approval, deployment and 
 
 ## Evidence and limitations
 
-This is a source-grounded delivery design. No implementation changes, application tests, PostgreSQL queries or deployments have been executed in this planning pass. Baseline artifact resolution, exact effective dependency/runtime manifests, qualified target artifacts and assigned people remain implementation prerequisites. Existing source tests are not execution results.
+This is a source-grounded delivery design with initial implementation drafts for Steps 01 to 04. Their four current PR verification pipelines are green; the executed suites, retained earlier failures and limits are recorded in [implementation status](implementation-status.md). Broader contract/business coverage, exact dependency/runtime manifests and PostgreSQL/current-WildFly/JTA qualification remain open. No PR has been merged to main and no deployment was performed. [The missing isolated test support is engineering work to add](test-support-next-steps.md); no ready-made gate is assumed.
 
-Main has 44 production repositories importing DeltaSpike out of 49 repository-named source files. The conversion groups reconcile to 19 case/hearing, 7 document and 18 workflow repositories. A pilot converted in step 04 is marked complete in its owning group, not counted twice. All 44 must have a final disposition.
+Pinned main has 44 production repositories importing DeltaSpike out of 49 repository-named source files. The conversion groups reconcile to 19 case/hearing, 7 document and 18 workflow repositories. When a pilot is fully converted and accepted, record it once in its owning group. The current query pilot still uses DeltaSpike and is not counted as a completed conversion. All 44 need a final disposition.
 
 Inspected framework source at 335bdfd3478039e89e67494928cdf2c457d02c3d contains an EntityManager producer, conditional active-transaction flush and a UTC global-default side effect. This is navigation evidence, not proof of the exact released/runtime implementation. Steps 04 and 08 must resolve the actual dependency and preserve required behaviour deliberately.
+
+Follow-up source review located framework release-17.104.0 at e94e5b834b8a0f961f0768c9d0d39d5c7d3e8a45 and qualified its conditional post-listener flush path. [Invocation boundaries and remaining runtime evidence](implementation-status.md) distinguish that source result from actual resolved/deployed qualification.
 
 - [Main POM](https://github.com/hmcts/cpp-context-progression/blob/ceebd3c81e899e1dfea4814de9016a49512d806a/pom.xml#L5)
 - [Main pipeline](https://github.com/hmcts/cpp-context-progression/blob/ceebd3c81e899e1dfea4814de9016a49512d806a/azure-pipelines.yaml#L21)
