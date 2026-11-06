@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class ProvisionalBookingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProvisionalBookingService.class);
-    private static final String PROVISIONAL_RESOURCE = "/provisionalBooking";
-    public static final String COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE = "application/vnd.courtscheduler.get.provisional.booking+json";
+    private static final String UNCONFIRMED_RESOURCE = "/unconfirmedBooking";
+    public static final String COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE = "application/vnd.courtscheduler.get.unconfirmed.booking+json";
     public static final String CJS_CPP_UID = "CJSCPPUID";
     @Inject
     @Value(key = "courtscheduler.base.url", defaultValue = "http://localhost:8080/listingcourtscheduler-api/rest/courtscheduler")
@@ -52,8 +52,8 @@ public class ProvisionalBookingService {
         }
 
         try {
-            final HttpGet httpGet = new HttpGet(new URL(baseUri + PROVISIONAL_RESOURCE).toString());
-            httpGet.addHeader(ACCEPT, COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE);
+            final HttpGet httpGet = new HttpGet(new URL(baseUri + UNCONFIRMED_RESOURCE).toString());
+            httpGet.addHeader(ACCEPT, COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE);
             httpGet.addHeader(CJS_CPP_UID, getUserId().toString());
 
             final URIBuilder uriBuilder = new URIBuilder(httpGet.getURI());

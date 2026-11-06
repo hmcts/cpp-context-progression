@@ -78,7 +78,8 @@ public class HearingToHearingListingNeedsTransformer {
                                 defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults())).forEach(
                                         offence -> offence.getJudicialResults().stream().forEach(
                                                 judicialResult -> transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap,
-                                                        bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt)
+                                                        bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt,
+                                                        java.util.Collections.emptySet())
                                         )
                                 )
                         )
@@ -95,6 +96,18 @@ public class HearingToHearingListingNeedsTransformer {
      * record
      */
     public List<HearingListingNeeds> transformWithSeedHearing(final Hearing hearing, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIds) {
+        return transformWithSeedHearing(hearing, committingCourt, seedingHearing, bookingReferenceCourtScheduleIds, java.util.Collections.emptySet());
+    }
+
+    /**
+     * @param alreadyConfirmedBookingReferences references whose slot a previous share already
+     *                                          confirmed. When several references collapse onto
+     *                                          one session, the one NOT in this set is the
+     *                                          clerk's latest pick and must be the one listed
+     *                                          against, so its reservation is consumed rather
+     *                                          than stranded.
+     */
+    public List<HearingListingNeeds> transformWithSeedHearing(final Hearing hearing, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIds, final Set<UUID> alreadyConfirmedBookingReferences) {
         final Map<String, HearingListingNeeds> hearingListingNeedsMap = new HashMap<>();
 
         ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
@@ -106,7 +119,7 @@ public class HearingToHearingListingNeedsTransformer {
                                                 .forEach(judicialResult -> {
                                                             if (!isNextHearingApplication(judicialResult) && (isSingleDayHearingWithNextHearing(judicialResult.getNextHearing(), hearing) || isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing))) {
                                                                 transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap, bookingReferenceCourtScheduleIds,
-                                                                        hearing, committingCourt.isPresent(), committingCourt);
+                                                                        hearing, committingCourt.isPresent(), committingCourt, alreadyConfirmedBookingReferences);
                                                             }
                                                         }
                                                 )
@@ -175,7 +188,8 @@ public class HearingToHearingListingNeedsTransformer {
                            final Map<String, HearingListingNeeds> hearingListingNeedsMap,
                            final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap,
                            final Hearing hearing,
-                           final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
+                           final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt,
+                           final Set<UUID> alreadyConfirmedBookingReferences) {
         if (isNull(judicialResult.getNextHearing()) || nonNull(judicialResult.getNextHearing().getExistingHearingId()) || nonNull(judicialResult.getNextHearing().getDateToBeFixed())) {
             return;
         }
@@ -201,10 +215,37 @@ public class HearingToHearingListingNeedsTransformer {
             key = createMapKey(nextHearing);
         }
 
-        final HearingListingNeeds hearingListingNeeds;
+        HearingListingNeeds hearingListingNeeds;
 
         if (hearingListingNeedsMap.containsKey(key)) {
             hearingListingNeeds = hearingListingNeedsMap.get(key);
+
+            // Two references can land on one session when a clerk re-picks a next hearing that an
+            // earlier share already confirmed: the old reference now carries a confirmed
+            // allocation, so ReservationService.guardAgainstConfirmedAllocation refuses to reserve
+            // over it and the pick mints a new one. Merging them is right - it is one hearing in
+            // one session. Keeping the already-confirmed reference is not.
+            //
+            // CourtScheduleRepositoryImpl.updateListHearingSlots releases the reservation held
+            // under the bookingId it is handed, immediately before charging the session for the
+            // real booking. Hand it the confirmed reference and that release is a no-op, so the
+            // clerk's new reservation is never consumed and never released: it holds a slot of
+            // that session until the overnight purge, counting against capacity exactly like a
+            // real listing (the capacity count does not filter on expires_at). Hand it the live
+            // one and the reservation is consumed; the confirmed row belonging to the previous
+            // hearing is removed by the hearing-keyed release that already runs on a re-share.
+            //
+            // Crown does not reach this branch: there the bookingReference IS the courtScheduleId,
+            // so two Crown references produce two different keys and never merge.
+            if (nonNull(bookingReference)
+                    && !alreadyConfirmedBookingReferences.contains(bookingReference)
+                    && alreadyConfirmedBookingReferences.contains(hearingListingNeeds.getBookingReference())) {
+                hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                        .withValuesFrom(hearingListingNeeds)
+                        .withBookingReference(bookingReference)
+                        .build();
+                hearingListingNeedsMap.put(key, hearingListingNeeds);
+            }
         } else {
             hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary(), hearing.getIsGroupProceedings(), hearing.getNumberOfGroupCases());
             hearingListingNeedsMap.put(key, hearingListingNeeds);

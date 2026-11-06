@@ -18,8 +18,8 @@ public class CourtSchedulerServiceStub {
     private static final String COURT_SCHEDULER_ENDPOINT = "/listingcourtscheduler-api/rest/courtscheduler";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
 
-    private static final String PROVISIONAL_BOOKING = "/provisionalBooking";
-    public static final String COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE = "application/vnd.courtscheduler.get.provisional.booking+json";
+    private static final String UNCONFIRMED_BOOKING = "/unconfirmedBooking";
+    public static final String COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE = "application/vnd.courtscheduler.get.unconfirmed.booking+json";
     public static final String STUB_DATA_PROVISIONAL_BOOKED_SLOTS_FOR_EXISTING_BOOKING_ID_JSON = "stub-data/provisionalBookedSlotsForExistingBookingId.json";
 
     static {
@@ -27,9 +27,9 @@ public class CourtSchedulerServiceStub {
     }
 
     public static void stubGetProvisionalBookedSlotsForNonExistingBookingId() {
-        stubFor(get(urlPathMatching(format("%s", COURT_SCHEDULER_ENDPOINT + PROVISIONAL_BOOKING)))
+        stubFor(get(urlPathMatching(format("%s", COURT_SCHEDULER_ENDPOINT + UNCONFIRMED_BOOKING)))
                 .withQueryParam("bookingIds", notMatching("null"))
-                .withHeader("Accept", containing(COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE))
+                .withHeader("Accept", containing(COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withBody("{\"provisionalSlots\": []}")
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -37,9 +37,9 @@ public class CourtSchedulerServiceStub {
     }
 
     public static void stubGetProvisionalBookedSlotsForExistingBookingId() {
-        stubFor(get(urlPathMatching(format("%s", COURT_SCHEDULER_ENDPOINT + PROVISIONAL_BOOKING)))
+        stubFor(get(urlPathMatching(format("%s", COURT_SCHEDULER_ENDPOINT + UNCONFIRMED_BOOKING)))
                 .withQueryParam("bookingIds", notMatching("null"))
-                .withHeader("Accept", containing(COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE))
+                .withHeader("Accept", containing(COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withBody(getPayload(STUB_DATA_PROVISIONAL_BOOKED_SLOTS_FOR_EXISTING_BOOKING_ID_JSON))
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)

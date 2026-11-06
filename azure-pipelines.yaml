@@ -8,9 +8,14 @@ trigger:
       - 'team/*'
     exclude:
       - 'dev/release-*'
-  paths:
-    include:
-    - '*'
+  # No paths filter. Azure DevOps supports wildcards in BRANCH and TAG filters but NOT in
+  # path filters, so the previous `paths: include: ['*']` was read as a literal path named
+  # "*" - which no commit ever touches. The CI trigger's path condition was therefore never
+  # satisfied and pushing to main or team/* queued no run at all.
+  #
+  # PR builds kept working and hid it: the `pr:` block below uses the simplified syntax,
+  # which is a list of target BRANCHES with no path filter, so it was never affected.
+  # Omitting paths entirely means "any path", which is what the '*' was trying to say.
 
 pr:
   - '*'

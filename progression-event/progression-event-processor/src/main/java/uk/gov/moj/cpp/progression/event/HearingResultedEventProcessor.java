@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.progression.helper.HearingDayUtils;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer;
+import uk.gov.moj.cpp.progression.service.SurplusReservationReleaseService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
@@ -55,6 +56,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -84,6 +86,9 @@ public class HearingResultedEventProcessor {
 
     @Inject
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
+    @Inject
+    private SurplusReservationReleaseService surplusReservationReleaseService;
 
     @Inject
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
@@ -171,18 +176,57 @@ public class HearingResultedEventProcessor {
 
         final Map<UUID, Set<UUID>> combinedBookingReferencesWithCourtScheduleIds = getCombinedBookingReferencesWithCourtScheduleIds(nextHearingsRequested, hearing);
 
-        final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds);
+        // The references a previous share already confirmed. Where one of these collapses onto the
+        // same session as a reference the clerk has just picked, the transformer must list against
+        // the live one, or the new reservation is stranded and silently holds a slot.
+        final Set<UUID> alreadyConfirmedBookingReferences =
+                nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds().stream()
+                        .map(BookingReferenceCourtScheduleIds::getBookingId)
+                        .collect(toSet());
+
+        final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds, alreadyConfirmedBookingReferences);
         if (isNotEmpty(nextHearingsList)) {
             LOGGER.info("progression.event.next-hearings-requested nextHearingsList not empty");
+            final List<BookingReferenceCourtScheduleIds> previousBookingReferences =
+                    nextHearingsRequested.getPreviousBookingReferencesWithCourtScheduleIds();
+
             final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
                     .withHearingId(seedingHearing.getSeedingHearingId())
                     .withSeedingHearing(seedingHearing)
                     .withAdjournedFromDate(LocalDate.now())
                     .withHearings(nextHearingsList)
                     .withShadowListedOffences(shadowListedOffences)
+                    // Deliberately the PREVIOUS references only, not the combined map.
+                    //
+                    // A re-share frees the previous hearing's slots before the new one is listed,
+                    // and freeing them removes the only rows still tying those bookingReferences
+                    // to their sessions - reserve-a-slot stopped writing the provisional_booking
+                    // row that used to survive the release. Listing's own lookup then comes back
+                    // empty for a reference the clerk picked perfectly well, and the hearing is
+                    // dropped. These entries, resolved before the release and replayed here from
+                    // the aggregate, are the only copy left, so listing can fall back to them.
+                    //
+                    // The live half of the combined map is left out on purpose. Those references
+                    // resolved moments ago and will resolve again when listing asks; carrying
+                    // them would only let listing list against ids it could not confirm. It also
+                    // keeps a genuinely expired booking behaving as it does today: nothing was
+                    // ever stored for it, so nothing is carried, and the share still fails loudly
+                    // instead of being listed into a slot nobody holds.
+                    // null, not an empty list, when there is nothing to carry. The aggregate hands
+                    // back emptyList() for every first share, and serialising that put
+                    // "bookingReferencesWithCourtScheduleIds": [] on EVERY command - so a listing
+                    // that predates the field rejected all of them on additionalProperties:false,
+                    // not just the re-shares that actually need it. Nulls are omitted from the
+                    // payload (the same reason committingCourt is passed as null when absent), so
+                    // the property only appears on the commands that have something to say.
+                    .withBookingReferencesWithCourtScheduleIds(
+                            isEmpty(previousBookingReferences) ? null : previousBookingReferences)
                     .build();
 
             progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings);
+
+            releaseSurplusReservations(nextHearingsList, combinedBookingReferencesWithCourtScheduleIds,
+                    alreadyConfirmedBookingReferences);
         }
 
         if (!combinedBookingReferencesWithCourtScheduleIds.isEmpty()) {
@@ -192,6 +236,41 @@ public class HearingResultedEventProcessor {
         }
         progressionService.populateHearingToProbationCaseworker(event, hearing.getId());
 
+    }
+
+
+    /**
+     * Gives back the reservations this share resolved but never listed against.
+     *
+     * <p>The UI reserves a slot per result line. {@code transform} then merges every next hearing
+     * that resolves to one session into a single listing need, keeping one bookingReference and
+     * dropping the rest - right for the listing, but it leaves the dropped references holding
+     * slots that nothing will ever consume. They are invisible on the case page and the
+     * hearing-keyed release cannot reach them, because a reservation carries no hearing_id.
+     *
+     * <p>Only references resolved live in THIS share are candidates. Anything in
+     * {@code alreadyConfirmedBookingReferences} was confirmed by an earlier share and is a real
+     * listing now; releasing by bookingId would be a no-op for it anyway (courtscheduler only
+     * removes rows that still carry an expires_at) but it is excluded here so the intent is in
+     * the code rather than resting on that filter.
+     */
+    private void releaseSurplusReservations(final List<HearingListingNeeds> nextHearingsList,
+                                            final Map<UUID, Set<UUID>> combinedBookingReferencesWithCourtScheduleIds,
+                                            final Set<UUID> alreadyConfirmedBookingReferences) {
+
+        final Set<UUID> listedAgainst = nextHearingsList.stream()
+                .map(HearingListingNeeds::getBookingReference)
+                .filter(Objects::nonNull)
+                .collect(toSet());
+
+        final Set<UUID> surplus = combinedBookingReferencesWithCourtScheduleIds.keySet().stream()
+                .filter(bookingReference -> !alreadyConfirmedBookingReferences.contains(bookingReference))
+                .filter(bookingReference -> !listedAgainst.contains(bookingReference))
+                .collect(toSet());
+
+        if (!surplus.isEmpty()) {
+            surplusReservationReleaseService.release(surplus);
+        }
     }
 
     @Handles("progression.event.hearing-for-application-created")
