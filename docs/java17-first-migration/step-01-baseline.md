@@ -81,3 +81,23 @@ cannot yet resolve the private parent using the available Maven configuration;
 the existing CI/build environment is the selected execution route. No baseline
 application test pass, integration pass, merge or deployment is claimed here.
 Later branches remain dependent on executed evidence, not branch creation.
+
+## Verification cache failure
+
+Run 949979 passed Maven verification and Sonar reporting, then failed in
+Post-job: Restore/save Maven cache (.m2). The archive step reported a tar short
+write (4096 of 10240 bytes) and exit code 2. That identifies the failed cache
+operation; it does not establish the underlying storage cause.
+
+The PR verification route now passes the template's supported
+enableMavenCache=false parameter for this repository. This avoids the optional
+cache restore/archive and uses Maven's normal local repository. Maven verify,
+Sonar analysis/reporting, test selection and normal enforcement remain enabled.
+The IndividualCI validation/deployment route is unchanged. Re-enable caching only
+after its archive/storage behaviour is qualified separately.
+
+Run 949975 separately passed Maven verification but its own Sonar compute-engine
+task 8e5347a4-397d-4099-8db7-3a5f2d6ee1d2 failed. Scanner and reporting task IDs
+match. The detailed server error remains unavailable because the desktop cannot
+validate the Sonar endpoint's certificate. The cache opt-out does not resolve or
+waive that analysis failure; fresh CI results must be retained with this history.
