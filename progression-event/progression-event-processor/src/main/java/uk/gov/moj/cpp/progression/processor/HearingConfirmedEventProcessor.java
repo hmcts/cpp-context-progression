@@ -485,6 +485,9 @@ public class HearingConfirmedEventProcessor {
 
     private long getNumberOfWorkingDaysBetweenTodayAndHearingDay(final LocalDate hearingDay) {
         final LocalDate today = LocalDate.now();
+        if (!hearingDay.isAfter(today)) {
+            return 0;
+        }
         final Predicate<LocalDate> isWeekend = day -> day.getDayOfWeek() == DayOfWeek.SATURDAY || day.getDayOfWeek() == DayOfWeek.SUNDAY;
         final long daysBetween = ChronoUnit.DAYS.between(today, hearingDay);
         return Stream.iterate(today, date -> date.plusDays(1))
