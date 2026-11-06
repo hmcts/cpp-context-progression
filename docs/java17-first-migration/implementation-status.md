@@ -81,6 +81,8 @@ run because approved private artifact settings are unavailable.
 
 ## Human work to close the gates
 
+[What the missing test support means, and how to add it](test-support-next-steps.md).
+
 - Build owner: retain the actual JDK/Maven, merge SHA, template SHA and resolved
   dependency manifest; provide the authorized CI report/effective-POM route.
 - Test and contract owners: reconcile executed/skipped tests and supply the
