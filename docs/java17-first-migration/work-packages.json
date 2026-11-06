@@ -17,7 +17,7 @@
       "scope": "Own the scope, branch register, undated roadmap, acceptance gates and evidence model. Start from current main; exclude unrelated business fixes and alternate model redesign.",
       "human_work": "Technical lead and service owner assign accountable people and agree the phased release policy. Platform, test and operations leads confirm dependencies and evidence expectations.",
       "done_when": "Each step has one scope, branch, proposed owner role and objective exit criteria; implementation and release remain pending.",
-      "release_rule": "Planning documents only. This is the only branch created in this task.",
+      "release_rule": "Planning documents only. Implementation progress is recorded separately; no merge or deployment is implied.",
       "status": "planning branch created; documentation only"
     },
     {
@@ -26,7 +26,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-01-j17-baseline",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a",
       "depends_on": [
         "00"
       ],
@@ -34,7 +34,7 @@
       "human_work": "Build owner supplies authorised private artifact access and a repeatable environment. Test lead distinguishes baseline defects, environmental failures and migration regressions; check owners triage failed gates.",
       "done_when": "Clean pinned baseline build and relevant journeys run in the owning environment, with retained logs and explicit failure disposition. No tests silently disappear.",
       "release_rule": "Remain on Java 17 and the existing API/runtime stack. Evidence or safe build fixes only.",
-      "status": "proposed branch; not created"
+      "status": "draft PR 684; baseline evidence pending"
     },
     {
       "id": "02",
@@ -42,7 +42,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-02-contract-characterisation",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "migration/progression-01-j17-baseline at eef3c57ed",
       "depends_on": [
         "01"
       ],
@@ -50,7 +50,7 @@
       "human_work": "Service and contract owners confirm representative fixtures, expected event/projection outcomes and critical journeys. Business owner identifies any intentional difference for a separate change request.",
       "done_when": "Baseline assertions execute on Java 17, including ambiguous matches, missing/null values and meaningful exclusions. Required MI tests are discovered and executed with identified artifact versions.",
       "release_rule": "No business-rule correction, client redesign or new fallback policy in this branch.",
-      "status": "proposed branch; not created"
+      "status": "draft PR 685; initial characterization only; acceptance open"
     },
     {
       "id": "03",
@@ -58,7 +58,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-03-j17-persistence-harness",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "migration/progression-02-contract-characterisation at c376ffc73",
       "depends_on": [
         "02"
       ],
@@ -66,7 +66,7 @@
       "human_work": "Test/platform owners provide approved fixtures and container access. Persistence reviewer checks that new tests exercise provider/container behaviour rather than mocks alone.",
       "done_when": "The same baseline outcomes pass under the selected harness; PostgreSQL-specific queries execute on PostgreSQL and transaction tests are labelled separately from H2/resource-local checks.",
       "release_rule": "Keep production runtime, Hibernate, schemas and repository behaviour unchanged. Harness versions must remain compatible with the current stack.",
-      "status": "proposed branch; not created"
+      "status": "draft PR 686; H2 fixture only; PostgreSQL/JTA gates open"
     },
     {
       "id": "04",
@@ -74,7 +74,7 @@
       "phase": "Java 17 preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-04-jpa-lifecycle",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "migration/progression-03-j17-persistence-harness at ec3755e59",
       "depends_on": [
         "03"
       ],
@@ -82,7 +82,7 @@
       "human_work": "Persistence and framework reviewers trace the exact released EntityManager producer, flush interceptor and transaction ownership. Confirm existing timezone behaviour and its ownership; preserve required policy deliberately.",
       "done_when": "Pilot preserves managed-instance, detached-update/removal, zero/one/multiple-result, rollback and concurrency contracts. Required framework lifecycle/flush behaviour is retained. The selected injection approach demonstrably shares/joins the intended persistence context, with explicit ownership of flush, commit and rollback.",
       "release_rule": "Use APIs available on the existing JPA version; no Jakarta Persistence 3.2-only helpers. Retain the framework persistence artifact while needed.",
-      "status": "proposed branch; not created"
+      "status": "draft PR 687; partial query pilot only; lifecycle gate open"
     },
     {
       "id": "05",

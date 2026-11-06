@@ -1,6 +1,6 @@
 # Progression Java 17 first migration plan
 
-Build from current `main` at `ceebd3c81e899e1dfea4814de9016a49512d806a`. This plan supersedes the earlier branch-comparison approach; that upgrade branch is not an implementation source. Only the planning branch has been created. Future branches are proposed scopes, not completed work.
+Build from `main` pinned at `ceebd3c81e899e1dfea4814de9016a49512d806a`. This plan supersedes the earlier branch-comparison approach; that upgrade branch is not an implementation source. Steps 01 to 04 now have separate stacked draft PRs containing initial work. Their acceptance gates remain open; branch creation does not complete the steps. [See implementation status](implementation-status.md).
 
 ## Outcome and scope
 
@@ -14,7 +14,7 @@ WildFly 40 and Hibernate 7 support Java 17 upstream, but the independently inspe
 
 ## Branch and release rules
 
-- Create each implementation branch only when its prerequisites and base revision are known. Names below are proposals; this task creates step 00 only.
+- Create each implementation branch with an explicit base revision and prerequisite status. Steps 01 to 04 are stacked drafts; later names remain proposals. Review and accept predecessor evidence before accepting dependent work.
 - Steps 01 to 09 branch from refreshed main after preceding changes merge. Stacked development is possible only with the dependent PR base made explicit. Preserve unrelated main changes.
 - Step 10 is prerequisite documentation/coordination in Progression; platform owners provide separately scoped PRs in each owning repository as needed. Creating a branch does not publish those artifacts.
 - Step 11 is the coherent target source/build branch. Step 12 is a separate deployment-repository PR. Neither establishes a safe production intermediate alone.
