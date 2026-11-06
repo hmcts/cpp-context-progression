@@ -45,6 +45,10 @@
               "description": "Indicates which case within a group (isGroupMember = true) is the master and should be returned by the backend to the UI",
               "type": "boolean"
             },
+            "numberOfGroupCases": {
+              "description": "Number of active cases (isGroupMember = true) in the group, including this case",
+              "type": "integer"
+            },
             "caseMarkers": {
               "type": "array",
               "items": {

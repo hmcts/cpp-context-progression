@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.getLinkedApplicationCaseIds;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -21,6 +22,7 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -289,11 +291,22 @@ public class HearingConfirmedEventProcessor {
 
         }
 
-        if (sendNotificationToParties) {
+        if (sendNotificationToParties && !isBulkCivilCase(confirmedHearing)) {
             sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing, hearingInProgression);
+        } else if (isBulkCivilCase(confirmedHearing)) {
+            LOGGER.info("Hearing notice not generated or sent for bulk civil HearingId {} — generation and GOV.UK Notify dispatch are both suppressed for a civil group proceeding", confirmedHearing.getId());
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
+    }
+
+    private boolean isBulkCivilCase(final ConfirmedHearing confirmedHearing) {
+        if (!isBulkCase(confirmedHearing)) {
+            return false;
+        }
+        return isNotEmpty(confirmedHearing.getProsecutionCases()) &&
+                confirmedHearing.getProsecutionCases().stream()
+                        .anyMatch(prosecutionCase -> nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil());
     }
 
     private void sendApplicationNotification(final JsonEnvelope jsonEnvelope, final String hearingTypeId, final Hearing hearing,
@@ -322,15 +335,56 @@ public class HearingConfirmedEventProcessor {
                                   final ZonedDateTime hearingStartDateTime,
                                   final CourtApplication courtApplication) {
 
+        final CourtApplication courtApplicationForNotification = reattachCivilOffencesFromHearing(courtApplication, hearing);
+
         JsonObject payload = createObjectBuilder()
                 .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
                 .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
-                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplicationForNotification))
                 .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre()))
                 .build();
 
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
                 .apply(objectToJsonObjectConverter.convert(payload)));
+    }
+
+    /**
+     * HearingOffenceFilter relocates active application offences onto the hearing's prosecutionCases
+     * side before listing, clearing them from courtApplicationCase.offences. That drops the civilOffence
+     * data (e.g. isExParte) the notification suppression check relies on, so restore it here from the
+     * hearing's prosecution cases before the courtApplication is sent for notification.
+     */
+    private CourtApplication reattachCivilOffencesFromHearing(final CourtApplication courtApplication, final Hearing hearing) {
+        if (isNull(courtApplication.getCourtApplicationCases()) || isEmpty(hearing.getProsecutionCases())) {
+            return courtApplication;
+        }
+
+        final List<CourtApplicationCase> updatedCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> reattachCivilOffencesToCase(courtApplicationCase, hearing.getProsecutionCases()))
+                .collect(toList());
+
+        return CourtApplication.courtApplication().withValuesFrom(courtApplication).withCourtApplicationCases(updatedCases).build();
+    }
+
+    private CourtApplicationCase reattachCivilOffencesToCase(final CourtApplicationCase courtApplicationCase, final List<ProsecutionCase> prosecutionCases) {
+        if (isNotEmpty(courtApplicationCase.getOffences())) {
+            return courtApplicationCase;
+        }
+
+        final List<Offence> civilOffences = prosecutionCases.stream()
+                .filter(prosecutionCase -> java.util.Objects.equals(prosecutionCase.getId(), courtApplicationCase.getProsecutionCaseId()))
+                .filter(prosecutionCase -> nonNull(prosecutionCase.getDefendants()))
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .filter(defendant -> nonNull(defendant.getOffences()))
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(toList());
+
+        if (civilOffences.isEmpty()) {
+            return courtApplicationCase;
+        }
+
+        return CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase).withOffences(civilOffences).build();
     }
 
     private boolean hasNextHearing(CourtApplication courtApplication) {
@@ -829,8 +883,20 @@ public class HearingConfirmedEventProcessor {
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(confirmedUpdatedHearing.getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(confirmedUpdatedHearing.getCourtCentre().getRoomId());
+        hearingNotificationInputData.setLinkedApplicationCaseIds(getLinkedApplicationCaseIdsForHearing(jsonEnvelope, confirmedUpdatedHearing, hearingInProgression));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, hearingNotificationInputData);
+    }
+
+    // an application can be confirmed onto a hearing that progression does not yet hold it against, so the
+    // confirmed applications are loaded as well to find every case linked to them
+    private List<UUID> getLinkedApplicationCaseIdsForHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
+        final List<CourtApplication> courtApplications = new ArrayList<>(ofNullable(hearingInProgression).map(Hearing::getCourtApplications).orElse(new ArrayList<>()));
+        ofNullable(confirmedHearing.getCourtApplicationIds()).orElse(new ArrayList<>()).stream()
+                .map(courtApplicationId -> progressionService.getCourtApplicationByIdTyped(jsonEnvelope, courtApplicationId.toString()))
+                .flatMap(Optional::stream)
+                .forEach(courtApplications::add);
+        return getLinkedApplicationCaseIds(courtApplications);
     }
 
 

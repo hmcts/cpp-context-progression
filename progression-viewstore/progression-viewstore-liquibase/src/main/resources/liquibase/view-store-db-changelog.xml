@@ -120,4 +120,5 @@
     <include file="liquibase/remove-column-offence-id-from-civil-fee.xml"/>
     <include file="liquibase/add-document-metadata-to-court-document.xml"/>
     <include file="liquibase/refactor-court-application-constraints-and-mdch-index.xml"/>
+    <include file="liquibase/add-index-prosecution-case-group-id.xml"/>
 </databaseChangeLog>

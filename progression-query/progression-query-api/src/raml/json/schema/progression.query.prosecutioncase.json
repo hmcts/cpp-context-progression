@@ -56,6 +56,10 @@
       "items": {
         "$ref": "#/definitions/relatedCase"
       }
+    },
+    "numberOfGroupCases": {
+      "description": "Number of active cases (isGroupMember = true) in the group, including this case",
+      "type": "integer"
     }
   },
   "additionalProperties": false,
@@ -563,6 +567,10 @@
         "caseStatus": {
           "type": "string"
         },
+        "isCivil": {
+          "description": "True if this related case is a civil case, false if criminal",
+          "type": "boolean"
+        },
         "offences": {
           "type": "array",
           "minItems": 1,
@@ -573,6 +581,7 @@
       },
       "required": [
         "caseId",
+        "isCivil",
         "offences"
       ],
       "additionalProperties": false

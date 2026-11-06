@@ -125,6 +125,26 @@ public class SummonsNotificationEmailPayloadService {
                 addresseeIsYouth, materialId, notificationForParentOrGuardian));
     }
 
+    public Optional<EmailChannel> getEmailChannelForBulkCaseSummonsApproved(final SummonsDataPrepared summonsDataPrepared,
+                                                                            final SummonsDocument summonsDocumentContent,
+                                                                            final String emailAddress,
+                                                                            final String leadDefendantDetails) {
+        if (isBlank(emailAddress)) {
+            return empty();
+        }
+        return Optional.of(emailChannel()
+                .withSendToAddress(emailAddress)
+                .withTemplateId(fromString(applicationParameters.getBulkSummonsApprovedTemplateId()))
+                .withPersonalisation(personalisation()
+                        .withAdditionalProperty(PROPERTY_CASE_REFERENCE, summonsDocumentContent.getCaseReference())
+                        .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, leadDefendantDetails)
+                        .withAdditionalProperty(PROPERTY_COURT_LOCATION, summonsDocumentContent.getHearingCourtDetails().getCourtName())
+                        .withAdditionalProperty(PROPERTY_HEARING_DATE, getHearingDateForEmailNotification(summonsDataPrepared.getSummonsData().getHearingDateTime()))
+                        .withAdditionalProperty(PROPERTY_HEARING_TIME, summonsDocumentContent.getHearingCourtDetails().getHearingTime())
+                        .build())
+                .build());
+    }
+
     public EmailChannel getEmailChannelForSummonsRejected(final String emailAddress,
                                                           final String applicationReference,
                                                           final List<String> partyDetails,
