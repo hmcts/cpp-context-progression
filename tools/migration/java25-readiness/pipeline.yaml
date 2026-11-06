@@ -12,6 +12,7 @@ stages:
             - identifier -equals ubuntu-j25
         steps:
           - checkout: self
+            clean: true
           - task: DownloadSecureFile@1
             name: targetSettings
             inputs:
@@ -27,7 +28,7 @@ stages:
               cp "$(targetSecuritySettings.secureFilePath)" ~/.m2/settings-security.xml
               python3 -B -m unittest discover -s tools/migration/java25-readiness -p 'test_*.py'
               mvn -B -C -U -V -f tools/migration/java25-readiness/pom.xml \
-                dependency:build-classpath verify \
+                clean dependency:build-classpath verify \
                 -Dmdep.outputFile="$(Build.SourcesDirectory)/tools/migration/java25-readiness/target/classpath.txt"
             displayName: Resolve and test the standalone target classpath
           - bash: |

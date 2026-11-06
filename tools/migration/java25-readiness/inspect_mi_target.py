@@ -22,9 +22,10 @@ def class_info(data):
         return result
     def number(n): return int.from_bytes(take(n), 'big')
     if take(4) != b'\xca\xfe\xba\xbe': raise ValueError('invalid class')
-    number(2)
+    minor = number(2)
     major, count, index = number(2), number(2), 1
     if major < 45 or count < 2: raise ValueError('invalid class header')
+    if major > 69 or minor == 65535: raise ValueError('class requires a newer Java version or preview features')
     while index < count:
         tag = number(1)
         if tag == 1:

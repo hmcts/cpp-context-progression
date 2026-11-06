@@ -4,7 +4,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from inspect_mi_target import assess
+from inspect_mi_target import assess, class_info
 
 def bytecode(namespace):
     def utf(value):
@@ -42,5 +42,10 @@ class InspectionTest(unittest.TestCase):
         for payload in (b'', bytecode('javax/xml/parsers/DocumentBuilder')[:-1]):
             with zipfile.ZipFile(paths[0], 'w') as jar: jar.writestr('Example.class', payload)
             self.assertTrue(assess(self.cp, '1.2.3')['errors'])
+    def test_newer_java_and_preview_classes_are_rejected(self):
+        payload = bytecode('java/lang/Object')
+        for minor, major in ((0, 70), (65535, 69)):
+            with self.assertRaisesRegex(ValueError, 'newer Java version or preview'):
+                class_info(payload[:4] + struct.pack('>HH', minor, major) + payload[8:])
 
 if __name__ == '__main__': unittest.main()
