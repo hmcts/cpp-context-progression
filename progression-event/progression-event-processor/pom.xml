@@ -382,7 +382,7 @@
                              code deps must be broken" decoupling rule. -->
                         <groupId>uk.gov.moj.cpp.listing</groupId>
                         <artifactId>listing-command-api</artifactId>
-                        <version>${listing.version}</version>
+                        <version>${listing.command.api.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>
