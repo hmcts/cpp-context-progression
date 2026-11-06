@@ -82,6 +82,15 @@ no main or draft history was rewritten in this task.
 | Both MI classifiers | Compatible explicit release required | Current RELEASE probe fails pin and legacy-API gates |
 | Runtime / pipeline | WildFly 40 target | Custom immutable image, modules and configuration not qualified |
 
+The [pinned HMCTS image recipe](https://github.com/hmcts/cpp-docker-images/blob/0c034a6e9e3c92291573d378e4922200cb711ca5/wildfly40-ubuntu.dockerfile#L18)
+selects WildFly 40.0.1.Final; its [metadata](https://github.com/hmcts/cpp-docker-images/blob/0c034a6e9e3c92291573d378e4922200cb711ca5/metadata-wildfly.json#L6)
+supplies a Java 25 base input. The [official server POM](https://github.com/wildfly/wildfly/blob/40.0.1.Final/pom.xml#L545)
+declares Hibernate 7.3.2.Final. These strengthen the source candidate only. The
+pipeline owner must supply the exact consumed cpp.pipeline revision and
+`aks-pipeline.versions.yml` value of `widlfly40_base_tag`; existing noninteractive
+access could not authenticate to refresh that source. The complete image tag,
+digest and actual running provider remain unqualified.
+
 Primary source inputs: [service parent](https://github.com/hmcts/cpp-platform-maven-service-parent-pom/blob/25.104.6/pom.xml),
 [platform libraries](https://github.com/hmcts/cpp-platform-libraries/blob/25.104.6/pom.xml),
 [application BOM](https://github.com/hmcts/cpp-platform-maven-common-bom/blob/25.104.5/pom.xml),
