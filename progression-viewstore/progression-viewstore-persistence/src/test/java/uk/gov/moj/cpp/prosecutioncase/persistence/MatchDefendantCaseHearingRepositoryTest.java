@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
@@ -119,6 +120,52 @@ public class MatchDefendantCaseHearingRepositoryTest {
         final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(randomUUID(), PROSECUTION_CASE_ID, DEFENDANT_ID);
 
         assertThat(entity, is(nullValue()));
+    }
+
+    @Test
+    public void shouldRejectMultipleMatchesForAnOptionalHearingCaseAndDefendantLookup() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        try {
+            saveEntity(defendantId, masterDefendantId, caseId, hearingId, randomUUID());
+
+            final MatchDefendantCaseHearingEntity duplicate = new MatchDefendantCaseHearingEntity();
+            duplicate.setId(randomUUID());
+            duplicate.setDefendantId(defendantId);
+            duplicate.setMasterDefendantId(masterDefendantId);
+            duplicate.setProsecutionCaseId(caseId);
+            duplicate.setHearingId(hearingId);
+            matchDefendantCaseHearingRepository.save(duplicate);
+
+            final List<MatchDefendantCaseHearingEntity> matches =
+                    matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId);
+            assertThat(matches.size(), is(2));
+            // Entity equality ignores the physical id, so a Set would hide the two rows.
+            assertThat(matches.get(0).getId().equals(matches.get(1).getId()), is(false));
+
+            try {
+                matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(
+                        hearingId, caseId, defendantId);
+                fail("An optional single-result lookup must reject multiple matching rows");
+            } catch (final NonUniqueResultException expected) {
+                // OPTIONAL permits no result; it does not permit an arbitrary result.
+            }
+        } finally {
+            // The existing single-result teardown cannot remove an ambiguous tuple.
+            matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(
+                    hearingId, caseId, defendantId);
+            final HearingEntity hearing = hearingRepository.findBy(hearingId);
+            if (Objects.nonNull(hearing)) {
+                hearingRepository.attachAndRemove(hearing);
+            }
+            final ProsecutionCaseEntity prosecutionCase = prosecutionCaseRepository.findBy(caseId);
+            if (Objects.nonNull(prosecutionCase)) {
+                prosecutionCaseRepository.attachAndRemove(prosecutionCase);
+            }
+        }
     }
 
     @Test
