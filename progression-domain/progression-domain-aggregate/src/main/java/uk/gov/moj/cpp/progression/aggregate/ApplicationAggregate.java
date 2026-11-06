@@ -69,6 +69,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
@@ -909,6 +910,33 @@ public class ApplicationAggregate implements Aggregate {
                 .withHearingId(this.initiateCourtApplicationProceedings.getCourtHearing().getId())
                 .withSeedingHearingId(seedingHearingId)
                 .build()));
+    }
+
+    public Stream<Object> deleteCourtApplicationByBdf(final UUID courtApplicationId) {
+        return apply(Stream.of(CourtApplicationDeletedBdf.courtApplicationDeletedBdf()
+                .withApplicationId(courtApplicationId)
+                .withCaseIds(getLinkedCaseIds())
+                .build()));
+    }
+
+    private List<UUID> getLinkedCaseIds() {
+        if (isNull(this.courtApplication)) {
+            return new ArrayList<>();
+        }
+
+        final List<UUID> caseIds = ofNullable(this.courtApplication.getCourtApplicationCases()).stream()
+                .flatMap(Collection::stream)
+                .map(CourtApplicationCase::getProsecutionCaseId)
+                .collect(toList());
+
+        ofNullable(this.courtApplication.getCourtOrder())
+                .map(courtOrder -> courtOrder.getCourtOrderOffences())
+                .stream()
+                .flatMap(Collection::stream)
+                .map(CourtOrderOffence::getProsecutionCaseId)
+                .forEach(caseIds::add);
+
+        return caseIds.stream().filter(Objects::nonNull).distinct().collect(toList());
     }
 
     public Stream<Object> updateCustodialInfomrationForApplicatioNSubject(final DefendantUpdate defendantUpdate, final UUID applicationId) {
