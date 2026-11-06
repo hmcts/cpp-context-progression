@@ -46,6 +46,21 @@ OpenEJB/CDI repository tests were observed executing. The resolved template is
 c0a93fdebdd2a2f79ab88e57f5d20ded0a74eeae and the baseline PR merge revision is
 db4bc113cdb86794b2c3b088eccd421ace059713. These observations establish that
 execution started; they do not establish a passing run or complete coverage.
+Its test logs also identify DeltaSpike JPA/OpenEJB components at 1.9.6; this is
+test-classpath evidence, not a deployed WildFly dependency manifest.
+
+Pilot run 949915, merge revision
+2c2ce6b446873096e402b9e547b31a101eb4a39c, reports these affected suites:
+
+| Suite | Executed | Failures | Errors | Skipped |
+|---|---:|---:|---:|---:|
+| MatchDefendantCaseHearingRepositoryTest | 9 | 0 | 0 | 0 |
+| RelatedReferenceRepositoryContractTest | 6 | 0 | 0 | 0 |
+| RelatedReferenceJpaTestContextTest | 3 | 0 | 0 | 0 |
+
+These 18 cases include the ten new tests. They prove the initial assertions ran
+on the pilot classpath, including CDI query construction; they do not establish
+a passing full pipeline, PostgreSQL/WildFly parity or completion of Step 04.
 
 Local verification: four collector parser tests passed; source/API review and
 diff whitespace checks passed. Local Java application compilation/tests were not
@@ -61,6 +76,16 @@ run because approved private artifact settings are unavailable.
   current-runtime container/JTA test route without deploying to a shared service.
 - Framework and persistence reviewers: qualify the consumed EntityManager
   producer, flush/transaction policy and context identity before replacing them.
+
+The existing [tests-only validation template](https://github.com/hmcts/cpp-azure-devops-templates/blob/c0a93fdebdd2a2f79ab88e57f5d20ded0a74eeae/pipelines/context-validation-tests.yaml)
+is a possible environment route, but requires an existing matching ephemeral
+agent/workspace, preserved namespace/routes and `shouldrun=true`. Its source-SHA
+parameter is logged rather than checked out by the test step; verify actual HEAD
+and the deployed image/configuration. Integration fixtures can clean stores and
+recreate indexes, so a prepared namespace must also have isolated storage,
+messaging/search and reviewed synthetic-data cleanup scope. No such job was
+triggered in this work. Full validation and runIntegrationTests.sh also deploy or
+migrate and are outside the current verification runs.
 
 These are acceptance prerequisites. No broad conversion or release should use
 the partial H2/query pilot as evidence that those prerequisites have been met.
