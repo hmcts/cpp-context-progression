@@ -1,7 +1,8 @@
 # Step 01 Java 17 baseline
 
-This branch prepares baseline evidence collection without changing production code,
-Maven dependencies, test selection, runtime configuration or business rules.
+This branch prepares baseline evidence collection and a narrowly qualified
+Listing command RAML refresh. Java, runtime/provider, schemas, test selection and
+business rules remain on the current stack.
 
 Source baseline: `ceebd3c81e899e1dfea4814de9016a49512d806a` on `main`.
 The planning branch is separate. The later Java upgrade branch is not used.
@@ -49,6 +50,29 @@ python3 -m unittest discover -s tools/migration -p 'test_*.py'
 - Exact failures classified as baseline behaviour, dependency/environment issue
   or migration regression; no missing tests silently treated as passes.
 - Separate authorised integration evidence for the required business journeys.
+
+## Baseline interface enforcement failure and bounded fix
+
+The first Maven attempt in run 949881 failed `enforce-moj-latest-interfaces` in
+progression-event-processor: listing-command-api 17.104.10 was behind released
+17.104.16. This occurred on the initial branch containing no Java or POM changes.
+The existing template then retried the whole Maven command automatically.
+
+The fix introduces listing.command.api.version only for the generator's existing
+listing-command-api RAML classifier. Its transitive exclusions remain intact.
+listing.version and every Listing query consumer stay at 17.104.10. No Listing
+server Java or business implementation is imported.
+
+Released source compared: v17.104.10 at
+c71d27170d246cbe9f2cac02513672f0aec5aa4b and v17.104.16 at
+c221cdfb6108925bdc032ecd199ddadb00896a00 in cpp-context-listing.
+The root listing-command-api.raml, its media/action mappings, the three commands
+used by Progression (list-court-hearing, list-unscheduled-court-hearing and
+delete-hearing), and their examples are byte-identical between those releases.
+The three other changed command schemas add only optional
+judiciaryAssignmentSource with MANUAL/AUTO values; required fields are unchanged.
+Source qualification supports this bounded build fix; CI must still verify
+generation, compilation and tests. Do not suppress the interface-enforcement rule.
 
 ## Current boundary
 
