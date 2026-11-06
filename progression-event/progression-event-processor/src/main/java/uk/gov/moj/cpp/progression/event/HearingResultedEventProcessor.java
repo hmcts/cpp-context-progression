@@ -212,6 +212,7 @@ public class HearingResultedEventProcessor {
                     // keeps a genuinely expired booking behaving as it does today: nothing was
                     // ever stored for it, so nothing is carried, and the share still fails loudly
                     // instead of being listed into a slot nobody holds.
+                    //
                     // null, not an empty list, when there is nothing to carry. The aggregate hands
                     // back emptyList() for every first share, and serialising that put
                     // "bookingReferencesWithCourtScheduleIds": [] on EVERY command - so a listing

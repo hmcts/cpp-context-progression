@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.transformer;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -79,7 +80,7 @@ public class HearingToHearingListingNeedsTransformer {
                                         offence -> offence.getJudicialResults().stream().forEach(
                                                 judicialResult -> transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap,
                                                         bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt,
-                                                        java.util.Collections.emptySet())
+                                                        emptySet())
                                         )
                                 )
                         )
@@ -96,7 +97,7 @@ public class HearingToHearingListingNeedsTransformer {
      * record
      */
     public List<HearingListingNeeds> transformWithSeedHearing(final Hearing hearing, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIds) {
-        return transformWithSeedHearing(hearing, committingCourt, seedingHearing, bookingReferenceCourtScheduleIds, java.util.Collections.emptySet());
+        return transformWithSeedHearing(hearing, committingCourt, seedingHearing, bookingReferenceCourtScheduleIds, emptySet());
     }
 
     /**
@@ -202,7 +203,9 @@ public class HearingToHearingListingNeedsTransformer {
         if (nonNull(bookingReference)) {
             if (!bookingReferenceCourtScheduleIdMap.containsKey(bookingReference)) {
                 if (isCrownNextHearing(nextHearing)) {
-                    // Crown has no provisional booking concept: the bookingReference value IS the courtScheduleId.
+                    // A Crown reference courtscheduler did not resolve - one an older results UI wrote
+                    // as a court schedule id - is keyed on itself, so the hearing still reaches
+                    // listing, which resolves Crown references as booking ids and fails loudly if it can't.
                     key = createMapKey(Set.of(bookingReference), nextHearing.getType());
                 } else {
                     logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
@@ -235,8 +238,8 @@ public class HearingToHearingListingNeedsTransformer {
             // one and the reservation is consumed; the confirmed row belonging to the previous
             // hearing is removed by the hearing-keyed release that already runs on a re-share.
             //
-            // Crown does not reach this branch: there the bookingReference IS the courtScheduleId,
-            // so two Crown references produce two different keys and never merge.
+            // Crown references take this branch too: they are booking ids, resolved through the same
+            // booking lookup as magistrates, so two Crown references on one session merge here.
             if (nonNull(bookingReference)
                     && !alreadyConfirmedBookingReferences.contains(bookingReference)
                     && alreadyConfirmedBookingReferences.contains(hearingListingNeeds.getBookingReference())) {
@@ -320,7 +323,7 @@ public class HearingToHearingListingNeedsTransformer {
         if (nonNull(bookingReference)) {
             Set<UUID> courtScheduleIds = bookingReferenceCourtScheduleIdMap.get(bookingReference);
             if (isNull(courtScheduleIds) && isCrownNextHearing(nextHearing)) {
-                // Crown has no provisional booking concept: the bookingReference value IS the courtScheduleId.
+                // An unresolved Crown reference is keyed on itself - see the same fallback in transform.
                 courtScheduleIds = Set.of(bookingReference);
             }
             key = createMapKey(courtScheduleIds, nextHearing.getType());

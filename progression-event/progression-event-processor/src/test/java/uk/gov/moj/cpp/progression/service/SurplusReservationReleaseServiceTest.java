@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -20,18 +21,21 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,12 +56,6 @@ class SurplusReservationReleaseServiceTest {
     @Mock
     private SystemUserProvider systemUserProvider;
 
-    @Mock
-    private HttpResponse httpResponse;
-
-    @Mock
-    private StatusLine statusLine;
-
     private SurplusReservationReleaseService service;
 
     @BeforeEach
@@ -68,9 +66,8 @@ class SurplusReservationReleaseServiceTest {
     }
 
     /**
-     * The batch release, not DELETE /sessions/{id}: that one also releases by hearing_id, where a
-     * confirmed listing lives. This one gives back only holds no share has confirmed, which is
-     * exactly what a surplus reservation is.
+     * The batch release gives back only holds no share has confirmed, which is exactly what a
+     * surplus reservation is; it never releases by hearing_id, where a confirmed listing lives.
      */
     @Test
     void shouldReleaseEverySurplusBookingInOneBatchCall() throws Exception {
@@ -145,10 +142,39 @@ class SurplusReservationReleaseServiceTest {
         verify(service, never()).execute(any(HttpPost.class));
     }
 
+    /**
+     * A courtscheduler that accepts the connection and never answers. The real call must give up
+     * on its read timeout instead of holding the event-processor thread.
+     */
+    @Test
+    void shouldGiveUpOnACourtschedulerThatNeverAnswers() throws Exception {
+        final CountDownLatch unblock = new CountDownLatch(1);
+        final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.setExecutor(Executors.newCachedThreadPool());
+        server.createContext("/unconfirmedBooking/release", exchange -> {
+            exchange.getRequestBody().readAllBytes();
+            try {
+                unblock.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            setField(service, "baseUri", "http://127.0.0.1:" + server.getAddress().getPort());
+            setField(service, "socketTimeoutMs", "300");
+            when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
+
+            assertTimeoutPreemptively(Duration.ofSeconds(5), () -> service.release(Set.of(randomUUID())));
+        } finally {
+            unblock.countDown();
+            server.stop(0);
+        }
+    }
+
     private void givenResponseStatus(final int status) throws IOException {
-        when(statusLine.getStatusCode()).thenReturn(status);
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        doReturn(httpResponse).when(service).execute(any(HttpPost.class));
+        doReturn(status).when(service).execute(any(HttpPost.class));
     }
 
     /** The spy is a subclass, so the declared field lives on SurplusReservationReleaseService. */
