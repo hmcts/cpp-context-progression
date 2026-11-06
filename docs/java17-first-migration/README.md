@@ -1,6 +1,8 @@
 # Progression Java 17 first migration plan
 
-Build from `main` pinned at `ceebd3c81e899e1dfea4814de9016a49512d806a`. This plan supersedes the earlier branch-comparison approach; that upgrade branch is not an implementation source. Steps 01 to 04 now have separate stacked draft PRs containing initial work. Their acceptance gates remain open; branch creation does not complete the steps. [See implementation status](implementation-status.md).
+Build from `main` pinned at `ceebd3c81e899e1dfea4814de9016a49512d806a`. This plan supersedes the earlier branch-comparison approach; that upgrade branch is not an implementation source. Steps 01 to 04 have separate stacked draft PRs containing initial work. Parallel Step 10 now has an isolated Java 25 prerequisite probe in draft PR 690. Their acceptance gates remain open; branch creation does not complete the steps. [See implementation status](implementation-status.md).
+
+Main advanced during preparation to `2e29ed5f8cf3282e445b9032a9ac100bdb8fc40d` with the merged civil-case work and dependency changes. The drafts still describe their original tested baseline. Refresh and retest against accepted main before integration; [the target evidence records the new repository-method and dependency scope](java25-readiness.md#main-advanced-during-preparation).
 
 ## Outcome and scope
 
@@ -10,13 +12,13 @@ Main already owns Material and Listing adapters/models. Keep that work and test 
 
 ## Platform boundary
 
-WildFly 40 and Hibernate 7 support Java 17 upstream, but the independently inspected internal 25.x chain inherits parent 25.104.4 with Java [25,) enforcement and compiler source/target/release 25. The default route therefore completes all current-stack work on Java 17, then consumes a qualified Java 25/Jakarta EE 11/WildFly 40/Hibernate 7 platform together. A temporary Java 17 Jakarta bridge requires its own released and supported internal artifacts; do not assume one or override enforcement to manufacture it. Actual resolved JAR bytecode and runtime versions still require verification.
+WildFly 40 and Hibernate 7 support Java 17 upstream, but the selected released service-parent 25.104.6 chain inherits common parent 25.104.5 with Java [25,) enforcement and compiler source/target/release 25. The default route therefore completes all current-stack work on Java 17, then consumes a qualified Java 25/Jakarta EE 11/WildFly 40/Hibernate 7 platform together. A temporary Java 17 Jakarta bridge requires its own released and supported internal artifacts; do not assume one or override enforcement to manufacture it. The isolated probe has executed on Java 25, but failed Hibernate alignment and MI classifier gates. Full application binaries and the custom runtime still require qualification. [See target evidence and next steps](java25-readiness.md).
 
 ## Branch and release rules
 
-- Create each implementation branch with an explicit base revision and prerequisite status. Steps 01 to 04 are stacked drafts; later names remain proposals. Review and accept predecessor evidence before accepting dependent work.
+- Create each implementation branch with an explicit base revision and prerequisite status. Steps 01 to 04 are stacked drafts; Step 10 is a parallel draft based on Step 01; other names remain proposals. Review and accept predecessor evidence before accepting dependent work.
 - Steps 01 to 09 branch from refreshed main after preceding changes merge. Stacked development is possible only with the dependent PR base made explicit. Preserve unrelated main changes.
-- Step 10 is prerequisite documentation/coordination in Progression; platform owners provide separately scoped PRs in each owning repository as needed. Creating a branch does not publish those artifacts.
+- Step 10 contains an isolated prerequisite CI probe and qualification records in Progression; platform owners provide separately scoped PRs in each owning repository as needed. Creating a branch does not publish those artifacts.
 - Step 11 is the coherent target source/build branch. Step 12 is a separate deployment-repository PR. Neither establishes a safe production intermediate alone.
 - Step 13 targets Step 11 while it is unmerged. Rebase the stacked branch when its parent merges; retest the final combined SHA/image/configuration. Step 14 is runbook/evidence work on accepted target main.
 - Keep code, generated model changes, tests, configuration and human acceptance traceable. Avoid duplicate changes across branches. No force pushes, merges or deployments are implied by this plan.
@@ -72,7 +74,7 @@ Human work: Technical lead and service owner assign accountable people and agree
 
 Done when: Each step has one scope, branch, proposed owner role and objective exit criteria; implementation and release remain pending.
 
-Merge and release rule: Planning documents only. This is the only branch created in this task.
+Merge and release rule: Planning documents only. Implementation progress and actual branch creation are recorded separately in implementation-status.md.
 
 ### 01 Reproduce the Java 17 baseline
 
@@ -184,7 +186,7 @@ Merge and release rule: Stop point with value delivered before Java 25. No targe
 
 ### 10 Prepare the supported target platform
 
-Branch: `migration/progression-10-target-prerequisites` in `cpp-context-progression`. Base: main at Step 10 start after Step 01; refresh before integration. Dependencies: 01.
+Branch: `migration/progression-10-target-prerequisites` in `cpp-context-progression`. Base: parallel on Step 01 at 010ca5bb632f9d47eff7f9c2bdd03252800561b5; refresh before integration. Dependencies: 01.
 
 Record compatible released parent/BOM, framework/core models, generators, MI/other test artifacts, Java 25 agents and WildFly 40 image/configuration. Link owner PRs in platform/deployment repositories where changes are needed.
 

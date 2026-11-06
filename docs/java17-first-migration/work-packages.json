@@ -170,7 +170,7 @@
       "phase": "Target preparation",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-10-target-prerequisites",
-      "branch_base": "main at Step 10 start after Step 01; refresh before integration",
+      "branch_base": "parallel on Step 01 at 010ca5bb632f9d47eff7f9c2bdd03252800561b5; refresh before integration",
       "depends_on": [
         "01"
       ],
@@ -178,7 +178,7 @@
       "human_work": "Platform owners supply tested versions and a compatibility manifest; operations provides a target test environment. Decide whether any temporary Java 17 Jakarta bridge is worth separate support; it is not assumed.",
       "done_when": "Identified artifacts and configuration can support the target service build/test cycle; image/template/chart revisions and required JNDI/datasource/messaging settings are recorded. No skipped contract checks are accepted by default.",
       "release_rule": "Can progress in parallel with Java 17 work. This planning/evidence branch does not switch the service runtime or deploy anything.",
-      "status": "proposed branch; not created"
+      "status": "draft PR 690; target CI 950145 failed Hibernate and MI gates; six inspector tests passed; Java 17 verification queued"
     },
     {
       "id": "11",
@@ -247,5 +247,10 @@
       "status": "proposed branch; not created"
     }
   ],
-  "dependency_semantics": "Dependencies identify accepted predecessor outputs, not necessarily merged branches in the target lane. Step 12 can start after 10 but finishes with the buildable Step 11 artifact. Step 13 uses the built 11 artifact and matching 12 test configuration, then merges its tests into 11 and reruns the final combined SHA."
+  "dependency_semantics": "Dependencies identify accepted predecessor outputs, not necessarily merged branches in the target lane. Step 12 can start after 10 but finishes with the buildable Step 11 artifact. Step 13 uses the built 11 artifact and matching 12 test configuration, then merges its tests into 11 and reruns the final combined SHA.",
+  "main_refresh": {
+    "observed_sha": "2e29ed5f8cf3282e445b9032a9ac100bdb8fc40d",
+    "original_baseline_retained": true,
+    "required": "Preserve merged civil-case changes, refresh method/dependency inventory and retest accepted main before integration"
+  }
 }

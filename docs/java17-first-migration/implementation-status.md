@@ -1,4 +1,4 @@
-# Initial implementation status
+# Migration implementation status
 
 The first four implementation branches are separate stacked drafts from the
 pinned Java 17 main baseline. Each PR shows only its own increment. Parent fixes
@@ -17,9 +17,9 @@ flowchart LR
 
 | Step | Draft PR | Prepared work | Still required for the full roadmap gate |
 |---|---|---|---|
-| 01 | [684](https://github.com/hmcts/cpp-context-progression/pull/684) | Bounded collector, qualified command-RAML refresh and optional-cache opt-out | Executed baseline, effective dependency/runtime manifest, test reconciliation and relevant journeys |
-| 02 | [685](https://github.com/hmcts/cpp-context-progression/pull/685) | Seven initial repository characterization tests | Actual execution; remaining lifecycle, event, Material/Listing and MI contract population |
-| 03 | [686](https://github.com/hmcts/cpp-context-progression/pull/686) | Isolated javax JPA/H2 fixture with commit, flushed rollback and isolation tests | Resolved-classpath execution, same outcome comparison, PostgreSQL and container/JTA coverage |
+| 01 | [684](https://github.com/hmcts/cpp-context-progression/pull/684) | Bounded collector, qualified command-RAML refresh and optional-cache opt-out | Effective dependency/runtime manifest, test reconciliation and relevant journeys |
+| 02 | [685](https://github.com/hmcts/cpp-context-progression/pull/685) | Seven initial repository characterization tests | Remaining lifecycle, event, Material/Listing and MI contract population |
+| 03 | [686](https://github.com/hmcts/cpp-context-progression/pull/686) | Isolated javax JPA/H2 fixture with commit, flushed rollback and isolation tests | Same outcome comparison, PostgreSQL and container/JTA coverage |
 | 04 | [687](https://github.com/hmcts/cpp-context-progression/pull/687) | One explicit JPQL finder while retaining DeltaSpike CRUD/context/transaction strategy | Full reactor/CDI/query parity; actual framework lifecycle, identity, flush, rollback and concurrency proof before replacement |
 
 The Step 04 branch name retains the roadmap identity. Its current implementation
@@ -160,3 +160,23 @@ migrate and are outside the current verification runs.
 
 These are acceptance prerequisites. No broad conversion or release should use
 the partial H2/query pilot as evidence that those prerequisites have been met.
+
+## Parallel Java 25 prerequisite branch
+
+[Draft PR 690](https://github.com/hmcts/cpp-context-progression/pull/690) implements
+Step 10 on Step 01, separately from the Java 17 persistence stack. It adds an
+isolated Java 25 CI probe; application source/parent and deployment routes remain
+unchanged. CI 950134 executed on Java 25.0.2/Maven 3.9.16: three Java tests, two
+passed and one failed because the selected chain resolves Hibernate 6.6.1.Final
+rather than 7. Both MI test classifiers also failed legacy Java EE inspection;
+RELEASE remains an unqualified moving selector. This is failed readiness evidence.
+
+The follow-up hardening revision requires clean outputs and rejects newer/preview
+classfiles. CI 950145 re-executed six inspector tests successfully and reproduced
+the same provider/MI failures on Java 25.0.2/Maven 3.9.16. The separate Java 17
+RunVerification job is queued awaiting agent acknowledgement; its parent-stage
+running status is not execution or a final pass. Exact evidence and new
+main drift are tracked in [Java 25 evidence and next steps](java25-readiness.md).
+No whole-application Java 25 build or runtime acceptance has occurred. Steps 05–09
+retain Java 17; 11–14 remain gated proposed branches. Original acceptance criteria
+are unchanged.
