@@ -40,5 +40,9 @@ are supplied, but it expects an already prepared namespace/agent/routes and its
 fixtures can clean stores and recreate indexes. It is not an isolated environment
 provisioner. No deployment, migration or such cleanup was triggered in this work.
 
-Until this support runs, the H2/query pilot is useful initial work. The full
-Steps 03/04 acceptance gates remain open and broader repository conversion waits.
+The full Steps 03/04 gates remain open. Refresh their Java 17 evidence on current
+main for the target comparison and complete these gates before releasing the
+optional Java 17 route. Step 11 can start in parallel. Before expanding repository
+conversion on Java 25, prove representative lifecycle and contract outcomes on
+PostgreSQL and the exact target WildFly/JTA configuration. Repeat the applicable
+checks on the final combined artifact before release. [Roadmap](roadmap.md)

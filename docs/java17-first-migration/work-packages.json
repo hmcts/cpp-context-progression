@@ -4,7 +4,7 @@
     "branch": "main",
     "sha": "ceebd3c81e899e1dfea4814de9016a49512d806a"
   },
-  "scope": "Fresh main-based Java 17 first migration plan; source behaviour preserved; no previous upgrade branch used",
+  "scope": "Current-main Java 25 application pilot with a refreshed Java 17 comparison baseline and an optional Java 17 release lane. Preserve source behaviour and existing main changes.",
   "steps": [
     {
       "id": "00",
@@ -14,7 +14,7 @@
       "branch": "plan/progression-java17-first-migration",
       "branch_base": "origin/main at ceebd3c81e899e1dfea4814de9016a49512d806a",
       "depends_on": [],
-      "scope": "Own the scope, branch register, undated roadmap, acceptance gates and evidence model. Start from current main; exclude unrelated business fixes and alternate model redesign.",
+      "scope": "Own the scope, branch register, undated roadmap, acceptance gates and evidence model. Use current main for the application pilot and preserve unrelated main work. Keep business fixes and model redesign in separate changes.",
       "human_work": "Technical lead and service owner assign accountable people and agree the phased release policy. Platform, test and operations leads confirm dependencies and evidence expectations.",
       "done_when": "Each step has one scope, branch, proposed owner role and objective exit criteria; implementation and release remain pending.",
       "release_rule": "Planning documents only. Implementation progress is recorded separately; no merge or deployment is implied.",
@@ -34,7 +34,7 @@
       "human_work": "Build owner supplies authorised private artifact access and a repeatable environment. Test lead distinguishes baseline defects, environmental failures and migration regressions; check owners triage failed gates.",
       "done_when": "Clean pinned baseline build and relevant journeys run in the owning environment, with retained logs and explicit failure disposition. No tests silently disappear.",
       "release_rule": "Remain on Java 17 and the existing API/runtime stack. Evidence or safe build fixes only.",
-      "status": "draft PR 684; verification950055 green; full manifest/journey gate open"
+      "status": "draft PR 684; verification950055 green; full manifest/journey gate open. Refresh and retest on current main for target comparison."
     },
     {
       "id": "02",
@@ -50,7 +50,7 @@
       "human_work": "Service and contract owners confirm representative fixtures, expected event/projection outcomes and critical journeys. Business owner identifies any intentional difference for a separate change request.",
       "done_when": "Baseline assertions execute on Java 17, including ambiguous matches, missing/null values and meaningful exclusions. Required MI tests are discovered and executed with identified artifact versions.",
       "release_rule": "No business-rule correction, client redesign or new fallback policy in this branch.",
-      "status": "draft PR 685; verification950054 green; initial repository slice only; broader contracts open"
+      "status": "draft PR 685; verification950054 green; initial repository slice only; broader contracts open. Refresh and retest on current main for target comparison."
     },
     {
       "id": "03",
@@ -66,7 +66,7 @@
       "human_work": "Test/platform owners provide approved fixtures and container access. Persistence reviewer checks that new tests exercise provider/container behaviour rather than mocks alone.",
       "done_when": "The same baseline outcomes pass under the selected harness; PostgreSQL-specific queries execute on PostgreSQL and transaction tests are labelled separately from H2/resource-local checks.",
       "release_rule": "Keep production runtime, Hibernate, schemas and repository behaviour unchanged. Harness versions must remain compatible with the current stack.",
-      "status": "draft PR 686; verification950051 green; H2 fixture only; PostgreSQL/current-WildFly gates open"
+      "status": "draft PR 686; verification950051 green; H2 fixture only; PostgreSQL/current-WildFly gates open. Refresh and retest on current main for target comparison."
     },
     {
       "id": "04",
@@ -82,87 +82,87 @@
       "human_work": "Persistence and framework reviewers trace the exact released EntityManager producer, flush interceptor and transaction ownership. Confirm existing timezone behaviour and its ownership; preserve required policy deliberately.",
       "done_when": "Pilot preserves managed-instance, detached-update/removal, zero/one/multiple-result, rollback and concurrency contracts. Required framework lifecycle/flush behaviour is retained. The selected injection approach demonstrably shares/joins the intended persistence context, with explicit ownership of flush, commit and rollback.",
       "release_rule": "Use APIs available on the existing JPA version; no Jakarta Persistence 3.2-only helpers. Retain the framework persistence artifact while needed.",
-      "status": "draft PR 687; verification950053 green; partial query pilot; lifecycle/flush/error gates open"
+      "status": "draft PR 687; verification950053 green; partial query pilot; lifecycle/flush/error gates open. Refresh and retest on current main for target comparison."
     },
     {
       "id": "05",
       "title": "Convert case hearing and defendant repositories",
-      "phase": "Java 17 persistence",
+      "phase": "Optional Java 17 release lane",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-05-jpa-cases-hearings",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "latest main with accepted predecessor changes if the optional lane is chosen",
       "depends_on": [
         "04"
       ],
-      "scope": "Convert the case/hearing/defendant repository group to explicit javax JPA. Keep queries, signatures, exception/cardinality rules, ordering and paging equivalent.",
+      "scope": "Convert the case/hearing/defendant repository group to explicit javax JPA. Keep queries, signatures, exception/cardinality rules, ordering and paging equivalent. Reuse this inventory and its parity assertions for the default Java 25 batches.",
       "human_work": "Progression developer implements the group; independent persistence reviewer checks method and caller parity. Test lead runs hearing/defendant regression fixtures.",
       "done_when": "Every in-scope repository/method has a disposition and tests for its actual key grain, excluded rows, optional multiplicity, ordering and paging. Relevant event/projection journeys pass.",
-      "release_rule": "Merge and release independently on Java 17 once green. Leave remaining DeltaSpike repositories functioning.",
-      "status": "proposed branch; not created"
+      "release_rule": "If the Java 17 lane is chosen, merge and release this group independently once accepted. Keep remaining DeltaSpike repositories working in mixed mode.",
+      "status": "optional proposal. Branch uncreated."
     },
     {
       "id": "06",
       "title": "Convert document and material repositories",
-      "phase": "Java 17 persistence",
+      "phase": "Optional Java 17 release lane",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-06-jpa-documents",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "latest main with accepted predecessor changes if the optional lane is chosen",
       "depends_on": [
         "05"
       ],
       "scope": "Convert document/material/index and related criteria repositories. Preserve one-to-many joins, fetch results, visibility predicates, case/application placement and material associations.",
       "human_work": "Progression and document/access reviewers verify the association grain and expected query outcomes. Test lead exercises document access, PDF/stream paths and removal flows.",
       "done_when": "Multi-index fixtures, meaningful exclusions, JSON criteria where applicable, document ordering and returned associations match the baseline. Access and document journeys pass.",
-      "release_rule": "Merge and release on Java 17. Do not use the conversion to redesign Material clients or access rules.",
-      "status": "proposed branch; not created"
+      "release_rule": "If the Java 17 lane is chosen, release after this group passes its gate. Preserve Material client and access behaviour.",
+      "status": "optional proposal. Branch uncreated."
     },
     {
       "id": "07",
       "title": "Convert remaining repository groups",
-      "phase": "Java 17 persistence",
+      "phase": "Optional Java 17 release lane",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-07-jpa-registers-remaining",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "latest main with accepted predecessor changes if the optional lane is chosen",
       "depends_on": [
         "06"
       ],
       "scope": "Convert registers, notifications, plea/COTR and remaining DeltaSpike users identified by the inventory. Review existing direct/JDBC repositories touched by any shared change.",
       "human_work": "Persistence reviewer signs the complete method inventory. Register/notification journey owners confirm selection rules, dates and expected emitted/visible outcomes.",
       "done_when": "All production DeltaSpike proxy usages are eliminated or explicitly accounted for; latest-per-hearing, native SQL, filtering and notification paths preserve baseline results.",
-      "release_rule": "Release on Java 17 after targeted and combined regression checks. Keep the current Hibernate query dialect; defer target-parser adaptation.",
-      "status": "proposed branch; not created"
+      "release_rule": "If the Java 17 lane is chosen, release after targeted and combined checks on the current Hibernate dialect. Apply required target parser adaptations in the Java 25 lane.",
+      "status": "optional proposal. Branch uncreated."
     },
     {
       "id": "08",
       "title": "Retire DeltaSpike and preserve framework behaviour",
-      "phase": "Java 17 persistence",
+      "phase": "Optional Java 17 release lane",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-08-remove-deltaspike",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "latest main with accepted predecessor changes if the optional lane is chosen",
       "depends_on": [
         "07"
       ],
       "scope": "Remove Apache DeltaSpike and obsolete test-control dependencies only after all callers are converted. Replace/retain EntityManager lifecycle and active-transaction flush behaviour deliberately; trace transitive and packaged dependencies.",
       "human_work": "Framework owner validates the exact released artifact responsibilities. Progression reviewer approves replacement ownership; test lead proves commit/rollback and repeated-delivery effects. If a separate Java 17 framework artifact is required, add its owning repository change as a numbered prerequisite with its own branch before closing this step.",
       "done_when": "Effective dependency tree and packaged artifact contain no required-but-removed component and no unintended DeltaSpike runtime/test-control dependency. Lifecycle, flush and timezone outcomes remain agreed and tested.",
-      "release_rule": "Java 17 release gate. If the framework wrapper still supplies required behaviour, keep it and leave this gate open until a compatible replacement is available.",
-      "status": "proposed branch; not created"
+      "release_rule": "If the Java 17 lane is chosen, keep the framework wrapper where it supplies required behaviour. Close this step once the compatible lifecycle, flush and timezone replacement is proved.",
+      "status": "optional proposal. Branch uncreated."
     },
     {
       "id": "09",
-      "title": "Accept and release the Java 17 checkpoint",
-      "phase": "Java 17 checkpoint",
+      "title": "Accept an optional Java 17 release checkpoint",
+      "phase": "Optional Java 17 release lane",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-09-j17-release-evidence",
-      "branch_base": "latest main after preceding accepted steps",
+      "branch_base": "latest main with accepted predecessor changes if the optional lane is chosen",
       "depends_on": [
         "08"
       ],
-      "scope": "Record the cumulative Java 17 artifact, PostgreSQL/JTA, contract and end-to-end results, baseline performance comparison and rollback rehearsal. This branch holds runbook/evidence references, not operational data.",
+      "scope": "If the team selects a Java 17 release, record the cumulative artifact, PostgreSQL/JTA, contract and journey results, performance comparison and rollback rehearsal. Retain runbook and evidence references outside operational data.",
       "human_work": "Service owner accepts outcome parity; test lead validates reports; operations/release owner authorises any deployment separately and confirms monitoring and stopping thresholds.",
-      "done_when": "An independently releasable Java 17 version is proven with DeltaSpike removal complete and business events, projections and downstream outcomes reconciled. This gate remains open while Step 08 is unresolved.",
-      "release_rule": "Stop point with value delivered before Java 25. No target-runtime changes are required to close this checkpoint.",
-      "status": "proposed branch; not created"
+      "done_when": "For the optional lane, prove an independently releasable Java 17 version after Step 08 and reconcile business events, projections and downstream outcomes.",
+      "release_rule": "Optional intermediate release. Steps 10 and 11 can proceed independently of this checkpoint.",
+      "status": "optional proposal. Branch uncreated."
     },
     {
       "id": "10",
@@ -177,25 +177,22 @@
       "scope": "Record compatible released parent/BOM, framework/core models, generators, MI/other test artifacts, Java 25 agents and WildFly 40 image/configuration. Link owner PRs in platform/deployment repositories where changes are needed.",
       "human_work": "Platform owners supply tested versions and a compatibility manifest; operations provides a target test environment. Decide whether any temporary Java 17 Jakarta bridge is worth separate support; it is not assumed.",
       "done_when": "Identified artifacts and configuration can support the target service build/test cycle; image/template/chart revisions and required JNDI/datasource/messaging settings are recorded. No skipped contract checks are accepted by default.",
-      "release_rule": "Can progress in parallel with Java 17 work. This planning/evidence branch does not switch the service runtime or deploy anything.",
-      "status": "draft PR 690; target CI 950145 failed Hibernate and MI gates; six inspector tests passed; Java 17 verification queued"
+      "release_rule": "Progress in parallel with the Step 11 application pilot and the Java 17 baseline refresh. Accept target inputs before expanding conversion on Java 25.",
+      "status": "draft PR 690. CI 950145 target job failed Hibernate and MI gates. Six inspector tests passed and metadata published. Java 17 verification cancelled after agent loss."
     },
     {
       "id": "11",
-      "title": "Adapt the application to the target stack",
-      "phase": "Target transition",
+      "title": "Start the Java 25 application pilot",
+      "phase": "Target application and conversion",
       "repository": "cpp-context-progression",
-      "branch": "migration/progression-11-target-application",
-      "branch_base": "latest main after preceding accepted steps",
-      "depends_on": [
-        "09",
-        "10"
-      ],
-      "scope": "Use the agreed Java 25 parent/toolchain, Jakarta APIs/descriptors, compatible generators/providers and Hibernate-required query adaptations. Keep the now-explicit repository architecture and main-owned clients/models.",
-      "human_work": "Progression and platform developers implement only target compatibility. Persistence, API/security and contract reviewers assess diffs; test lead checks generated/packaged output and no loss of assertions.",
-      "done_when": "Target application builds with all required contract/unit tests on Java 25; repository contracts and business rules remain unchanged. Exact effective dependencies and generated output are retained.",
-      "release_rule": "Keep the PR open until matching runtime Step 12 and integrated Step 13 are green. Treat coupled API/dependency changes as one coherent source transition, not unsupported intermediate main releases.",
-      "status": "proposed branch; not created"
+      "branch": "migration/progression-11-java25-application-pilot",
+      "branch_base": "current Progression main at 8917013f5f235b0c1da7597541d53f042e472173",
+      "depends_on": [],
+      "scope": "Start with a narrow application compatibility pilot using the selected Java 25 parent/toolchain, Jakarta APIs/descriptors and essential generators/providers. Preserve main-owned clients and models, repository contracts and business rules. Use the case/hearing, document and remaining repository groups as the default Java 25 conversion batches after the pilot, target platform and representative lifecycle are proved. Retire DeltaSpike only after reconciling all callers and proving replacement behaviour.",
+      "human_work": "Progression and platform developers implement the pilot. Persistence, security and contract reviewers compare it with refreshed Java 17 evidence from Steps 01–04. Resolve Step 10 inputs with their publishers and prove representative PostgreSQL and WildFly/JTA outcomes with Step 12 before expanding the conversion.",
+      "done_when": "The target application builds with qualified released dependencies and identified unit and contract execution. Every remaining repository group has a reviewed disposition and preserves caller, lifecycle and business outcomes on the exact target stack. Retain effective dependencies, generated output and test evidence.",
+      "release_rule": "Start the draft pilot from current main now in parallel with Step 10. Use separate reviewable target batches after pilot proof. Final source acceptance requires the matched Step 12 configuration and Step 13 evidence.",
+      "status": "draft PR 691. RelatedReference passed on upstream WildFly 40 and PostgreSQL. Full HMCTS target qualification open."
     },
     {
       "id": "12",
@@ -207,9 +204,9 @@
       "depends_on": [
         "10"
       ],
-      "scope": "Prepare the service-selectable deployment/image/configuration changes for Java 25, WildFly 40 and its matched Hibernate runtime. Link image/template owner PRs if required; preserve existing-stack deployments. Preparation starts after Step 10; completion requires a buildable Step 11 artifact.",
+      "scope": "Prepare service-selectable deployment, image and configuration for Java 25, WildFly 40 and its matched Hibernate runtime. Link image/template owner PRs as needed and preserve existing-stack routing. Preparation starts after qualified Step 10 and completion uses a buildable Step 11 artifact.",
       "human_work": "Platform/operations owners inspect rendering and the actual target image, datasource, JNDI, identity, broker and startup behaviour. Confirm chart compatibility and environment scope.",
-      "done_when": "An authorised test deployment of the Step 11 artifact resolves CDI/security/JPA/JMS components using the recorded runtime image/digest and configuration. Existing-stack services remain on their intended configuration.",
+      "done_when": "An authorised isolated test deployment of the Step 11 artifact records image digest and configuration and proves actual JVM/provider, CDI/security/JPA/JMS startup and representative PostgreSQL/WildFly JTA behaviour. Existing-stack services keep their intended routing.",
       "release_rule": "Separate repository PR, coordinated with Step 11. A config merge or ready pod does not authorise production apply or establish business completion.",
       "status": "proposed branch; not created"
     },
@@ -219,15 +216,15 @@
       "phase": "Target assurance",
       "repository": "cpp-context-progression",
       "branch": "migration/progression-13-target-assurance",
-      "branch_base": "migration/progression-11-target-application until its parent changes merge",
+      "branch_base": "migration/progression-11-java25-application-pilot until its parent changes merge",
       "depends_on": [
         "11",
         "12"
       ],
-      "scope": "Add final target-specific tests/evidence and run the integrated source with matched deployment configuration. Cover PostgreSQL/Hibernate SQL, WildFly/JTA, identity/access, repeated delivery, contracts, search, documents, notifications and MI outcomes. Dependencies here mean built source and matching test configuration, not already merged PRs; integrate these tests into Step 11 and rerun its final combined SHA.",
+      "scope": "Run the final application and all converted batches with matched Step 12 configuration. Compare with refreshed main and Java 17 baseline evidence from Steps 01–04. Cover PostgreSQL/Hibernate SQL, WildFly/JTA, access, repeated delivery, all required contracts including both MI classifiers, search, documents and notifications. Incorporate the assurance tests into the final target source and rerun the combined SHA.",
       "human_work": "Test lead reconciles discovered/executed/skipped test results; service/contract owners review business outcomes; performance and operations reviewers accept measured thresholds and rollback rehearsal.",
-      "done_when": "The final combined SHA/image/configuration passes the agreed outcome matrix, including main fixes retained throughout. Open issues have explicit dispositions; no passing status is substituted for absent execution.",
-      "release_rule": "Stacked tests-only PR targets Step 11 while it is unmerged; rebase if its parent merges. Final source merge/release waits for the combined gate.",
+      "done_when": "The exact final source SHA, image digest, configuration and qualified dependency manifest pass the outcome matrix, with current-main changes preserved. Reconcile discovered, executed and skipped results, including both MI classifiers, and accept measured performance and rollback evidence.",
+      "release_rule": "Stack assurance on the Step 11 branch while it is unmerged. Review and rerun the final combined SHA with matching runtime configuration before target integration or release.",
       "status": "proposed branch; not created"
     },
     {
@@ -247,10 +244,10 @@
       "status": "proposed branch; not created"
     }
   ],
-  "dependency_semantics": "Dependencies identify accepted predecessor outputs, not necessarily merged branches in the target lane. Step 12 can start after 10 but finishes with the buildable Step 11 artifact. Step 13 uses the built 11 artifact and matching 12 test configuration, then merges its tests into 11 and reruns the final combined SHA.",
+  "dependency_semantics": "Dependencies refer to predecessor evidence or buildable outputs as specified. Step 11 can start from current main in parallel with Step 10. Steps 05–09 form an optional Java 17 release lane. Step 12 preparation follows qualified Step 10 and completion uses a buildable Step 11 artifact. Broader Java 25 batches follow target platform and pilot lifecycle proof. Step 13 uses final Step 11 source and matched Step 12 configuration before Step 14 release.",
   "main_refresh": {
-    "observed_sha": "2e29ed5f8cf3282e445b9032a9ac100bdb8fc40d",
+    "observed_sha": "8917013f5f235b0c1da7597541d53f042e472173",
     "original_baseline_retained": true,
-    "required": "Preserve merged civil-case changes, refresh method/dependency inventory and retest accepted main before integration"
+    "required": "Refresh the Java 17 comparison evidence from Steps 01–04 against current main. Preserve the merged civil-case changes and subsequent development POM update. Refresh the method/dependency inventory before conversion and rerun against the final accepted main before integration."
   }
 }

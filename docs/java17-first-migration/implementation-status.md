@@ -12,7 +12,10 @@ flowchart LR
   C --> H["03 H2 fixture / PR 686"]
   H --> P["04 Query pilot / PR 687"]
   P -. "Acceptance gates remain open" .-> G["PostgreSQL + container/JTA + business outcomes"]
-  G -. "Only after lifecycle proof" .-> R["05 onward: broader conversion"]
+  G -. "If the optional Java 17 lane is selected" .-> R["05–09 Java 17 release lane"]
+  M2["Current main"] --> J25["11 Start Java 25 application pilot"]
+  J25 --> GT["Prove target lifecycle before broad conversion"]
+  G -. "Refreshed comparison" .-> GT
 ```
 
 | Step | Draft PR | Prepared work | Still required for the full roadmap gate |
@@ -158,8 +161,10 @@ messaging/search and reviewed synthetic-data cleanup scope. No such job was
 triggered in this work. Full validation and runIntegrationTests.sh also deploy or
 migrate and are outside the current verification runs.
 
-These are acceptance prerequisites. No broad conversion or release should use
-the partial H2/query pilot as evidence that those prerequisites have been met.
+Complete the PostgreSQL/JTA and lifecycle evidence for the optional Java 17 release.
+Refresh the Java 17 comparison against current main for the default target route.
+The Java 25 pilot can begin in parallel. Broader Java 25 conversion follows
+representative lifecycle proof on the exact target configuration.
 
 ## Parallel Java 25 prerequisite branch
 
@@ -172,11 +177,27 @@ rather than 7. Both MI test classifiers also failed legacy Java EE inspection;
 RELEASE remains an unqualified moving selector. This is failed readiness evidence.
 
 The follow-up hardening revision requires clean outputs and rejects newer/preview
-classfiles. CI 950145 re-executed six inspector tests successfully and reproduced
-the same provider/MI failures on Java 25.0.2/Maven 3.9.16. The separate Java 17
-RunVerification job is queued awaiting agent acknowledgement; its parent-stage
-running status is not execution or a final pass. Exact evidence and new
-main drift are tracked in [Java 25 evidence and next steps](java25-readiness.md).
-No whole-application Java 25 build or runtime acceptance has occurred. Steps 05–09
-retain Java 17; 11–14 remain gated proposed branches. Original acceptance criteria
-are unchanged.
+classfiles. CI 950145 passed six inspector tests and reproduced the provider and MI
+failures on Java 25.0.2/Maven 3.9.16. It published readiness metadata. The separate
+Java 17 RunVerification job was cancelled after agent loss. The CI owner should
+follow up and retain an executed verification result. [Target evidence](java25-readiness.md)
+
+## Java 25 application pilot from current main
+
+Step 11 started on `migration/progression-11-java25-application-pilot` from main
+`8917013f5f235b0c1da7597541d53f042e472173` in parallel with Step 10. The first
+RelatedReference slice built on Java 25 and passed on upstream WildFly 40 with
+Hibernate 7 and PostgreSQL, including the assigned-ID update and flushed
+rollback. [Draft PR 691](https://github.com/hmcts/cpp-context-progression/pull/691) ·
+[Executed evidence](java25-readiness.md#step-11-first-application-slice)
+
+Steps 01–04 remain the Java 17 comparison baseline and require a refresh against this
+main revision. Steps 05–09 are optional if the team wants an intermediate Java 17
+release. The remaining repository conversions default to Java 25 batches after
+platform and representative lifecycle proof. [Roadmap](roadmap.md)
+
+The production acceptance gate uses the exact final source SHA and matching
+runtime configuration. It requires PostgreSQL and WildFly/JTA results, executed
+MI and other contracts, current-main parity, and combined release and recovery
+evidence. The historical Java 17 verification and isolated Java 25 probe each
+cover their recorded source and test scope.
