@@ -7,15 +7,12 @@ merged to main; no deployment, schema migration or message recovery was performe
 
 ```mermaid
 flowchart LR
-  M["Pinned main / Java 17"] --> B["01 Baseline / PR 684"]
-  B --> C["02 Initial contracts / PR 685"]
-  C --> H["03 H2 fixture / PR 686"]
-  H --> P["04 Query pilot / PR 687"]
-  P -. "Acceptance gates remain open" .-> G["PostgreSQL + container/JTA + business outcomes"]
-  G -. "If the optional Java 17 lane is selected" .-> R["05–09 Java 17 release lane"]
-  M2["Current main"] --> J25["11 Start Java 25 application pilot"]
-  J25 --> GT["Prove target lifecycle before broad conversion"]
-  G -. "Refreshed comparison" .-> GT
+  M["Original Java 17 baseline"] --> B["01–04 historical evidence / PRs 684–687"]
+  N["Live main"] --> J25["11 Full Java 25 reactor build"]
+  B -. refresh comparison on live main .-> L["12 Actual listener on target PostgreSQL and WildFly/JTA"]
+  J25 --> L
+  P["10 Qualify actual HMCTS inputs / PR 690"] --> L
+  L --> R["05–07 Parallel Java 25 conversion batches"]
 ```
 
 | Step | Draft PR | Prepared work | Still required for the full roadmap gate |
@@ -161,10 +158,10 @@ messaging/search and reviewed synthetic-data cleanup scope. No such job was
 triggered in this work. Full validation and runIntegrationTests.sh also deploy or
 migrate and are outside the current verification runs.
 
-Complete the PostgreSQL/JTA and lifecycle evidence for the optional Java 17 release.
-Refresh the Java 17 comparison against current main for the default target route.
-The Java 25 pilot can begin in parallel. Broader Java 25 conversion follows
-representative lifecycle proof on the exact target configuration.
+Refresh the Java 17 comparison while the full Java 25 reactor build progresses.
+Use current-stack evidence to compare persistence behaviour. Before broader Java
+25 conversion, run an actual Progression listener on the exact target image with
+PostgreSQL and WildFly/JTA. Verify the lifecycle and business effects.
 
 ## Parallel Java 25 prerequisite branch
 
@@ -182,22 +179,48 @@ failures on Java 25.0.2/Maven 3.9.16. It published readiness metadata. The separ
 Java 17 RunVerification job was cancelled after agent loss. The CI owner should
 follow up and retain an executed verification result. [Target evidence](java25-readiness.md)
 
-## Java 25 application pilot from current main
+## Historical Java 25 repository slice
 
-Step 11 started on `migration/progression-11-java25-application-pilot` from main
-`8917013f5f235b0c1da7597541d53f042e472173` in parallel with Step 10. The first
+[Draft PR 691](https://github.com/hmcts/cpp-context-progression/pull/691) started
+from main `8917013f5f235b0c1da7597541d53f042e472173`. Its standalone
 RelatedReference slice built on Java 25 and passed on upstream WildFly 40 with
 Hibernate 7 and PostgreSQL, including the assigned-ID update and flushed
-rollback. [Draft PR 691](https://github.com/hmcts/cpp-context-progression/pull/691) ·
-[Executed evidence](java25-readiness.md#step-11-first-application-slice)
+rollback. [Executed evidence](java25-readiness.md#step-11-first-application-slice)
 
-Steps 01–04 remain the Java 17 comparison baseline and require a refresh against this
-main revision. Steps 05–09 are optional if the team wants an intermediate Java 17
-release. The remaining repository conversions default to Java 25 batches after
-platform and representative lifecycle proof. [Roadmap](roadmap.md)
+## Full Java 25 application build from live main
 
-The production acceptance gate uses the exact final source SHA and matching
-runtime configuration. It requires PostgreSQL and WildFly/JTA results, executed
-MI and other contracts, current-main parity, and combined release and recovery
-evidence. The historical Java 17 verification and isolated Java 25 probe each
-cover their recorded source and test scope.
+Step 11 starts the full reactor on `migration/progression-11-java25-full-build`
+from live main `f3dbf8c897e74302e5b3c54d22e4cd315c6b21de`. Step 10 qualifies the actual HMCTS
+platform and MI inputs in parallel with the refreshed Java 17 comparison from
+Steps 01–04. The recorded earlier runs remain evidence for their own revisions.
+
+[Draft PR 692](https://github.com/hmcts/cpp-context-progression/pull/692) starts
+the reactor with the selected 25.104.6 service parent, Jakarta EE dependencies
+and namespace changes in the Material client and domain-common modules. It
+carries forward the Java 25 agent demand and the documented Maven cache
+opt-out. The first verification [CI 955262](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=955262)
+was triggered for head `2da450fffcbb4dcb25055e247094204baaa8c581`. The existing
+listener and processor MI classifier executions remain in the build. The
+legacy DeltaSpike pins are temporary inputs for the initial build. The exact
+application listener and transaction lifecycle still require target evidence.
+
+CI 955262 ran Maven 3.9.16 with Eclipse Adoptium 25.0.2. The root, common
+and Material client modules passed. Listing failed during compilation on
+its remaining Javax imports. The four-import Jakarta change at
+`fa477b968f8b4d28afc1da4c6dae5f385c6ba126` triggered
+[CI 955268](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=955268).
+That run passed nine reactor entries, including Listing and the domain modules,
+before the compiler reported remaining `javax.persistence` references in
+`progression-viewstore-persistence` (entry 10 of 32). The next source slice
+covers Jakarta entity mappings and the framework persistence seam. The service
+WAR and both MI contract executions are downstream of this compile stage.
+
+
+
+Before Steps 05–07 start, Step 12 must prove the actual application listener's
+EntityManager and JTA lifecycle on the exact target WildFly image and PostgreSQL.
+The batches run in parallel after qualification and combine in Step 08. Step 13
+requires the final application, runtime configuration, both executed MI
+contracts and current-main parity in one green pipeline with rollback evidence.
+Step 14 is the single authorised cutover. Step 09 remains a separate historical
+Java 17 release option for identified business value. [Roadmap](roadmap.md)

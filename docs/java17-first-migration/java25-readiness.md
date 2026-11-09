@@ -1,10 +1,11 @@
 # Java 25 next steps and prerequisite evidence
 
-Step 11 starts the Java 25 application pilot from current Progression `main` at
-`8917013f5f235b0c1da7597541d53f042e472173`, in parallel with Step 10. Its branch is
-`migration/progression-11-java25-application-pilot`. Refresh the Java 17 comparison
-in Steps 01–04. Steps 05–09 remain available for an optional Java 17 release.
-Remaining conversions default to reviewable Java 25 batches after pilot proof.
+The full Java 25 reactor starts from live Progression `main` at
+`f3dbf8c897e74302e5b3c54d22e4cd315c6b21de` on
+`migration/progression-11-java25-full-build`. Refresh the Java 17 comparison on the same main revision and qualify the
+actual HMCTS platform and MI inputs in parallel. The wider repository conversion
+follows proof of an actual Progression listener using the matched target
+PostgreSQL and WildFly/JTA path. [Roadmap](roadmap.md)
 
 ## Step 11 first application slice
 
@@ -18,11 +19,12 @@ update and a flushed rollback passed. A separate database connection verified
 three committed rows across two cases, one updated row and zero rolled-back rows.
 The runner removed both containers and their network.
 
-This is upstream runtime evidence for one repository slice. Full Progression
-generation and packaging, the exact HMCTS image and framework transaction
-lifecycle, comparison with the refreshed Java 17 baseline and both executed MI
-contracts remain open. The Step 10 managed dependency and MI findings still
-apply to the selected HMCTS target dependency chain.
+This historical slice establishes one repository outcome set on upstream
+WildFly and PostgreSQL. Use it to design checks for the full build from live main.
+The full Progression reactor, the exact HMCTS image and actual application
+listener lifecycle, refreshed Java 17 comparison and executed MI contracts all
+need evidence on the new route. Step 10 records the managed dependency and MI
+findings for its selected input chain.
 
 ## Step 10 prerequisite probe
 
@@ -77,17 +79,15 @@ compilation, packaging and runtime outcomes still require separate evidence.
 
 ## Main advanced during preparation
 
-The Step 01–04 drafts and Step 10 probe remain tied to the original baseline
-`ceebd3c81`. Main gained PR 683's civil-case work at
-`2e29ed5f8cf3282e445b9032a9ac100bdb8fc40d`, with business fixtures, contract
-fields, a database index and dependency updates. The pilot starts from
-`8917013f5f235b0c1da7597541d53f042e472173`, which advances the development version
-to `17.104.309-SNAPSHOT`.
+The Step 01–04 drafts and Step 10 probe used the original baseline `ceebd3c81`.
+Main gained PR 683's civil-case work at `2e29ed5f8cf3282e445b9032a9ac100bdb8fc40d`,
+including business fixtures, contract fields, a database index and updated
+dependencies. The upstream slice in PR 691 used `8917013f5f235b0c1da7597541d53f042e472173`.
+Refresh the Java 17 comparison for the new full-build base `f3dbf8c897e74302e5b3c54d22e4cd315c6b21de`.
 
 `ProsecutionCaseRepository` gained the PostgreSQL-native `countActiveGroupMembers`
 method, which filters JSONB `isGroupMember`. Refresh its method and caller
-inventory and characterise count/exclusion outcomes before converting it on either
-route. Preserve the Listing, core-domain, Results, application court orders and SJP
+inventory and characterise count/exclusion outcomes before converting it in the Java 25 batch. Preserve the Listing, core-domain, Results, application court orders and SJP
 inputs unless a reviewed target dependency change is required. Repeat the Java 17
 baseline checks on current main and reconcile the exact final target candidate
 against accepted main before integration.
@@ -125,18 +125,19 @@ and [Hibernate test support](https://github.com/hmcts/cp-framework-libraries/tre
 Upstream [WildFly 40](https://www.wildfly.org/news/2026/05/21/WildFly-40-is-released/)
 ships Hibernate 7.3.2; that does not establish the contents of the custom image.
 
-## Work to qualify and expand the pilot
+## Work to qualify the full build and cutover
 
 | Work | Next action | Evidence required |
 |---|---|---|
-| Steps 01–04 comparison baseline | Refresh and retest current main, including the added civil-case repository method and business fixtures | Retain exact source and runtime, dependency manifest, caller contracts, lifecycle and outcome evidence |
-| Optional Steps 05–09 on Java 17 | Choose this route only if an intermediate release is needed. Preserve the cases, documents and remaining repository groups and retire DeltaSpike after qualification | Close the Java 17 PostgreSQL/JTA and business gates before releasing the optional checkpoint |
-| Step 10 target prerequisites | Resolve Hibernate alignment and pin compatible releases of both MI classifiers. Follow up the cancelled Java 17 verification with the CI owner | Platform and MI publishers supply reviewed compatible versions. Run both MI contract classifiers and retain actual results |
-| Step 11 application pilot | Start from current main now. Probe coherent Java 25/Jakarta source, descriptors, generators, test support and necessary ORM adaptations | Keep main-owned clients/models, rules and assertions. Compare with current main and prove representative target lifecycle before expanding |
-| Step 12 target runtime | Prepare service-specific configuration after qualified Step 10 and finish against the buildable Step 11 artifact | Verify image digest, JVM/provider, PostgreSQL/JTA and CDI/JMS/JNDI/security in an authorised isolated test environment |
-| Step 11 target batches | Convert case/hearing, document and remaining groups on Java 25 by default after pilot proof | Review each method and caller, preserve cardinality, transaction and business outcomes, and retire DeltaSpike only after all usages are accounted for |
-| Step 13 target assurance | Stack evidence on Step 11 and run the final combined SHA with matched Step 12 configuration | Reconcile executed and skipped tests, including both MI classifiers. Accept source parity, PostgreSQL/JTA, performance and rollback evidence |
-| Step 14 rollout evidence | Prepare release order, immutable manifest, monitoring and stopping thresholds | Release owner authorises deployment separately and verifies actual runtime and business outcomes |
+| Step 11 full reactor | Build and package from live main on Java 25 and Jakarta. Record resolved dependencies and any build blockers | Full module, generator and test-artifact output with exact source, toolchain and executed assertions |
+| Steps 01–04 comparison | Refresh the Java 17 run on the new live-main revision | Baseline dependency, runtime, caller contract and business outcome evidence on that revision |
+| Step 10 HMCTS inputs | Pin consumed platform artifacts, agent/template/chart/image and both compatible MI classifiers. Follow up the cancelled Java 17 verification with its CI owner | Qualified provider family and source-to-runtime manifest. Compatible pinned MI inputs for actual contract execution |
+| Step 12 actual application listener | Use the Step 11 artifact on the exact target runtime and PostgreSQL. Exercise the framework JTA path before wider conversion | EntityManager joining, pending-write visibility, post-listener flush, commit and forced rollback proved through the actual listener. Verify committed and rolled-back rows independently |
+| Steps 05–07 parallel conversions | Convert cases/hearings, documents and remaining repositories in sibling Java 25 batches from the qualified base | Per-method and caller results preserve cardinality, filtering, paging, transaction and business outcomes |
+| Step 08 combined conversion | Combine the reviewed batches and retire DeltaSpike after accounting for every caller | Combined application and packaged dependency evidence with lifecycle and outcome parity |
+| Step 13 combined assurance | Run the final source, image and runtime configuration through one green pipeline | Executed PostgreSQL/JTA, both MI classifiers and critical journeys, current-main parity, performance and rollback evidence |
+| Step 14 cutover | Authorise one coordinated source and runtime change | Release manifest, monitoring, stopping criteria and verified running business outcomes |
+| Step 09 optional release | Revisit a separate Java 17 release only for identified business value | Separate scope, approval and its own release evidence |
 
 Full branch names and acceptance criteria are in the [branch register](branch-register.csv)
 and [work packages](work-packages.json).

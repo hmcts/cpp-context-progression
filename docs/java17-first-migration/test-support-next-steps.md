@@ -40,9 +40,12 @@ are supplied, but it expects an already prepared namespace/agent/routes and its
 fixtures can clean stores and recreate indexes. It is not an isolated environment
 provisioner. No deployment, migration or such cleanup was triggered in this work.
 
-The full Steps 03/04 gates remain open. Refresh their Java 17 evidence on current
-main for the target comparison and complete these gates before releasing the
-optional Java 17 route. Step 11 can start in parallel. Before expanding repository
-conversion on Java 25, prove representative lifecycle and contract outcomes on
-PostgreSQL and the exact target WildFly/JTA configuration. Repeat the applicable
-checks on the final combined artifact before release. [Roadmap](roadmap.md)
+Refresh Steps 03 and 04 on live main for the Java 17 comparison while the full
+Java 25 reactor build starts. In Step 12, use the full application artifact to
+exercise an actual Progression listener with the exact HMCTS WildFly image and
+PostgreSQL. Trace the consumed EntityManager producer, JTA context and listener
+flush. Verify committed results and prove a flushed rollback leaves no partial
+writes using an independent database read. Run this before the parallel Java 25
+repository batches and again with the combined source and runtime in Step 13.
+A separately requested Java 17 release would need its own current-stack gates.
+[Roadmap](roadmap.md)

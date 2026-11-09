@@ -1,35 +1,30 @@
 # Visual migration roadmap
 
-The Java 25 application pilot starts from current `main` while the platform owners resolve Step 10. Steps 01–04 supply the refreshed Java 17 comparison. Steps 05–09 are an optional intermediate release. Arrows show dependencies and acceptance gates without calendar dates.
+Start the full Java 25 reactor from live `main`. Refresh the Java 17 comparison and qualify the real HMCTS platform and MI inputs in parallel. Prove the actual application listener on PostgreSQL and the matched WildFly/JTA runtime before the wider repository conversion.
 
 ```mermaid
 flowchart TB
-    P00["00 Agree the plan"] --> S01
-    subgraph BASE[Refresh the Java 17 comparison]
-      S01["01 Reproduce baseline"] --> S02["02 Characterise contracts"] --> S03["03 Prepare test support"] --> S04["04 Prove JPA lifecycle"]
-    end
-    subgraph OPTIONAL[Optional Java 17 release lane]
-      S05["05 Case and hearing JPA"] --> S06["06 Document JPA"] --> S07["07 Remaining JPA"] --> S08["08 Retire DeltaSpike"] --> S09["09 Optional Java 17 release checkpoint"]
-    end
-    S04 -. if selected .-> S05
-    S01 -. original probe base .-> S10["10 Qualify target inputs / PR 690"]
-    MAIN["Progression main"] --> S11["11 Java 25 application pilot / draft PR 691"]
-    S10 -->|qualified inputs| S12["12 Prepare matching WildFly 40 and Hibernate runtime"]
-    S11 -->|buildable pilot artifact| S12
-    S04 --> G["Compare refreshed baseline and prove target lifecycle and contracts"]
-    S12 --> G
-    G --> B["11 Expand into reviewable Java 25 repository batches"]
-    B --> S13["13 Combined target assurance on exact source and runtime"]
-    S12 --> S13
-    S13 --> S14["14 Authorise rollout and verify outcomes"]
+    MAIN["Live Progression main"] --> B["11 Full Java 25 reactor build · PR 692"]
+    MAIN --> A["01–04 Refresh Java 17 comparison"]
+    MAIN --> P["10 Resolve exact HMCTS platform and MI inputs"]
+    A -. separate business decision .-> O["09 Historical optional Java 17 release"]
+    A --> L["12 Prove actual application listener on target PostgreSQL and WildFly/JTA"]
+    B --> L
+    P --> L
+    L --> C["05 Convert cases and hearings"]
+    L --> D["06 Convert documents and material"]
+    L --> R["07 Convert remaining repositories"]
+    C --> I["08 Combine batches and retire DeltaSpike"]
+    D --> I
+    R --> I
+    I --> G["13 Combined green pipeline and outcome evidence"]
+    G --> X["14 One authorised cutover and outcome verification"]
 ```
 
 [Open the SVG roadmap](roadmap.svg)
 
-Step 11 can begin while the baseline refresh and Step 10 are in progress. Before broader conversion, qualify the selected target dependencies and prove representative PostgreSQL and WildFly/JTA lifecycle and contract outcomes with a buildable pilot. Convert case/hearing, document and remaining repository groups on Java 25 by default. If the optional Java 17 route is selected, carry accepted changes into the target without converting the same methods twice.
+The Step 11 branch is `migration/progression-11-java25-full-build`, based on live `main` at `f3dbf8c897e74302e5b3c54d22e4cd315c6b21de`. The first full-reactor verification started on the Java 25 agent. [Draft PR 692](https://github.com/hmcts/cpp-context-progression/pull/692) · [Initial CI 955262](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=955262) · [Rerun 955268](https://dev.azure.com/hmcts-cpp/cpp-apps/_build/results?buildId=955268)
 
-The first Step 11 slice passed locally on upstream WildFly 40 and PostgreSQL.
-[Draft PR 691](https://github.com/hmcts/cpp-context-progression/pull/691) ·
-[Executed evidence and open gates](java25-readiness.md#step-11-first-application-slice)
+The earlier upstream repository slice and platform probe inform qualification. [Draft PR 691](https://github.com/hmcts/cpp-context-progression/pull/691) · [Draft PR 690](https://github.com/hmcts/cpp-context-progression/pull/690) · [Recorded evidence](java25-readiness.md)
 
-Step 12 prepares after qualified Step 10 and completes with a buildable Step 11 artifact. Step 13 can stack tests on Step 11 while it is unmerged. Accept the final combined source, image, configuration, executed MI and other contracts, measured performance and rollback evidence before integration and release. [Branch register](branch-register.csv) · [Target evidence and open gates](java25-readiness.md)
+Steps 05–07 are sibling Java 25 changes on the common qualified build. Step 08 combines the batches and checks complete caller and dependency coverage. Step 13 uses the final source SHA, image digest and configuration to reconcile executed MI and other contracts, current-main parity, performance and rollback. The Step 14 release owner authorises one coordinated source and runtime cutover. [Branch register](branch-register.csv)
