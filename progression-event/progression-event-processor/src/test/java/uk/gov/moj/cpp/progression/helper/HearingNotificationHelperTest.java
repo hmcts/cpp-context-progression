@@ -13,6 +13,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
@@ -313,9 +315,11 @@ public class HearingNotificationHelperTest {
 
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+        verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
 
-        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
-
+        // ex parte: the defendant copy is still generated and filed to case materials, only not sent
+        verifyGeneratedCopies(1, 1);
+        verifyCourtDocumentsAdded(2);
     }
 
 
@@ -338,8 +342,8 @@ public class HearingNotificationHelperTest {
         prosecutorEmailCapture.getAllValues().forEach(emailChannels ->
                 verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID)));
         verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
-        verifyNoInteractions(defenceService);
-        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verifyGeneratedCopies(2, 2);
+        verifyCourtDocumentsAdded(4);
     }
 
     @Test
@@ -364,6 +368,8 @@ public class HearingNotificationHelperTest {
         prosecutorEmailCapture.getAllValues().forEach(emailChannels ->
                 verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID)));
         verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+        verifyGeneratedCopies(2, 2);
+        verifyCourtDocumentsAdded(4);
     }
 
     @Test
@@ -406,8 +412,29 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         verifyEmailChannel(prosecutorEmailCapture.getValue(), "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
         verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
-        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
-        verifyNoInteractions(defenceService);
+        verifyGeneratedCopies(1, 1);
+        verifyCourtDocumentsAdded(2);
+    }
+
+    /**
+     * Asserts how many defendant (or defence) and prosecutor copies of the hearing notice were generated,
+     * read from the generated file names ("... Defendant copy" / "... Defence copy" / "... Prosecutor copy").
+     */
+    private void verifyGeneratedCopies(final long defendantCopies, final long prosecutorCopies) {
+        final ArgumentCaptor<String> fileNames = ArgumentCaptor.forClass(String.class);
+        verify(documentGeneratorService, times((int) (defendantCopies + prosecutorCopies)))
+                .generateNonNowDocument(any(), any(), any(), any(), fileNames.capture());
+        assertThat(fileNames.getAllValues().stream()
+                .filter(name -> name.endsWith(" Defendant copy") || name.endsWith(" Defence copy")).count(), is(defendantCopies));
+        assertThat(fileNames.getAllValues().stream().filter(name -> name.endsWith(" Prosecutor copy")).count(), is(prosecutorCopies));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void verifyCourtDocumentsAdded(final long expected) {
+        final ArgumentCaptor<Envelope<JsonObject>> envelopes = ArgumentCaptor.forClass(Envelope.class);
+        verify(sender, atLeastOnce()).send(envelopes.capture());
+        assertThat(envelopes.getAllValues().stream()
+                .filter(envelope -> "progression.command.add-court-document".equals(envelope.metadata().name())).count(), is(expected));
     }
 
     @Test
