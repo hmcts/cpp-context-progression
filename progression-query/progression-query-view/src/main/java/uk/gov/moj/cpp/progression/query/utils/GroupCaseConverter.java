@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,12 @@ public class GroupCaseConverter {
     private static final String ADDRESS_5 = "address5";
     private static final String POSTCODE = "postcode";
 
+    private static final Comparator<ProsecutionCase> LEAD_CASE_FIRST =
+            Comparator.comparing(prosecutionCase -> !Boolean.TRUE.equals(prosecutionCase.getIsGroupMaster()));
+
+    private static final Comparator<ProsecutionCase> BY_DEFENDANT_FIRST_NAME =
+            Comparator.comparing(GroupCaseConverter::getDefendantFirstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+
     public Optional<JsonObject> toLeadCase(final List<ProsecutionCase> prosecutionCases) {
         return prosecutionCases.stream()
                 .filter(prosecutionCase -> Boolean.TRUE.equals(prosecutionCase.getIsGroupMaster()))
@@ -41,9 +48,25 @@ public class GroupCaseConverter {
     public JsonArrayBuilder toCaseSummaries(final List<ProsecutionCase> prosecutionCases) {
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         prosecutionCases.stream()
+                .sorted(LEAD_CASE_FIRST.thenComparing(BY_DEFENDANT_FIRST_NAME))
                 .map(this::toCaseSummary)
                 .forEach(jsonArrayBuilder::add);
         return jsonArrayBuilder;
+    }
+
+    private static String getDefendantFirstName(final ProsecutionCase prosecutionCase) {
+        return prosecutionCase.getDefendants().stream()
+                .findFirst()
+                .map(defendant -> {
+                    if (defendant.getPersonDefendant() != null && defendant.getPersonDefendant().getPersonDetails() != null) {
+                        return defendant.getPersonDefendant().getPersonDetails().getFirstName();
+                    }
+                    if (defendant.getLegalEntityDefendant() != null && defendant.getLegalEntityDefendant().getOrganisation() != null) {
+                        return defendant.getLegalEntityDefendant().getOrganisation().getName();
+                    }
+                    return null;
+                })
+                .orElse(null);
     }
 
     private JsonObject toCaseSummary(final ProsecutionCase prosecutionCase) {

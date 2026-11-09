@@ -144,4 +144,41 @@ class GroupCaseConverterTest {
 
         assertThat(leadCaseJson.isPresent(), is(false));
     }
+
+    @Test
+    void shouldOrderCaseSummariesWithLeadCaseFirstThenByDefendantFirstNameAlphabetically() {
+        final ProsecutionCase charlieCase = caseWithDefendantFirstName("Charlie");
+        final ProsecutionCase aliceCase = caseWithDefendantFirstName("Alice");
+        final ProsecutionCase leadCase = caseWithDefendantFirstNameAndGroupMaster("Zach", true);
+        final ProsecutionCase bobCase = caseWithDefendantFirstName("bob");
+
+        final List<ProsecutionCase> prosecutionCases = asList(charlieCase, aliceCase, leadCase, bobCase);
+
+        final JsonArray summaries = groupCaseConverter.toCaseSummaries(prosecutionCases).build();
+
+        assertThat(summaries.size(), is(4));
+        assertThat(summaries.getJsonObject(0).getString("defendantName"), is("Zach"));
+        assertThat(summaries.getJsonObject(1).getString("defendantName"), is("Alice"));
+        assertThat(summaries.getJsonObject(2).getString("defendantName"), is("bob"));
+        assertThat(summaries.getJsonObject(3).getString("defendantName"), is("Charlie"));
+    }
+
+    private ProsecutionCase caseWithDefendantFirstName(final String firstName) {
+        return caseWithDefendantFirstNameAndGroupMaster(firstName, false);
+    }
+
+    private ProsecutionCase caseWithDefendantFirstNameAndGroupMaster(final String firstName, final boolean isGroupMaster) {
+        final Defendant defendant = Defendant.defendant()
+                .withId(randomUUID())
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(Person.person().withFirstName(firstName).build())
+                        .build())
+                .build();
+
+        return ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withIsGroupMaster(isGroupMaster)
+                .withDefendants(singletonList(defendant))
+                .build();
+    }
 }

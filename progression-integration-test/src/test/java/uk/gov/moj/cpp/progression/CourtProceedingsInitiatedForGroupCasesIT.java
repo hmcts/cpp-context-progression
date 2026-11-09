@@ -171,14 +171,6 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         removeMasterCaseAndVerifyMasterIsChanged(caseDefendantOffence, groupMasterId, caseRemoved);
         verifyRemovedCasesKeepHearing(Arrays.asList(caseRemoved, groupMasterId), hearingId, hearingCaseIdsBeforeRemoval);
 
-        // group-member-cases excludes the master: 4 cases - 2 removed - 1 new master = 1
-        final Matcher[] groupIdMatcher = new Matcher[]{
-                withJsonPath("$.prosecutionCases.length()", is(caseCount - 3)),
-                withJsonPath("$.prosecutionCases[0].groupId", is(groupId))
-        };
-
-        pollGroupMemberCases(groupId, groupIdMatcher);
-
         // group-cases includes the lead case: 4 cases - 2 removed = 2
         final Matcher[] groupCasesMatchers = new Matcher[]{
                 withJsonPath("$.groupId", is(groupId)),
@@ -187,6 +179,14 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         };
 
         pollGroupCases(groupId, groupCasesMatchers);
+
+        // group-member-cases excludes the master: 4 cases - 2 removed - 1 new master = 1
+        final Matcher[] groupIdMatcher = new Matcher[]{
+                withJsonPath("$.prosecutionCases.length()", is(caseCount - 3)),
+                withJsonPath("$.prosecutionCases[0].groupId", is(groupId))
+        };
+
+        pollGroupMemberCases(groupId, groupIdMatcher);
     }
 
     @Test
