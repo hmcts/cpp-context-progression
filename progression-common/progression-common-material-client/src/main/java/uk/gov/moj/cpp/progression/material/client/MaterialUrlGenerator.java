@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.material.client;
 
 import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * Progression-owned copy of material's URL-building helper (decouples progression from the

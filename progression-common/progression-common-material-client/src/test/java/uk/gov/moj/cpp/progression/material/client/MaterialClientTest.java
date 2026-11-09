@@ -14,11 +14,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.moj.cpp.progression.material.client.MaterialClient.REQUEST_PARAM_ADD_INLINE_CONTENT_DISPOSITION_HEADER;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
