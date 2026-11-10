@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.HashMap;
@@ -18,6 +17,7 @@ import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 @SuppressWarnings("squid:S1612")
 public class WitnessPtphTransformer {
@@ -43,7 +43,7 @@ public class WitnessPtphTransformer {
             final JsonObject petForm = jsonObject.getJsonObject(DATA);
 
             if (nonNull(petForm.getJsonArray(WITNESSES))) {
-                final JsonArray cpsParticipantsWitnesses = ofNullable(petForm.getJsonArray(WITNESSES)).orElse(Json.createArrayBuilder().build());
+                final JsonArray cpsParticipantsWitnesses = ofNullable(petForm.getJsonArray(WITNESSES)).orElse(createArrayBuilder().build());
 
                 LOGGER.info("cpsParticipantsWitnesses >> {}", cpsParticipantsWitnesses);
 

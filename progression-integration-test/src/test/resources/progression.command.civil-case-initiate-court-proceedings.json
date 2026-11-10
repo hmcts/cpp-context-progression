@@ -25,6 +25,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
           "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityOUCode": "GB10056",
           "prosecutionAuthorityReference": "RANDOM_REFERENCE"
         },
         "originatingOrganisation": "G01FT01AB",

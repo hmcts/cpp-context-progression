@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -18,7 +19,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -62,7 +62,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -93,7 +93,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -127,7 +127,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -156,7 +156,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -185,7 +185,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -216,7 +216,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -248,7 +248,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -279,7 +279,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -310,7 +310,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -338,7 +338,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -369,7 +369,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)
@@ -399,7 +399,7 @@ class JudicialResultQueryViewTest {
 
         when(hearingRepository.findBy(hearingId)).thenReturn(null);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("masterDefendantId", masterDefendantId)
                 .add("judicialResultTypeId", judicialResultTypeId)

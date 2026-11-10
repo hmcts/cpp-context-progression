@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -259,6 +259,9 @@ public class MaterialStatusHandlerTest {
                             .withDefendant(Nowdefendant.nowdefendant().withProsecutingAuthorityReference("ref").build())
                             .build())
                     .build();
+
+        final uk.gov.moj.cpp.progression.aggregate.CaseAggregate caseAggregate = mock(uk.gov.moj.cpp.progression.aggregate.CaseAggregate.class);
+        when(aggregateService.get(eventStream, uk.gov.moj.cpp.progression.aggregate.CaseAggregate.class)).thenReturn(caseAggregate);
 
         Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME).withUserId(randomUUID().toString()),
                 nowDocumentRequest);

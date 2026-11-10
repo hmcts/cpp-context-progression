@@ -63,12 +63,14 @@ import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
@@ -77,6 +79,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
+import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -119,6 +122,7 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -126,6 +130,7 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+import uk.gov.moj.cpp.progression.enums.ApplicationSource;
 import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedForApplicationByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
@@ -161,6 +166,7 @@ public class ApplicationAggregate implements Aggregate {
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApplicationStatus applicationStatus = DRAFT;
+    private boolean summonsPreviouslyApproved;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisations = new ArrayList<>();
@@ -202,6 +208,7 @@ public class ApplicationAggregate implements Aggregate {
                 }),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
+                when(CourtApplicationSummonsApproved.class).apply(e -> this.summonsPreviouslyApproved = true),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
                     setCourtApplication(e.getCourtApplication());
@@ -602,7 +609,10 @@ public class ApplicationAggregate implements Aggregate {
             }
             if (nonNull(courtApplicationCase)) {
                 updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
-                boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
+                final boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
+                if (isCivil) {
+                    updatedCourtApplication = enrichCourtApplicationCasesWithCivilOffence(updatedCourtApplication, courtApplicationCase, initiateCourtApplicationProceedings.getApplicationSource());
+                }
                 updatedCourtApplication = updateCourtApplicatonWithFeeType(updatedCourtApplication, isCivil);
             }
             return apply(
@@ -629,6 +639,79 @@ public class ApplicationAggregate implements Aggregate {
         return CourtApplication.courtApplication().withValuesFrom(courtApplication)
                 .withCourtCivilApplication(CourtCivilApplication.courtCivilApplication().withIsCivil(isCivil).build())
                 .build();
+    }
+
+    private CourtApplication enrichCourtApplicationCasesWithCivilOffence(final CourtApplication courtApplication, final ProsecutionCase prosecutionCase, final ApplicationSource applicationSource) {
+        if (isNull(courtApplication.getCourtApplicationCases()) || isNull(prosecutionCase.getDefendants())) {
+            return courtApplication;
+        }
+
+        final List<Offence> caseOffences = prosecutionCase.getDefendants().stream()
+                .filter(Objects::nonNull)
+                .map(Defendant::getOffences)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .collect(toList());
+
+        if (caseOffences.isEmpty()) {
+            return courtApplication;
+        }
+
+        final Map<UUID, CivilOffence> civilOffenceByOffenceId = caseOffences.stream()
+                .filter(offence -> nonNull(offence.getCivilOffence()))
+                .collect(Collectors.toMap(Offence::getId, Offence::getCivilOffence, (first, second) -> first));
+
+        final List<CourtApplicationCase> enrichedCourtApplicationCases = courtApplication.getCourtApplicationCases().stream()
+                .map(courtApplicationCase -> enrichCourtApplicationCaseWithCivilOffence(courtApplicationCase, prosecutionCase.getId(), caseOffences, civilOffenceByOffenceId, applicationSource))
+                .collect(toList());
+
+        return courtApplication().withValuesFrom(courtApplication)
+                .withCourtApplicationCases(enrichedCourtApplicationCases)
+                .build();
+    }
+
+    private CourtApplicationCase enrichCourtApplicationCaseWithCivilOffence(final CourtApplicationCase courtApplicationCase, final UUID prosecutionCaseId,
+                                                                            final List<Offence> caseOffences, final Map<UUID, CivilOffence> civilOffenceByOffenceId,
+                                                                            final ApplicationSource applicationSource) {
+        if (!Objects.equals(courtApplicationCase.getProsecutionCaseId(), prosecutionCaseId)) {
+            return courtApplicationCase;
+        }
+
+        if (isNull(courtApplicationCase.getOffences()) || courtApplicationCase.getOffences().isEmpty()) {
+            // CourtApplicationHandler.updateClonedOffenceApplicationCases deliberately nulls offences for MH-sourced
+            // applications against an active case - respect that same exemption here instead of undoing it by
+            // repopulating offences the handler intentionally left out.
+            if (ignoreCaseOffences(courtApplicationCase.getCaseStatus(), applicationSource)) {
+                return courtApplicationCase;
+            }
+            return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                    .withOffences(caseOffences)
+                    .build();
+        }
+
+        final List<Offence> enrichedOffences = courtApplicationCase.getOffences().stream()
+                .map(applicationOffence -> {
+                    if (nonNull(applicationOffence.getCivilOffence())) {
+                        return applicationOffence;
+                    }
+                    final CivilOffence civilOffence = civilOffenceByOffenceId.get(applicationOffence.getId());
+                    if (isNull(civilOffence)) {
+                        return applicationOffence;
+                    }
+                    return offence().withValuesFrom(applicationOffence)
+                            .withCivilOffence(civilOffence)
+                            .build();
+                })
+                .collect(toList());
+
+        return courtApplicationCase().withValuesFrom(courtApplicationCase)
+                .withOffences(enrichedOffences)
+                .build();
+    }
+
+    private boolean ignoreCaseOffences(final String caseStatus, final ApplicationSource applicationSource) {
+        final boolean activeCase = !(CaseStatusEnum.INACTIVE.name().equalsIgnoreCase(caseStatus) || CaseStatusEnum.CLOSED.name().equalsIgnoreCase(caseStatus));
+        return activeCase && ApplicationSource.MH == applicationSource;
     }
 
     private CourtApplication enrichApplicationIfAddressUpdatedFromApplication(final CourtApplication updatedCourtApplication, final ProsecutionCase courtApplicationCase) {
@@ -806,6 +889,7 @@ public class ApplicationAggregate implements Aggregate {
         streams.add(courtApplicationSummonsApproved()
                 .withApplicationId(courtApplication.getId())
                 .withLinkType(courtApplication.getType().getLinkType())
+                .withIsSummonsAmended(summonsPreviouslyApproved || LISTED.equals(this.applicationStatus))
                 .withCaseIds(getCaseIds())
                 .withSummonsApprovedOutcome(summonsApprovedOutcome)
                 .build());
@@ -905,6 +989,33 @@ public class ApplicationAggregate implements Aggregate {
                 .withHearingId(this.initiateCourtApplicationProceedings.getCourtHearing().getId())
                 .withSeedingHearingId(seedingHearingId)
                 .build()));
+    }
+
+    public Stream<Object> deleteCourtApplicationByBdf(final UUID courtApplicationId) {
+        return apply(Stream.of(CourtApplicationDeletedBdf.courtApplicationDeletedBdf()
+                .withApplicationId(courtApplicationId)
+                .withCaseIds(getLinkedCaseIds())
+                .build()));
+    }
+
+    private List<UUID> getLinkedCaseIds() {
+        if (isNull(this.courtApplication)) {
+            return new ArrayList<>();
+        }
+
+        final List<UUID> caseIds = ofNullable(this.courtApplication.getCourtApplicationCases()).stream()
+                .flatMap(Collection::stream)
+                .map(CourtApplicationCase::getProsecutionCaseId)
+                .collect(toList());
+
+        ofNullable(this.courtApplication.getCourtOrder())
+                .map(courtOrder -> courtOrder.getCourtOrderOffences())
+                .stream()
+                .flatMap(Collection::stream)
+                .map(CourtOrderOffence::getProsecutionCaseId)
+                .forEach(caseIds::add);
+
+        return caseIds.stream().filter(Objects::nonNull).distinct().collect(toList());
     }
 
     public Stream<Object> updateCustodialInfomrationForApplicatioNSubject(final DefendantUpdate defendantUpdate, final UUID applicationId) {
@@ -1035,7 +1146,7 @@ public class ApplicationAggregate implements Aggregate {
     @SuppressWarnings({"java:S2245"})
     private String generateUrn() {
         return RandomStringUtils.random(4, 0, 0, true, true, null, SECURE_RANDOM).toUpperCase() +
-               RandomStringUtils.random(7, 0, 0, false, true, null, SECURE_RANDOM);
+                RandomStringUtils.random(7, 0, 0, false, true, null, SECURE_RANDOM);
     }
 
 

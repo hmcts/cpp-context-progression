@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.notMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.resetAllRequests;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
@@ -89,8 +90,34 @@ public class NotificationServiceStub {
         verifyEmailNotificationIsRaisedWithoutAttachment(expectedValues, moreThanOrExactly(1));
     }
 
+    public static void verifyNoEmailNotificationIsRaised() {
+        resetAllRequests();
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
+        });
+    }
+
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues) {
         verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.empty());
+    }
+
+    public static void verifyEmailNotificationIsNotRaisedWithContent(final String content) {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON))
+                        .withRequestBody(containing(content)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
+        });
     }
 
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, Optional<UUID> materialId) {
@@ -122,6 +149,19 @@ public class NotificationServiceStub {
                 return false;
             }
             return true;
+        });
+    }
+
+    public static void verifyNoLetterNotificationIsRaisedWithContent(final String content) {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(exactly(0), postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
+                        .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE))
+                        .withRequestBody(containing(content)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
         });
     }
 

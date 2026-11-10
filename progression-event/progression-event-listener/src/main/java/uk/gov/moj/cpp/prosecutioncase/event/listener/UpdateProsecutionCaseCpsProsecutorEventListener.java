@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 
 import java.io.StringReader;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.json.Json;
 import javax.json.JsonReader;
 
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
@@ -99,7 +99,7 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

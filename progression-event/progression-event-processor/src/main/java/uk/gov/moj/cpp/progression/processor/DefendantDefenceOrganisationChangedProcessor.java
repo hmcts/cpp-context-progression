@@ -16,12 +16,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import java.util.Optional;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantDefenceOrganisationChangedProcessor {
@@ -55,7 +55,7 @@ public class DefendantDefenceOrganisationChangedProcessor {
                 .filter(defendant -> defendant.getId().equals(defendantDefenceOrganisationChanged.getDefendantId()))
                 .findFirst();
         if (optionalDefendant.isPresent()) {
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
+            final JsonObject publicEventPayload = createObjectBuilder()
                     .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendantDefenceOrganisationChanged, optionalDefendant.get())))
                     .build();
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DEFENDANT_CHANGED).apply(publicEventPayload));
