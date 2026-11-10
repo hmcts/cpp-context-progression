@@ -66,6 +66,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -434,10 +435,12 @@ public class CourtlistQueryView {
 
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
-            resolvePncId(masterDefendant, courtApplication).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
+            final Supplier<List<Defendant>> linkedCaseDefendants = linkedCaseDefendantsLoader(masterDefendant, courtApplication);
+            resolvePncId(masterDefendant, linkedCaseDefendants).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
                 final PersonDefendant pd = masterDefendant.getPersonDefendant();
-                final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
+                // defendantASN on the application belongs to the subject, so the applicant starts from its own snapshot
+                final String asn = resolveAsn(null, masterDefendant, linkedCaseDefendants).orElse("");
                 addApplicantPersonFields(applicantBuilder, pd.getPersonDetails(), asn);
             } else if (nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())) {
                 final Organisation org = masterDefendant.getLegalEntityDefendant().getOrganisation();
@@ -628,8 +631,11 @@ public class CourtlistQueryView {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
         }
-        ofNullable(masterDefendant).flatMap(md -> resolvePncId(md, courtApplication)).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
-        resolveAsn(masterDefendant, courtApplication).ifPresent(asn -> defendantBuilder.add(ASN, asn));
+        final Supplier<List<Defendant>> linkedCaseDefendants = ofNullable(masterDefendant)
+                .map(md -> linkedCaseDefendantsLoader(md, courtApplication))
+                .orElse(() -> emptyList());
+        ofNullable(masterDefendant).flatMap(md -> resolvePncId(md, linkedCaseDefendants)).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
+        resolveAsn(courtApplication.getDefendantASN(), masterDefendant, linkedCaseDefendants).ifPresent(asn -> defendantBuilder.add(ASN, asn));
         //TODO not sure about defenceOrganization
         defendantBuilder.add(DEFENCE_ORGANIZATION, "-");
         if (isNotEmpty(hearing.getProsecutionCounsels())) {
@@ -648,23 +654,25 @@ public class CourtlistQueryView {
      * has no pncId, even though the defendant on the linked prosecution case does. Fall back to the linked case
      * defendant so the PNC ID still appears on court lists (notably the prison list).
      */
-    private Optional<String> resolvePncId(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+    private Optional<String> resolvePncId(final MasterDefendant masterDefendant, final Supplier<List<Defendant>> linkedCaseDefendants) {
         if (isNonBlank(masterDefendant.getPncId())) {
             return Optional.of(masterDefendant.getPncId());
         }
-        return findLinkedCaseDefendants(masterDefendant, courtApplication)
+        return linkedCaseDefendants.get().stream()
                 .map(Defendant::getPncId)
                 .filter(CourtlistQueryView::isNonBlank)
                 .findFirst();
     }
 
     /**
-     * ASN for the subject of an application. {@code defendantASN} is only populated when the caller supplies it, so
-     * (as with the PNC ID) fall back to the master defendant snapshot and then to the linked case defendant.
+     * ASN for an application party. {@code applicationAsn} (the application's {@code defendantASN}, which only applies
+     * to the subject and is only populated when the caller supplies it) wins; otherwise, as with the PNC ID, fall back
+     * to the master defendant snapshot and then to the linked case defendant.
      */
-    private Optional<String> resolveAsn(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
-        if (isNonBlank(courtApplication.getDefendantASN())) {
-            return Optional.of(courtApplication.getDefendantASN());
+    private Optional<String> resolveAsn(final String applicationAsn, final MasterDefendant masterDefendant,
+                                        final Supplier<List<Defendant>> linkedCaseDefendants) {
+        if (isNonBlank(applicationAsn)) {
+            return Optional.of(applicationAsn);
         }
         if (masterDefendant == null) {
             return Optional.empty();
@@ -675,7 +683,7 @@ public class CourtlistQueryView {
         if (snapshotAsn.isPresent()) {
             return snapshotAsn;
         }
-        return findLinkedCaseDefendants(masterDefendant, courtApplication)
+        return linkedCaseDefendants.get().stream()
                 .map(Defendant::getPersonDefendant)
                 .filter(Objects::nonNull)
                 .map(PersonDefendant::getArrestSummonsNumber)
@@ -684,8 +692,21 @@ public class CourtlistQueryView {
     }
 
     /**
+     * Loads the linked case defendants on first use and reuses them, so each linked prosecution case is read from the
+     * viewstore at most once per party (shared by the PNC ID and ASN fallbacks) and only when a fallback is needed.
+     */
+    private Supplier<List<Defendant>> linkedCaseDefendantsLoader(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+        final AtomicReference<List<Defendant>> loaded = new AtomicReference<>();
+        return () -> {
+            if (loaded.get() == null) {
+                loaded.set(findLinkedCaseDefendants(masterDefendant, courtApplication).collect(toList()));
+            }
+            return loaded.get();
+        };
+    }
+
+    /**
      * Defendants on the prosecution case(s) linked to the application that represent the given master defendant.
-     * Lazily evaluated, so cases are only loaded from the viewstore when a fallback is actually needed.
      */
     private Stream<Defendant> findLinkedCaseDefendants(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
         final UUID masterDefendantId = masterDefendant.getMasterDefendantId();

@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
@@ -884,6 +886,8 @@ public class CourtlistQueryViewTest {
 
         assertThat(result.getString("pncId"), is("PNC-CASE-001"));
         assertThat(result.getString("asn"), is("ASN-CASE-001"));
+        // PNC ID and ASN fallbacks share one load of the linked case
+        verify(prosecutionCaseRepository, times(1)).findByCaseId(caseId);
     }
 
     @Test
@@ -982,6 +986,58 @@ public class CourtlistQueryViewTest {
                 new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
 
         assertThat(result.getString("pncId"), is("PNC-CASE-003"));
+    }
+
+    @Test
+    public void buildApplicantForCourtApplication_shouldFallBackToLinkedCaseDefendantAsnLoadingCaseOnce() throws Exception {
+        final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final CourtApplication courtApplication = applicationWithPersonApplicant(caseId, masterDefendantId, null, "ASN-OF-SUBJECT");
+        stubProsecutionCaseWithDefendant(caseId, randomUUID(), masterDefendantId, "PNC-CASE-004", "ASN-CASE-004");
+
+        final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
+                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+
+        assertThat(result.getString("pncId"), is("PNC-CASE-004"));
+        // the application's defendantASN belongs to the subject, never the applicant
+        assertThat(result.getString("asn"), is("ASN-CASE-004"));
+        verify(prosecutionCaseRepository, times(1)).findByCaseId(caseId);
+    }
+
+    @Test
+    public void buildApplicantForCourtApplication_shouldUseApplicantSnapshotAsnBeforeLinkedCase() throws Exception {
+        final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final CourtApplication courtApplication = applicationWithPersonApplicant(caseId, masterDefendantId, "ASN-SNAPSHOT", null);
+        stubProsecutionCaseWithDefendant(caseId, randomUUID(), masterDefendantId, "PNC-CASE-005", "ASN-CASE-005");
+
+        final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
+                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+
+        assertThat(result.getString("asn"), is("ASN-SNAPSHOT"));
+        assertThat(result.getString("pncId"), is("PNC-CASE-005"));
+    }
+
+    private CourtApplication applicationWithPersonApplicant(final UUID caseId, final UUID masterDefendantId,
+                                                            final String snapshotAsn, final String applicationDefendantAsn) {
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withArrestSummonsNumber(snapshotAsn)
+                        .withPersonDetails(Person.person().withFirstName("John").withLastName("Smith").withGender(Gender.MALE).build())
+                        .build())
+                .build();
+        return CourtApplication.courtApplication()
+                .withId(randomUUID())
+                .withDefendantASN(applicationDefendantAsn)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withId(randomUUID())
+                        .withMasterDefendant(masterDefendant)
+                        .build())
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withProsecutionCaseId(caseId)
+                        .build()))
+                .build();
     }
 
     private CourtApplication applicationWithSubjectWithoutPncId(final UUID caseId, final UUID masterDefendantId) {
