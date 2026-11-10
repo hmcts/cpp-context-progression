@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -10,12 +11,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -50,6 +54,7 @@ import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonEmail;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseSubjects;
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -57,17 +62,22 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.MaterialDetails;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -101,6 +111,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
@@ -189,6 +200,12 @@ public class NotificationServiceTest {
 
     @Mock
     private CourtApplicationService courtApplicationService;
+
+    @Mock
+    private ProgressionService progressionService;
+
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.of(LocalDate.of(2019, 06, 18), LocalTime.of(14, 45), ZoneId.of("UTC"));
 
@@ -1288,6 +1305,488 @@ public class NotificationServiceTest {
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(4), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("informant@test.com"))))));
+    }
+
+    @Test
+    public void sendNotificationSuppressedForAllThirdPartiesWhenLinkedCivilCaseHasExParteOffence() {
+
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationParty exParteThirdPartyPerson = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("exparte-thirdparty-person@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final CourtApplicationParty exParteThirdPartyOrganisation = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                                .withOrganisation(Organisation.organisation()
+                                        .withName("Third Party Org Ltd")
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("exparte-thirdparty-org@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        // Not a defendant (no masterDefendant): suppressed as well, every third party is on an ex-parte application
+        final CourtApplicationParty nonDefendantThirdParty = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("nondefendant-thirdparty@test.com").build())
+                        .build())
+                .build();
+
+        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person().build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(applicant)
+                .withThirdParties(List.of(exParteThirdPartyPerson, exParteThirdPartyOrganisation, nonDefendantThirdParty))
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(prosecutionCaseId,
+                        CivilOffence.civilOffence().withIsExParte(true).build())))
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // All third parties (defendant person, defendant organisation and non-defendant) are suppressed.
+        verify(this.sender, never()).send(any(JsonEnvelope.class));
+    }
+
+    @Test
+    public void sendNotificationSuppressedForPersonThirdPartyWhenLinkedCivilCaseHasExParteOffence() {
+        final CourtApplicationParty personThirdParty = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("person-thirdparty@test.com").build())
+                        .build())
+                .build();
+
+        notificationService.sendNotification(envelope, exParteApplicationWithThirdParties(singletonList(personThirdParty), randomUUID(), false),
+                false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(this.sender, never()).send(any(JsonEnvelope.class));
+    }
+
+    @Test
+    public void sendNotificationSuppressedForOrganisationThirdPartyWhenLinkedCivilCaseHasExParteOffence() {
+        final CourtApplicationParty organisationThirdParty = CourtApplicationParty.courtApplicationParty()
+                .withOrganisation(Organisation.organisation()
+                        .withName("Third Party Org Ltd")
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("organisation-thirdparty@test.com").build())
+                        .build())
+                .build();
+
+        notificationService.sendNotification(envelope, exParteApplicationWithThirdParties(singletonList(organisationThirdParty), randomUUID(), false),
+                false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(this.sender, never()).send(any(JsonEnvelope.class));
+    }
+
+    @Test
+    public void sendNotificationToInformantWhenSuppressedThirdPartyIsTheLinkedCaseProsecutingAuthority() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
+
+        final UUID linkedCaseProsecutionAuthorityId = randomUUID();
+        final CourtApplicationParty prosecutingAuthorityThirdParty = buildCourtApplicationParty(linkedCaseProsecutionAuthorityId, "prosecutor-thirdparty@test.com");
+
+        notificationService.sendNotification(envelope,
+                exParteApplicationWithThirdParties(singletonList(prosecutingAuthorityThirdParty), linkedCaseProsecutionAuthorityId, true),
+                false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        final List<String> emailAddresses = this.envelopeArgumentCaptor.getAllValues().stream()
+                .filter(sentEnvelope -> PROGRESSION_COMMAND_EMAIL.equals(sentEnvelope.metadata().name()))
+                .map(sentEnvelope -> sentEnvelope.payloadAsJsonObject().getJsonArray("notifications").getJsonObject(0).getString("sendToAddress"))
+                .collect(Collectors.toList());
+        assertThat(emailAddresses, contains("informant@test.com"));
+    }
+
+    @Test
+    public void sendNotificationToAllThirdPartiesWhenLinkedCivilCaseHasNoExParteOffence() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        final CourtApplicationParty personThirdParty = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("person-thirdparty@test.com").build())
+                        .build())
+                .build();
+        final CourtApplicationParty organisationThirdParty = CourtApplicationParty.courtApplicationParty()
+                .withOrganisation(Organisation.organisation()
+                        .withName("Third Party Org Ltd")
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("organisation-thirdparty@test.com").build())
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withValuesFrom(exParteApplicationWithThirdParties(List.of(personThirdParty, organisationThirdParty), randomUUID(), false))
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(randomUUID(),
+                        CivilOffence.civilOffence().withIsExParte(false).build())))
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        final List<String> emailAddresses = this.envelopeArgumentCaptor.getAllValues().stream()
+                .filter(sentEnvelope -> PROGRESSION_COMMAND_EMAIL.equals(sentEnvelope.metadata().name()))
+                .map(sentEnvelope -> sentEnvelope.payloadAsJsonObject().getJsonArray("notifications").getJsonObject(0).getString("sendToAddress"))
+                .collect(Collectors.toList());
+        assertThat(emailAddresses, containsInAnyOrder("person-thirdparty@test.com", "organisation-thirdparty@test.com"));
+    }
+
+    private CourtApplication exParteApplicationWithThirdParties(final List<CourtApplicationParty> thirdParties,
+                                                                final UUID linkedCaseProsecutionAuthorityId, final boolean appealFlag) {
+        return CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withAppealFlag(appealFlag)
+                        .withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withPersonDetails(Person.person().build())
+                        .build())
+                .withThirdParties(thirdParties)
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseId(randomUUID())
+                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                .withProsecutionAuthorityId(linkedCaseProsecutionAuthorityId)
+                                .build())
+                        .withOffences(singletonList(Offence.offence()
+                                .withId(randomUUID())
+                                .withCivilOffence(CivilOffence.civilOffence().withIsExParte(true).build())
+                                .build()))
+                        .build()))
+                .build();
+    }
+
+    private CourtApplicationCase courtApplicationCaseWithOffence(final UUID prosecutionCaseId, final CivilOffence civilOffence) {
+        final Offence.Builder offenceBuilder = Offence.offence().withId(randomUUID());
+        if (nonNull(civilOffence)) {
+            offenceBuilder.withCivilOffence(civilOffence);
+        }
+        return courtApplicationCase()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .withOffences(singletonList(offenceBuilder.build()))
+                .build();
+    }
+
+    @Test
+    public void sendNotificationNotSuppressedForApplicantEvenWhenLinkedCivilCaseHasExParteOffenceForSameMasterDefendant() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID respondentProsecutorId = randomUUID();
+
+        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(masterDefendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build())
+                                .build())
+                        .build())
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build())
+                        .build())
+                .build();
+
+        final List<CourtApplicationParty> respondents = singletonList(
+                CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(createProsecutorAuthority(respondentProsecutorId, "prosecutor-respondent@test.com"))
+                        .build());
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(applicant)
+                .withRespondents(respondents)
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(prosecutionCaseId,
+                        CivilOffence.civilOffence().withIsExParte(true).build())))
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // The ex-parte suppression rule only applies to respondents/defendants, not the applicant: even though the
+        // applicant's masterDefendantId matches the defendant on the linked civil case's ex-parte offence, both the
+        // applicant and the prosecuting-authority respondent are notified (email + court document each).
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(0), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com"))))));
+
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(2), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("prosecutor-respondent@test.com"))))));
+    }
+
+    @Test
+    public void sendNotificationSuppressedForAllDefendantRespondentsWhenLinkedCivilCaseHasExParteOffence() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID respondentProsecutorId = randomUUID();
+
+        final CourtApplicationParty exParteRespondent = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("exparte-respondent@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        // A second defendant respondent on the same application: the ex-parte flag is a case-level fact (there is no
+        // per-defendant offence link on CourtApplicationCase), so every defendant respondent linked to this case is suppressed.
+        final CourtApplicationParty siblingDefendantRespondent = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("sibling-defendant-respondent@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        // Not a defendant (no masterDefendant): unaffected by the suppression rule, which only applies to respondents/defendants.
+        final CourtApplicationParty prosecutorRespondent = CourtApplicationParty.courtApplicationParty()
+                .withProsecutingAuthority(createProsecutorAuthority(respondentProsecutorId, "prosecutor-respondent@test.com"))
+                .build();
+
+        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person().build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(applicant)
+                .withRespondents(List.of(exParteRespondent, siblingDefendantRespondent, prosecutorRespondent))
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(prosecutionCaseId,
+                        CivilOffence.civilOffence().withIsExParte(true).build())))
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // Both defendant respondents are suppressed; only the prosecuting-authority respondent (not a defendant) is notified.
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(0), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("prosecutor-respondent@test.com"))))));
+    }
+
+    @Test
+    public void sendNotificationSuppressedWhenExParteCivilCaseIsNotTheFirstLinkedCase() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        final UUID nonExParteCaseId = randomUUID();
+        final UUID exParteCaseId = randomUUID();
+        givenLinkedProsecutionCase(exParteCaseId, true);
+
+        // Application raised on the non ex-parte case (enriched with civilOffence on creation), with the ex-parte case
+        // selected as a further linked case whose offences carry no civilOffence.
+        final CourtApplication courtApplication = applicationWithDefendantRespondentAndThirdParty(List.of(
+                courtApplicationCaseWithOffence(nonExParteCaseId, CivilOffence.civilOffence().withIsExParte(false).build()),
+                courtApplicationCaseWithOffence(exParteCaseId, null)));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // Defendant respondent and third party are suppressed; only the prosecuting-authority respondent is notified.
+        verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        assertThat(sentEmailAddresses(), contains("prosecutor-respondent@test.com"));
+        verify(progressionService, never()).getProsecutionCase(any(JsonEnvelope.class), eq(nonExParteCaseId.toString()));
+    }
+
+    @Test
+    public void sendNotificationNotSuppressedWhenNoLinkedCivilCaseIsExParte() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        final UUID secondCaseId = randomUUID();
+        givenLinkedProsecutionCase(secondCaseId, false);
+
+        final CourtApplication courtApplication = applicationWithDefendantRespondentAndThirdParty(List.of(
+                courtApplicationCaseWithOffence(randomUUID(), CivilOffence.civilOffence().withIsExParte(false).build()),
+                courtApplicationCaseWithOffence(secondCaseId, null)));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(this.sender, atLeastOnce()).send(this.envelopeArgumentCaptor.capture());
+        assertThat(sentEmailAddresses(), containsInAnyOrder("defendant-respondent@test.com", "prosecutor-respondent@test.com", "thirdparty@test.com"));
+        // The linked case is looked up once per notification, not once per party.
+        verify(progressionService, times(1)).getProsecutionCase(any(JsonEnvelope.class), eq(secondCaseId.toString()));
+    }
+
+    private void givenLinkedProsecutionCase(final UUID prosecutionCaseId, final boolean isExParte) {
+        final JsonObject prosecutionCaseJson = createObjectBuilder().add("id", prosecutionCaseId.toString()).build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(singletonList(Offence.offence()
+                                .withId(randomUUID())
+                                .withCivilOffence(CivilOffence.civilOffence().withIsExParte(isExParte).build())
+                                .build()))
+                        .build()))
+                .build();
+        when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(prosecutionCaseId.toString())))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
+    }
+
+    private CourtApplication applicationWithDefendantRespondentAndThirdParty(final List<CourtApplicationCase> courtApplicationCases) {
+        final CourtApplicationParty defendantRespondent = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("defendant-respondent@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        final CourtApplicationParty prosecutorRespondent = CourtApplicationParty.courtApplicationParty()
+                .withProsecutingAuthority(createProsecutorAuthority(randomUUID(), "prosecutor-respondent@test.com"))
+                .build();
+        final CourtApplicationParty thirdParty = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("thirdparty@test.com").build())
+                        .build())
+                .build();
+
+        return CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty().withPersonDetails(Person.person().build()).build())
+                .withRespondents(List.of(defendantRespondent, prosecutorRespondent))
+                .withThirdParties(singletonList(thirdParty))
+                .withCourtApplicationCases(courtApplicationCases)
+                .build();
+    }
+
+    private List<String> sentEmailAddresses() {
+        return this.envelopeArgumentCaptor.getAllValues().stream()
+                .filter(sentEnvelope -> PROGRESSION_COMMAND_EMAIL.equals(sentEnvelope.metadata().name()))
+                .map(sentEnvelope -> sentEnvelope.payloadAsJsonObject().getJsonArray("notifications").getJsonObject(0).getString("sendToAddress"))
+                .collect(Collectors.toList());
+    }
+
+    @Test
+    public void sendNotificationForTheApplicant_regressionWhenLinkedCivilCaseHasNoExParteOffence() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(masterDefendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build())
+                                .build())
+                        .build())
+                .withPersonDetails(Person.person()
+                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build())
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(applicant)
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(prosecutionCaseId,
+                        CivilOffence.civilOffence().withIsExParte(false).build())))
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_EMAIL),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
+    }
+
+    @Test
+    public void sendNotificationForTheRespondentDefendant_regressionWhenLinkedCaseHasNoCivilOffence() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                .withPersonDetails(Person.person().build())
+                .build();
+
+        final CourtApplicationParty respondent = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(masterDefendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withContact(ContactNumber.contactNumber().withPrimaryEmail("respondent@test.com").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(applicant)
+                .withRespondents(singletonList(respondent))
+                .withCourtApplicationCases(singletonList(courtApplicationCaseWithOffence(prosecutionCaseId, null)))
+                .build();
+
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
+
+        // No CivilOffence on the linked case's offence means it isn't a civil case, so the respondent is notified as normal.
+        verify(sender, atLeastOnce()).send(argThat(jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("respondent@test.com")))))));
     }
 
     private static List<CourtApplicationCase> getCourtApplicationCases(final UUID prosecutorId) {

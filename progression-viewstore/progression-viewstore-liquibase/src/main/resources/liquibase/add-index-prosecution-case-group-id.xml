@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-index-prosecution-case-group-id" author="cpp.context.progression">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="prosecution_case_idx_group_id"
+                             tableName="prosecution_case"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="prosecution_case"
+                     indexName="prosecution_case_idx_group_id">
+            <column name="group_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
