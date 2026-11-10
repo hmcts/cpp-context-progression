@@ -28,6 +28,7 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
@@ -61,9 +62,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -431,7 +434,7 @@ public class CourtlistQueryView {
 
         if (nonNull(applicant.getMasterDefendant())) {
             final MasterDefendant masterDefendant = applicant.getMasterDefendant();
-            ofNullable(masterDefendant.getPncId()).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
+            resolvePncId(masterDefendant, courtApplication).ifPresent(pncId -> applicantBuilder.add(PNC_ID, pncId));
             if (nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())) {
                 final PersonDefendant pd = masterDefendant.getPersonDefendant();
                 final String asn = ofNullable(pd.getArrestSummonsNumber()).orElse("");
@@ -625,8 +628,8 @@ public class CourtlistQueryView {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
         }
-        ofNullable(masterDefendant).map(MasterDefendant::getPncId).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
-        ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add(ASN, asn));
+        ofNullable(masterDefendant).flatMap(md -> resolvePncId(md, courtApplication)).ifPresent(pncId -> defendantBuilder.add(PNC_ID, pncId));
+        resolveAsn(masterDefendant, courtApplication).ifPresent(asn -> defendantBuilder.add(ASN, asn));
         //TODO not sure about defenceOrganization
         defendantBuilder.add(DEFENCE_ORGANIZATION, "-");
         if (isNotEmpty(hearing.getProsecutionCounsels())) {
@@ -638,6 +641,102 @@ public class CourtlistQueryView {
         return defendantBuilder.build();
     }
 
+
+    /**
+     * PNC ID for an application party backed by a master defendant. The master defendant snapshot held on the
+     * application (e.g. a reopen application raised after the case was resulted and became inactive) frequently
+     * has no pncId, even though the defendant on the linked prosecution case does. Fall back to the linked case
+     * defendant so the PNC ID still appears on court lists (notably the prison list).
+     */
+    private Optional<String> resolvePncId(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+        if (isNonBlank(masterDefendant.getPncId())) {
+            return Optional.of(masterDefendant.getPncId());
+        }
+        return findLinkedCaseDefendants(masterDefendant, courtApplication)
+                .map(Defendant::getPncId)
+                .filter(CourtlistQueryView::isNonBlank)
+                .findFirst();
+    }
+
+    /**
+     * ASN for the subject of an application. {@code defendantASN} is only populated when the caller supplies it, so
+     * (as with the PNC ID) fall back to the master defendant snapshot and then to the linked case defendant.
+     */
+    private Optional<String> resolveAsn(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+        if (isNonBlank(courtApplication.getDefendantASN())) {
+            return Optional.of(courtApplication.getDefendantASN());
+        }
+        if (masterDefendant == null) {
+            return Optional.empty();
+        }
+        final Optional<String> snapshotAsn = ofNullable(masterDefendant.getPersonDefendant())
+                .map(PersonDefendant::getArrestSummonsNumber)
+                .filter(CourtlistQueryView::isNonBlank);
+        if (snapshotAsn.isPresent()) {
+            return snapshotAsn;
+        }
+        return findLinkedCaseDefendants(masterDefendant, courtApplication)
+                .map(Defendant::getPersonDefendant)
+                .filter(Objects::nonNull)
+                .map(PersonDefendant::getArrestSummonsNumber)
+                .filter(CourtlistQueryView::isNonBlank)
+                .findFirst();
+    }
+
+    /**
+     * Defendants on the prosecution case(s) linked to the application that represent the given master defendant.
+     * Lazily evaluated, so cases are only loaded from the viewstore when a fallback is actually needed.
+     */
+    private Stream<Defendant> findLinkedCaseDefendants(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+        final UUID masterDefendantId = masterDefendant.getMasterDefendantId();
+        final Set<UUID> defendantIds = new LinkedHashSet<>();
+        ofNullable(masterDefendantId).ifPresent(defendantIds::add);
+        ofNullable(masterDefendant.getDefendantCase()).orElse(emptyList()).stream()
+                .map(DefendantCase::getDefendantId)
+                .filter(Objects::nonNull)
+                .forEach(defendantIds::add);
+        if (defendantIds.isEmpty()) {
+            return Stream.empty();
+        }
+        return getLinkedCaseIds(masterDefendant, courtApplication).stream()
+                .map(this::findProsecutionCaseInDb)
+                .flatMap(Optional::stream)
+                .flatMap(prosecutionCase -> ofNullable(prosecutionCase.getDefendants()).orElse(emptyList()).stream())
+                .filter(defendant -> defendantIds.contains(defendant.getId())
+                        || (nonNull(masterDefendantId) && masterDefendantId.equals(defendant.getMasterDefendantId())));
+    }
+
+    private Set<UUID> getLinkedCaseIds(final MasterDefendant masterDefendant, final CourtApplication courtApplication) {
+        final Set<UUID> caseIds = new LinkedHashSet<>();
+        ofNullable(masterDefendant.getDefendantCase()).orElse(emptyList()).stream()
+                .map(DefendantCase::getCaseId)
+                .forEach(caseIds::add);
+        ofNullable(courtApplication.getCourtApplicationCases()).orElse(emptyList()).stream()
+                .map(CourtApplicationCase::getProsecutionCaseId)
+                .forEach(caseIds::add);
+        ofNullable(courtApplication.getCourtOrder())
+                .map(courtOrder -> courtOrder.getCourtOrderOffences())
+                .map(List::stream).orElseGet(Stream::empty)
+                .map(CourtOrderOffence::getProsecutionCaseId)
+                .forEach(caseIds::add);
+        caseIds.remove(null);
+        return caseIds;
+    }
+
+    private Optional<ProsecutionCase> findProsecutionCaseInDb(final UUID caseId) {
+        try {
+            return ofNullable(prosecutionCaseRepository.findByCaseId(caseId))
+                    .map(entity -> jsonObjectToObjectConverter.convert(
+                            stringToJsonObjectConverter.convert(entity.getPayload()), ProsecutionCase.class));
+        } catch (RuntimeException e) {
+            LOGGER.warn("Unable to load prosecution case {} to resolve application party PNC ID / ASN", caseId, e);
+            return Optional.empty();
+        }
+    }
+
+    private static boolean isNonBlank(final String value) {
+        return nonNull(value) && !value.isBlank();
+    }
 
     private JsonObject enrichDefendant(final JsonObject defendantFromListing, final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
         final JsonObjectBuilder defendantJsonBuilder = createObjectBuilder();
