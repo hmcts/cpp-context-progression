@@ -6,8 +6,8 @@ import uk.gov.justice.services.messaging.Envelope;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class CourtOrderService {
 
@@ -15,7 +15,7 @@ public class CourtOrderService {
 
     public JsonObject getCourtOrdersByDefendant(final Envelope<?> envelope, final UUID defendantId, final Requester requester) {
 
-        final JsonObject request = Json.createObjectBuilder()
+        final JsonObject request = createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(request)

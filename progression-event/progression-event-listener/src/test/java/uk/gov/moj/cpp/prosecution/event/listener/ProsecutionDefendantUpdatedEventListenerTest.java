@@ -16,6 +16,9 @@ import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -62,7 +65,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -159,9 +161,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .thenReturn(prosecutionCaseDefendantUpdated);
         when(defendant.getId()).thenReturn(randomUUID());
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendant);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -209,9 +211,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
         when(defendant.getId()).thenReturn(randomUUID());
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -259,9 +261,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -323,9 +325,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -390,9 +392,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -450,9 +452,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(hearingResultedCaseUpdated.getProsecutionCase()).thenReturn(prosecutionCase);
         when(prosecutionCase.getDefendants()).thenReturn(defsList);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString()).build())
                                 .build())
                         .build()).build();
@@ -506,9 +508,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(hearingResultedCaseUpdated.getProsecutionCase()).thenReturn(prosecutionCase);
         when(prosecutionCase.getDefendants()).thenReturn(eventPayloadDefendantList);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                         .add("id", def1.toString()).build())
                                 .build())
                         .build()).build();
@@ -576,9 +578,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(hearingResultedCaseUpdated.getProsecutionCase()).thenReturn(prosecutionCase);
         when(prosecutionCase.getDefendants()).thenReturn(payloadDefendantsWithPendingStatusLegalAid);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                         .add("id", def1.toString()).build())
                                 .build())
                         .build()).build();
@@ -652,7 +654,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
         final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
 
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final JsonObject jsonObject = createObjectBuilder().build();
         final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
         final List<Defendant> defendants =new ArrayList<>();
         defendants.add(defendant1);
@@ -693,7 +695,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
         final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
 
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final JsonObject jsonObject = createObjectBuilder().build();
         final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
         final List<Defendant> defendants =new ArrayList<>();
         defendants.add(defendant1);
@@ -725,9 +727,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final UUID observedEthnicityId = randomUUID();
 
         final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
-        final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
 
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
         final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
         final List<Defendant> defendants =new ArrayList<>();
         defendants.add(defendant1);
@@ -785,7 +785,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private JsonObject jsonFromString(final String jsonObjectStr) {
 
         JsonObject object;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
 
@@ -959,12 +959,12 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     }
 
     private JsonObject prepareUpdatedProsecutionCase() {
-        return Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        return createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendant.getId().toString())
-                                .add("personDefendant", Json.createObjectBuilder()
-                                        .add("personDetails", Json.createObjectBuilder()
+                                .add("personDefendant", createObjectBuilder()
+                                        .add("personDetails", createObjectBuilder()
                                                 .add("occupation", "Plumber")
                                                 .add("occupationCode", "PL01")
                                                 .add("firstName", "newFirstName")

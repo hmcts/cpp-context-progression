@@ -12,7 +12,7 @@ import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
 import static uk.gov.justice.core.courts.SummonsType.BREACH;
 import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
 import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
-import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
+import static uk.gov.justice.core.courts.summons.SummonsDocument.summonsDocument;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.generateSummons;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.getSummonsCode;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.populateSummonsAddressee;
@@ -31,7 +31,7 @@ import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -42,6 +42,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicantEmailAddressUtil;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicationSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.BulkCivilCaseSummonsNotificationService;
 import uk.gov.moj.cpp.progression.processor.summons.CaseDefendantSummonsService;
 import uk.gov.moj.cpp.progression.processor.summons.PublishSummonsDocumentService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsNotificationEmailPayloadService;
@@ -52,8 +53,10 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -103,6 +106,9 @@ public class SummonsDataPreparedEventProcessor {
     @Inject
     private SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService;
 
+    @Inject
+    private BulkCivilCaseSummonsNotificationService bulkCivilCaseSummonsNotificationService;
+
     /**
      * The payload supports a collection of cases and application but summons will only be generated
      * for either a case or an application at a time in a single transaction.
@@ -143,6 +149,8 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private void processApplicationSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> optionalLjaDetails, final boolean isWelsh, final List<UUID> confirmedApplicationIds) {
+        final Set<UUID> notifiedBulkCivilCaseGroupIds = new HashSet<>();
+
         for (final UUID applicationId : confirmedApplicationIds) {
 
             final CourtApplication courtApplicationQueried = getCourtApplication(jsonEnvelope, applicationId);
@@ -154,31 +162,37 @@ public class SummonsDataPreparedEventProcessor {
                 return;
             }
 
+            if (bulkCivilCaseSummonsNotificationService.isBulkCivilCaseApplication(courtApplicationQueried)) {
+                bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseApplicationSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson,
+                        courtApplicationQueried, optionalSubjectNeeds.get().getSummonsApprovedOutcome(), notifiedBulkCivilCaseGroupIds);
+                continue;
+            }
+
             final CourtApplicationPartyListingNeeds subjectNeeds = optionalSubjectNeeds.get();
             final String applicantEmailAddress = getProsecutorEmailAddress(subjectNeeds.getSummonsApprovedOutcome());
             final SummonsType summonsRequired = subjectNeeds.getSummonsRequired();
             final boolean sendForRemotePrinting = !(nonNull(subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed()) && subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed());
             final String subjectTemplateName = summonsTemplateNameService.getApplicationTemplateName(summonsRequired, isWelsh);
-            final SummonsDocumentContent subjectSummonsDocumentContent = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplicationQueried, subjectNeeds, courtCentreJson, optionalLjaDetails);
-            final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), subjectSummonsDocumentContent.getDefendant().getDateOfBirth());
+            final SummonsDocument subjectSummonsDocument = applicationSummonsService.generateSummonsDocument(summonsDataPrepared, courtApplicationQueried, subjectNeeds, courtCentreJson, optionalLjaDetails);
+            final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), subjectSummonsDocument.getDefendant().getDateOfBirth());
             final UUID materialId = randomUUID();
             final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
-                    summonsDataPrepared, subjectSummonsDocumentContent, applicantEmailAddress, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+                    summonsDataPrepared, subjectSummonsDocument, applicantEmailAddress, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
 
             LOGGER.info("Generating {} summons for subject on application '{}'", subjectTemplateName, applicationId);
-            publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, subjectSummonsDocumentContent, subjectTemplateName, sendForRemotePrinting, emailChannel.orElse(null), materialId);
+            publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, subjectSummonsDocument, subjectTemplateName, sendForRemotePrinting, emailChannel.orElse(null), materialId);
 
             if (PARENT_TEMPLATE_APPLICABLE_FOR.contains(summonsRequired) && addresseeIsYouth) {
                 final String parentGuardianTemplateName = summonsTemplateNameService.getBreachSummonsParentTemplateName(isWelsh);
                 final SummonsAddressee parentGuardianAddressee = populateSummonsAddressee(getApplicationSubjectParentGuardian(courtApplicationQueried.getSubject()));
-                final SummonsDocumentContent parentGuardianSummonsDocumentContent = summonsDocumentContent().withValuesFrom(subjectSummonsDocumentContent).withAddressee(parentGuardianAddressee).build();
+                final SummonsDocument parentGuardianSummonsDocument = summonsDocument().withValuesFrom(subjectSummonsDocument).withAddressee(parentGuardianAddressee).build();
                 final UUID materialIdForParentGuardian = randomUUID();
                 final Optional<EmailChannel> emailChannelForParentGuardian = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddresseeParent(
-                        summonsDataPrepared, parentGuardianSummonsDocumentContent, applicantEmailAddress, sendForRemotePrinting,
+                        summonsDataPrepared, parentGuardianSummonsDocument, applicantEmailAddress, sendForRemotePrinting,
                         materialIdForParentGuardian, summonsRequired);
 
                 LOGGER.info("Generating {} summons for parent/guardian of subject on application '{}'", parentGuardianTemplateName, applicationId);
-                publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, parentGuardianSummonsDocumentContent, parentGuardianTemplateName, sendForRemotePrinting, emailChannelForParentGuardian.orElse(null), materialIdForParentGuardian);
+                publishSummonsDocumentService.generateApplicationSummonsCourtDocument(jsonEnvelope, applicationId, parentGuardianSummonsDocument, parentGuardianTemplateName, sendForRemotePrinting, emailChannelForParentGuardian.orElse(null), materialIdForParentGuardian);
             }
         }
     }
@@ -190,11 +204,19 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private void processCaseSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> ljaDetails, final boolean isWelsh, final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds) {
+        final Set<UUID> notifiedBulkCivilCaseGroupIds = new HashSet<>();
+
         for (final ConfirmedProsecutionCaseId confirmedProsecutionCaseId : confirmedProsecutionCaseIds) {
             final UUID caseId = confirmedProsecutionCaseId.getId();
             final ProsecutionCase prosecutionCase = getProsecutionCase(jsonEnvelope, caseId);
-            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier());
             final List<UUID> confirmedDefendantIds = confirmedProsecutionCaseId.getConfirmedDefendantIds();
+
+            if (bulkCivilCaseSummonsNotificationService.isBulkCivilCase(prosecutionCase)) {
+                bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson, prosecutionCase, confirmedDefendantIds, notifiedBulkCivilCaseGroupIds);
+                continue;
+            }
+
+            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier());
             final List<String> combinedDefendantDetailsForEmailChannel = newArrayList();
 
             confirmedDefendantIds.forEach(defendantId -> {
@@ -207,37 +229,40 @@ public class SummonsDataPreparedEventProcessor {
                 final ListDefendantRequest defendantRequest = optionalDefendantRequest.get();
                 final SummonsType summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
                 final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
-                final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
-                        && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
 
                 final Defendant defendant = prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantId)).findFirst()
                         .orElseThrow(() -> new IllegalArgumentException(String.format("Unable to locate defendant '%s' on case '%s'", defendantId, caseId)));
 
+                final SummonsDocument defendantSummonsDocument = caseDefendantSummonsService.generateSummonsPayloadForDefendant(jsonEnvelope, summonsDataPrepared, prosecutionCase, defendant, defendantRequest, courtCentreJson, ljaDetails, summonProsecutor);
+
+                final boolean isExparte = isExparte(prosecutionCase, defendantId);
+                final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
+                        && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
+
                 final String defendantTemplateName = summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, getSummonsCode(prosecutionCase.getSummonsCode()), isWelsh);
-                final SummonsDocumentContent defendantSummonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(jsonEnvelope, summonsDataPrepared, prosecutionCase, defendant, defendantRequest, courtCentreJson, ljaDetails, summonProsecutor);
-                final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), defendantSummonsDocumentContent.getDefendant().getDateOfBirth());
+                final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), defendantSummonsDocument.getDefendant().getDateOfBirth());
                 final UUID materialId = randomUUID();
                 final String prosecutorEmailAddress = getProsecutorEmailAddress(summonsApprovedOutcome);
                 final Optional<EmailChannel> emailChannel = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
-                        summonsDataPrepared, defendantSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant, combinedDefendantDetailsForEmailChannel,
-                        sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired);
+                        summonsDataPrepared, defendantSummonsDocument, prosecutorEmailAddress, confirmedDefendantIds, defendant, combinedDefendantDetailsForEmailChannel,
+                        sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired, isExparte);
 
                 LOGGER.info("Generating {} summons for for defendant '{}' on case '{}'", defendantTemplateName, defendantId, caseId);
-                publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, defendantSummonsDocumentContent,
+                publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, defendantSummonsDocument,
                         defendantTemplateName, sendForRemotePrinting, emailChannel.orElse(null), materialId);
 
                 // check if first hearing and defendant is youth requiring document generation for parent / guardian
                 if (PARENT_TEMPLATE_APPLICABLE_FOR.contains(summonsRequired) && addresseeIsYouth) {
                     // only addressee is different for parent payload, rest of the payload is same as defendants
                     final String parentGuardianTemplateName = summonsTemplateNameService.getCaseSummonsParentTemplateName(isWelsh);
-                    final SummonsDocumentContent parentGuardianSummonsDocumentContent = summonsDocumentContent().withValuesFrom(defendantSummonsDocumentContent).withAddressee(populateSummonsAddressee(getDefendantParentGuardian(defendant))).build();
+                    final SummonsDocument parentGuardianSummonsDocument = summonsDocument().withValuesFrom(defendantSummonsDocument).withAddressee(populateSummonsAddressee(getDefendantParentGuardian(defendant))).build();
                     final UUID materialIdForParentGuardian = randomUUID();
                     final Optional<EmailChannel> emailChannelForParentGuardian = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
-                            summonsDataPrepared, parentGuardianSummonsDocumentContent, prosecutorEmailAddress, confirmedDefendantIds, defendant,
-                            combinedDefendantDetailsForEmailChannel, sendForRemotePrinting, materialIdForParentGuardian, summonsRequired);
+                            summonsDataPrepared, parentGuardianSummonsDocument, prosecutorEmailAddress, confirmedDefendantIds, defendant,
+                            combinedDefendantDetailsForEmailChannel, sendForRemotePrinting, materialIdForParentGuardian, summonsRequired, isExparte);
 
                     LOGGER.info("Generating {} summons for parent / guardian of defendant '{}' on case '{}'", parentGuardianTemplateName, defendantId, caseId);
-                    publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, parentGuardianSummonsDocumentContent,
+                    publishSummonsDocumentService.generateCaseSummonsCourtDocument(jsonEnvelope, defendantId, caseId, parentGuardianSummonsDocument,
                             parentGuardianTemplateName, sendForRemotePrinting, emailChannelForParentGuardian.orElse(null), materialIdForParentGuardian);
                 }
             });
@@ -302,6 +327,16 @@ public class SummonsDataPreparedEventProcessor {
 
     private Person getApplicationSubjectParentGuardian(final CourtApplicationParty courtApplicationParty) {
         return nonNull(courtApplicationParty.getMasterDefendant()) && isNotEmpty(courtApplicationParty.getMasterDefendant().getAssociatedPersons()) ? courtApplicationParty.getMasterDefendant().getAssociatedPersons().get(0).getPerson() : null;
+    }
+
+    private boolean isExparte(final ProsecutionCase prosecutionCase, final UUID defendantId) {
+        if (nonNull(prosecutionCase.getIsCivil()) && Boolean.TRUE.equals(prosecutionCase.getIsCivil())) {
+            return prosecutionCase.getDefendants().stream()
+                    .filter(def -> def.getId().equals(defendantId))
+                    .anyMatch(def -> def.getOffences().stream()
+                            .anyMatch(offence -> nonNull(offence.getCivilOffence()) && offence.getCivilOffence().getIsExParte()));
+        }
+        return false;
     }
 
 }

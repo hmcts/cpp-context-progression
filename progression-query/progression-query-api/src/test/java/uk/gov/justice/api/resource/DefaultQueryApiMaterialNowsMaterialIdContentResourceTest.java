@@ -2,7 +2,7 @@ package uk.gov.justice.api.resource;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -29,7 +29,7 @@ import uk.gov.justice.services.core.accesscontrol.AccessControlViolationExceptio
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.progression.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.ByteArrayInputStream;

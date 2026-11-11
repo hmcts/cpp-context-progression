@@ -12,7 +12,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -88,6 +88,18 @@ public class MaterialStub {
                 return false;
             }
             return true;
+        });
+    }
+
+    public static void verifyMaterialNotCreated(final String materialId) {
+        await().pollDelay(10, SECONDS).atMost(20, SECONDS).until(() -> {
+            try {
+                verify(com.github.tomakehurst.wiremock.client.WireMock.exactly(0), postRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND))
+                        .withRequestBody(containing(materialId)));
+                return true;
+            } catch (VerificationException e) {
+                return false;
+            }
         });
     }
 }
