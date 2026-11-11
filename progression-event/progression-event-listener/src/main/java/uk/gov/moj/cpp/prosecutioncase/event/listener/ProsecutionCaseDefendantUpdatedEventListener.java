@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -374,7 +373,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final PersonDefendant updatedPersonDefendant = getUpdatedPersonDefendant(originDefendant, defendant);
         final List<AssociatedPerson> updatedAssociatedPeople =
                 defendant.getAssociatedPersons() == null || defendant.getAssociatedPersons().isEmpty()
-                        ? emptyList()
+                        ? null
                         : getUpdatedAssociatedPeople(originDefendant.getAssociatedPersons(), defendant.getAssociatedPersons());
 
         return Defendant.defendant()
