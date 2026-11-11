@@ -13,11 +13,13 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.core.courts.CourtApplicationDeletedBdf;
 import uk.gov.justice.core.courts.CourtApplicationHearingDeleted;
 import uk.gov.justice.core.courts.CourtApplicationRemovedFromSeedingHearing;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.progression.courts.DeleteApplicationForCase;
 import uk.gov.justice.progression.courts.DeleteCourtApplicationHearing;
+import uk.gov.justice.progression.courts.RemoveApplicationBdf;
 import uk.gov.justice.progression.courts.RemoveApplicationFromSeedingHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -51,7 +53,8 @@ public class DeleteApplicationCommandHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             DeleteCourtApplicationHearingRequested.class,
             CourtApplicationRemovedFromSeedingHearing.class,
-            CourtApplicationHearingDeleted.class
+            CourtApplicationHearingDeleted.class,
+            CourtApplicationDeletedBdf.class
     );
 
     @Mock
@@ -152,6 +155,40 @@ public class DeleteApplicationCommandHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.seedingHearingId", is(seedingHearingId.toString())),
                                 withJsonPath("$.hearingId", is(hearingId.toString())),
+                                withJsonPath("$.applicationId", is(applicationId.toString()))
+                        ))
+                ))
+        );
+    }
+
+    @Test
+    public void shouldHandleRemoveApplicationByBdf() throws EventStreamException {
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.handler.remove-application-bdf")
+                .withId(randomUUID())
+                .build();
+
+        final UUID applicationId = randomUUID();
+        final Envelope<RemoveApplicationBdf> envelope = envelopeFrom(metadata, RemoveApplicationBdf.removeApplicationBdf()
+                .withApplicationId(applicationId)
+                .build());
+
+        when(applicationAggregate.deleteCourtApplicationByBdf(applicationId))
+                .thenReturn(Stream.of(CourtApplicationDeletedBdf.courtApplicationDeletedBdf()
+                        .withApplicationId(applicationId)
+                        .build()));
+
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        deleteApplicationCommandHandler.handleRemoveApplicationByBdf(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-deleted-bdf"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.applicationId", is(applicationId.toString()))
                         ))
                 ))
