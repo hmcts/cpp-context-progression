@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.nows.event.listener;
 
 import static java.util.Arrays.asList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Material;
@@ -24,7 +25,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +92,7 @@ public class NowNotificationGeneratedEventListenerTest {
         final ArgumentCaptor<CourtDocumentEntity> courtDocumentsSavedCaptor = ArgumentCaptor.forClass(CourtDocumentEntity.class);
         verify(this.courtDocumentRepository).save(courtDocumentsSavedCaptor.capture());
         final CourtDocumentEntity savedEntity = courtDocumentsSavedCaptor.getValue();
-        final JsonObject jsonPayload = Json.createReader(new StringReader(savedEntity.getPayload())).readObject();
+        final JsonObject jsonPayload = createReader(new StringReader(savedEntity.getPayload())).readObject();
         final CourtDocument courtDocumentSaved = jsonObjectToObjectConverter.convert(jsonPayload, CourtDocument.class);
         assertThat(courtDocumentSaved.getCourtDocumentId(), is(originalCourtDocument.getCourtDocumentId()));
         assertThat(courtDocumentSaved.getMaterials().size(), is(originalCourtDocument.getMaterials().size()));

@@ -4,13 +4,12 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.service.DeleteNotificationInfoService;
 
 import java.time.ZonedDateTime;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +30,7 @@ public class DeleteNotificationInfoApiTest {
     public void shouldHandleDeleteNotificationInfo() {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.delete-notification-info"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 

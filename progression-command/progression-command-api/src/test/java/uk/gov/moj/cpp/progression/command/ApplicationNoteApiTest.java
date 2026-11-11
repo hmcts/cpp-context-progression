@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -13,7 +14,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ public class ApplicationNoteApiTest {
     @Test
     public void shouldAddApplicationNote() {
         //Given
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("note", "Sample application note")
                 .add("isPinned", false)
                 .build();
@@ -58,7 +58,7 @@ public class ApplicationNoteApiTest {
     @Test
     public void shouldEditApplicationNote() {
         //Given
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("isPinned", true)
                 .build();
 

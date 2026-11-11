@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -27,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -93,7 +93,7 @@ public class DefendantDefenceOrganisationChangedListener {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

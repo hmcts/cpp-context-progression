@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocuments
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithResults;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubUserWithPermission;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersWithOffence;
@@ -43,6 +44,8 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
@@ -168,11 +171,31 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
         assertThat("Court Document Does not exist", getCourtDocumentsByCase(randomUUID().toString(), caseId).contains(caseId));
 
-        final UUID supportUserGroup = randomUUID();
-        setupAsAuthorisedUser(supportUserGroup, "stub-data/usersgroups.get-support-groups-by-user.json");
+        final UUID userId = randomUUID();
+        setupAsAuthorisedUser(userId, "stub-data/usersgroups.remove-court-document.json");
+        stubUserWithPermission(userId.toString(), getPayload("stub-data/usersgroups.remove-court-document.json"));
 
         //Remove document
-        addRemoveCourtDocument(courtDocumentId, materialIdActive, true, supportUserGroup);
+        addRemoveCourtDocument(courtDocumentId, materialIdActive, true, userId);
+
+        //read document
+        assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "court-administrators", "nces" })
+    public void automationUserCanRemoveDocuments(String name) throws Exception {
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+        addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
+        assertThat("Court Document Does not exist", getCourtDocumentsByCase(randomUUID().toString(), caseId).contains(caseId));
+
+        final UUID userId = randomUUID();
+        setupAsAuthorisedUser(userId, "stub-data/usersgroups.automation-user.remove-court-document-" + name + ".json");
+
+        //Remove document
+        addRemoveCourtDocument(courtDocumentId, materialIdActive, true, userId);
 
         //read document
         assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));

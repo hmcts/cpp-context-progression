@@ -1,21 +1,10 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.ApplicationOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -35,8 +24,16 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655",})
 @ServiceComponent(EVENT_PROCESSOR)

@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import org.apache.commons.lang3.tuple.Pair;

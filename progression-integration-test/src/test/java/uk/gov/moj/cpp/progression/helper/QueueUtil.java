@@ -48,6 +48,17 @@ public class QueueUtil {
         return consumer.retrieveMessageAsJsonEnvelope(RETRIEVE_TIMEOUT).map(JsonEnvelope::payloadAsJsonObject);
     }
 
+    public static Optional<JsonObject> retrieveMessageBody(final JmsMessageConsumerClient consumer, final Matcher matchers) {
+        final long startTime = System.currentTimeMillis();
+        do {
+            final Optional<JsonObject> message = consumer.retrieveMessageAsJsonEnvelope(RETRIEVE_TIMEOUT).map(JsonEnvelope::payloadAsJsonObject);
+            if (message.isPresent() && matchers.matches(message.get())) {
+                return message;
+            }
+        } while (MESSAGE_RETRIEVE_TRIAL_TIMEOUT > (System.currentTimeMillis() - startTime));
+        return Optional.empty();
+    }
+
     public static Optional<JsonEnvelope> retrieveMessage(final JmsMessageConsumerClient consumer) {
         return consumer.retrieveMessageAsJsonEnvelope(RETRIEVE_TIMEOUT);
     }

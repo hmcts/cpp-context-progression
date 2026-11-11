@@ -1,5 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.io.Resources.getResource;
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -11,15 +19,8 @@ import java.nio.charset.Charset;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import static com.google.common.io.Resources.getResource;
-import static java.util.UUID.randomUUID;
 import org.json.JSONException;
 import org.json.JSONObject;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class ACourtHearingDaysIT extends AbstractIT {
 

@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation.applicationCaseDefendantOrganisation;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.ApplicationDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
@@ -30,7 +32,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -126,9 +127,9 @@ public class ApplicationDefenceOrganisationChangedProcessorTest {
                 .withId(prosecutionCaseId)
                 .withDefendants(getDefendants(defendantId, prosecutionCaseId, associatedDefenceOrganisation))
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantId.toString()).build())
                                 .build())
                         .build()).build();

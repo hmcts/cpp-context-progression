@@ -17,7 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getSummonsTemplate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
+import uk.gov.justice.core.courts.summons.SummonsDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -63,7 +63,7 @@ public class SummonsHelper {
         assertThat(optionalSummonPayload.isPresent(), is(true));
 
         // only high level validation done in integration test (rest covered in unit tests)
-        final SummonsDocumentContent actualPayload = jsonObjectToObjectConverter.convert(optionalSummonPayload.get(), SummonsDocumentContent.class);
+        final SummonsDocument actualPayload = jsonObjectToObjectConverter.convert(optionalSummonPayload.get(), SummonsDocument.class);
         assertThat(actualPayload, notNullValue());
         assertThat(actualPayload.getType(), is(summonsType));
 

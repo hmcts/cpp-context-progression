@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.*;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.stubAsyncDocumentGeneratorEndPoint;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEmptyPermissionsQuery;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
@@ -103,6 +104,7 @@ public class AbstractIT {
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         setupUsersGroupQueryStub();
         setupUsersGroupPermissionsForApplicationTypeStub(true);
+        stubEmptyPermissionsQuery();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");

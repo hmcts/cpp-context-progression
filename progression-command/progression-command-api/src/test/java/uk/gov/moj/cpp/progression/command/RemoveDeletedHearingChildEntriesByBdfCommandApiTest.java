@@ -3,12 +3,11 @@ package uk.gov.moj.cpp.progression.command;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +33,7 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     public void shouldRaiseCommandToRemoveDeletedHearingChildEntriesBdf() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.command.remove-deleted-hearing-child-entries-bdf"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 
@@ -43,10 +42,22 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApiTest {
     }
 
     @Test
+    public void shouldRaiseCommandToRemoveApplication() throws Exception {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                metadataWithDefaults().withName("progression.command.remove-application-bdf"),
+                createObjectBuilder()
+                        .build()
+        );
+
+        commandApi.removeApplication(jsonEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+    }
+
+    @Test
     public void shouldRaiseCommandToRemoveDuplicateApplications() throws Exception {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.command.handler.remove-duplicate-application-bdf"),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .build()
         );
 

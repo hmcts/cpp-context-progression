@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class LinkSplitMergeHelper {
 
@@ -43,12 +44,12 @@ public class LinkSplitMergeHelper {
     }
 
     public static JsonObject buildLinkOrUnlinkCaseJson(final UUID caseId, final String caseUrn, final UUID linkedCaseId, final String linkedCaseUrn) {
-        final JsonObjectBuilder caseJsonBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseJsonBuilder = createObjectBuilder()
                 .add(CASE_ID, caseId.toString())
                 .add(CASE_URN, caseUrn);
 
-        final JsonArrayBuilder linkedCasesArrayBuilder = Json.createArrayBuilder();
-        final JsonObjectBuilder linkedCaseJsonBuilder = Json.createObjectBuilder()
+        final JsonArrayBuilder linkedCasesArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder linkedCaseJsonBuilder = createObjectBuilder()
                 .add(CASE_ID, linkedCaseId.toString())
                 .add(CASE_URN, linkedCaseUrn);
 
@@ -58,9 +59,9 @@ public class LinkSplitMergeHelper {
     }
 
     public static JsonObject buildLSMCommandPayload(final JsonEnvelope envelope, final LinkType linkType) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("prosecutionCaseId", envelope.payloadAsJsonObject().get("prosecutionCaseId"))
-                .add("casesToLink", Json.createArrayBuilder().add(Json.createObjectBuilder().add("caseUrns", envelope.payloadAsJsonObject().get("caseUrns"))
+                .add("casesToLink", createArrayBuilder().add(createObjectBuilder().add("caseUrns", envelope.payloadAsJsonObject().get("caseUrns"))
                         .add("caseLinkType", linkType.toString()))
                         .build())
                 .build();
@@ -73,11 +74,11 @@ public class LinkSplitMergeHelper {
     public static JsonObject createResponsePayload(final LinkResponseResults response,
                                                    final List<String> invalidCaseUrns) {
 
-        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("linkResponseResults", response.toString());
 
         if (!invalidCaseUrns.isEmpty()) {
-            final JsonArrayBuilder invalidCaseUrnsArray = Json.createArrayBuilder();
+            final JsonArrayBuilder invalidCaseUrnsArray = createArrayBuilder();
             for (final String caseUrn : invalidCaseUrns) {
                 invalidCaseUrnsArray.add(caseUrn);
             }
