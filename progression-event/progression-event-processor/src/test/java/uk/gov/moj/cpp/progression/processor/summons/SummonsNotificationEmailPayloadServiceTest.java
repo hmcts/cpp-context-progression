@@ -113,6 +113,8 @@ public class SummonsNotificationEmailPayloadServiceTest {
     private static final String SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID = randomUUID().toString();
     private static final String SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID = randomUUID().toString();
     private static final String SUMMONS_REJECTED_TEMPLATE_ID = randomUUID().toString();
+    private static final String BULK_SUMMONS_APPROVED_TEMPLATE_ID = randomUUID().toString();
+    private static final String LEAD_DEFENDANT_DETAILS = format("%s %s %s, %s", DEFENDANT_FIRST_NAME, DEFENDANT_MIDDLE_NAME, DEFENDANT_LAST_NAME, PROSECUTION_AUTHORITY_REFERENCE);
 
     private static final String PROPERTY_CASE_REFERENCE = "caseReference";
     private static final String PROPERTY_DEFENDANT_DETAILS = "defendantDetails";
@@ -732,6 +734,50 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(result.getReplyToAddress(), is(nullValue()));
         assertThat(result.getReplyToAddressId(), is(nullValue()));
         verify(applicationParameters).getSummonsRejectedTemplateId();
+        verifyNoInteractions(materialUrlGenerator);
+    }
+
+    @Test
+    public void shouldNotGenerateEmailNotificationForBulkCaseSummonsWhenEmailNotPresent() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocument summonsDocumentContent = getCaseSummonsDocumentForDefendant();
+
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForBulkCaseSummonsApproved(
+                summonsDataPrepared, summonsDocumentContent, null, LEAD_DEFENDANT_DETAILS);
+
+        assertThat(result.isPresent(), is(false));
+        verifyNoInteractions(applicationParameters);
+        verifyNoInteractions(materialUrlGenerator);
+    }
+
+    @Test
+    public void shouldBuildEmailNotificationForBulkCaseSummonsApprovedWithoutAttachment() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocument summonsDocumentContent = getCaseSummonsDocumentForDefendant();
+
+        when(applicationParameters.getBulkSummonsApprovedTemplateId()).thenReturn(BULK_SUMMONS_APPROVED_TEMPLATE_ID);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForBulkCaseSummonsApproved(
+                summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, LEAD_DEFENDANT_DETAILS);
+
+        assertThat(optionalResult.isPresent(), is(true));
+        final EmailChannel result = optionalResult.get();
+        assertThat(result.getTemplateId(), is(fromString(BULK_SUMMONS_APPROVED_TEMPLATE_ID)));
+        assertThat(result.getMaterialUrl(), is(nullValue()));
+        assertThat(result.getSendToAddress(), is(EMAIL_ADDRESS));
+        assertThat(result.getPersonalisation(), is(notNullValue()));
+        final Map<String, Object> additionalProperties = result.getPersonalisation().getAdditionalProperties();
+        assertThat(additionalProperties, is(notNullValue()));
+        assertThat(additionalProperties.entrySet(), hasSize(5));
+        assertThat(additionalProperties.get(PROPERTY_CASE_REFERENCE), is(CASE_URN));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_DETAILS), is(LEAD_DEFENDANT_DETAILS));
+        assertThat(additionalProperties.get(PROPERTY_COURT_LOCATION), is(COURT_NAME));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_DATE), is("27 Oct 2013"));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_TIME), is(HEARING_TIME));
+
+        assertThat(result.getReplyToAddress(), is(nullValue()));
+        assertThat(result.getReplyToAddressId(), is(nullValue()));
+        verify(applicationParameters).getBulkSummonsApprovedTemplateId();
         verifyNoInteractions(materialUrlGenerator);
     }
 
