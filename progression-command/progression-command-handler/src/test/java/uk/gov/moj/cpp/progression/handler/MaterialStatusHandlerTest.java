@@ -260,6 +260,9 @@ public class MaterialStatusHandlerTest {
                             .build())
                     .build();
 
+        final uk.gov.moj.cpp.progression.aggregate.CaseAggregate caseAggregate = mock(uk.gov.moj.cpp.progression.aggregate.CaseAggregate.class);
+        when(aggregateService.get(eventStream, uk.gov.moj.cpp.progression.aggregate.CaseAggregate.class)).thenReturn(caseAggregate);
+
         Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME).withUserId(randomUUID().toString()),
                 nowDocumentRequest);
         nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelope);

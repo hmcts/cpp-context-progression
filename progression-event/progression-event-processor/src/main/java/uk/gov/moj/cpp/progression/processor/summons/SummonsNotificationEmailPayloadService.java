@@ -19,7 +19,7 @@ import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDocument;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingDateException;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 
@@ -123,6 +123,26 @@ public class SummonsNotificationEmailPayloadService {
         }
         return Optional.of(buildEmailNotificationForApplicationSummonsSuppressed(summonsDataPrepared, applicantEmailAddress, summonsDocumentContent,
                 addresseeIsYouth, materialId, notificationForParentOrGuardian));
+    }
+
+    public Optional<EmailChannel> getEmailChannelForBulkCaseSummonsApproved(final SummonsDataPrepared summonsDataPrepared,
+                                                                            final SummonsDocument summonsDocumentContent,
+                                                                            final String emailAddress,
+                                                                            final String leadDefendantDetails) {
+        if (isBlank(emailAddress)) {
+            return empty();
+        }
+        return Optional.of(emailChannel()
+                .withSendToAddress(emailAddress)
+                .withTemplateId(fromString(applicationParameters.getBulkSummonsApprovedTemplateId()))
+                .withPersonalisation(personalisation()
+                        .withAdditionalProperty(PROPERTY_CASE_REFERENCE, summonsDocumentContent.getCaseReference())
+                        .withAdditionalProperty(PROPERTY_DEFENDANT_DETAILS, leadDefendantDetails)
+                        .withAdditionalProperty(PROPERTY_COURT_LOCATION, summonsDocumentContent.getHearingCourtDetails().getCourtName())
+                        .withAdditionalProperty(PROPERTY_HEARING_DATE, getHearingDateForEmailNotification(summonsDataPrepared.getSummonsData().getHearingDateTime()))
+                        .withAdditionalProperty(PROPERTY_HEARING_TIME, summonsDocumentContent.getHearingCourtDetails().getHearingTime())
+                        .build())
+                .build());
     }
 
     public EmailChannel getEmailChannelForSummonsRejected(final String emailAddress,
