@@ -51,6 +51,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.justice.services.test.utils.core.random.DateGenerator;
 import uk.gov.justice.services.test.utils.core.random.ZonedDateTimeGenerator;
+import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -382,14 +383,42 @@ public class CourtProceedingsInitiatedProcessorTest {
 
     @Test
     void shouldSendPublicMessageInCaseOfGroupCases() throws IOException {
-        //Given
-        final UUID caseId = UUID.randomUUID();
         final UUID groupId = UUID.randomUUID();
+
+        handleGroupCasesEvent(groupId, UUID.randomUUID(), UUID.randomUUID(), false);
+
+        verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("public.progression.group-prosecution-cases-created"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("groupId"), is(groupId.toString()));
+        verify(summonsHearingRequestService, never()).addDefendantRequestToHearing(any(), anyList());
+        verify(progressionService, never()).createProsecutionCases(any(), anyList());
+    }
+
+    @Test
+    void shouldAddDefendantRequestsToHearingForCivilGroupCasesWithoutCreatingCasesAgain() throws IOException {
+        final UUID groupId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
+
+        handleGroupCasesEvent(groupId, caseId, defendantId, true);
+
+        final ArgumentCaptor<List<HearingListing>> hearingListingCaptor = ArgumentCaptor.forClass(List.class);
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), hearingListingCaptor.capture());
+        final List<ListDefendantRequest> defendantRequests = hearingListingCaptor.getValue().get(0).listDefendantRequests();
+        assertThat(defendantRequests.get(0).getProsecutionCaseId(), is(caseId));
+        assertThat(defendantRequests.get(0).getDefendantId(), is(defendantId));
+        verify(progressionService, never()).createProsecutionCases(any(), anyList());
+
+        verify(sender, VerificationModeFactory.times(3)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("public.progression.group-prosecution-cases-created"));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("progression.command.create-hearing-defendant-request"));
+    }
+
+    private void handleGroupCasesEvent(final UUID groupId, final UUID caseId, final UUID defendantId, final boolean isCivil) throws IOException {
         final UUID offenceId = UUID.randomUUID();
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
-        final ProsecutionCase prosecutionCase = getProsecutionCaseForGroupCases(groupId, caseId, List.of(defendantId), offenceId, offenceCode, true, ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build());
+        final ProsecutionCase prosecutionCase = getProsecutionCaseForGroupCases(groupId, caseId, List.of(defendantId), offenceId, offenceCode, true, ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build(), isCivil);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
@@ -430,10 +459,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
 
         this.eventProcessor.handle(requestMessage);
-        verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
-
-        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("public.progression.group-prosecution-cases-created"));
-        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("groupId"), is(groupId.toString()));
     }
 
 
@@ -1425,11 +1450,14 @@ public class CourtProceedingsInitiatedProcessorTest {
         }).toList();
     }
 
-    private ProsecutionCase getProsecutionCaseForGroupCases(final UUID groupId, final UUID caseId, final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+    private ProsecutionCase getProsecutionCaseForGroupCases(final UUID groupId, final UUID caseId, final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final ProsecutionCaseIdentifier prosecutionCaseIdentifier,
+                                                           final boolean isCivil) {
         final ProsecutionCase.Builder builder = new ProsecutionCase.Builder().withId(caseId)
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
                 .withGroupId(groupId)
-                .withIsGroupMaster(true);
+                .withIsGroupMaster(true)
+                .withIsGroupMember(true)
+                .withIsCivil(isCivil);
 
         builder.withDefendants(buildDefendant(defendantIdList, offenceId, offenceCode, isYouth, LocalDate.of(2005, 11, 11)));
 

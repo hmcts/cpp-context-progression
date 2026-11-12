@@ -131,6 +131,11 @@ public class CourtProceedingsInitiatedProcessor {
             LOGGER.info("progression.event.court-proceedings-initiated is executed for non group cases ");
             summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, hearingListingList);
             progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
+        } else if (isCivilCases(courtReferral.getProsecutionCases())) {
+            // civil group cases are already created by the group handler; the defendant requests are still needed
+            // on the hearing so that the bulk civil summons notification is sent to the prosecutor once it is confirmed
+            LOGGER.info("progression.event.court-proceedings-initiated is executed for civil group cases ");
+            summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, hearingListingList);
         }
 
         final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingListingList, isGroupCases);
@@ -340,6 +345,10 @@ public class CourtProceedingsInitiatedProcessor {
 
     private boolean isGroupCases(final List<ProsecutionCase> prosecutionCases) {
         return prosecutionCases.stream().filter(prosecutionCase -> nonNull(prosecutionCase.getIsGroupMaster())).anyMatch(ProsecutionCase::getIsGroupMaster);
+    }
+
+    private boolean isCivilCases(final List<ProsecutionCase> prosecutionCases) {
+        return prosecutionCases.stream().filter(prosecutionCase -> nonNull(prosecutionCase.getIsCivil())).anyMatch(ProsecutionCase::getIsCivil);
     }
 
     private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {

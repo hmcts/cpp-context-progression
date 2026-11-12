@@ -28,6 +28,7 @@ import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedO
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
@@ -126,6 +127,28 @@ public class BulkCivilCaseSummonsNotificationServiceTest {
 
         final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared().withSummonsData(
                 summonsData().withListDefendantRequests(newArrayList()).build()).build();
+        final ProsecutionCase bulkProsecutionCase = prosecutionCase().withId(caseId).withGroupId(groupId).withIsCivil(true).withIsGroupMember(true).build();
+
+        bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseSummons(envelope, summonsDataPrepared, createObjectBuilder().build(),
+                bulkProsecutionCase, singletonList(defendantId), new HashSet<>());
+
+        verifyNoInteractions(progressionService, summonsNotificationEmailPayloadService, notificationService);
+    }
+
+    @Test
+    public void shouldNotNotifyWhenTheMatchingDefendantRequestHasNoSummonsApprovedOutcome() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID groupId = randomUUID();
+
+        // an SJP referral counts as a required scenario but carries no summons approved outcome, so there is no prosecutor to notify
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared().withSummonsData(summonsData()
+                .withListDefendantRequests(newArrayList(listDefendantRequest()
+                        .withSummonsRequired(SJP_REFERRAL)
+                        .withProsecutionCaseId(caseId)
+                        .withDefendantId(defendantId)
+                        .build()))
+                .build()).build();
         final ProsecutionCase bulkProsecutionCase = prosecutionCase().withId(caseId).withGroupId(groupId).withIsCivil(true).withIsGroupMember(true).build();
 
         bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseSummons(envelope, summonsDataPrepared, createObjectBuilder().build(),

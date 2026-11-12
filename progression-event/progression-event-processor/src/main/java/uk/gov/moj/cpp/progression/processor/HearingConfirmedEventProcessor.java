@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -274,7 +275,8 @@ public class HearingConfirmedEventProcessor {
                     .forEach(prosecutionCase -> progressionService.increaseListingNumber(jsonEnvelope, prosecutionCase, hearing.getId()));
 
 
-            if (!isBulkCase(confirmedHearing)) {
+            // civil bulk cases still need summons data so that the bulk civil summons notification is sent to the prosecutor
+            if (!isBulkCase(confirmedHearing) || isCivilCase(hearing)) {
                 progressionService.prepareSummonsData(jsonEnvelope, confirmedHearing);
             }
 
@@ -553,6 +555,11 @@ public class HearingConfirmedEventProcessor {
     }
     private boolean isBulkCase(final ConfirmedHearing confirmedHearing) {
         return nonNull(confirmedHearing.getIsGroupProceedings()) && confirmedHearing.getIsGroupProceedings();
+    }
+
+    private boolean isCivilCase(final Hearing hearing) {
+        return ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .anyMatch(prosecutionCase -> TRUE.equals(prosecutionCase.getIsCivil()));
     }
 
 

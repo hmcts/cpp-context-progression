@@ -421,6 +421,20 @@ public class HearingConfirmedEventProcessorTest {
 
     @Test
     public void shouldHandleHearingConfirmedWithCasesEventMessageAndForBulkCaseDoesNotPrepareSummons(){
+        processBulkCaseHearingConfirmed(false);
+
+        verify(sender, times(2)).send(any());
+        verify(progressionService, never()).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+    }
+
+    @Test
+    public void shouldHandleHearingConfirmedWithCasesEventMessageAndForCivilBulkCasePrepareSummons(){
+        processBulkCaseHearingConfirmed(true);
+
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+    }
+
+    private void processBulkCaseHearingConfirmed(final boolean isCivil) {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID caseId = randomUUID();
@@ -452,7 +466,7 @@ public class HearingConfirmedEventProcessorTest {
                         .withId(randomUUID())
                         .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
-                                .withIsCivil(true)
+                                .withIsCivil(isCivil)
                                 .withDefendants(singletonList(Defendant.defendant()
                                         .withId(randomUUID())
                                         .withOffences(singletonList(Offence.offence()
@@ -464,11 +478,11 @@ public class HearingConfirmedEventProcessorTest {
                         .build());
         when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        if (isCivil) {
+            doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        }
 
         eventProcessor.processEvent(envelope);
-
-        verify(sender, times(2)).send(any());
-        verify(progressionService, never()).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
     }
 
     @Test

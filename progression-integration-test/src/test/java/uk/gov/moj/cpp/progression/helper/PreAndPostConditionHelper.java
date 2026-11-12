@@ -414,6 +414,39 @@ public class PreAndPostConditionHelper {
     }
 
 
+    /**
+     * Bulk civil summons group as Prosecution Case File sends it once the summons application is approved:
+     * initiation code S, summons code A and a first hearing summons carrying the summons approved outcome.
+     */
+    public static Response initiateCourtProceedingsForBulkCivilSummonsGroupCases(final UUID masterCaseId, final Map<UUID, Pair<UUID, UUID>> caseDefendantOffence, final String listedStartDateTime, final String earliestStartDateTime, final String groupId, final String courtCenterId, final String courtCenterName,
+                                                                                 final String prosecutorEmailAddress) throws JSONException {
+        final JSONObject payload = new JSONObject(getInitiateCourtProceedingsForGroupCasesJsonBody(masterCaseId, caseDefendantOffence, listedStartDateTime, earliestStartDateTime, groupId, courtCenterId, courtCenterName));
+        final JSONObject courtReferral = payload.getJSONObject("courtReferral");
+
+        final JSONArray prosecutionCases = courtReferral.getJSONArray("prosecutionCases");
+        for (int i = 0; i < prosecutionCases.length(); i++) {
+            prosecutionCases.getJSONObject(i).put("initiationCode", "S").put("summonsCode", "A");
+        }
+
+        final JSONArray listHearingRequests = courtReferral.getJSONArray("listHearingRequests");
+        for (int i = 0; i < listHearingRequests.length(); i++) {
+            final JSONArray listDefendantRequests = listHearingRequests.getJSONObject(i).getJSONArray("listDefendantRequests");
+            for (int j = 0; j < listDefendantRequests.length(); j++) {
+                listDefendantRequests.getJSONObject(j)
+                        .put("summonsRequired", "FIRST_HEARING")
+                        .put("summonsApprovedOutcome", new JSONObject()
+                                .put("prosecutorCost", "£300.00")
+                                .put("personalService", true)
+                                .put("summonsSuppressed", false)
+                                .put("prosecutorEmailAddress", prosecutorEmailAddress));
+            }
+        }
+
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings-for-group-cases+json",
+                payload.toString());
+    }
+
     public static Response initiateCourtProceedings(final String commandPayload) {
         return postCommand(getWriteUrl("/initiatecourtproceedings"), "application/vnd.progression.initiate-court-proceedings+json", commandPayload);
 
