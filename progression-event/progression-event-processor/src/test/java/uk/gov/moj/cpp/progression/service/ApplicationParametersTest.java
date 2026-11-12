@@ -43,6 +43,7 @@ class ApplicationParametersTest {
     private static final String SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID = "summons-not-suppressed-id";
     private static final String SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID = "summons-ex-parte-true-id";
     private static final String SUMMONS_REJECTED_TEMPLATE_ID = "summons-rejected-id";
+    private static final String BULK_SUMMONS_APPROVED_TEMPLATE_ID = "bulk-summons-approved-template-id";
     private static final String STATDEC_SEND_APPOINTMENT_LETTER_TEMPLATE_ID = "statdec-appointment-id";
     private static final String ONLINE_GUILTY_PLEA_COURT_HEARING_ENGLISH_ID = "guilty-court-english-id";
     private static final String ONLINE_GUILTY_PLEA_COURT_HEARING_WELSH_ID = "guilty-court-welsh-id";
@@ -87,6 +88,7 @@ class ApplicationParametersTest {
         setField(applicationParameters, "summonsApprovedAndNotSuppressedTemplateId", SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
         setField(applicationParameters, "summonsApprovedExParteTrueTemplateId", SUMMONS_APPROVED_EX_PARTE_TRUE_TEMPLATE_ID);
         setField(applicationParameters, "summonsRejectedTemplateId", SUMMONS_REJECTED_TEMPLATE_ID);
+        setField(applicationParameters, "bulkSummonsApprovedTemplateId", BULK_SUMMONS_APPROVED_TEMPLATE_ID);
         setField(applicationParameters, "statDecSendAppointmentLetterTemplateId", STATDEC_SEND_APPOINTMENT_LETTER_TEMPLATE_ID);
         setField(applicationParameters, "onlineGuiltyPleaCourtHearingEnglishTemplateId", ONLINE_GUILTY_PLEA_COURT_HEARING_ENGLISH_ID);
         setField(applicationParameters, "onlineGuiltyPleaCourtHearingWelshTemplateId", ONLINE_GUILTY_PLEA_COURT_HEARING_WELSH_ID);
@@ -208,6 +210,11 @@ class ApplicationParametersTest {
     @Test
     void shouldReturnSummonsRejectedTemplateId() {
         assertThat(applicationParameters.getSummonsRejectedTemplateId(), is(SUMMONS_REJECTED_TEMPLATE_ID));
+    }
+
+    @Test
+    void shouldReturnBulkSummonsApprovedTemplateId() {
+        assertThat(applicationParameters.getBulkSummonsApprovedTemplateId(), is(BULK_SUMMONS_APPROVED_TEMPLATE_ID));
     }
 
     @Test

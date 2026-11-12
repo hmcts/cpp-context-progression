@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,6 +21,8 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.HEARING_DATE_PATTERN;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.notification.EmailChannel;
@@ -31,7 +34,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.material.client.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
@@ -303,19 +306,6 @@ public class HearingNotificationHelperTest {
         ));
 
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
-        AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
-                .withOrganisationId(randomUUID())
-                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder()
-                        .withAddress1("addressLine1")
-                        .withAddress2("addressLine2")
-                        .withAddress3("addressLine3")
-                        .withAddress4("addressLine4")
-                        .withAddressPostcode("CR01JS")
-                        .build())
-                .withEmail("organisation@org.com")
-                .withOrganisationName("defence Organisation")
-                .build();
-        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -324,10 +314,141 @@ public class HearingNotificationHelperTest {
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
 
-        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }
 
+
+    @Test
+    void sendHearingNotifications_NoNotificationToDefendant_WhenSameDefendantIsOnExParteAndNonExParteCivilCases() {
+
+        final UUID exParteCaseId = randomUUID();
+        final UUID nonExParteCaseId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        final HearingNotificationInputData inputData = getInputData(exParteCaseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+        inputData.setCaseIds(List.of(nonExParteCaseId, exParteCaseId));
+
+        givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, defendantId);
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        prosecutorEmailCapture.getAllValues().forEach(emailChannels ->
+                verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID)));
+        verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+        verifyNoInteractions(defenceService);
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void sendHearingNotifications_NoNotificationToAnyDefendant_WhenHearingContainsExParteCivilCase() {
+
+        final UUID exParteCaseId = randomUUID();
+        final UUID nonExParteCaseId = randomUUID();
+        final UUID otherDefendantId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        final HearingNotificationInputData inputData = getInputData(exParteCaseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+        inputData.setCaseIds(List.of(nonExParteCaseId, exParteCaseId));
+        inputData.setDefendantIds(List.of(defendantId, otherDefendantId));
+        inputData.setDefendantOffenceListMap(ImmutableMap.of(defendantId, List.of(offenceId1, offenceId2), otherDefendantId, List.of(offenceId1, offenceId2)));
+
+        givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, otherDefendantId);
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        prosecutorEmailCapture.getAllValues().forEach(emailChannels ->
+                verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID)));
+        verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+    }
+
+    @Test
+    void sendHearingNotifications_EmailToAllRelevantParties_WhenNoCivilCaseInHearingIsExParte() {
+
+        final UUID firstCaseId = randomUUID();
+        final UUID secondCaseId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        final HearingNotificationInputData inputData = getInputData(firstCaseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+        inputData.setCaseIds(List.of(firstCaseId, secondCaseId));
+
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", firstCaseId, defendantId);
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", secondCaseId, defendantId);
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(defenceOrganisationWithEmail());
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(4)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
+        assertThat(defendantEmailCapture.getAllValues().stream()
+                .filter(emailChannels -> "organisation@org.com".equals(emailChannels.get(0).getSendToAddress()))
+                .count(), is(2L));
+    }
+
+    @Test
+    void sendHearingNotifications_OnlyProsecutorNotified_WhenExParteCaseIsLinkedToApplicationButNotOnHearing() {
+
+        final UUID exParteCaseId = randomUUID();
+        final UUID nonExParteCaseId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        final HearingNotificationInputData inputData = getInputData(nonExParteCaseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+        inputData.setLinkedApplicationCaseIds(List.of(nonExParteCaseId, exParteCaseId));
+
+        givenProsecutionCase("progressioncase-civil-exparte-false.json", nonExParteCaseId, defendantId);
+        givenProsecutionCase("progressioncase-civil-exparte-true.json", exParteCaseId, defendantId);
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        verifyEmailChannel(prosecutorEmailCapture.getValue(), "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+        verify(notificationService, never()).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+        verify(documentGeneratorService, times(1)).generateNonNowDocument(any(), any(), any(), any(), any());
+        verifyNoInteractions(defenceService);
+    }
+
+    @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    void shouldGetDistinctLinkedApplicationCaseIds() {
+        final UUID firstCaseId = randomUUID();
+        final UUID secondCaseId = randomUUID();
+        final List<CourtApplication> courtApplications = List.of(
+                CourtApplication.courtApplication().withCourtApplicationCases(List.of(
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(firstCaseId).build(),
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(secondCaseId).build())).build(),
+                CourtApplication.courtApplication().withCourtApplicationCases(List.of(
+                        CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(firstCaseId).build())).build(),
+                CourtApplication.courtApplication().build());
+
+        assertThat(HearingNotificationHelper.getLinkedApplicationCaseIds(courtApplications), is(List.of(firstCaseId, secondCaseId)));
+        assertThat(HearingNotificationHelper.getLinkedApplicationCaseIds(null), is(List.of()));
+    }
+
+    private void givenProsecutionCase(final String payloadFile, final UUID caseId, final UUID defendantId) {
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload(payloadFile)
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+        when(progressionService.getProsecutionCaseDetailById(any(), eq(caseId.toString()))).thenReturn(Optional.of(createObjectBuilder()
+                .add("prosecutionCase", prosecutionCase)
+                .build()));
+    }
+
+    private AssociatedDefenceOrganisation defenceOrganisationWithEmail() {
+        return AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withOrganisationId(randomUUID())
+                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder()
+                        .withAddress1("addressLine1")
+                        .withAddressPostcode("CR01JS")
+                        .build())
+                .withEmail("organisation@org.com")
+                .withOrganisationName("defence Organisation")
+                .build();
+    }
 
     @Test
     void sendHearingNotifications_LetterToAllRelevantParties() {

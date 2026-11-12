@@ -18,6 +18,7 @@
         },
         "originatingOrganisation": "G01FT01AB",
         "initiationCode": "J",
+        "isCivil": IS_CIVIL_FLAG,
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",
         "relatedUrn": "TTH105HY",
