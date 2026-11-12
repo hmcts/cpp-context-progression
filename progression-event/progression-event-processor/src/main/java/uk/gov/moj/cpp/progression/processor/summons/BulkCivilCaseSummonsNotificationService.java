@@ -34,6 +34,7 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -131,6 +132,7 @@ public class BulkCivilCaseSummonsNotificationService {
                 .map(defendantId -> extractDefendantRequest(summonsDataPrepared.getSummonsData().getListDefendantRequests(), defendantId))
                 .filter(optionalDefendantRequest -> optionalDefendantRequest.isPresent() && isValidCaseSummonsScenario(optionalDefendantRequest, prosecutionCase))
                 .map(optionalDefendantRequest -> optionalDefendantRequest.get().getSummonsApprovedOutcome())
+                .filter(Objects::nonNull)
                 .findFirst();
     }
 
