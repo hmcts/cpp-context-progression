@@ -412,7 +412,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         eventListener.processProsecutionCaseDefendantUpdated(envelope);
 
         final ProsecutionCase updatedCase = prosecutionCaseArgumentCaptor.getValue();
-        assertThat(updatedCase.getDefendants().get(0).getAssociatedPersons().isEmpty(), is(true));
+        assertThat(updatedCase.getDefendants().get(0).getAssociatedPersons(), is(nullValue()));
         assertThat(updatedCase.getDefendants().get(0).getPersonDefendant().getPersonDetails().getLastName(), is("Robinson"));
     }
 
