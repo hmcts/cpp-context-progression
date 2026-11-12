@@ -29,7 +29,9 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -150,17 +152,18 @@ public class HearingResultsCommandHandler {
         final GroupCaseAggregate groupCaseAggregate = aggregateService.get(stream, GroupCaseAggregate.class);
 
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing().withValuesFrom(hearingResult.getHearing());
-        final List<ProsecutionCase> updatedProsecutionCases = new ArrayList<>();
+        // keyed by case id: a member case already in the incoming hearing is replaced, not duplicated
+        final Map<UUID, ProsecutionCase> updatedProsecutionCases = new LinkedHashMap<>();
 
-        updatedProsecutionCases.addAll(hearingResult.getHearing().getProsecutionCases());
+        hearingResult.getHearing().getProsecutionCases().forEach(prosecutionCase -> updatedProsecutionCases.put(prosecutionCase.getId(), prosecutionCase));
 
         groupCaseAggregate.getMemberCases().stream().filter(caseId -> groupMasterProsecutionCase.getId().compareTo(caseId) != 0).forEach(memberCaseId -> {
             final EventStream eventStream = eventSource.getStreamById(memberCaseId);
             final CaseAggregate memberCaseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
             final ProsecutionCase prosecutionCaseWithMemberCases = prepareProsecutionCase(defendantJudicialResultList, offenceJudicialResultList, memberCaseAggregate.getProsecutionCase());
-            updatedProsecutionCases.add(prosecutionCaseWithMemberCases);
+            updatedProsecutionCases.put(memberCaseId, prosecutionCaseWithMemberCases);
         });
-        updatedHearingBuilder.withProsecutionCases(updatedProsecutionCases);
+        updatedHearingBuilder.withProsecutionCases(new ArrayList<>(updatedProsecutionCases.values()));
         return HearingResult.hearingResult()
                 .withValuesFrom(hearingResult)
                 .withHearing(updatedHearingBuilder.build()).build();
