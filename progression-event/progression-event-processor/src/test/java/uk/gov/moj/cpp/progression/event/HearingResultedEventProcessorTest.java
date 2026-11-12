@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -65,6 +66,7 @@ import uk.gov.justice.services.test.utils.core.random.ZonedDateTimeGenerator;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer;
+import uk.gov.moj.cpp.progression.service.SurplusReservationReleaseService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
@@ -118,6 +120,9 @@ public class HearingResultedEventProcessorTest {
 
     @Mock
     private HearingToHearingListingNeedsTransformer hearingToHearingListingNeedsTransformer;
+
+    @Mock
+    private SurplusReservationReleaseService surplusReservationReleaseService;
 
     @Mock
     private UnscheduledCourtHearingListTransformer unscheduledCourtHearingListTransformer;
@@ -309,6 +314,105 @@ public class HearingResultedEventProcessorTest {
         assertThat(hearingDaysTimeCaptor.getValue().get(0).getSittingDay().toInstant().truncatedTo(ChronoUnit.MILLIS), CoreMatchers.is(hearingDateTime.toInstant().truncatedTo(ChronoUnit.MILLIS)));
     }
 
+
+    /**
+     * LPT-2599. The results UI reserves a slot per result line, but transform merges every next
+     * hearing that resolves to one session into a single listing need - right for the listing,
+     * wrong for the reservations behind the lines it merged away. Nothing lists against those, so
+     * nothing consumes them, and the hearing-keyed release cannot see them because a reservation
+     * carries no hearing_id. They hold a slot until the overnight purge, counting against capacity
+     * exactly like a real listing.
+     *
+     * <p>Only live references resolved by THIS share are candidates. One confirmed by an earlier
+     * share is a real listing now and must be left alone.
+     */
+    @Test
+    public void shouldReleaseReservationsThisShareResolvedButDidNotListAgainst() {
+        final UUID seedingHearingId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID courtScheduleId = randomUUID();
+
+        final UUID alreadyConfirmedReference = randomUUID();
+        final UUID listedAgainstReference = randomUUID();
+        final UUID surplusReference = randomUUID();
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .withSittingDay(LocalDate.now().toString())
+                .build();
+
+        // the confirmed one is what a previous share left behind
+        final List<BookingReferenceCourtScheduleIds> previous = Arrays.asList(
+                BookingReferenceCourtScheduleIds.bookingReferenceCourtScheduleIds()
+                        .withBookingId(alreadyConfirmedReference)
+                        .withCourtScheduleIds(Arrays.asList(courtScheduleId))
+                        .build());
+
+        // all three resolve to the same session, which is why only one survives the merge
+        final Map<UUID, Set<UUID>> combined = new HashMap<>();
+        combined.put(alreadyConfirmedReference, new HashSet<>(Arrays.asList(courtScheduleId)));
+        combined.put(listedAgainstReference, new HashSet<>(Arrays.asList(courtScheduleId)));
+        combined.put(surplusReference, new HashSet<>(Arrays.asList(courtScheduleId)));
+
+        final NextHearingsRequested hearingResulted = NextHearingsRequested.nextHearingsRequested()
+                .withSeedingHearing(seedingHearing)
+                .withPreviousBookingReferencesWithCourtScheduleIds(previous)
+                .withHearing(Hearing.hearing().withId(hearingId).build())
+                .build();
+
+        final List<HearingListingNeeds> hearings = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withBookingReference(listedAgainstReference)
+                .build());
+
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
+        when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(combined);
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.next-hearings-requested"),
+                createObjectBuilder().build());
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(hearingResulted);
+
+        this.eventProcessor.handleNextHearingsRequested(event);
+
+        // one batch call naming only the surplus booking, never the listed or confirmed ones
+        verify(surplusReservationReleaseService).release(Set.of(surplusReference));
+        verifyNoMoreInteractions(surplusReservationReleaseService);
+    }
+
+    @Test
+    public void shouldNotCallTheReleaseWhenNothingIsSurplus() {
+        final UUID hearingId = randomUUID();
+        final UUID courtScheduleId = randomUUID();
+        final UUID listedAgainstReference = randomUUID();
+
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(randomUUID())
+                .withSittingDay(LocalDate.now().toString())
+                .build();
+        final Map<UUID, Set<UUID>> combined = new HashMap<>();
+        combined.put(listedAgainstReference, new HashSet<>(Arrays.asList(courtScheduleId)));
+
+        final NextHearingsRequested hearingResulted = NextHearingsRequested.nextHearingsRequested()
+                .withSeedingHearing(seedingHearing)
+                .withPreviousBookingReferencesWithCourtScheduleIds(Collections.emptyList())
+                .withHearing(Hearing.hearing().withId(hearingId).build())
+                .build();
+        final List<HearingListingNeeds> hearings = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withBookingReference(listedAgainstReference)
+                .build());
+
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
+        when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(combined);
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(hearingResulted);
+
+        this.eventProcessor.handleNextHearingsRequested(envelopeFrom(
+                metadataWithRandomUUID("progression.event.next-hearings-requested"),
+                createObjectBuilder().build()));
+
+        verifyNoInteractions(surplusReservationReleaseService);
+    }
+
     @Test
     public void shouldCreateNextHearingsInListingAndUpdateStatus() {
         final UUID seedingHearingId = randomUUID();
@@ -341,7 +445,7 @@ public class HearingResultedEventProcessorTest {
         final List<HearingListingNeeds> hearings = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
                 .withId(hearingId)
                 .build());
-        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(hearings);
         when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(alreadyExistingAndNewBookingReferencesWithCourtScheduleIds);
 
         final JsonEnvelope event = envelopeFrom(
@@ -391,7 +495,7 @@ public class HearingResultedEventProcessorTest {
                         .withId(hearingId)
                         .build())
                 .build();
-        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(null);
+        when(hearingToHearingListingNeedsTransformer.transformWithSeedHearing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(null);
         when(hearingToHearingListingNeedsTransformer.getCombinedBookingReferencesAndCourtScheduleIds(Mockito.any(), Mockito.any())).thenReturn(alreadyExistingAndNewBookingReferencesWithCourtScheduleIds);
 
         final JsonEnvelope event = envelopeFrom(

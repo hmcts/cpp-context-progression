@@ -1,0 +1,16 @@
+{
+  "provisionalSlots": [
+    {
+      "courtScheduleId": "COURT_SCHEDULE_ID",
+      "ouCode": "C05LV00",
+      "courtSession": "AM",
+      "bookingId": "BOOKING_A"
+    },
+    {
+      "courtScheduleId": "COURT_SCHEDULE_ID",
+      "ouCode": "C05LV00",
+      "courtSession": "AM",
+      "bookingId": "BOOKING_B"
+    }
+  ]
+}
