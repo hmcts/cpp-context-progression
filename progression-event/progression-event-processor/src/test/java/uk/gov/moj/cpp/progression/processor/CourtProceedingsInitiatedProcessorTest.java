@@ -1550,22 +1550,6 @@ public class CourtProceedingsInitiatedProcessorTest {
         return builder.build();
     }
 
-    private static List<Defendant> buildDefendant(final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final LocalDate dateOfBirth) {
-        return defendantIdList.stream().map(defendantId -> {
-            final Defendant.Builder defendantBuilder = new Defendant.Builder()
-                    .withId(defendantId)
-                    .withOffences(Stream.of(Offence.offence()
-                                    .withId(offenceId)
-                                    .withOffenceCode(offenceCode)
-                                    .build())
-                            .collect(Collectors.toList()));
-            if (isYouth) {
-                defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(dateOfBirth).build()).build());
-            }
-            return defendantBuilder.build();
-        }).toList();
-    }
-
     private ProsecutionCase getProsecutionCaseForGroupCases(final UUID groupId, final UUID caseId, final List<UUID> defendantIdList, final UUID offenceId, final String offenceCode, final boolean isYouth, final ProsecutionCaseIdentifier prosecutionCaseIdentifier,
                                                            final boolean isCivil) {
         final ProsecutionCase.Builder builder = new ProsecutionCase.Builder().withId(caseId)
