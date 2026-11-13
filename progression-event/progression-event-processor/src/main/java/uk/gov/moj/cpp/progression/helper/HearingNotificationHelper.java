@@ -200,10 +200,6 @@ public class HearingNotificationHelper {
     }
 
     private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope, final boolean hearingHasExParteCivilCase) {
-        if (hearingHasExParteCivilCase) {
-            LOGGER.info("HearingNotification not generated or sent on HearingId {} for DefendantId {} due to ex-parte civil case", hearingNotificationInputData.getHearingId(), defendant.getId());
-            return;
-        }
         LOGGER.info("Sending HearingNotification on HearingId {} and DefendantId {}", hearingNotificationInputData.getHearingId(), defendant.getId());
         final UUID caseId = prosecutionCase.getId();
         final UUID defendantId = defendant.getId();
