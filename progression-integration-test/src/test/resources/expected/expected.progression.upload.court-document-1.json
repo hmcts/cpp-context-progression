@@ -17,7 +17,7 @@
         "deleteUserGroups": ["Crown Court"],
         "downloadUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
         "readUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
-        "uploadUserGroups": ["Listing Officers", "Legal advisors"]
+        "uploadUserGroups": ["Listing Officers", "Legal advisors", "Second Line Support"]
       },
       "materials": [{
         "id": "%MATERIAL_ID%",

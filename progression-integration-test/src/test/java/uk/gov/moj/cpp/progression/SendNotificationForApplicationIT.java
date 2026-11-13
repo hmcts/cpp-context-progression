@@ -5,6 +5,8 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,6 +67,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
@@ -398,7 +401,17 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                 withJsonPath("$.documentIndices[*].document.name", hasItem(allOf(containsString(NEW_HEARING_NOTIFICATION), containsString("Defendant copy"))))
         });
 
+        await().during(10, SECONDS).atMost(20, SECONDS).until(() -> hearingNoticeCopiesFor(caseId, "Defendant copy").isEmpty()
+                && hearingNoticeCopiesFor(caseId, "Defence copy").isEmpty());
+
         verifyNoHearingNoticeEmailRequestedForDefendant(emailRequestedConsumer, List.of(caseId, exParteCaseId));
+    }
+
+    private List<String> hearingNoticeCopiesFor(final String caseId, final String copyName) {
+        final List<String> documentNames = JsonPath.read(getCourtDocumentsPerCase(randomUUID().toString(), caseId, new Matcher[]{}), "$.documentIndices[*].document.name");
+        return documentNames.stream()
+                .filter(name -> name.contains(NEW_HEARING_NOTIFICATION) && name.contains(copyName))
+                .toList();
     }
 
     private static JsonObject withSendNotificationToParties(final JsonObject hearingConfirmed) {
