@@ -420,6 +420,7 @@ public class ListCourtHearingTransformer {
             return listingService.findAvailableHearingSlot(
                     jsonEnvelope,
                     ouCode,
+                    listHearingRequest.getJurisdictionType(),
                     ENFORCEMENT_AUTO_BUSINESS_TYPE,
                     panel,
                     startDateTime.toLocalDate(),
@@ -435,6 +436,7 @@ public class ListCourtHearingTransformer {
         return listingService.findAvailableHearingSlot(
                         jsonEnvelope,
                         ouCode,
+                        listHearingRequest.getJurisdictionType(),
                         ENFORCEMENT_BUSINESS_TYPE,
                         panel,
                         exactStartDateTime.toLocalDate(),

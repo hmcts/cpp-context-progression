@@ -482,7 +482,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
 
         verify(requester, times(1)).requestAsAdmin(any(Envelope.class), eq(JsonObject.class));
         assertTrue(result.isPresent());
@@ -540,7 +540,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
 
         assertTrue(result.isPresent());
         assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
@@ -580,7 +580,7 @@ public class ListingServiceTest {
                 .thenReturn(Envelope.envelopeFrom(metadata, secondPageWithAvailability));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
 
         verify(requester, times(2)).requestAsAdmin(any(Envelope.class), eq(JsonObject.class));
         assertTrue(result.isPresent());
@@ -604,7 +604,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, null);
 
         assertFalse(result.isPresent());
     }
@@ -618,7 +618,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(any(Envelope.class), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, createObjectBuilder().build()));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, null);
 
         assertFalse(result.isPresent());
     }
@@ -648,7 +648,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, exactStartTime);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, exactStartTime);
 
         assertTrue(result.isPresent());
         assertThat(result.get().courtRoomId(), is(courtRoomId.toString()));
@@ -674,10 +674,34 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
 
         listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"), null, null);
 
         final JsonObject sentPayload = (JsonObject) requestEnvelopeCaptor.getValue().payload();
         assertFalse(sentPayload.containsKey("hearingStartTime"));
+    }
+
+    @Test
+    public void shouldIncludeJurisdictionInSearchPayload() {
+        final JsonEnvelope envelope = mock(JsonEnvelope.class);
+        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(LISTING_SEARCH_HEARING_SLOTS).build();
+
+        final JsonObject fullyBookedPage = createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("hearingSlots", Json.createArrayBuilder()
+                        .add(createObjectBuilder().add("availableSlots", 0).add("slotStartTimes", Json.createArrayBuilder())))
+                .add("notes", Json.createArrayBuilder().build())
+                .build();
+
+        when(envelope.metadata()).thenReturn(metadata);
+        final ArgumentCaptor<Envelope> requestEnvelopeCaptor = ArgumentCaptor.forClass(Envelope.class);
+        when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
+
+        listingService.findAvailableHearingSlot(
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2026-08-20"), null, null);
+
+        final JsonObject sentPayload = (JsonObject) requestEnvelopeCaptor.getValue().payload();
+        assertThat(sentPayload.getString("jurisdiction"), is("MAGISTRATES"));
     }
 
     @Test
@@ -706,7 +730,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, response));
 
         final Optional<AvailableHearingSlot> result = listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"),
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"),
                 requestedCourtRoomId.toString(), null);
 
         assertTrue(result.isPresent());
@@ -734,7 +758,7 @@ public class ListingServiceTest {
         when(requester.requestAsAdmin(requestEnvelopeCaptor.capture(), eq(JsonObject.class))).thenReturn(Envelope.envelopeFrom(metadata, fullyBookedPage));
 
         listingService.findAvailableHearingSlot(
-                envelope, "B01LY00", "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"),
+                envelope, "B01LY00", JurisdictionType.MAGISTRATES, "ENF_AUTO", "ADULT", java.time.LocalDate.parse("2026-08-20"), java.time.LocalDate.parse("2027-08-20"),
                 null, null);
 
         final JsonObject sentPayload = (JsonObject) requestEnvelopeCaptor.getValue().payload();

@@ -177,6 +177,7 @@ public class ListingService {
      */
     public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
                                                                     final String ouCode,
+                                                                    final JurisdictionType jurisdictionType,
                                                                     final String businessType,
                                                                     final String panel,
                                                                     final LocalDate sessionStartDate,
@@ -188,6 +189,7 @@ public class ListingService {
             final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING_SLOTS);
             final JsonObjectBuilder jsonPayLoadBuilder = Json.createObjectBuilder()
                     .add("ouCode", ouCode)
+                    .add("jurisdiction", jurisdictionType.name())
                     .add("businessType", businessType)
                     .add("panel", panel)
                     .add("sessionStartDate", sessionStartDate.toString())
