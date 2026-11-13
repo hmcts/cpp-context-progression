@@ -630,7 +630,7 @@ public class ListCourtHearingTransformerTest {
         final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
         final UUID resolvedRoomId = randomUUID();
         final UUID resolvedCourtScheduleId = randomUUID();
-        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("ADULT"), any(), any(), isNull(), isNull()))
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq(MAGISTRATES), eq("ENF_AUTO"), eq("ADULT"), any(), any(), isNull(), isNull()))
                 .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime, resolvedCourtScheduleId.toString())));
 
         final List<ListHearingRequest> listHearingRequest = getListHearingRequestForEnforcement(
@@ -669,7 +669,7 @@ public class ListCourtHearingTransformerTest {
         final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
         final UUID requestedCourtRoomId = randomUUID();
         final UUID resolvedCourtScheduleId = randomUUID();
-        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("ADULT"),
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq(MAGISTRATES), eq("ENF_AUTO"), eq("ADULT"),
                 any(), any(), eq(requestedCourtRoomId.toString()), isNull()))
                 .thenReturn(Optional.of(new AvailableHearingSlot(requestedCourtRoomId.toString(), resolvedStartTime, resolvedCourtScheduleId.toString())));
 
@@ -712,7 +712,7 @@ public class ListCourtHearingTransformerTest {
         final UUID resolvedCourtScheduleId = randomUUID();
         // the matched session's own reported time is coarser/different from the exact request - proves
         // it gets discarded in favour of the originally-requested exact time (see assertion below).
-        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"),
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq(MAGISTRATES), eq("ENF"), eq("ADULT"),
                 eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime.toLocalDate()), isNull(), eq(listedStartDateTime)))
                 .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), listedStartDateTime.withHour(0).withMinute(0), resolvedCourtScheduleId.toString())));
 
@@ -738,7 +738,7 @@ public class ListCourtHearingTransformerTest {
 
     @Test
     void shouldLeaveSingleDateEnforcementCaseUnallocatedWhenNoSlotAvailable() {
-        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF"), eq("ADULT"),
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq(MAGISTRATES), eq("ENF"), eq("ADULT"),
                 eq(listedStartDateTime.toLocalDate()), eq(listedStartDateTime.toLocalDate()), isNull(), eq(listedStartDateTime)))
                 .thenReturn(Optional.empty());
 
@@ -761,7 +761,7 @@ public class ListCourtHearingTransformerTest {
     void shouldResolveEnforcementSlotWithYouthPanelWhenDefendantIsYouth() {
         final ZonedDateTime resolvedStartTime = ZonedDateTime.parse("2026-08-20T09:00:00Z");
         final UUID resolvedRoomId = randomUUID();
-        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq("ENF_AUTO"), eq("YOUTH"), any(), any(), isNull(), isNull()))
+        when(listingService.findAvailableHearingSlot(any(), eq("B01LY00"), eq(MAGISTRATES), eq("ENF_AUTO"), eq("YOUTH"), any(), any(), isNull(), isNull()))
                 .thenReturn(Optional.of(new AvailableHearingSlot(resolvedRoomId.toString(), resolvedStartTime, randomUUID().toString())));
 
         final ProsecutionCase otherTypeYouthCase = ProsecutionCase.prosecutionCase()
@@ -834,7 +834,7 @@ public class ListCourtHearingTransformerTest {
         // court room before this ever reaches Progression - that room must NOT be trusted for an
         // ENF_AUTO case unless a genuine ENF_AUTO slot was confirmed, otherwise Listing's legacy
         // auto-allocate pipeline (blind to business type) would book it into an unrelated session.
-        when(listingService.findAvailableHearingSlot(any(), any(), any(), any(), any(), any(), any(), any()))
+        when(listingService.findAvailableHearingSlot(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Optional.empty());
 
         final UUID preResolvedRoomId = randomUUID();
