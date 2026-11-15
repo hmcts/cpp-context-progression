@@ -2,9 +2,11 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -53,6 +55,8 @@ import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionHearing;
+import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
@@ -194,6 +198,9 @@ public class ProsecutionCaseQuery {
 
     @Inject
     private RelatedReferenceRepository relatedReferenceRepository;
+
+    @Inject
+    private SjpDecisionService sjpDecisionService;
 
     @Handles("progression.query.prosecutioncase-details")
     public JsonEnvelope getProsecutionCaseDetails(final JsonEnvelope envelope) {
@@ -459,13 +466,15 @@ public class ProsecutionCaseQuery {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
-            final List<Hearings> hearingsList = hearingAtAGlanceService.getCaseHearings(caseId.get());
+            final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
+            final List<CourtApplication> linkedApplications = toCourtApplications(courtApplicationCaseEntities);
+            final List<Hearings> hearingsList = new ArrayList<>(hearingAtAGlanceService.getCaseHearings(caseId.get()));
+            hearingsList.addAll(getSjpDecisionHearings(envelope, caseId.get(), prosecutionCase, linkedApplications));
             final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
-            final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             final JsonArray caseDefendantsJsonArray = listToJsonArrayConverter.convert(
-                    caseAtAGlanceHelper.getCaagDefendantsList(getDefendantIdAndUpdatedOnMap(courtApplicationCaseEntities)));
+                    caseAtAGlanceHelper.getCaagDefendantsList(getDefendantIdAndUpdatedOnMap(linkedApplications)));
 
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
@@ -495,11 +504,27 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
-    private Map<UUID, LocalDate> getDefendantIdAndUpdatedOnMap(final List<CourtApplicationCaseEntity> courtApplicationCaseEntities) {
+    /**
+     * The SJP decisions to show on CAAG (CHD-3311), as resulted hearings. They are passed to {@link CaseAtAGlanceHelper}
+     * only, never to the CAAG hearings timeline. Empty unless the case came from SJP and has an in-scope application.
+     */
+    private List<Hearings> getSjpDecisionHearings(final JsonEnvelope envelope, final UUID caseId, final ProsecutionCase prosecutionCase,
+                                                  final List<CourtApplication> linkedApplications) {
+        final List<SjpDecisionHearing> decisionHearings =
+                sjpDecisionService.getDecisionHearings(envelope, caseId, prosecutionCase.getInitiationCode(), linkedApplications);
+        return decisionHearings.isEmpty() ? emptyList() : hearingAtAGlanceService.getSjpDecisionHearings(decisionHearings, caseId);
+    }
+
+    private List<CourtApplication> toCourtApplications(final List<CourtApplicationCaseEntity> courtApplicationCaseEntities) {
+        return ofNullable(courtApplicationCaseEntities).orElse(emptyList()).stream()
+                .map(entity -> jsonObjectToObjectConverter.convert(
+                        stringToJsonObjectConverter.convert(entity.getCourtApplication().getPayload()), CourtApplication.class))
+                .collect(toList());
+    }
+
+    private Map<UUID, LocalDate> getDefendantIdAndUpdatedOnMap(final List<CourtApplication> courtApplications) {
         final Map<UUID, LocalDate> defendantUpdatedOn = new HashMap<>();
-        ofNullable(courtApplicationCaseEntities).ifPresent(list -> list.forEach(courtApplicationCaseEntity -> {
-            final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
-                    (courtApplicationCaseEntity.getCourtApplication().getPayload()), CourtApplication.class);
+        courtApplications.forEach(courtApplication -> {
             if (nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getUpdatedOn())
                     && nonNull(courtApplication.getApplicant().getMasterDefendant())
                     && !defendantUpdatedOn.containsKey(courtApplication.getApplicant().getMasterDefendant().getMasterDefendantId())) {
@@ -509,7 +534,7 @@ public class ProsecutionCaseQuery {
                     .ifPresent(respondents -> respondents.stream()
                             .filter(respondent -> nonNull(respondent.getUpdatedOn()) && nonNull(respondent.getMasterDefendant()))
                             .forEach(respondent -> defendantUpdatedOn.computeIfAbsent(respondent.getMasterDefendant().getMasterDefendantId(), key -> respondent.getUpdatedOn())));
-        }));
+        });
         return defendantUpdatedOn;
     }
 

@@ -1672,4 +1672,17 @@ public class HearingAtAGlanceServiceTest {
         assertThat(fromEntity.size(), is(1));
         assertThat(objectToJsonObjectConverter.convert(fromHearing), is(objectToJsonObjectConverter.convert(fromEntity.get(0))));
     }
+
+    @Test
+    public void shouldMapSjpDecisionHearingsAsResultedHearings() {
+        final Hearing hearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(HEARING_PAYLOAD), Hearing.class);
+
+        final List<Hearings> hearings = hearingAtAGlanceService.getSjpDecisionHearings(
+                singletonList(new SjpDecisionHearing(hearing, java.time.ZonedDateTime.now())), CASE_ID);
+
+        assertThat(hearings.size(), is(1));
+        assertThat(hearings.get(0).getId(), is(hearing.getId()));
+        assertThat(hearings.get(0).getHearingListingStatus(), is(HEARING_RESULTED));
+        assertThat(hearings.get(0).getDefendants().size(), is(1));
+    }
 }
