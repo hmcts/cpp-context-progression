@@ -18,6 +18,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -81,6 +84,8 @@ import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionHearing;
+import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
@@ -242,6 +247,9 @@ public class ProsecutionCaseQueryViewTest {
     private ResultTextFlagBuilder resultTextFlagBuilder;
     @Mock
     private RelatedReferenceRepository relatedReferenceRepository;
+
+    @Mock
+    private SjpDecisionService sjpDecisionService;
 
     @BeforeEach
     public void setup() {
@@ -2621,5 +2629,66 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonEnvelope response = prosecutionCaseQuery.searchInactiveMigratedCases(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("inactiveMigratedCaseSummaries"), notNullValue());
+    }
+
+    @Test
+    public void shouldShowSjpDecisionResultsOnCaseAtAGlanceForSjpCaseWithInScopeApplication() {
+        final UUID masterDefendantId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
+        final UUID caseId = fromString(envelopeWithCaseId.payloadAsJsonObject().getString("caseId"));
+        final ProsecutionCase sjpCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(getProsecutionCase("05PP1000915", defendant().withId(defendantId).withMasterDefendantId(masterDefendantId).build()))
+                .withInitiationCode(uk.gov.justice.core.courts.InitiationCode.J)
+                .build();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(sjpCase).toString());
+        final CourtApplication statDec = getCourtApplicationWithLegalEntityDefendant(defendantId, randomUUID(), masterDefendantId);
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(statDec).toString());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), caseId));
+        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+        final List<SjpDecisionHearing> decisionHearings = singletonList(new SjpDecisionHearing(
+                uk.gov.justice.core.courts.Hearing.hearing().withId(randomUUID()).build(), ZonedDateTime.now()));
+
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(singletonList(courtApplicationCaseEntity));
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+        when(hearingAtAGlanceService.getCaseHearings(caseId)).thenReturn(emptyList());
+        when(sjpDecisionService.getDecisionHearings(eq(envelopeWithCaseId), eq(caseId), eq(uk.gov.justice.core.courts.InitiationCode.J), anyList()))
+                .thenAnswer(invocation -> {
+                    final List<CourtApplication> applications = invocation.getArgument(3);
+                    assertThat(applications.size(), is(1));
+                    assertThat(applications.get(0).getId(), is(statDec.getId()));
+                    return decisionHearings;
+                });
+        when(hearingAtAGlanceService.getSjpDecisionHearings(decisionHearings, caseId)).thenReturn(getHearingsList(masterDefendantId, defendantId));
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        final JsonArray defendantJudicialResults = response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).getJsonArray("defendantJudicialResults");
+        assertThat(defendantJudicialResults.size(), is(4));
+        assertThat(defendantJudicialResults.getJsonObject(0).getString("label"), is(LABEL1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).getString("updatedOn"), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldNotMapSjpDecisionHearingsWhenThereAreNone() {
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
+        final UUID caseId = fromString(envelopeWithCaseId.payloadAsJsonObject().getString("caseId"));
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase("05PP1000915",
+                defendant().withId(randomUUID()).withMasterDefendantId(randomUUID()).build())).toString());
+
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+        when(sjpDecisionService.getDecisionHearings(eq(envelopeWithCaseId), eq(caseId), any(), anyList())).thenReturn(emptyList());
+
+        prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        verify(hearingAtAGlanceService, never()).getSjpDecisionHearings(anyList(), any());
     }
 }
