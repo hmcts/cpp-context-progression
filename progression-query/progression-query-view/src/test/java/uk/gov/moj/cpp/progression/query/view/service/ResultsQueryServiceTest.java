@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -22,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -92,5 +94,55 @@ class ResultsQueryServiceTest {
 
     private static JsonEnvelope response(final JsonObject payload) {
         return envelopeFrom(metadataWithRandomUUIDAndName(), payload);
+    }
+
+    @Test
+    void shouldSetLastSharedDateTimeOnEveryJudicialResultThatHasNone() {
+        final String existing = "2025-12-31T09:00:00.000Z";
+        final JsonObject hearing = createObjectBuilder()
+                .add("id", UUID.randomUUID().toString())
+                .add("defendantJudicialResults", createArrayBuilder().add(createObjectBuilder()
+                        .add("judicialResult", result("FVS"))))
+                .add("prosecutionCases", createArrayBuilder().add(createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("defendantCaseJudicialResults", createArrayBuilder().add(result("FCOST")))
+                                .add("offences", createArrayBuilder().add(createObjectBuilder()
+                                        .add("judicialResults", createArrayBuilder()
+                                                .add(result("FO"))
+                                                .add(result("FCOMP").add("lastSharedDateTime", existing))
+                                                .add(result("LEP").addNull("lastSharedDateTime")))))))))
+                .build();
+
+        final JsonObject filled = (JsonObject) ResultsQueryService.withLastSharedDateTime(hearing, Json.createValue(SHARED_TIME));
+
+        final JsonObject defendant = filled.getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0);
+        final javax.json.JsonArray offenceResults = defendant.getJsonArray("offences").getJsonObject(0).getJsonArray("judicialResults");
+        assertThat(filled.getJsonArray("defendantJudicialResults").getJsonObject(0).getJsonObject("judicialResult").getString("lastSharedDateTime"), is(SHARED_TIME));
+        assertThat(defendant.getJsonArray("defendantCaseJudicialResults").getJsonObject(0).getString("lastSharedDateTime"), is(SHARED_TIME));
+        assertThat(offenceResults.getJsonObject(0).getString("lastSharedDateTime"), is(SHARED_TIME));
+        assertThat(offenceResults.getJsonObject(1).getString("lastSharedDateTime"), is(existing));
+        assertThat(offenceResults.getJsonObject(2).getString("lastSharedDateTime"), is(SHARED_TIME));
+        assertThat(filled.containsKey("lastSharedDateTime"), is(false));
+        assertThat(defendant.containsKey("lastSharedDateTime"), is(false));
+    }
+
+    @Test
+    void shouldReturnHearingWhoseResultsCarryTheSharedTime() {
+        final UUID decisionId = UUID.randomUUID();
+        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(response(createObjectBuilder()
+                .add("hearing", createObjectBuilder()
+                        .add("id", decisionId.toString())
+                        .add("defendantJudicialResults", createArrayBuilder().add(createObjectBuilder()
+                                .add("judicialResult", result("FVS")))))
+                .add("sharedTime", SHARED_TIME)
+                .build()));
+
+        final List<SjpDecisionHearing> hearings = resultsQueryService.getDecisionHearings(QUERY, List.of(decisionId));
+
+        assertThat(hearings.get(0).hearing().getDefendantJudicialResults().get(0).getJudicialResult().getLastSharedDateTime(), is(SHARED_TIME));
+    }
+
+    private static javax.json.JsonObjectBuilder result(final String label) {
+        return createObjectBuilder().add("judicialResultId", UUID.randomUUID().toString()).add("label", label);
     }
 }

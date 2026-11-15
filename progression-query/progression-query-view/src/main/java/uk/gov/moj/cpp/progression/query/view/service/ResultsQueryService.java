@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
 import static java.util.Objects.isNull;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -19,7 +20,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,8 @@ public class ResultsQueryService implements SjpDecisionResultsSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultsQueryService.class);
     private static final String HEARING = "hearing";
     private static final String SHARED_TIME = "sharedTime";
+    private static final String JUDICIAL_RESULT_ID = "judicialResultId";
+    private static final String LAST_SHARED_DATE_TIME = "lastSharedDateTime";
 
     @Inject
     @ServiceComponent(QUERY_VIEW)
@@ -59,8 +66,36 @@ public class ResultsQueryService implements SjpDecisionResultsSource {
             return Optional.empty();
         }
         final JsonObject payload = response.payloadAsJsonObject();
-        final Hearing hearing = jsonObjectToObjectConverter.convert(payload.getJsonObject(HEARING), Hearing.class);
+        final JsonObject hearingJson = payload.containsKey(SHARED_TIME)
+                ? (JsonObject) withLastSharedDateTime(payload.getJsonObject(HEARING), payload.get(SHARED_TIME))
+                : payload.getJsonObject(HEARING);
+        final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
         final ZonedDateTime sharedTime = payload.containsKey(SHARED_TIME) ? ZonedDateTime.parse(payload.getString(SHARED_TIME)) : null;
         return Optional.of(new SjpDecisionHearing(hearing, sharedTime));
+    }
+
+    /**
+     * SJP does not set {@code lastSharedDateTime} on the results it publishes, so CAAG would show no "Shared on" (BR5).
+     * Sets it to the decision's {@code sharedTime} on every judicial result (offence, defendant and case level) that has none.
+     */
+    static JsonValue withLastSharedDateTime(final JsonValue value, final JsonValue sharedTime) {
+        if (value instanceof JsonObject jsonObject) {
+            final JsonObjectBuilder builder = createObjectBuilder();
+            jsonObject.forEach((key, child) -> builder.add(key, withLastSharedDateTime(child, sharedTime)));
+            if (jsonObject.containsKey(JUDICIAL_RESULT_ID) && isMissing(jsonObject, LAST_SHARED_DATE_TIME)) {
+                builder.add(LAST_SHARED_DATE_TIME, sharedTime);
+            }
+            return builder.build();
+        }
+        if (value instanceof JsonArray jsonArray) {
+            final JsonArrayBuilder builder = createArrayBuilder();
+            jsonArray.forEach(child -> builder.add(withLastSharedDateTime(child, sharedTime)));
+            return builder.build();
+        }
+        return value;
+    }
+
+    private static boolean isMissing(final JsonObject jsonObject, final String key) {
+        return !jsonObject.containsKey(key) || jsonObject.isNull(key);
     }
 }
