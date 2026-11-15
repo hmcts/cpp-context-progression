@@ -3,7 +3,10 @@ package uk.gov.moj.cpp.progression.query.view.service;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService.REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS;
 import static uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService.REFERENCEDATA_GET_PROSECUTOR;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -12,7 +15,11 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -97,5 +104,33 @@ public class ReferenceDataServiceTest {
         assertThat(result, is(hearingTypes));
         assertThat(requestJsonEnvelope.getValue().metadata().name(), is("referencedata.query.hearing-types"));
 
+    }
+
+    @Test
+    void shouldGetResultShortCodesForResultDefinitionIdsInOneRequest() {
+        final UUID fo = UUID.randomUUID();
+        final UUID fcost = UUID.randomUUID();
+        final UUID noShortCode = UUID.randomUUID();
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+        when(requester.requestAsAdmin(requestJsonEnvelope.capture())).thenReturn(JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("resultDefinitions", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", fo.toString()).add("shortCode", "FO"))
+                        .add(createObjectBuilder().add("id", fcost.toString()).add("shortCode", "FCOST"))
+                        .add(createObjectBuilder().add("id", noShortCode.toString())))
+                        .build()));
+
+        final Map<UUID, String> shortCodes = referenceDataService.getResultShortCodes(query, new LinkedHashSet<>(List.of(fo, fcost, noShortCode)));
+
+        assertThat(shortCodes, is(Map.of(fo, "FO", fcost, "FCOST")));
+        assertThat(requestJsonEnvelope.getValue().metadata().name(), is(REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS));
+        assertThat(requestJsonEnvelope.getValue().payloadAsJsonObject().getString("ids"), is(fo + "," + fcost + "," + noShortCode));
+    }
+
+    @Test
+    void shouldNotCallReferenceDataForNoResultDefinitionIds() {
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+
+        assertThat(referenceDataService.getResultShortCodes(query, Set.of()), is(Map.of()));
+        verifyNoInteractions(requester);
     }
 }
