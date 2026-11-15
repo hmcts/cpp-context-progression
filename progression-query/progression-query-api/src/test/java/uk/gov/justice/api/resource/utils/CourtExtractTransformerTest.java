@@ -520,6 +520,122 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_shouldIncludeSelectedApplicationHearing_whenItHasNoCaseDefendants() {
+        // CHD-2659: a linked-application-extract selects an application hearing that was listed on a
+        // related case. On the owning case's hearings-at-a-glance that hearing carries no case-defendants
+        // (defendants is empty; its attendance references the related case's defendant id, which this
+        // case's data cannot resolve to the master defendant). It is therefore absent from defendantHearings
+        // and from the defendant-id / linked-id attendance fallbacks. It must still be included for a court
+        // extract when the caller explicitly selected it, so the application and its results render instead
+        // of degrading to a no-hearing-details (empty) extract.
+        final String extractType = "CrownCourtExtract";
+        final UUID masterId = randomUUID();               // defendant id == master defendant id (owning-case coincidence)
+        final UUID applicationId = randomUUID();
+        final UUID regularHearingId = randomUUID();        // the defendant's own hearing on this case
+        final UUID applicationHearingId = randomUUID();    // the selected application hearing (listed on the related case)
+        final UUID relatedCaseDefendantId = randomUUID();  // the related case's defendant id on the application hearing's attendance
+        final List<String> selectedHearingIds = singletonList(applicationHearingId.toString());
+
+        final CourtApplicationParty applicationParty = CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withRepresentationOrganisation(createOrganisation())
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(masterId)
+                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(masterId).withCaseId(CASE_ID).build()))
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .withApplicant(applicationParty)
+                .withSubject(applicationParty)
+                .build();
+
+        // The defendant's own hearing references the application, seeding the linked-application defendant ids.
+        final Hearings regularHearing = Hearings.hearings()
+                .withId(regularHearingId)
+                .withIsApplicationHearing(false)
+                .withHearingDays(createHearingDays())
+                .withCourtCentre(createCourtCenter())
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription(HEARING_TYPE).build())
+                .withDefendants(List.of(Defendants.defendants()
+                        .withId(masterId)
+                        .withMasterDefendantId(masterId)
+                        .withCourtApplications(List.of(CourtApplications.courtApplications().withApplicationId(applicationId).build()))
+                        .build()))
+                .build();
+
+        // The selected application hearing has no case-defendants for this case; its attendance is the related case's defendant.
+        final Hearings applicationHearing = Hearings.hearings()
+                .withId(applicationHearingId)
+                .withIsApplicationHearing(true)
+                .withHearingDays(createHearingDays())
+                .withCourtCentre(createCourtCenter())
+                .withType(HearingType.hearingType().withId(randomUUID()).withDescription(HEARING_TYPE).build())
+                .withDefendants(emptyList())
+                .withDefendantAttendance(List.of(DefendantAttendance.defendantAttendance()
+                        .withDefendantId(relatedCaseDefendantId)
+                        .withAttendanceDays(singletonList(AttendanceDay.attendanceDay()
+                                .withDay(LocalDate.now())
+                                .withAttendanceType(AttendanceType.IN_PERSON)
+                                .build()))
+                        .build()))
+                .build();
+
+        final GetHearingsAtAGlance hearingsAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withId(CASE_ID)
+                .withProsecutionCaseIdentifier(createPCIdentifier())
+                .withDefendantHearings(List.of(DefendantHearings.defendantHearings()
+                        .withDefendantId(masterId)
+                        .withMasterDefendantId(masterId)
+                        .withDefendantName(DEFENDANT_NAME)
+                        .withHearingIds(new ArrayList<>(singletonList(regularHearingId)))
+                        .build()))
+                .withHearings(asList(regularHearing, applicationHearing))
+                .withCourtApplications(singletonList(courtApplication))
+                .build();
+
+        final ProsecutionCase owningCase = ProsecutionCase.prosecutionCase()
+                .withId(CASE_ID)
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withId(masterId)
+                        .withMasterDefendantId(masterId)
+                        .withPersonDefendant(createPersonDefendant())
+                        .withOffences(emptyList())
+                        .build()))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityReference(PAR)
+                        .build())
+                .build();
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
+                .withCourtApplications(List.of(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withApplicant(applicationParty)
+                        .withRespondents(createCourtApplicationRespondents())
+                        .build()))
+                .build()).toString());
+        when(hearingRepository.findBy(applicationHearingId)).thenReturn(hearingEntity);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(
+                hearingsAtAGlance, masterId.toString(), extractType, selectedHearingIds, randomUUID(), owningCase);
+
+        assertThat(courtExtractRequested, is(notNullValue()));
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(applicationHearingId));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getId(), is(applicationId));
+    }
+
+    @Test
     public void testTransformToCourtExtract_whenExtractTypeIsCrownCourtWithAPendingApplication_expectAppealPendingFlagAsTrue() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
