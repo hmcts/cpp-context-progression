@@ -1641,4 +1641,35 @@ public class HearingAtAGlanceServiceTest {
                 .build());
     }
 
+    @Test
+    public void shouldBuildHearingsViewFromCoreDomainHearingWithGivenListingStatus() {
+        final Hearing hearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(HEARING_PAYLOAD), Hearing.class);
+
+        final Hearings hearingsView = hearingAtAGlanceService.toHearingsView(hearing, HEARING_RESULTED, CASE_ID);
+
+        assertThat(hearingsView.getId(), is(hearing.getId()));
+        assertThat(hearingsView.getHearingListingStatus(), is(HEARING_RESULTED));
+        assertThat(hearingsView.getCourtCentre(), is(hearing.getCourtCentre()));
+        assertThat(hearingsView.getHearingDays(), is(hearing.getHearingDays()));
+        assertThat(hearingsView.getJudiciary(), is(hearing.getJudiciary()));
+        assertThat(hearingsView.getCompanyRepresentatives(), is(hearing.getCompanyRepresentatives()));
+        assertThat(hearingsView.getIsApplicationHearing(), is(false));
+        assertThat(hearingsView.getDefendants().size(), is(1));
+        assertThat(hearingsView.getDefendants().get(0).getId(), is(hearing.getProsecutionCases().get(0).getDefendants().get(0).getId()));
+    }
+
+    @Test
+    public void shouldBuildSameHearingsViewFromEntityPathAndCoreDomainHearingPath() {
+        final Hearing hearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(HEARING_PAYLOAD), Hearing.class);
+        final HearingEntity hearingEntity = createHearingEntity(hearing, hearing.getId(), HEARING_RESULTED);
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        when(caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(singletonList(caseDefendantHearingEntity));
+
+        final List<Hearings> fromEntity = hearingAtAGlanceService.getCaseHearings(CASE_ID);
+        final Hearings fromHearing = hearingAtAGlanceService.toHearingsView(hearing, HEARING_RESULTED, CASE_ID);
+
+        assertThat(fromEntity.size(), is(1));
+        assertThat(objectToJsonObjectConverter.convert(fromHearing), is(objectToJsonObjectConverter.convert(fromEntity.get(0))));
+    }
 }
