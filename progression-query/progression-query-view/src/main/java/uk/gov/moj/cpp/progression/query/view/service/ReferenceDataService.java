@@ -29,6 +29,7 @@ public class ReferenceDataService {
 
     public static final String REFERENCEDATA_QUERY_LANGUAGES = "referencedata.query.languages";
     private static final String REFERENCEDATA_GET_HEARINGTYPES = "referencedata.query.hearing-types";
+    static final String REFERENCEDATA_GET_APPLICATION_TYPE_GROUPS = "referencedata.query.application-type-groups";
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
@@ -77,5 +78,18 @@ public class ReferenceDataService {
         final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, createObjectBuilder().build()));
 
         return jsonEnvelop.payloadAsJsonObject().getJsonArray("hearingTypes");
+    }
+
+    public Optional<JsonObject> getApplicationTypeGroups(final String groups) {
+        final JsonObject payload = createObjectBuilder().add("groups", groups).build();
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                metadataBuilder().
+                        withId(randomUUID()).
+                        withName(REFERENCEDATA_GET_APPLICATION_TYPE_GROUPS),
+                payload);
+
+        final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
+
+        return ofNullable(jsonResultEnvelope.payloadAsJsonObject());
     }
 }

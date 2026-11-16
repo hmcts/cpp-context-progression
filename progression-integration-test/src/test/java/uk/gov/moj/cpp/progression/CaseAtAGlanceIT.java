@@ -18,6 +18,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesWithCourtOrdersFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryApplicationTypeGroups;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -68,6 +69,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldVerifyCaseAndHearingDetails() throws Exception {
         //given
+        stubQueryApplicationTypeGroups("/restResource/referencedata.query.application-type-groups.json");
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         pollProsecutionCasesWithCourtOrdersFor(caseId,
@@ -133,7 +135,22 @@ public class CaseAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.linkedApplications[0].applicationTitle", equalTo("Application for an order of reimbursement in relation to a closure order")),
                 withJsonPath("$.linkedApplications[0].applicantDisplayName", equalTo("Applicant Organisation")),
                 withJsonPath("$.linkedApplications[0].applicationStatus", equalTo("DRAFT")),
-                withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation"))
+                withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation")),
+
+                // not a STAT DEC, REOPEN or APPEAL application, so no label
+                withoutJsonPath("$.linkedApplicationStatuses")
+        );
+
+        final String statDecApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(statDecApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-statdec-application-defendant-has-emailAddress.json");
+
+        pollProsecutionCasesProgressionForCAAG(caseId,
+                withJsonPath("$.linkedApplicationStatuses.length()", equalTo(1)),
+                withJsonPath("$.linkedApplicationStatuses[0].applicationId", equalTo(statDecApplicationId)),
+                withJsonPath("$.linkedApplicationStatuses[0].applicationTypeCode", equalTo("MC80527")),
+                withJsonPath("$.linkedApplicationStatuses[0].applicationCategory", equalTo("STAT_DEC")),
+                withJsonPath("$.linkedApplicationStatuses[0].status", equalTo("LODGED")),
+                withJsonPath("$.appealsLodgedInfo.appealsLodged", equalTo(false))
         );
     }
 

@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.aggregate.helper;
+package uk.gov.moj.cpp.progression.domain.constant;
 
 import static java.util.UUID.fromString;
 

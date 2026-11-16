@@ -60,6 +60,13 @@
     "numberOfGroupCases": {
       "description": "Number of active cases (isGroupMember = true) in the group, including this case",
       "type": "integer"
+    },
+    "linkedApplicationStatuses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.prosecutioncase.caag#/definitions/linkedApplicationStatus"
+      }
     }
   },
   "additionalProperties": false,

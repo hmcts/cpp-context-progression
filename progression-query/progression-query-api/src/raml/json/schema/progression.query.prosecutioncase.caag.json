@@ -60,6 +60,14 @@
       "items": {
         "$ref": "#/definitions/applicationSummary"
       }
+    },
+    "linkedApplicationStatuses": {
+      "description": "One entry per STAT DEC, REOPEN or APPEAL application linked to the case, used for the CAAG labels",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/linkedApplicationStatus"
+      }
     }
   },
   "additionalProperties": false,
@@ -435,6 +443,57 @@
           }
         }
       }
+    },
+    "linkedApplicationStatus": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicationTypeCode": {
+          "type": "string"
+        },
+        "applicationCategory": {
+          "type": "string",
+          "enum": [
+            "STAT_DEC",
+            "REOPEN",
+            "APPEAL"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "LODGED",
+            "PENDING",
+            "STATUTORY_DECLARATION_GRANTED",
+            "STATUTORY_DECLARATION_REFUSED",
+            "STATUTORY_DECLARATION_WITHDRAWN",
+            "STATUTORY_DECLARATION_DISMISSED",
+            "REOPENING_GRANTED",
+            "REOPENING_REFUSED",
+            "REOPENING_WITHDRAWN",
+            "REOPENING_DISMISSED",
+            "APPEAL_ALLOWED",
+            "APPEAL_REFUSED",
+            "APPEAL_WITHDRAWN",
+            "APPEAL_DISMISSED"
+          ]
+        },
+        "defendantOffences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/appealLodgedFor"
+          }
+        }
+      },
+      "required": [
+        "applicationId",
+        "applicationCategory",
+        "status"
+      ],
+      "additionalProperties": false
     }
   }
 }

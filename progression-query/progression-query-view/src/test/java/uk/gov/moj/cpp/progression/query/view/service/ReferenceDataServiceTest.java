@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService.REFERENCEDATA_GET_APPLICATION_TYPE_GROUPS;
 import static uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService.REFERENCEDATA_GET_PROSECUTOR;
 import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -97,5 +98,17 @@ public class ReferenceDataServiceTest {
         assertThat(result, is(hearingTypes));
         assertThat(requestJsonEnvelope.getValue().metadata().name(), is("referencedata.query.hearing-types"));
 
+    }
+
+    @Test
+    void shouldGetApplicationTypeGroups() {
+        when(requester.requestAsAdmin(requestJsonEnvelope.capture())).thenReturn(jsonEnvelope);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(responsePayload);
+
+        final Optional<JsonObject> applicationTypeGroups = referenceDataService.getApplicationTypeGroups("statdec,appeal,reopen");
+
+        assertThat(applicationTypeGroups.isPresent(), is(true));
+        assertThat(requestJsonEnvelope.getValue().payloadAsJsonObject().getString("groups"), is("statdec,appeal,reopen"));
+        assertThat(requestJsonEnvelope.getValue().metadata().name(), is(REFERENCEDATA_GET_APPLICATION_TYPE_GROUPS));
     }
 }
