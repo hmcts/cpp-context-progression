@@ -94,6 +94,22 @@ public class StubUtil {
                         .withBody(body)));
     }
 
+    /**
+     * Listing court list payload whose single hearing is an application hearing (keyed by courtApplicationId rather
+     * than caseId), so progression enriches it via the court application branch of the court list query view.
+     */
+    public static void setupListingCourtListApplicationPayloadStub(final String hearingId, final String applicationId, final String defendantId) {
+        final String body = getPayload("stub-data/listing.courtlistdata-application-payload-template.json")
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("APPLICATION_ID", applicationId)
+                .replaceAll("DEFENDANT_ID", defendantId);
+        stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)));
+    }
+
     public static void setupForUshersMagistrateListQueryStub() {
         stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
