@@ -263,10 +263,8 @@ public class CourtExtractTransformer {
         final List<UUID> hearingIds = defendantHearings.getHearingIds();
         hearingIds.addAll(hearingsAtAGlance.getHearings().stream()
                 .filter(h -> !hearingIds.contains(h.getId()))
-                .filter(h -> (h.getDefendants().stream().
-                        anyMatch(d -> linkedApplicationsDefendantIds.contains(d.getId()))) ||
-                        (isEmpty(h.getDefendants()) &&
-                                Optional.ofNullable(h.getDefendantAttendance()).stream().flatMap(Collection::stream).anyMatch( d-> d.getDefendantId().toString().equals(defendantId) || linkedApplicationsDefendantIds.contains(d.getDefendantId()))))
+                .filter(h -> isLinkedApplicationDefendantHearing(h, defendantId, linkedApplicationsDefendantIds) ||
+                        isSelectedApplicationHearingWithoutCaseDefendants(h, extractType, selectedHearingIdList))
                 .map(Hearings::getId)
                 .toList());
         //add any hearings associated with breachType courtApplications
@@ -288,6 +286,31 @@ public class CourtExtractTransformer {
         }
 
         return courtExtract.build();
+    }
+
+    private static boolean isLinkedApplicationDefendantHearing(final Hearings hearings,
+                                                              final String defendantId,
+                                                              final List<UUID> linkedApplicationsDefendantIds) {
+        if (hearings.getDefendants().stream().anyMatch(d -> linkedApplicationsDefendantIds.contains(d.getId()))) {
+            return true;
+        }
+        return isEmpty(hearings.getDefendants()) &&
+                Optional.ofNullable(hearings.getDefendantAttendance()).stream().flatMap(Collection::stream)
+                        .anyMatch(d -> d.getDefendantId().toString().equals(defendantId) || linkedApplicationsDefendantIds.contains(d.getDefendantId()));
+    }
+
+    // CHD-2659: linked-application-extract. A cross-case application hearing carries no case-defendants
+    // for the owning case (defendants is empty, and its attendance references the other case's defendant id,
+    // which this case's data cannot resolve to the master defendant). Include it when the caller explicitly
+    // selected it for a court extract so the application + offences still render.
+    private static boolean isSelectedApplicationHearingWithoutCaseDefendants(final Hearings hearings,
+                                                                            final String extractType,
+                                                                            final List<String> selectedHearingIdList) {
+        return COURT_EXTRACT.equals(extractType)
+                && isEmpty(hearings.getDefendants())
+                && Boolean.TRUE.equals(hearings.getIsApplicationHearing())
+                && nonNull(selectedHearingIdList)
+                && selectedHearingIdList.contains(hearings.getId().toString());
     }
 
     private static List<UUID> getLinkedApplicationsDefendantIds(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId) {
