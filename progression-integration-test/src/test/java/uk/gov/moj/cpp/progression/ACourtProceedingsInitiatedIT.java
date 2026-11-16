@@ -85,7 +85,8 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
         final List<Matcher<? super ReadContext>> inactiveMigratedCaseMatchers = newArrayList(
                 withJsonPath("$.prosecutionCase.caseStatus", is(inactive)),
                 withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationCaseStatus", is(inactive)),
-                withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationSourceSystemName", is(xhibit))
+                withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationSourceSystemName", is(xhibit)),
+                withJsonPath("$.prosecutionCase.migrationSourceSystem.firstCourtHearingLocation", is("B01LY00"))
         );
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, inactiveMigratedCaseMatchers));

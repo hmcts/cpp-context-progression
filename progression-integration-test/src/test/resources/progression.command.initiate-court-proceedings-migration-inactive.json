@@ -199,6 +199,7 @@
         "migrationSourceSystem": {
           "migrationSourceSystemName": "XHIBIT",
           "migrationSourceSystemCaseIdentifier": "T20250001",
+          "firstCourtHearingLocation": "B01LY00",
           "defendantFineAccountNumbers": [
             {
               "defendantId": "RANDOM_DEFENDANT_ID",
