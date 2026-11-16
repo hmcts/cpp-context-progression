@@ -1,0 +1,14 @@
+{
+  "resultDefinitions": [
+    {
+      "id": "969f150c-cd05-46b0-9dd9-30891efcc766",
+      "label": "Fine",
+      "shortCode": "FO"
+    },
+    {
+      "id": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+      "label": "Costs",
+      "shortCode": "FCOST"
+    }
+  ]
+}

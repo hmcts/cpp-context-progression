@@ -450,4 +450,14 @@ public class ReferenceDataStub {
                             .withHeader("Content-Type", APPLICATION_JSON)
                             .withBody(payload)));
     }
+
+    public static void stubQueryResultDefinitionsByIds(final String resourceName) {
+        stubFor(get(urlPathEqualTo("/referencedata-service/query/api/rest/referencedata/result-definitions"))
+                .withHeader("Accept", containing("referencedata.query-result-definitions-by-ids+json"))
+                .withQueryParam("ids", matching(".+"))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resourceName))));
+    }
 }
