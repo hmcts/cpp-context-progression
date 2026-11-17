@@ -138,18 +138,18 @@ public class CaseAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation")),
 
                 // not a STAT DEC, REOPEN or APPEAL application, so no label
-                withoutJsonPath("$.linkedApplicationStatuses")
+                withoutJsonPath("$.applicationStatuses")
         );
 
         final String statDecApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(statDecApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-statdec-application-defendant-has-emailAddress.json");
 
         pollProsecutionCasesProgressionForCAAG(caseId,
-                withJsonPath("$.linkedApplicationStatuses.length()", equalTo(1)),
-                withJsonPath("$.linkedApplicationStatuses[0].applicationId", equalTo(statDecApplicationId)),
-                withJsonPath("$.linkedApplicationStatuses[0].applicationTypeCode", equalTo("MC80527")),
-                withJsonPath("$.linkedApplicationStatuses[0].applicationCategory", equalTo("STAT_DEC")),
-                withJsonPath("$.linkedApplicationStatuses[0].status", equalTo("LODGED")),
+                withJsonPath("$.applicationStatuses.length()", equalTo(1)),
+                withJsonPath("$.applicationStatuses[0].applicationId", equalTo(statDecApplicationId)),
+                withJsonPath("$.applicationStatuses[0].applicationTypeCode", equalTo("MC80527")),
+                withJsonPath("$.applicationStatuses[0].applicationCategory", equalTo("STAT_DEC")),
+                withJsonPath("$.applicationStatuses[0].status", equalTo("LODGED")),
                 withJsonPath("$.appealsLodgedInfo.appealsLodged", equalTo(false))
         );
     }

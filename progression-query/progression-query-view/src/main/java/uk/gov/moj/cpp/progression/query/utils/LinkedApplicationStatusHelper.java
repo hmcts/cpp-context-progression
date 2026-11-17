@@ -27,7 +27,6 @@ import uk.gov.justice.core.courts.MasterDefendant;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,13 +44,13 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 
 /**
- * Builds the linkedApplicationStatuses block shown as labels on Case At A Glance (CHD-3304).
+ * Builds the applicationStatuses block shown as labels on Case At A Glance (CHD-3304).
  * Each STAT DEC, REOPEN or APPEAL application linked to the case gets one entry, with a status
  * derived from its shared application-level results.
  */
 public class LinkedApplicationStatusHelper {
 
-    public static final String LINKED_APPLICATION_STATUSES = "linkedApplicationStatuses";
+    public static final String APPLICATION_STATUSES = "applicationStatuses";
     public static final String APPLICATION_TYPE_GROUPS = "statdec,appeal,reopen";
 
     private static final String GROUPS = "groups";
@@ -82,31 +81,21 @@ public class LinkedApplicationStatusHelper {
         }
     }
 
-    /**
-     * Precedence decides the status when an application has more than one mapped result:
-     * WITHDRAWN over REFUSED / DISMISSED over GRANTED / ALLOWED.
-     */
     public enum ApplicationLabelStatus {
-        LODGED(0),
-        PENDING(0),
-        STATUTORY_DECLARATION_GRANTED(1),
-        REOPENING_GRANTED(1),
-        APPEAL_ALLOWED(1),
-        STATUTORY_DECLARATION_REFUSED(2),
-        STATUTORY_DECLARATION_DISMISSED(2),
-        REOPENING_REFUSED(2),
-        REOPENING_DISMISSED(2),
-        APPEAL_REFUSED(2),
-        APPEAL_DISMISSED(2),
-        STATUTORY_DECLARATION_WITHDRAWN(3),
-        REOPENING_WITHDRAWN(3),
-        APPEAL_WITHDRAWN(3);
-
-        private final int precedence;
-
-        ApplicationLabelStatus(final int precedence) {
-            this.precedence = precedence;
-        }
+        LODGED,
+        PENDING,
+        STATUTORY_DECLARATION_GRANTED,
+        REOPENING_GRANTED,
+        APPEAL_ALLOWED,
+        STATUTORY_DECLARATION_REFUSED,
+        STATUTORY_DECLARATION_DISMISSED,
+        REOPENING_REFUSED,
+        REOPENING_DISMISSED,
+        APPEAL_REFUSED,
+        APPEAL_DISMISSED,
+        STATUTORY_DECLARATION_WITHDRAWN,
+        REOPENING_WITHDRAWN,
+        APPEAL_WITHDRAWN
     }
 
     // Keyed by category first: G, RFSD, WDRN and DISM mean different things per category.
@@ -167,7 +156,7 @@ public class LinkedApplicationStatusHelper {
                 .filter(Objects::nonNull)
                 .map(resultStatuses::get)
                 .filter(Objects::nonNull)
-                .max(Comparator.comparingInt(status -> status.precedence))
+                .findFirst()
                 .orElse(ApplicationLabelStatus.PENDING);
     }
 

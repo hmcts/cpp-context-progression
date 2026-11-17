@@ -18,7 +18,7 @@ import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.bui
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingsResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.getCaseHearingsJson;
 import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.APPLICATION_TYPE_GROUPS;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.LINKED_APPLICATION_STATUSES;
+import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.APPLICATION_STATUSES;
 import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.buildLinkedApplicationStatuses;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
@@ -428,7 +428,7 @@ public class ProsecutionCaseQuery {
                     .map(LinkedApplicationStatusHelper::getApplicationTypeCategories)
                     .orElse(Map.of());
         } catch (final RuntimeException e) {
-            LOGGER.warn("Unable to get application type groups from reference data, {} left out for caseId '{}'", LINKED_APPLICATION_STATUSES, caseId, e);
+            LOGGER.warn("Unable to get application type groups from reference data, {} left out for caseId '{}'", APPLICATION_STATUSES, caseId, e);
             return;
         }
 
@@ -437,7 +437,7 @@ public class ProsecutionCaseQuery {
                 .toList();
         final JsonArray linkedApplicationStatuses = buildLinkedApplicationStatuses(caseId, courtApplications, applicationTypeCategories);
         if (!linkedApplicationStatuses.isEmpty()) {
-            jsonObjectBuilder.add(LINKED_APPLICATION_STATUSES, linkedApplicationStatuses);
+            jsonObjectBuilder.add(APPLICATION_STATUSES, linkedApplicationStatuses);
         }
     }
 

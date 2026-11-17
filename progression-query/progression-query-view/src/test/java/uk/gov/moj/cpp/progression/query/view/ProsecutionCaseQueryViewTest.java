@@ -660,7 +660,7 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId).payloadAsJsonObject();
 
-        final JsonArray linkedApplicationStatuses = payload.getJsonArray("linkedApplicationStatuses");
+        final JsonArray linkedApplicationStatuses = payload.getJsonArray("applicationStatuses");
         assertThat(linkedApplicationStatuses.size(), is(1));
         final JsonObject statDecStatus = linkedApplicationStatuses.getJsonObject(0);
         assertThat(statDecStatus.getString("applicationId"), is(statDec.getId().toString()));
@@ -693,7 +693,7 @@ public class ProsecutionCaseQueryViewTest {
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId).payloadAsJsonObject();
 
         assertThat(payload.getString("caseId"), is(caseId.toString()));
-        assertThat(payload.containsKey("linkedApplicationStatuses"), is(false));
+        assertThat(payload.containsKey("applicationStatuses"), is(false));
     }
 
     @Test
@@ -710,7 +710,7 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId).payloadAsJsonObject();
 
-        assertThat(payload.containsKey("linkedApplicationStatuses"), is(false));
+        assertThat(payload.containsKey("applicationStatuses"), is(false));
         verify(referenceDataService, never()).getApplicationTypeGroups(anyString());
     }
 
@@ -750,7 +750,7 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope).payloadAsJsonObject();
 
-        final JsonArray linkedApplicationStatuses = payload.getJsonArray("linkedApplicationStatuses");
+        final JsonArray linkedApplicationStatuses = payload.getJsonArray("applicationStatuses");
         assertThat(linkedApplicationStatuses.size(), is(1));
         assertThat(linkedApplicationStatuses.getJsonObject(0).getString("status"), is("STATUTORY_DECLARATION_GRANTED"));
     }

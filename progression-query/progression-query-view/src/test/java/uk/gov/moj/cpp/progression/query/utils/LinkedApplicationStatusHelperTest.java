@@ -124,14 +124,6 @@ class LinkedApplicationStatusHelperTest {
     }
 
     @Test
-    void shouldApplyPrecedenceWhenMoreThanOneResultIsMapped() {
-        assertThat(resolveStatus(STAT_DEC, application(randomUUID(), STAT_DEC_TYPE_ID, List.of(result(G), result(RFSD)))),
-                is(ApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED));
-        assertThat(resolveStatus(APPEAL, application(randomUUID(), APPEAL_TYPE_ID, List.of(result(AACD), result(AW), result(AACA)))),
-                is(ApplicationLabelStatus.APPEAL_WITHDRAWN));
-    }
-
-    @Test
     void shouldIgnoreOffenceLevelResults() {
         final UUID defendantId = randomUUID();
         final CourtApplication application = CourtApplication.courtApplication()
