@@ -1632,7 +1632,8 @@ public class CourtExtractTransformer {
             hearingBuilder.withAuthorisedLegalAdvisors(courtExtractHelper.getAuthorisedLegalAdvisors(offences));
         }
 
-        hearingBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendancesDay(hearing.getDefendantAttendance(), defendant, linkedApplicationDefendantIds)));
+        hearingBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendancesDay(hearing.getDefendantAttendance(), defendant,
+                getAttendanceDefendantIds(hearing, masterDefendantId, linkedApplicationDefendantIds))));
 
         final List<JudicialResult> judicialResults = transformJudicialResults(hearing, masterDefendantId, defendant.getId(), hearingsAtAGlance, linkedApplicationDefendantIds);
         hearingBuilder.withDefendantResults(getDefendantResultsWithAmendments(judicialResults, resultIdSlipRuleAmendmentsMap));
@@ -1644,6 +1645,31 @@ public class CourtExtractTransformer {
         }
 
         return hearingBuilder.build();
+    }
+
+    // CHD-2659: a cross-case application hearing has no case-defendants on this case's hearings-at-a-glance, and its
+    // attendance carries the related case's defendant id. Resolve that id through the hearing's own prosecution cases
+    // (same master defendant) so the defendant's attendance is not dropped and the extract does not print "Not present".
+    private List<UUID> getAttendanceDefendantIds(final Hearings hearing, final UUID masterDefendantId, final List<UUID> linkedApplicationDefendantIds) {
+        if (isNull(masterDefendantId) || isNotEmpty(hearing.getDefendants()) || !TRUE.equals(hearing.getIsApplicationHearing())
+                || isEmpty(hearing.getDefendantAttendance())) {
+            return linkedApplicationDefendantIds;
+        }
+        final HearingEntity hearingEntity = hearingRepository.findBy(hearing.getId());
+        if (isNull(hearingEntity)) {
+            return linkedApplicationDefendantIds;
+        }
+        final uk.gov.justice.core.courts.Hearing fullHearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), uk.gov.justice.core.courts.Hearing.class);
+        final List<UUID> attendanceDefendantIds = new ArrayList<>(linkedApplicationDefendantIds);
+        ofNullable(fullHearing.getProsecutionCases()).stream().flatMap(Collection::stream)
+                .map(ProsecutionCase::getDefendants)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(d -> masterDefendantId.equals(d.getMasterDefendantId()))
+                .map(uk.gov.justice.core.courts.Defendant::getId)
+                .filter(id -> !attendanceDefendantIds.contains(id))
+                .forEach(attendanceDefendantIds::add);
+        return attendanceDefendantIds;
     }
 
     private uk.gov.justice.progression.courts.exract.Hearings getExtractHearingFromLinkedApplicationHearing(final Defendants defendant, final UUID userId, final uk.gov.justice.core.courts.Hearing hearing, final List<CourtApplication> courtApplications, final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings, final UUID masterDefendantId, final List<UUID> linkedApplicationDefendantIds) {
