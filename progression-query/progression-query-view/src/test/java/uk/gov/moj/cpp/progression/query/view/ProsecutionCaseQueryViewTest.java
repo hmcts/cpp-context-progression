@@ -633,7 +633,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnLinkedApplicationStatusesInCaseAtAGlance() {
+    public void shouldReturnApplicationStatusesInCaseAtAGlance() {
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
         final UUID statDecTypeId = randomUUID();
@@ -660,9 +660,9 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId).payloadAsJsonObject();
 
-        final JsonArray linkedApplicationStatuses = payload.getJsonArray("applicationStatuses");
-        assertThat(linkedApplicationStatuses.size(), is(1));
-        final JsonObject statDecStatus = linkedApplicationStatuses.getJsonObject(0);
+        final JsonArray applicationStatuses = payload.getJsonArray("applicationStatuses");
+        assertThat(applicationStatuses.size(), is(1));
+        final JsonObject statDecStatus = applicationStatuses.getJsonObject(0);
         assertThat(statDecStatus.getString("applicationId"), is(statDec.getId().toString()));
         assertThat(statDecStatus.getString("applicationTypeCode"), is("MC80528"));
         assertThat(statDecStatus.getString("applicationCategory"), is("STAT_DEC"));
@@ -673,7 +673,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldLeaveOutLinkedApplicationStatusesWhenReferenceDataFails() {
+    public void shouldLeaveOutApplicationStatusesWhenReferenceDataFails() {
         final UUID defendantId = randomUUID();
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final UUID caseId = fromString(envelopeWithCaseId.payloadAsJsonObject().getString("caseId"));
@@ -715,7 +715,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnLinkedApplicationStatusesInProsecutionCase() {
+    public void shouldReturnApplicationStatusesInProsecutionCase() {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID statDecTypeId = randomUUID();
@@ -750,9 +750,9 @@ public class ProsecutionCaseQueryViewTest {
 
         final JsonObject payload = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope).payloadAsJsonObject();
 
-        final JsonArray linkedApplicationStatuses = payload.getJsonArray("applicationStatuses");
-        assertThat(linkedApplicationStatuses.size(), is(1));
-        assertThat(linkedApplicationStatuses.getJsonObject(0).getString("status"), is("STATUTORY_DECLARATION_GRANTED"));
+        final JsonArray applicationStatuses = payload.getJsonArray("applicationStatuses");
+        assertThat(applicationStatuses.size(), is(1));
+        assertThat(applicationStatuses.getJsonObject(0).getString("status"), is("STATUTORY_DECLARATION_GRANTED"));
     }
 
     private CourtApplication getStatDecApplication(final UUID caseId, final UUID statDecTypeId, final UUID defendantId, final UUID offenceId) {

@@ -19,12 +19,12 @@ import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.RFSD;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.ROPENED;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.STDEC;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.WDRN;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.ApplicationCategory.APPEAL;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.ApplicationCategory.REOPEN;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.ApplicationCategory.STAT_DEC;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.buildLinkedApplicationStatuses;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.getApplicationTypeCategories;
-import static uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.resolveStatus;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.ApplicationCategory.APPEAL;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.ApplicationCategory.REOPEN;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.ApplicationCategory.STAT_DEC;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.buildApplicationStatuses;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.getApplicationTypeCategories;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.resolveStatus;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -36,8 +36,8 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
-import uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.ApplicationCategory;
-import uk.gov.moj.cpp.progression.query.utils.LinkedApplicationStatusHelper.ApplicationLabelStatus;
+import uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.ApplicationCategory;
+import uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.ApplicationLabelStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class LinkedApplicationStatusHelperTest {
+class ApplicationStatusHelperTest {
 
     private static final UUID STAT_DEC_TYPE_ID = randomUUID();
     private static final UUID REOPEN_TYPE_ID = randomUUID();
@@ -135,7 +135,7 @@ class LinkedApplicationStatusHelperTest {
                         .build())))
                 .build();
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(application), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(application), CATEGORIES);
 
         assertThat(statuses.getJsonObject(0).getString("status"), is("LODGED"));
     }
@@ -150,7 +150,7 @@ class LinkedApplicationStatusHelperTest {
         final CourtApplication appeal = applicationFor(APPEAL_TYPE_ID, "MC80802", defendantId, List.of(result(ADJOURNMENT_RESULT_ID)), offenceId2);
         final CourtApplication specialMeasures = applicationFor(SPECIAL_MEASURES_TYPE_ID, "SE20501", defendantId, null, offenceId1);
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(statDec, reopen, appeal, specialMeasures), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(statDec, reopen, appeal, specialMeasures), CATEGORIES);
 
         assertThat(statuses.size(), is(3));
         assertEntry(statuses.getJsonObject(0), statDec, "MC80528", "STAT_DEC", "STATUTORY_DECLARATION_REFUSED");
@@ -170,7 +170,7 @@ class LinkedApplicationStatusHelperTest {
         final CourtApplication firstStatDec = applicationFor(STAT_DEC_TYPE_ID, "MC80528", defendantId, List.of(result(RFSD)), randomUUID());
         final CourtApplication secondStatDec = applicationFor(STAT_DEC_TYPE_ID, "MC80528", defendantId, null, randomUUID());
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(firstStatDec, secondStatDec), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(firstStatDec, secondStatDec), CATEGORIES);
 
         assertThat(statuses.size(), is(2));
         assertThat(statuses.getJsonObject(0).getString("status"), is("STATUTORY_DECLARATION_REFUSED"));
@@ -181,7 +181,7 @@ class LinkedApplicationStatusHelperTest {
     void shouldBuildOneEntryWhenTheSameApplicationIsLinkedMoreThanOnce() {
         final CourtApplication statDec = applicationFor(STAT_DEC_TYPE_ID, "MC80527", randomUUID(), null, randomUUID());
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(statDec, statDec), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(statDec, statDec), CATEGORIES);
 
         assertThat(statuses.size(), is(1));
     }
@@ -198,7 +198,7 @@ class LinkedApplicationStatusHelperTest {
                         applicationCase(randomUUID(), Offence.offence().withId(otherCaseOffenceId).build())))
                 .build();
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(statDec), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(statDec), CATEGORIES);
 
         final JsonArray defendantOffences = statuses.getJsonObject(0).getJsonArray("defendantOffences");
         assertThat(defendantOffences.size(), is(1));
@@ -225,7 +225,7 @@ class LinkedApplicationStatusHelperTest {
                         .build())
                 .build();
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(companyStatDec), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(companyStatDec), CATEGORIES);
 
         assertThat(statuses.getJsonObject(0).getString("status"), is("STATUTORY_DECLARATION_GRANTED"));
         assertThat(statuses.getJsonObject(0).getJsonArray("defendantOffences").getJsonObject(0).getString("defendantId"), is(defendantId.toString()));
@@ -238,7 +238,7 @@ class LinkedApplicationStatusHelperTest {
                 .withCourtApplicationCases(null)
                 .build();
 
-        final JsonArray statuses = buildLinkedApplicationStatuses(caseId, List.of(statDec), CATEGORIES);
+        final JsonArray statuses = buildApplicationStatuses(caseId, List.of(statDec), CATEGORIES);
 
         assertThat(statuses.getJsonObject(0).containsKey("defendantOffences"), is(false));
     }
@@ -247,8 +247,8 @@ class LinkedApplicationStatusHelperTest {
     void shouldReturnNoEntriesWhenNoApplicationIsInScope() {
         final CourtApplication specialMeasures = applicationFor(SPECIAL_MEASURES_TYPE_ID, "SE20501", randomUUID(), null, randomUUID());
 
-        assertThat(buildLinkedApplicationStatuses(caseId, List.of(specialMeasures), CATEGORIES).isEmpty(), is(true));
-        assertThat(buildLinkedApplicationStatuses(caseId, List.of(specialMeasures), Map.of()).isEmpty(), is(true));
+        assertThat(buildApplicationStatuses(caseId, List.of(specialMeasures), CATEGORIES).isEmpty(), is(true));
+        assertThat(buildApplicationStatuses(caseId, List.of(specialMeasures), Map.of()).isEmpty(), is(true));
     }
 
     @Test

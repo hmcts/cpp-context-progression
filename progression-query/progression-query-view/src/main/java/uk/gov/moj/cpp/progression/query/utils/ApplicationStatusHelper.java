@@ -48,7 +48,7 @@ import javax.json.JsonString;
  * Each STAT DEC, REOPEN or APPEAL application linked to the case gets one entry, with a status
  * derived from its shared application-level results.
  */
-public class LinkedApplicationStatusHelper {
+public class ApplicationStatusHelper {
 
     public static final String APPLICATION_STATUSES = "applicationStatuses";
     public static final String APPLICATION_TYPE_GROUPS = "statdec,appeal,reopen";
@@ -123,7 +123,7 @@ public class LinkedApplicationStatusHelper {
                     AASD, ApplicationLabelStatus.APPEAL_DISMISSED,
                     ACSD, ApplicationLabelStatus.APPEAL_DISMISSED));
 
-    private LinkedApplicationStatusHelper() {
+    private ApplicationStatusHelper() {
     }
 
     /**
@@ -160,7 +160,7 @@ public class LinkedApplicationStatusHelper {
                 .orElse(ApplicationLabelStatus.PENDING);
     }
 
-    public static JsonArray buildLinkedApplicationStatuses(final UUID caseId,
+    public static JsonArray buildApplicationStatuses(final UUID caseId,
                                                            final Collection<CourtApplication> courtApplications,
                                                            final Map<UUID, ApplicationCategory> applicationTypeCategories) {
         final Map<UUID, CourtApplication> uniqueApplications = new LinkedHashMap<>();
@@ -172,13 +172,13 @@ public class LinkedApplicationStatusHelper {
                 .forEach(courtApplication -> {
                     final ApplicationCategory category = applicationTypeCategories.get(courtApplication.getType().getId());
                     if (nonNull(category)) {
-                        statusesBuilder.add(buildLinkedApplicationStatus(caseId, courtApplication, category));
+                        statusesBuilder.add(buildApplicationStatus(caseId, courtApplication, category));
                     }
                 });
         return statusesBuilder.build();
     }
 
-    private static JsonObject buildLinkedApplicationStatus(final UUID caseId, final CourtApplication courtApplication, final ApplicationCategory category) {
+    private static JsonObject buildApplicationStatus(final UUID caseId, final CourtApplication courtApplication, final ApplicationCategory category) {
         final JsonObjectBuilder statusBuilder = createObjectBuilder()
                 .add(APPLICATION_ID, courtApplication.getId().toString());
         ofNullable(courtApplication.getType().getCode()).ifPresent(code -> statusBuilder.add(APPLICATION_TYPE_CODE, code));
