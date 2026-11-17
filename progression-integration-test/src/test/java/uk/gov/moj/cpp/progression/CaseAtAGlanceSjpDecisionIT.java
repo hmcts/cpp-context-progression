@@ -11,7 +11,6 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryResultDefinitionsByIds;
 import static uk.gov.moj.cpp.progression.stub.ResultsStub.stubSjpDecisionResults;
 import static uk.gov.moj.cpp.progression.stub.ResultsStub.verifySjpDecisionResultsNotQueried;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.stubSjpCaseWithDecisions;
@@ -29,7 +28,7 @@ import org.junit.jupiter.api.Test;
 /**
  * CHD-3311: Case at a Glance shows the SJP decision of a case created from SJP (initiation code J) once an in-scope
  * application (here a statutory declaration, MC80528) is linked to it. The decisions come from SJP, their results from
- * the payloads Results stored, and the short codes from reference data.
+ * the payloads Results stored.
  */
 public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
 
@@ -37,7 +36,6 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
     private static final String LINKED_APPLICATION = "applications/progression.initiate-court-proceedings-for-generic-linked-application.json";
     private static final String OUT_OF_SCOPE_APPLICATION_TYPE_CODE = "AS14518";
     private static final String STATUTORY_DECLARATION_TYPE_CODE = "MC80528";
-    private static final String RESULT_DEFINITIONS = "stub-data/referencedata.query-result-definitions-by-ids.sjp.json";
 
     private static final String OFFENCE_RESULTS = "$.defendants[0].caagDefendantOffences[0].caagResults";
     private static final String DEFENDANT_RESULTS = "$.defendants[0].defendantJudicialResults";
@@ -52,11 +50,10 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         defendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
-        stubQueryResultDefinitionsByIds(RESULT_DEFINITIONS);
     }
 
     @Test
-    public void shouldShowSjpDecisionResultsWithShortCodesWhenStatutoryDeclarationIsLinked() throws Exception {
+    public void shouldShowSjpDecisionResultsWhenStatutoryDeclarationIsLinked() throws Exception {
         final String decisionId = randomUUID().toString();
         stubSjpCaseWithDecisions(caseId, singletonList(new SjpDecision(decisionId, "2026-01-05T10:00:00.000Z", false)));
         stubSjpDecisionResults(decisionId, caseId, defendantId, "2026-01-05", "2026-01-05T12:30:00.000Z", "100.00");
@@ -69,8 +66,8 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
 
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
                 withJsonPath(OFFENCE_RESULTS + "[0].label", equalTo("Fine")),
-                withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("FO - Fine\nAmount of fine £100.00")),
-                withJsonPath(OFFENCE_RESULTS + "[0].useResultText", is(true)),
+                withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("Fine\nAmount of fine £100.00")),
+                withJsonPath(OFFENCE_RESULTS + "[0].useResultText", is(false)),
                 withJsonPath(OFFENCE_RESULTS + "[0].orderedDate", equalTo("2026-01-05")),
                 withJsonPath(OFFENCE_RESULTS + "[0].lastSharedDateTime", equalTo("2026-01-05T12:30:00.000Z")),
                 withJsonPath(OFFENCE_RESULTS + "[0].caagResultPrompts[0].label", equalTo("Amount of fine")),
@@ -80,7 +77,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
                 withJsonPath("$.defendants[0].caagDefendantOffences[0].verdict.verdictType.categoryType", equalTo("GUILTY_CONVICTED")),
 
                 withJsonPath(DEFENDANT_RESULTS + ".length()", is(1)),
-                withJsonPath(DEFENDANT_RESULTS + "[0].resultText", equalTo("FCOST - Costs\nAmount of costs £85.00")),
+                withJsonPath(DEFENDANT_RESULTS + "[0].resultText", equalTo("Costs\nAmount of costs £85.00")),
                 withJsonPath(DEFENDANT_RESULTS + "[0].lastSharedDateTime", equalTo("2026-01-05T12:30:00.000Z"))
         );
     }
@@ -103,7 +100,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         pollProsecutionCasesProgressionForCAAG(caseId,
                 withJsonPath("$.linkedApplications[0].applicationId", equalTo(applicationId)),
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
-                withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("FO - Fine\nAmount of fine £50.00")),
+                withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("Fine\nAmount of fine £50.00")),
                 withJsonPath(OFFENCE_RESULTS + "[0].lastSharedDateTime", equalTo("2026-02-10T12:30:00.000Z")),
                 withJsonPath(DEFENDANT_RESULTS + ".length()", is(1))
         );
