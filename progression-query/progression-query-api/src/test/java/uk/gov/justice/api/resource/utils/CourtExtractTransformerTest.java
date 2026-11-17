@@ -622,6 +622,14 @@ public class CourtExtractTransformerTest {
                         .withApplicant(applicationParty)
                         .withRespondents(createCourtApplicationRespondents())
                         .build()))
+                // the hearing's own (related) case maps its defendant id to the same master defendant
+                .withProsecutionCases(List.of(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .withDefendants(List.of(Defendant.defendant()
+                                .withId(relatedCaseDefendantId)
+                                .withMasterDefendantId(masterId)
+                                .build()))
+                        .build()))
                 .build()).toString());
         when(hearingRepository.findBy(applicationHearingId)).thenReturn(hearingEntity);
 
@@ -633,6 +641,9 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(applicationHearingId));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getId(), is(applicationId));
+        // attendance recorded against the related case's defendant id resolves via the master defendant (not "Not present")
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAttendanceDays().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAttendanceDays().get(0).getDay(), is(LocalDate.now()));
     }
 
     @Test
