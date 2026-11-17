@@ -1,0 +1,99 @@
+{
+  "hearing": {
+    "id": "DECISION_ID",
+    "isSJPHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "id": "6e5b1ddf-12fb-4d6e-9b53-2b6b1ad5c6d3",
+      "description": "Single Justice Procedure"
+    },
+    "courtCentre": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "name": "Lavender Hill Magistrate's Court"
+    },
+    "hearingDays": [
+      {
+        "sittingDay": "ORDERED_DATET10:00:00.000Z",
+        "listedDurationMinutes": 0,
+        "listingSequence": 0
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceCode": "TTH105HY",
+                "offenceTitle": "ROBBERY",
+                "wording": "No Travel Card",
+                "startDate": "2019-05-01",
+                "verdict": {
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "originatingHearingId": "DECISION_ID",
+                  "verdictDate": "ORDERED_DATE",
+                  "verdictType": {
+                    "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_CONVICTED",
+                    "description": "Found guilty"
+                  }
+                },
+                "judicialResults": [
+                  {
+                    "judicialResultId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "orderedHearingId": "DECISION_ID",
+                    "label": "Fine",
+                    "resultText": "Fine\nAmount of fine £FINE_AMOUNT",
+                    "category": "FINAL",
+                    "orderedDate": "ORDERED_DATE",
+                    "isAdjournmentResult": false,
+                    "isFinancialResult": true,
+                    "judicialResultPrompts": [
+                      {
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "value": "£FINE_AMOUNT"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "defendantJudicialResults": [
+      {
+        "masterDefendantId": "DEFENDANT_ID",
+        "judicialResult": {
+          "judicialResultId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+          "judicialResultTypeId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+          "orderedHearingId": "DECISION_ID",
+          "label": "Costs",
+          "resultText": "Costs\nAmount of costs £85.00",
+          "category": "ANCILLARY",
+          "orderedDate": "ORDERED_DATE",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "judicialResultPrompts": [
+            {
+              "judicialResultPromptTypeId": "db261fd9-c6bb-4e10-b93f-9fd98418f7b0",
+              "label": "Amount of costs",
+              "value": "£85.00"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "sharedTime": "SHARED_TIME"
+}
