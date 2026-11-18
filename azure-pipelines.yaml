@@ -6,6 +6,7 @@ trigger:
     include:
       - main
       - 'team/*'
+      - 'dev/ras-rollback-prep' # TEMPORARY: run context-validation (ITs + image) on push; remove before merging
     exclude:
       - 'dev/release-*'
   paths:
