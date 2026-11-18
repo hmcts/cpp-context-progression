@@ -1,12 +1,15 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
@@ -61,9 +64,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         createSjpOriginCase();
         linkApplication(STATUTORY_DECLARATION_TYPE_CODE);
 
-        pollProsecutionCasesProgressionForCAAG(caseId,
-                withJsonPath("$.linkedApplications[0].applicationId", equalTo(applicationId)),
-
+        assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
                 withJsonPath(OFFENCE_RESULTS + "[0].label", equalTo("Fine")),
                 withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("Fine\nAmount of fine £100.00")),
@@ -79,7 +80,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
                 withJsonPath(DEFENDANT_RESULTS + ".length()", is(1)),
                 withJsonPath(DEFENDANT_RESULTS + "[0].resultText", equalTo("Costs\nAmount of costs £85.00")),
                 withJsonPath(DEFENDANT_RESULTS + "[0].lastSharedDateTime", equalTo("2026-01-05T12:30:00.000Z"))
-        );
+        )));
     }
 
     @Test
@@ -97,13 +98,12 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         createSjpOriginCase();
         linkApplication(STATUTORY_DECLARATION_TYPE_CODE);
 
-        pollProsecutionCasesProgressionForCAAG(caseId,
-                withJsonPath("$.linkedApplications[0].applicationId", equalTo(applicationId)),
+        assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
                 withJsonPath(OFFENCE_RESULTS + "[0].resultText", equalTo("Fine\nAmount of fine £50.00")),
                 withJsonPath(OFFENCE_RESULTS + "[0].lastSharedDateTime", equalTo("2026-02-10T12:30:00.000Z")),
                 withJsonPath(DEFENDANT_RESULTS + ".length()", is(1))
-        );
+        )));
         verifySjpDecisionResultsNotQueried(originalDecisionId);
         verifySjpDecisionResultsNotQueried(setAsideDecisionId);
     }
@@ -117,13 +117,21 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         createSjpOriginCase();
         linkApplication(OUT_OF_SCOPE_APPLICATION_TYPE_CODE);
 
-        pollProsecutionCasesProgressionForCAAG(caseId,
-                withJsonPath("$.linkedApplications[0].applicationId", equalTo(applicationId)),
+        assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withoutJsonPath(OFFENCE_RESULTS + "[0]"),
                 withoutJsonPath(DEFENDANT_RESULTS + "[0]")
-        );
+        )));
         verifySjpCaseNotQueried(caseId);
         verifySjpDecisionResultsNotQueried(decisionId);
+    }
+
+    /**
+     * Case at a Glance reads SJP and Results at query time, so once the linked application shows, its SJP decision
+     * results are in the same response.
+     */
+    private String pollCaagUntilApplicationIsLinked() {
+        return pollProsecutionCasesProgressionForCAAG(caseId,
+                withJsonPath("$.linkedApplications[0].applicationId", equalTo(applicationId)));
     }
 
     private void createSjpOriginCase() throws Exception {
