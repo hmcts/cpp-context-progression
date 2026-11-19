@@ -17,9 +17,9 @@ import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.bui
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingTypesResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingsResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.getCaseHearingsJson;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.APPLICATION_TYPE_GROUPS;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.APPLICATION_STATUSES;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.buildApplicationStatuses;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.STATDEC_APPLICATION_TYPE_GROUPS;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.STATDEC_APPLICATION_STATUSES;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.buildApplicationStatuses;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -46,8 +46,8 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.domain.pojo.Prosecutor;
-import uk.gov.moj.cpp.progression.enums.ApplicationCategory;
-import uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper;
+import uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory;
+import uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper;
 import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
@@ -339,7 +339,7 @@ public class ProsecutionCaseQuery {
 
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
-            populateApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
+            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
@@ -417,18 +417,18 @@ public class ProsecutionCaseQuery {
 
     }
 
-    private void populateApplicationStatuses(final UUID caseId, final List<CourtApplicationCaseEntity> courtApplicationCaseEntities, final JsonObjectBuilder jsonObjectBuilder) {
+    private void populateStatdecApplicationStatuses(final UUID caseId, final List<CourtApplicationCaseEntity> courtApplicationCaseEntities, final JsonObjectBuilder jsonObjectBuilder) {
         if (CollectionUtils.isEmpty(courtApplicationCaseEntities)) {
             return;
         }
 
-        final Map<UUID, ApplicationCategory> applicationTypeCategories;
+        final Map<UUID, StatdecApplicationCategory> applicationTypeCategories;
         try {
-            applicationTypeCategories = referenceDataService.getApplicationTypeGroups(APPLICATION_TYPE_GROUPS)
-                    .map(ApplicationStatusHelper::getApplicationTypeCategories)
+            applicationTypeCategories = referenceDataService.getApplicationTypeGroups(STATDEC_APPLICATION_TYPE_GROUPS)
+                    .map(StatdecApplicationStatusHelper::getApplicationTypeCategories)
                     .orElse(Map.of());
         } catch (final RuntimeException e) {
-            LOGGER.warn("Unable to get application type groups from reference data, {} left out for caseId '{}'", APPLICATION_STATUSES, caseId, e);
+            LOGGER.warn("Unable to get application type groups from reference data, {} left out for caseId '{}'", STATDEC_APPLICATION_STATUSES, caseId, e);
             return;
         }
 
@@ -437,7 +437,7 @@ public class ProsecutionCaseQuery {
                 .toList();
         final JsonArray applicationStatuses = buildApplicationStatuses(caseId, courtApplications, applicationTypeCategories);
         if (!applicationStatuses.isEmpty()) {
-            jsonObjectBuilder.add(APPLICATION_STATUSES, applicationStatuses);
+            jsonObjectBuilder.add(STATDEC_APPLICATION_STATUSES, applicationStatuses);
         }
     }
 
@@ -486,7 +486,7 @@ public class ProsecutionCaseQuery {
             }
 
             populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
-            populateApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
+            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.warn(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());

@@ -19,12 +19,12 @@ import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.RFSD;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.ROPENED;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.STDEC;
 import static uk.gov.moj.cpp.progression.domain.constant.ResultConstants.WDRN;
-import static uk.gov.moj.cpp.progression.enums.ApplicationCategory.APPEAL;
-import static uk.gov.moj.cpp.progression.enums.ApplicationCategory.REOPEN;
-import static uk.gov.moj.cpp.progression.enums.ApplicationCategory.STAT_DEC;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.buildApplicationStatuses;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.getApplicationTypeCategories;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationStatusHelper.resolveStatus;
+import static uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory.APPEAL;
+import static uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory.REOPEN;
+import static uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory.STAT_DEC;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.buildApplicationStatuses;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.getApplicationTypeCategories;
+import static uk.gov.moj.cpp.progression.query.utils.StatdecApplicationStatusHelper.resolveStatus;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -36,8 +36,8 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
-import uk.gov.moj.cpp.progression.enums.ApplicationCategory;
-import uk.gov.moj.cpp.progression.enums.ApplicationLabelStatus;
+import uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory;
+import uk.gov.moj.cpp.progression.enums.StatdecApplicationLabelStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ApplicationStatusHelperTest {
+class StatdecApplicationStatusHelperTest {
 
     private static final UUID STAT_DEC_TYPE_ID = randomUUID();
     private static final UUID REOPEN_TYPE_ID = randomUUID();
@@ -60,7 +60,7 @@ class ApplicationStatusHelperTest {
     private static final UUID SPECIAL_MEASURES_TYPE_ID = randomUUID();
     private static final UUID ADJOURNMENT_RESULT_ID = randomUUID();
 
-    private static final Map<UUID, ApplicationCategory> CATEGORIES = Map.of(
+    private static final Map<UUID, StatdecApplicationCategory> CATEGORIES = Map.of(
             STAT_DEC_TYPE_ID, STAT_DEC,
             REOPEN_TYPE_ID, REOPEN,
             APPEAL_TYPE_ID, APPEAL);
@@ -69,70 +69,70 @@ class ApplicationStatusHelperTest {
 
     static Stream<Arguments> mappedResults() {
         return Stream.of(
-                Arguments.of(STAT_DEC, G, ApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED),
-                Arguments.of(STAT_DEC, STDEC, ApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED),
-                Arguments.of(STAT_DEC, RFSD, ApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED),
-                Arguments.of(STAT_DEC, WDRN, ApplicationLabelStatus.STATUTORY_DECLARATION_WITHDRAWN),
-                Arguments.of(STAT_DEC, DISM, ApplicationLabelStatus.STATUTORY_DECLARATION_DISMISSED),
-                Arguments.of(REOPEN, G, ApplicationLabelStatus.REOPENING_GRANTED),
-                Arguments.of(REOPEN, ROPENED, ApplicationLabelStatus.REOPENING_GRANTED),
-                Arguments.of(REOPEN, RFSD, ApplicationLabelStatus.REOPENING_REFUSED),
-                Arguments.of(REOPEN, WDRN, ApplicationLabelStatus.REOPENING_WITHDRAWN),
-                Arguments.of(REOPEN, DISM, ApplicationLabelStatus.REOPENING_DISMISSED),
-                Arguments.of(APPEAL, AACA, ApplicationLabelStatus.APPEAL_ALLOWED),
-                Arguments.of(APPEAL, AASA, ApplicationLabelStatus.APPEAL_ALLOWED),
-                Arguments.of(APPEAL, RFSD, ApplicationLabelStatus.APPEAL_REFUSED),
-                Arguments.of(APPEAL, AW, ApplicationLabelStatus.APPEAL_WITHDRAWN),
-                Arguments.of(APPEAL, WDRN, ApplicationLabelStatus.APPEAL_WITHDRAWN),
-                Arguments.of(APPEAL, APA, ApplicationLabelStatus.APPEAL_WITHDRAWN),
-                Arguments.of(APPEAL, AACD, ApplicationLabelStatus.APPEAL_DISMISSED),
-                Arguments.of(APPEAL, AASD, ApplicationLabelStatus.APPEAL_DISMISSED),
-                Arguments.of(APPEAL, ACSD, ApplicationLabelStatus.APPEAL_DISMISSED));
+                Arguments.of(STAT_DEC, G, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED),
+                Arguments.of(STAT_DEC, STDEC, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED),
+                Arguments.of(STAT_DEC, RFSD, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED),
+                Arguments.of(STAT_DEC, WDRN, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_WITHDRAWN),
+                Arguments.of(STAT_DEC, DISM, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_DISMISSED),
+                Arguments.of(REOPEN, G, StatdecApplicationLabelStatus.REOPENING_GRANTED),
+                Arguments.of(REOPEN, ROPENED, StatdecApplicationLabelStatus.REOPENING_GRANTED),
+                Arguments.of(REOPEN, RFSD, StatdecApplicationLabelStatus.REOPENING_REFUSED),
+                Arguments.of(REOPEN, WDRN, StatdecApplicationLabelStatus.REOPENING_WITHDRAWN),
+                Arguments.of(REOPEN, DISM, StatdecApplicationLabelStatus.REOPENING_DISMISSED),
+                Arguments.of(APPEAL, AACA, StatdecApplicationLabelStatus.APPEAL_ALLOWED),
+                Arguments.of(APPEAL, AASA, StatdecApplicationLabelStatus.APPEAL_ALLOWED),
+                Arguments.of(APPEAL, RFSD, StatdecApplicationLabelStatus.APPEAL_REFUSED),
+                Arguments.of(APPEAL, AW, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN),
+                Arguments.of(APPEAL, WDRN, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN),
+                Arguments.of(APPEAL, APA, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN),
+                Arguments.of(APPEAL, AACD, StatdecApplicationLabelStatus.APPEAL_DISMISSED),
+                Arguments.of(APPEAL, AASD, StatdecApplicationLabelStatus.APPEAL_DISMISSED),
+                Arguments.of(APPEAL, ACSD, StatdecApplicationLabelStatus.APPEAL_DISMISSED));
     }
 
     @ParameterizedTest
     @MethodSource("mappedResults")
-    void shouldMapApplicationResultToStatus(final ApplicationCategory category, final UUID resultId, final ApplicationLabelStatus expectedStatus) {
+    void shouldMapApplicationResultToStatus(final StatdecApplicationCategory category, final UUID resultId, final StatdecApplicationLabelStatus expectedStatus) {
         assertThat(resolveStatus(category, application(randomUUID(), randomUUID(), List.of(result(resultId)))), is(expectedStatus));
     }
 
     @Test
     void shouldBeLodgedWhenApplicationHasNoResults() {
-        assertThat(resolveStatus(STAT_DEC, application(randomUUID(), STAT_DEC_TYPE_ID, null)), is(ApplicationLabelStatus.LODGED));
-        assertThat(resolveStatus(STAT_DEC, application(randomUUID(), STAT_DEC_TYPE_ID, List.of())), is(ApplicationLabelStatus.LODGED));
+        assertThat(resolveStatus(STAT_DEC, application(randomUUID(), STAT_DEC_TYPE_ID, null)), is(StatdecApplicationLabelStatus.LODGED));
+        assertThat(resolveStatus(STAT_DEC, application(randomUUID(), STAT_DEC_TYPE_ID, List.of())), is(StatdecApplicationLabelStatus.LODGED));
     }
 
     @Test
     void shouldBePendingWhenApplicationResultIsNotMapped() {
-        assertThat(resolveStatus(REOPEN, application(randomUUID(), REOPEN_TYPE_ID, List.of(result(ADJOURNMENT_RESULT_ID)))), is(ApplicationLabelStatus.PENDING));
+        assertThat(resolveStatus(REOPEN, application(randomUUID(), REOPEN_TYPE_ID, List.of(result(ADJOURNMENT_RESULT_ID)))), is(StatdecApplicationLabelStatus.PENDING));
     }
 
     @Test
     void shouldBePendingForUnmappedAppealResultSentenceVaried() {
-        assertThat(resolveStatus(APPEAL, application(randomUUID(), APPEAL_TYPE_ID, List.of(result(ASV)))), is(ApplicationLabelStatus.PENDING));
+        assertThat(resolveStatus(APPEAL, application(randomUUID(), APPEAL_TYPE_ID, List.of(result(ASV)))), is(StatdecApplicationLabelStatus.PENDING));
     }
 
     @Test
     void shouldBePendingWhenResultIsMappedOnlyForAnotherCategory() {
-        assertThat(resolveStatus(APPEAL, application(randomUUID(), APPEAL_TYPE_ID, List.of(result(STDEC)))), is(ApplicationLabelStatus.PENDING));
+        assertThat(resolveStatus(APPEAL, application(randomUUID(), APPEAL_TYPE_ID, List.of(result(STDEC)))), is(StatdecApplicationLabelStatus.PENDING));
     }
 
     @Test
     void shouldUseFinalStatusWhenGrantedAndAdjourned() {
         final CourtApplication application = application(randomUUID(), STAT_DEC_TYPE_ID, List.of(result(ADJOURNMENT_RESULT_ID), result(G)));
-        assertThat(resolveStatus(STAT_DEC, application), is(ApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED));
+        assertThat(resolveStatus(STAT_DEC, application), is(StatdecApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED));
     }
 
     @Test
     void shouldBeLodgedWhenOnlyResultIsDeleted() {
         final CourtApplication application = application(randomUUID(), STAT_DEC_TYPE_ID, List.of(deletedResult(G)));
-        assertThat(resolveStatus(STAT_DEC, application), is(ApplicationLabelStatus.LODGED));
+        assertThat(resolveStatus(STAT_DEC, application), is(StatdecApplicationLabelStatus.LODGED));
     }
 
     @Test
     void shouldIgnoreDeletedResultWhenAmendedAndReshared() {
         final CourtApplication application = application(randomUUID(), STAT_DEC_TYPE_ID, List.of(deletedResult(G), result(RFSD)));
-        assertThat(resolveStatus(STAT_DEC, application), is(ApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED));
+        assertThat(resolveStatus(STAT_DEC, application), is(StatdecApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED));
     }
 
     @Test
@@ -273,7 +273,7 @@ class ApplicationStatusHelperTest {
                         .add(group("unknown", SPECIAL_MEASURES_TYPE_ID)))
                 .build();
 
-        final Map<UUID, ApplicationCategory> categories = getApplicationTypeCategories(groups);
+        final Map<UUID, StatdecApplicationCategory> categories = getApplicationTypeCategories(groups);
 
         assertThat(categories.size(), is(4));
         assertThat(categories.get(STAT_DEC_TYPE_ID), is(STAT_DEC));

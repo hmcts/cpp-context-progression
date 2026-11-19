@@ -65,7 +65,7 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "http://moj.gov.uk/cpp/progression/common/application-status-summary.json"
+        "$ref": "http://moj.gov.uk/cpp/progression/common/statdec-application-status-summary.json"
       }
     }
   },

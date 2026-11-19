@@ -24,8 +24,8 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.moj.cpp.progression.enums.ApplicationCategory;
-import uk.gov.moj.cpp.progression.enums.ApplicationLabelStatus;
+import uk.gov.moj.cpp.progression.enums.StatdecApplicationCategory;
+import uk.gov.moj.cpp.progression.enums.StatdecApplicationLabelStatus;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,10 +50,10 @@ import javax.json.JsonString;
  * Each STAT DEC, REOPEN or APPEAL application linked to the case gets one entry, with a status
  * derived from its shared application-level results.
  */
-public class ApplicationStatusHelper {
+public class StatdecApplicationStatusHelper {
 
-    public static final String APPLICATION_STATUSES = "applicationStatuses";
-    public static final String APPLICATION_TYPE_GROUPS = "statdec,appeal,reopen";
+    public static final String STATDEC_APPLICATION_STATUSES = "applicationStatuses";
+    public static final String STATDEC_APPLICATION_TYPE_GROUPS = "statdec,appeal,reopen";
 
     private static final String GROUPS = "groups";
     private static final String GROUP_NAME = "groupName";
@@ -68,44 +68,44 @@ public class ApplicationStatusHelper {
     private static final String OFFENCE_IDS = "offenceIds";
 
     // Reference data group name for each category, matched ignoring case.
-    private static final Map<String, ApplicationCategory> GROUP_CATEGORIES = Map.of(
-            "statdec", ApplicationCategory.STAT_DEC,
-            "reopen", ApplicationCategory.REOPEN,
-            "appeal", ApplicationCategory.APPEAL);
+    private static final Map<String, StatdecApplicationCategory> GROUP_CATEGORIES = Map.of(
+            "statdec", StatdecApplicationCategory.STAT_DEC,
+            "reopen", StatdecApplicationCategory.REOPEN,
+            "appeal", StatdecApplicationCategory.APPEAL);
 
     // Keyed by category first: G, RFSD, WDRN and DISM mean different things per category.
-    private static final Map<ApplicationCategory, Map<UUID, ApplicationLabelStatus>> RESULT_STATUS_MAP = Map.of(
-            ApplicationCategory.STAT_DEC, Map.of(
-                    G, ApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED,
-                    STDEC, ApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED,
-                    RFSD, ApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED,
-                    WDRN, ApplicationLabelStatus.STATUTORY_DECLARATION_WITHDRAWN,
-                    DISM, ApplicationLabelStatus.STATUTORY_DECLARATION_DISMISSED),
-            ApplicationCategory.REOPEN, Map.of(
-                    G, ApplicationLabelStatus.REOPENING_GRANTED,
-                    ROPENED, ApplicationLabelStatus.REOPENING_GRANTED,
-                    RFSD, ApplicationLabelStatus.REOPENING_REFUSED,
-                    WDRN, ApplicationLabelStatus.REOPENING_WITHDRAWN,
-                    DISM, ApplicationLabelStatus.REOPENING_DISMISSED),
-            ApplicationCategory.APPEAL, Map.of(
-                    AACA, ApplicationLabelStatus.APPEAL_ALLOWED,
-                    AASA, ApplicationLabelStatus.APPEAL_ALLOWED,
-                    RFSD, ApplicationLabelStatus.APPEAL_REFUSED,
-                    AW, ApplicationLabelStatus.APPEAL_WITHDRAWN,
-                    WDRN, ApplicationLabelStatus.APPEAL_WITHDRAWN,
-                    APA, ApplicationLabelStatus.APPEAL_WITHDRAWN,
-                    AACD, ApplicationLabelStatus.APPEAL_DISMISSED,
-                    AASD, ApplicationLabelStatus.APPEAL_DISMISSED,
-                    ACSD, ApplicationLabelStatus.APPEAL_DISMISSED));
+    private static final Map<StatdecApplicationCategory, Map<UUID, StatdecApplicationLabelStatus>> RESULT_STATUS_MAP = Map.of(
+            StatdecApplicationCategory.STAT_DEC, Map.of(
+                    G, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED,
+                    STDEC, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_GRANTED,
+                    RFSD, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED,
+                    WDRN, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_WITHDRAWN,
+                    DISM, StatdecApplicationLabelStatus.STATUTORY_DECLARATION_DISMISSED),
+            StatdecApplicationCategory.REOPEN, Map.of(
+                    G, StatdecApplicationLabelStatus.REOPENING_GRANTED,
+                    ROPENED, StatdecApplicationLabelStatus.REOPENING_GRANTED,
+                    RFSD, StatdecApplicationLabelStatus.REOPENING_REFUSED,
+                    WDRN, StatdecApplicationLabelStatus.REOPENING_WITHDRAWN,
+                    DISM, StatdecApplicationLabelStatus.REOPENING_DISMISSED),
+            StatdecApplicationCategory.APPEAL, Map.of(
+                    AACA, StatdecApplicationLabelStatus.APPEAL_ALLOWED,
+                    AASA, StatdecApplicationLabelStatus.APPEAL_ALLOWED,
+                    RFSD, StatdecApplicationLabelStatus.APPEAL_REFUSED,
+                    AW, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN,
+                    WDRN, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN,
+                    APA, StatdecApplicationLabelStatus.APPEAL_WITHDRAWN,
+                    AACD, StatdecApplicationLabelStatus.APPEAL_DISMISSED,
+                    AASD, StatdecApplicationLabelStatus.APPEAL_DISMISSED,
+                    ACSD, StatdecApplicationLabelStatus.APPEAL_DISMISSED));
 
-    private ApplicationStatusHelper() {
+    private StatdecApplicationStatusHelper() {
     }
 
     /**
      * Maps each application type id in the reference data application-type-groups response to its category.
      */
-    public static Map<UUID, ApplicationCategory> getApplicationTypeCategories(final JsonObject applicationTypeGroups) {
-        final Map<UUID, ApplicationCategory> categories = new HashMap<>();
+    public static Map<UUID, StatdecApplicationCategory> getApplicationTypeCategories(final JsonObject applicationTypeGroups) {
+        final Map<UUID, StatdecApplicationCategory> categories = new HashMap<>();
         if (isNull(applicationTypeGroups) || !applicationTypeGroups.containsKey(GROUPS)) {
             return categories;
         }
@@ -120,31 +120,31 @@ public class ApplicationStatusHelper {
         return categories;
     }
 
-    private static Optional<ApplicationCategory> categoryForGroup(final String groupName) {
+    private static Optional<StatdecApplicationCategory> categoryForGroup(final String groupName) {
         return ofNullable(groupName).map(name -> GROUP_CATEGORIES.get(name.toLowerCase(Locale.ROOT)));
     }
 
-    static ApplicationLabelStatus resolveStatus(final ApplicationCategory category, final CourtApplication courtApplication) {
+    static StatdecApplicationLabelStatus resolveStatus(final StatdecApplicationCategory category, final CourtApplication courtApplication) {
         final List<JudicialResult> applicationResults = ofNullable(courtApplication.getJudicialResults()).orElse(List.of()).stream()
                 .filter(Objects::nonNull)
                 .filter(judicialResult -> !ofNullable(judicialResult.getIsDeleted()).orElse(false))
                 .toList();
         if (applicationResults.isEmpty()) {
-            return ApplicationLabelStatus.LODGED;
+            return StatdecApplicationLabelStatus.LODGED;
         }
-        final Map<UUID, ApplicationLabelStatus> resultStatuses = RESULT_STATUS_MAP.get(category);
+        final Map<UUID, StatdecApplicationLabelStatus> resultStatuses = RESULT_STATUS_MAP.get(category);
         return applicationResults.stream()
                 .map(JudicialResult::getJudicialResultTypeId)
                 .filter(Objects::nonNull)
                 .map(resultStatuses::get)
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElse(ApplicationLabelStatus.PENDING);
+                .orElse(StatdecApplicationLabelStatus.PENDING);
     }
 
     public static JsonArray buildApplicationStatuses(final UUID caseId,
                                                            final Collection<CourtApplication> courtApplications,
-                                                           final Map<UUID, ApplicationCategory> applicationTypeCategories) {
+                                                           final Map<UUID, StatdecApplicationCategory> applicationTypeCategories) {
         final Map<UUID, CourtApplication> uniqueApplications = new LinkedHashMap<>();
         courtApplications.forEach(courtApplication -> uniqueApplications.putIfAbsent(courtApplication.getId(), courtApplication));
 
@@ -152,7 +152,7 @@ public class ApplicationStatusHelper {
         uniqueApplications.values().stream()
                 .filter(courtApplication -> nonNull(courtApplication.getType()) && nonNull(courtApplication.getType().getId()))
                 .forEach(courtApplication -> {
-                    final ApplicationCategory category = applicationTypeCategories.get(courtApplication.getType().getId());
+                    final StatdecApplicationCategory category = applicationTypeCategories.get(courtApplication.getType().getId());
                     if (nonNull(category)) {
                         statusesBuilder.add(buildApplicationStatus(caseId, courtApplication, category));
                     }
@@ -160,7 +160,7 @@ public class ApplicationStatusHelper {
         return statusesBuilder.build();
     }
 
-    private static JsonObject buildApplicationStatus(final UUID caseId, final CourtApplication courtApplication, final ApplicationCategory category) {
+    private static JsonObject buildApplicationStatus(final UUID caseId, final CourtApplication courtApplication, final StatdecApplicationCategory category) {
         final JsonObjectBuilder statusBuilder = createObjectBuilder()
                 .add(APPLICATION_ID, courtApplication.getId().toString());
         ofNullable(courtApplication.getType().getCode()).ifPresent(code -> statusBuilder.add(APPLICATION_TYPE_CODE, code));

@@ -77,8 +77,8 @@
         "UNKNOWN"
       ]
     },
-    "applicationCategory": {
-      "id": "http://moj.gov.uk/cpp/progression/enums/application-category.json",
+    "statdecApplicationCategory": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/statdec-application-category.json",
       "type": "string",
       "enum": [
         "STAT_DEC",
@@ -86,8 +86,8 @@
         "APPEAL"
       ]
     },
-    "applicationLabelStatus": {
-      "id": "http://moj.gov.uk/cpp/progression/enums/application-label-status.json",
+    "statdecApplicationLabelStatus": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/statdec-application-label-status.json",
       "type": "string",
       "enum": [
         "LODGED",

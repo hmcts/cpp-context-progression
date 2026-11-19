@@ -33,6 +33,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.CASE_IDS_SEARCH_PARAM;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+import static uk.gov.moj.cpp.progression.query.view.utils.SchemaValidator.validateObjectAgainstSchema;
 import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -58,6 +59,7 @@ import uk.gov.justice.core.courts.MigrationSourceSystem;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -146,6 +148,8 @@ import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseQueryViewTest {
+
+    private static final String CAAG_RESPONSE_SCHEMA = "json/schema/progression.query.prosecutioncase.caag.json";
 
     private static final UUID APPLICATION_ID = UUID.randomUUID();
     private static final String APPLICATION_ARN = new StringGenerator().next();
@@ -633,13 +637,17 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnApplicationStatusesInCaseAtAGlance() {
+    public void shouldReturnApplicationStatusesInCaseAtAGlance() throws IOException {
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
         final UUID statDecTypeId = randomUUID();
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final UUID caseId = fromString(envelopeWithCaseId.payloadAsJsonObject().getString("caseId"));
-        final Defendant defendant = defendant().withId(defendantId).withMasterDefendantId(randomUUID()).build();
+        final Defendant defendant = defendant().withId(defendantId).withMasterDefendantId(randomUUID())
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(Person.person().withFirstName("John").withLastName("Smith").build())
+                        .build())
+                .build();
 
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(caseId);
@@ -669,6 +677,8 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(statDecStatus.getString("status"), is("LODGED"));
         assertThat(statDecStatus.getJsonArray("defendantOffences").getJsonObject(0).getString("defendantId"), is(defendantId.toString()));
         assertThat(statDecStatus.getJsonArray("defendantOffences").getJsonObject(0).getJsonArray("offenceIds").getString(0), is(offenceId.toString()));
+        // appealsLodgedInfo is left out because the caag schema does not list it yet (a gap that predates the statdec labels)
+        validateObjectAgainstSchema(createObjectBuilder(payload).remove("appealsLodgedInfo").build(), CAAG_RESPONSE_SCHEMA);
         assertThat(payload.getJsonObject("appealsLodgedInfo").getBoolean("appealsLodged"), is(false));
     }
 
