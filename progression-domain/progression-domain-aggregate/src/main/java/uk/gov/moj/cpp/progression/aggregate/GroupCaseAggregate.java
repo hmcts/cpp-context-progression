@@ -14,6 +14,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.moj.cpp.progression.events.CaseRemovalFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.events.CaseRemovedFromGroupCases;
 import uk.gov.moj.cpp.progression.events.CivilCaseExists;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
@@ -123,14 +124,48 @@ public class GroupCaseAggregate implements Aggregate {
                 .build()));
     }
 
-    public UUID getNewGroupMaster(final UUID removedCaseId) {
-        if (removedCaseId.equals(this.groupMaster)) {
-            return this.memberCases.stream()
-                    .filter(member -> !(member.equals(this.groupMaster)))
-                    .findFirst()
-                    .orElse(null);
+    public Stream<Object> rejectCaseRemovalFromGroup(final UUID groupId, final UUID removedCaseId,
+                                                     final UUID requestedNewGroupMaster, final String reason) {
+        return apply(Stream.of(CaseRemovalFromGroupCasesRejected
+                .caseRemovalFromGroupCasesRejected()
+                .withGroupId(groupId)
+                .withCaseId(removedCaseId)
+                .withRequestedNewLeadCaseId(requestedNewGroupMaster)
+                .withReason(reason)
+                .build()));
+    }
+
+    /**
+     * True when the caller asked for a new group master that cannot be used: the group master is being
+     * removed and the requested case is the removed case itself or is not a member of the group.
+     * A requested master is ignored when the removed case is not the group master.
+     */
+    public boolean isInvalidNewGroupMaster(final UUID removedCaseId, final UUID requestedNewGroupMaster) {
+        return removedCaseId.equals(this.groupMaster)
+                && nonNull(requestedNewGroupMaster)
+                && (requestedNewGroupMaster.equals(removedCaseId) || !this.memberCases.contains(requestedNewGroupMaster));
+    }
+
+    /**
+     * Returns the case that becomes the group master when {@code removedCaseId} is removed, or null
+     * when the removed case is not the current master.
+     *
+     * @param removedCaseId the case being removed from the group
+     * @param requestedNewGroupMaster the new master chosen by the caller (case management), may be null.
+     *                                Check it with {@link #isInvalidNewGroupMaster} first. When null, the
+     *                                first remaining member is used.
+     */
+    public UUID getNewGroupMaster(final UUID removedCaseId, final UUID requestedNewGroupMaster) {
+        if (!removedCaseId.equals(this.groupMaster)) {
+            return null;
         }
-        return null;
+        if (nonNull(requestedNewGroupMaster)) {
+            return requestedNewGroupMaster;
+        }
+        return this.memberCases.stream()
+                .filter(member -> !(member.equals(this.groupMaster)))
+                .findFirst()
+                .orElse(null);
     }
 
     public boolean canBeRemoved(final UUID caseId) {

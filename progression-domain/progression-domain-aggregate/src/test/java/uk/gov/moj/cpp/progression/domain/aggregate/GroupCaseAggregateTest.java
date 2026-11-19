@@ -13,6 +13,7 @@ import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
+import uk.gov.moj.cpp.progression.events.CaseRemovalFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.events.CaseRemovedFromGroupCases;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
 
@@ -102,6 +103,79 @@ public class GroupCaseAggregateTest {
         assertThat(caseRemovedFromGroupCases.getNewGroupMaster().getIsGroupMaster(), is(Boolean.TRUE));
         assertThat(caseRemovedFromGroupCases.getNumberOfGroupCases(), is(2));
         assertThat(aggregate.getMemberCases().size(), is(2));
+    }
+
+    @Test
+    public void shouldUseRequestedNewGroupMasterWhenGroupMasterRemoved() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, false),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, false),
+                getProsecutionCase(GROUP_ID, CASE4_ID, true)));
+
+        // every remaining member can be chosen, whatever order the members are held in
+        for (final UUID requested : asList(CASE1_ID, CASE2_ID, CASE3_ID)) {
+            assertThat(aggregate.getNewGroupMaster(CASE4_ID, requested), is(requested));
+        }
+    }
+
+    @Test
+    public void shouldPickAnotherMemberWhenGroupMasterRemovedWithoutRequestedNewGroupMaster() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, false),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, true)));
+
+        assertThat(aggregate.isInvalidNewGroupMaster(CASE3_ID, null), is(false));
+        assertThat(asList(CASE1_ID, CASE2_ID).contains(aggregate.getNewGroupMaster(CASE3_ID, null)), is(true));
+    }
+
+    @Test
+    public void shouldTreatRequestedNewGroupMasterAsInvalidWhenItIsNotARemainingMember() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, false),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, true)));
+
+        // the removed master itself, and a case that is not in the group
+        assertThat(aggregate.isInvalidNewGroupMaster(CASE3_ID, CASE3_ID), is(true));
+        assertThat(aggregate.isInvalidNewGroupMaster(CASE3_ID, randomUUID()), is(true));
+        // a remaining member is valid
+        assertThat(aggregate.isInvalidNewGroupMaster(CASE3_ID, CASE1_ID), is(false));
+        // when a member (not the master) is removed the requested master is ignored
+        assertThat(aggregate.isInvalidNewGroupMaster(CASE1_ID, randomUUID()), is(false));
+    }
+
+    @Test
+    public void shouldRaiseCaseRemovalRejectedEventAndKeepGroupUnchanged() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, false),
+                getProsecutionCase(GROUP_ID, CASE2_ID, true)));
+        final UUID invalidLead = randomUUID();
+
+        final List<Object> eventStream = aggregate.rejectCaseRemovalFromGroup(GROUP_ID, CASE2_ID, invalidLead, "INVALID_NEW_LEAD_CASE")
+                .collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0), instanceOf(CaseRemovalFromGroupCasesRejected.class));
+        final CaseRemovalFromGroupCasesRejected rejected = (CaseRemovalFromGroupCasesRejected) eventStream.get(0);
+        assertThat(rejected.getGroupId(), is(GROUP_ID));
+        assertThat(rejected.getCaseId(), is(CASE2_ID));
+        assertThat(rejected.getRequestedNewLeadCaseId(), is(invalidLead));
+        assertThat(rejected.getReason(), is("INVALID_NEW_LEAD_CASE"));
+        assertThat(aggregate.getMemberCases().size(), is(2));
+        assertThat(aggregate.getGroupMaster(), is(CASE2_ID));
+    }
+
+    @Test
+    public void shouldNotChangeGroupMasterWhenMemberRemovedEvenIfNewGroupMasterRequested() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, false),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, true)));
+
+        assertThat(aggregate.getNewGroupMaster(CASE1_ID, CASE2_ID), nullValue());
+        assertThat(aggregate.getNewGroupMaster(CASE1_ID, null), nullValue());
     }
 
     @Test

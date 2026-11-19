@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class RemoveCaseFromGroupCasesHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoveCaseFromGroupCasesHandler.class.getName());
+    static final String INVALID_NEW_LEAD_CASE = "INVALID_NEW_LEAD_CASE";
 
     @Inject
     private EventSource eventSource;
@@ -52,11 +53,17 @@ public class RemoveCaseFromGroupCasesHandler {
         final RemoveCaseFromGroupCases removeCaseFromGroupCases = envelope.payload();
         final UUID groupId = removeCaseFromGroupCases.getGroupId();
         final UUID removedCaseId = removeCaseFromGroupCases.getProsecutionCaseId();
+        final UUID newLeadCaseId = removeCaseFromGroupCases.getNewLeadCaseId();
 
         final EventStream groupEventStream = eventSource.getStreamById(groupId);
         final GroupCaseAggregate groupAggregate = aggregateService.get(groupEventStream, GroupCaseAggregate.class);
 
-        if (groupAggregate.canBeRemoved(removedCaseId)) {
+        if (groupAggregate.canBeRemoved(removedCaseId) && groupAggregate.isInvalidNewGroupMaster(removedCaseId, newLeadCaseId)) {
+            LOGGER.warn("Case removal from group cases rejected, requested new lead case is not a remaining member. groupId: {}, caseId: {}, newLeadCaseId: {}",
+                    groupId, removedCaseId, newLeadCaseId);
+            final Stream<Object> groupEvents = groupAggregate.rejectCaseRemovalFromGroup(groupId, removedCaseId, newLeadCaseId, INVALID_NEW_LEAD_CASE);
+            appendEventsToStream(envelope, groupEventStream, groupEvents);
+        } else if (groupAggregate.canBeRemoved(removedCaseId)) {
             final EventStream removedCaseEventStream = eventSource.getStreamById(removedCaseId);
             final CaseAggregate removedCaseAggregate = aggregateService.get(removedCaseEventStream, CaseAggregate.class);
             final Stream<Object> removedCaseEvents = removedCaseAggregate.updateCaseGroupInfo(false, false);
@@ -86,7 +93,7 @@ public class RemoveCaseFromGroupCasesHandler {
             final Stream<Object> events = caseAggregate.createProsecutionCase(removedProsecutionCaseWithNewFeeId, updatedCivilFeesForRemovedCase);
             appendEventsToStream(envelope, eventStream, events);
 
-            final UUID newGroupMasterId = groupAggregate.getNewGroupMaster(removedCaseId);
+            final UUID newGroupMasterId = groupAggregate.getNewGroupMaster(removedCaseId, newLeadCaseId);
             ProsecutionCase newGroupMaster = null;
             if (nonNull(newGroupMasterId)) {
                 final EventStream newMasterCaseEventStream = eventSource.getStreamById(newGroupMasterId);

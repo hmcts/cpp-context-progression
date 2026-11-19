@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.case-removal-from-group-cases-rejected.json",
+  "type": "object",
+  "properties": {
+    "groupId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "requestedNewLeadCaseId": {
+      "description": "The new lead case requested by the caller.",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "reason": {
+      "description": "Why the removal was rejected, e.g. INVALID_NEW_LEAD_CASE when the requested new lead is not a case remaining in the group.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "groupId",
+    "caseId",
+    "requestedNewLeadCaseId",
+    "reason"
+  ]
+}
