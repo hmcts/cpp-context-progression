@@ -81,7 +81,7 @@ public class ApplicationStatusHelper {
         }
     }
 
-    public enum ApplicationLabelStatus {
+    enum ApplicationLabelStatus {
         LODGED,
         PENDING,
         STATUTORY_DECLARATION_GRANTED,
@@ -145,8 +145,11 @@ public class ApplicationStatusHelper {
         return categories;
     }
 
-    public static ApplicationLabelStatus resolveStatus(final ApplicationCategory category, final CourtApplication courtApplication) {
-        final List<JudicialResult> applicationResults = ofNullable(courtApplication.getJudicialResults()).orElse(List.of());
+    static ApplicationLabelStatus resolveStatus(final ApplicationCategory category, final CourtApplication courtApplication) {
+        final List<JudicialResult> applicationResults = ofNullable(courtApplication.getJudicialResults()).orElse(List.of()).stream()
+                .filter(Objects::nonNull)
+                .filter(judicialResult -> !ofNullable(judicialResult.getIsDeleted()).orElse(false))
+                .toList();
         if (applicationResults.isEmpty()) {
             return ApplicationLabelStatus.LODGED;
         }

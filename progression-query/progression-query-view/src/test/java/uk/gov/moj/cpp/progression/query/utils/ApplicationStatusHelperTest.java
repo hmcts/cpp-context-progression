@@ -124,6 +124,18 @@ class ApplicationStatusHelperTest {
     }
 
     @Test
+    void shouldBeLodgedWhenOnlyResultIsDeleted() {
+        final CourtApplication application = application(randomUUID(), STAT_DEC_TYPE_ID, List.of(deletedResult(G)));
+        assertThat(resolveStatus(STAT_DEC, application), is(ApplicationLabelStatus.LODGED));
+    }
+
+    @Test
+    void shouldIgnoreDeletedResultWhenAmendedAndReshared() {
+        final CourtApplication application = application(randomUUID(), STAT_DEC_TYPE_ID, List.of(deletedResult(G), result(RFSD)));
+        assertThat(resolveStatus(STAT_DEC, application), is(ApplicationLabelStatus.STATUTORY_DECLARATION_REFUSED));
+    }
+
+    @Test
     void shouldIgnoreOffenceLevelResults() {
         final UUID defendantId = randomUUID();
         final CourtApplication application = CourtApplication.courtApplication()
@@ -332,6 +344,13 @@ class ApplicationStatusHelperTest {
         return JudicialResult.judicialResult()
                 .withJudicialResultId(randomUUID())
                 .withJudicialResultTypeId(resultTypeId)
+                .build();
+    }
+
+    private static JudicialResult deletedResult(final UUID resultTypeId) {
+        return JudicialResult.judicialResult()
+                .withValuesFrom(result(resultTypeId))
+                .withIsDeleted(true)
                 .build();
     }
 }

@@ -337,8 +337,9 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.add("relatedCases", relatedCases);
             }
 
-            populateAppealLodgedInfo(caseId.get(), jsonObjectBuilder);
-            populateApplicationStatuses(caseId.get(), courtApplicationCaseRepository.findByCaseId(caseId.get()), jsonObjectBuilder);
+            final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
+            populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
+            populateApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
@@ -367,8 +368,7 @@ public class ProsecutionCaseQuery {
         return appealsLodged.build();
     }
 
-    private void populateAppealLodgedInfo(final UUID caseId, final JsonObjectBuilder jsonObjectBuilder) {
-        final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId);
+    private void populateAppealLodgedInfo(final UUID caseId,  final List<CourtApplicationCaseEntity> courtApplicationCaseEntities, final JsonObjectBuilder jsonObjectBuilder) {
         final HashMap<UUID, HashSet<UUID>> defendantOffencesMap = new HashMap<>();
         boolean appealLodged = false;
         if (isNotEmpty(courtApplicationCaseEntities)) {
@@ -485,7 +485,7 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.add("prosecutorDetails", addProperty(prosecutorDetailsJson, OLD_PROSECUTION_AUTHORITY_CODE, caseCpsProsecutorEntity.getOldCpsProsecutor()));
             }
 
-            populateAppealLodgedInfo(caseId.get(), jsonObjectBuilder);
+            populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
             populateApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
 
         } catch (final NoResultException e) {
