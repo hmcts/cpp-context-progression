@@ -65,7 +65,7 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.prosecutioncase.caag#/definitions/applicationStatusSummary"
+        "$ref": "http://moj.gov.uk/cpp/progression/common/application-status-summary.json"
       }
     }
   },

@@ -24,13 +24,15 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.moj.cpp.progression.enums.ApplicationCategory;
+import uk.gov.moj.cpp.progression.enums.ApplicationLabelStatus;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -65,38 +67,11 @@ public class ApplicationStatusHelper {
     private static final String DEFENDANT_ID = "defendantId";
     private static final String OFFENCE_IDS = "offenceIds";
 
-    public enum ApplicationCategory {
-        STAT_DEC("statdec"),
-        REOPEN("reopen"),
-        APPEAL("appeal");
-
-        private final String groupName;
-
-        ApplicationCategory(final String groupName) {
-            this.groupName = groupName;
-        }
-
-        static Optional<ApplicationCategory> fromGroupName(final String groupName) {
-            return Arrays.stream(values()).filter(category -> category.groupName.equalsIgnoreCase(groupName)).findFirst();
-        }
-    }
-
-    enum ApplicationLabelStatus {
-        LODGED,
-        PENDING,
-        STATUTORY_DECLARATION_GRANTED,
-        REOPENING_GRANTED,
-        APPEAL_ALLOWED,
-        STATUTORY_DECLARATION_REFUSED,
-        STATUTORY_DECLARATION_DISMISSED,
-        REOPENING_REFUSED,
-        REOPENING_DISMISSED,
-        APPEAL_REFUSED,
-        APPEAL_DISMISSED,
-        STATUTORY_DECLARATION_WITHDRAWN,
-        REOPENING_WITHDRAWN,
-        APPEAL_WITHDRAWN
-    }
+    // Reference data group name for each category, matched ignoring case.
+    private static final Map<String, ApplicationCategory> GROUP_CATEGORIES = Map.of(
+            "statdec", ApplicationCategory.STAT_DEC,
+            "reopen", ApplicationCategory.REOPEN,
+            "appeal", ApplicationCategory.APPEAL);
 
     // Keyed by category first: G, RFSD, WDRN and DISM mean different things per category.
     private static final Map<ApplicationCategory, Map<UUID, ApplicationLabelStatus>> RESULT_STATUS_MAP = Map.of(
@@ -135,7 +110,7 @@ public class ApplicationStatusHelper {
             return categories;
         }
         applicationTypeGroups.getJsonArray(GROUPS).getValuesAs(JsonObject.class).forEach(group ->
-                ApplicationCategory.fromGroupName(group.getString(GROUP_NAME, null)).ifPresent(category ->
+                categoryForGroup(group.getString(GROUP_NAME, null)).ifPresent(category ->
                         ofNullable(group.getJsonArray(APPLICATION_TYPES)).ifPresent(applicationTypes ->
                                 applicationTypes.getValuesAs(JsonObject.class).stream()
                                         .map(applicationType -> applicationType.get(APPLICATION_TYPE_ID))
@@ -143,6 +118,10 @@ public class ApplicationStatusHelper {
                                         .map(id -> UUID.fromString(((JsonString) id).getString()))
                                         .forEach(id -> categories.put(id, category)))));
         return categories;
+    }
+
+    private static Optional<ApplicationCategory> categoryForGroup(final String groupName) {
+        return ofNullable(groupName).map(name -> GROUP_CATEGORIES.get(name.toLowerCase(Locale.ROOT)));
     }
 
     static ApplicationLabelStatus resolveStatus(final ApplicationCategory category, final CourtApplication courtApplication) {
