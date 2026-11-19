@@ -76,6 +76,35 @@
         "MH",
         "UNKNOWN"
       ]
+    },
+    "statdecApplicationCategory": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/statdec-application-category.json",
+      "type": "string",
+      "enum": [
+        "STAT_DEC",
+        "REOPEN",
+        "APPEAL"
+      ]
+    },
+    "statdecApplicationLabelStatus": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/statdec-application-label-status.json",
+      "type": "string",
+      "enum": [
+        "LODGED",
+        "PENDING",
+        "STATUTORY_DECLARATION_GRANTED",
+        "STATUTORY_DECLARATION_REFUSED",
+        "STATUTORY_DECLARATION_WITHDRAWN",
+        "STATUTORY_DECLARATION_DISMISSED",
+        "REOPENING_GRANTED",
+        "REOPENING_REFUSED",
+        "REOPENING_WITHDRAWN",
+        "REOPENING_DISMISSED",
+        "APPEAL_ALLOWED",
+        "APPEAL_REFUSED",
+        "APPEAL_WITHDRAWN",
+        "APPEAL_DISMISSED"
+      ]
     }
   }
 }

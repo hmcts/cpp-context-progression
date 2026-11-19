@@ -60,6 +60,14 @@
       "items": {
         "$ref": "#/definitions/applicationSummary"
       }
+    },
+    "applicationStatuses": {
+      "description": "One entry per STAT DEC, REOPEN or APPEAL application linked to the case, used for the CAAG labels",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://moj.gov.uk/cpp/progression/common/statdec-application-status-summary.json"
+      }
     }
   },
   "additionalProperties": false,

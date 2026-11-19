@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "groupName": "statdec",
+      "applicationTypes": [
+        {
+          "applicationTypeId": "f3a6e917-7cc8-3c66-83dd-d958abd6a6e4",
+          "enforcementNotificationRequired": true
+        },
+        {
+          "applicationTypeId": "7375727f-30fc-3f55-99f3-36adc4f0e70e",
+          "enforcementNotificationRequired": true
+        }
+      ]
+    },
+    {
+      "groupName": "reopen",
+      "applicationTypes": [
+        {
+          "applicationTypeId": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+          "enforcementNotificationRequired": true
+        }
+      ]
+    }
+  ]
+}

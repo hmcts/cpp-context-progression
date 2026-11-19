@@ -192,6 +192,19 @@ public class ReferenceDataStub {
                         .withBody(documentType.toString())));
     }
 
+    public static void stubQueryApplicationTypeGroups(final String resourceName) {
+        final JsonObject applicationTypeGroupsResponse = createReader(ReferenceDataStub.class
+                        .getResourceAsStream(resourceName))
+                .readObject();
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/application-type-groups";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(applicationTypeGroupsResponse.toString())));
+    }
+
     public static void stubCourtApplicationTypes(final String resourceName) {
         final JsonObject applicationTypesResponse = createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))

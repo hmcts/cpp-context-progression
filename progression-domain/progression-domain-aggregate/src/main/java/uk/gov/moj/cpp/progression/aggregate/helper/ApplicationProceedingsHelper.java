@@ -14,6 +14,8 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.moj.cpp.progression.domain.constant.ResultCodeConstants;
+import uk.gov.moj.cpp.progression.domain.constant.ResultConstants;
 
 import java.util.ArrayList;
 import java.util.Collection;

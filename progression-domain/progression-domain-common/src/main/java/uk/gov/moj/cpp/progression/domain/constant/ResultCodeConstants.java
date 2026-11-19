@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.aggregate.helper;
+package uk.gov.moj.cpp.progression.domain.constant;
 
 @SuppressWarnings({"squid:S1118"})
 public class ResultCodeConstants {
