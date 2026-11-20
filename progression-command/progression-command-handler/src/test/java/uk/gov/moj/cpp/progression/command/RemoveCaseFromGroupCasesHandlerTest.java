@@ -45,6 +45,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
+import uk.gov.moj.cpp.progression.events.CaseRemovalFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.events.CaseRemovedFromGroupCases;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.handler.RemoveCaseFromGroupCasesHandler;
@@ -107,7 +108,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     private AggregateService aggregateService;
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CaseGroupInfoUpdated.class, CaseRemovedFromGroupCases.class, LastCaseToBeRemovedFromGroupCasesRejected.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CaseGroupInfoUpdated.class, CaseRemovedFromGroupCases.class, LastCaseToBeRemovedFromGroupCasesRejected.class, CaseRemovalFromGroupCasesRejected.class);
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -228,6 +229,33 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE1_ID));
     }
 
+    @Test
+    public void shouldRejectRemoval_WhenRequestedNewLeadCaseIsNotARemainingMember() throws Exception {
+        createCases(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID);
+        addCivilCasesToGroup(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID, CIVIL_FEE_ID);
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        final UUID invalidLeadCaseId = randomUUID();
+
+        handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID, invalidLeadCaseId));
+
+        ArgumentCaptor<Stream> groupArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        Mockito.verify(groupEventStream, times(1)).append(groupArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = (JsonEnvelope) groupArgumentCaptor.getValue().findFirst().orElse(null);
+        assertThat(jsonEnvelope.metadata().name(), is("progression.event.case-removal-from-group-cases-rejected"));
+        final CaseRemovalFromGroupCasesRejected rejected = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), CaseRemovalFromGroupCasesRejected.class);
+        assertThat(rejected.getGroupId(), is(GROUP_ID));
+        assertThat(rejected.getCaseId(), is(CASE3_ID));
+        assertThat(rejected.getRequestedNewLeadCaseId(), is(invalidLeadCaseId));
+        assertThat(rejected.getReason(), is("INVALID_NEW_LEAD_CASE"));
+
+        // no case or fee stream is touched and the group is unchanged
+        Mockito.verify(eventSource, Mockito.never()).getStreamById(CASE3_ID);
+        Mockito.verify(aggregateService, Mockito.never()).get(any(), eq(CaseAggregate.class));
+        assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
+        assertThat(groupCaseAggregate.getGroupMaster(), is(CASE3_ID));
+    }
+
     private void createCases(final UUID groupId, final List<UUID> caseIds, final UUID groupMaster) {
         for (final UUID caseId : caseIds) {
             final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
@@ -311,9 +339,14 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     }
 
     private Envelope<RemoveCaseFromGroupCases> createRemoveCaseFromGroupCases(final UUID groupId, final UUID caseId) {
+        return createRemoveCaseFromGroupCases(groupId, caseId, null);
+    }
+
+    private Envelope<RemoveCaseFromGroupCases> createRemoveCaseFromGroupCases(final UUID groupId, final UUID caseId, final UUID newLeadCaseId) {
         RemoveCaseFromGroupCases removeCaseFromGroupCases = RemoveCaseFromGroupCases.removeCaseFromGroupCases()
                 .withGroupId(groupId)
                 .withProsecutionCaseId(caseId)
+                .withNewLeadCaseId(newLeadCaseId)
                 .build();
 
         final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(

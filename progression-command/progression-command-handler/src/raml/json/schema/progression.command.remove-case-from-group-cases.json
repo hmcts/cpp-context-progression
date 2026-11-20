@@ -8,6 +8,10 @@
     },
     "prosecutionCaseId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "newLeadCaseId": {
+      "description": "The case that becomes the group's lead (master) case. Only used when the case being removed is the current lead.",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "required": [
