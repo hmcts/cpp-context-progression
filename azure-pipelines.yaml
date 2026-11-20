@@ -8,9 +8,7 @@ trigger:
       - 'team/*'
     exclude:
       - 'dev/release-*'
-  paths:
-    include:
-    - '*'
+  # No paths filter: any change on these branches triggers CI.
 
 pr:
   - '*'
