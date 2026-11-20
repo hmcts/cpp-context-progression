@@ -38,6 +38,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetCourtSchedulesByIdForUnknownSessions;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingContaining;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -82,6 +83,7 @@ public class SplitHearingIT extends AbstractIT {
     @BeforeEach
     public void setUp() {
         setupLoggedInUsersPermissionQueryStub();
+        stubGetCourtSchedulesByIdForUnknownSessions();
     }
 
     @Test

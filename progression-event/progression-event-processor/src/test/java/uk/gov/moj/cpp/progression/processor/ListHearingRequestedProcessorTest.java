@@ -7,6 +7,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +32,8 @@ import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.RotaSlot;
+import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
@@ -64,6 +68,7 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+import uk.gov.moj.cpp.progression.service.WeekCommencingSessionAdapter;
 import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
 import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -79,6 +84,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
+import javax.ws.rs.ServerErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -94,6 +100,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class ListHearingRequestedProcessorTest {
+
+    private static final String BOOKED_COURT_SCHEDULE_ID = "ccb4af70-e150-479a-954c-1c6ae98d0a34";
 
     private static final UUID CASE_ID = randomUUID();
     private static final UUID MULTI_OFFENCE_DEFENDANT_ID = randomUUID();
@@ -144,6 +152,12 @@ public class ListHearingRequestedProcessorTest {
 
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
+
+    @Mock
+    private WeekCommencingSessionAdapter weekCommencingSessionAdapter;
+
+    @Captor
+    private ArgumentCaptor<CourtHearingRequest> courtHearingRequestCaptor;
 
     @Mock
     private MaterialUrlGenerator materialUrlGenerator;
@@ -911,5 +925,130 @@ public class ListHearingRequestedProcessorTest {
                 .build();
     }
 
+
+
+    @Test
+    public void shouldSendWeekCommencingDateToListingWhenTheBookedCrownSessionIsWeekCommencing() {
+        final WeekCommencingDate weekCommencingDate = WeekCommencingDate.weekCommencingDate().withStartDate(LocalDate.parse("2026-11-16")).withDuration(1).build();
+        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(Optional.of(weekCommencingDate));
+        final CourtHearingRequest listNewHearing = adhocHearingRequest(JurisdictionType.CROWN, BOOKED_COURT_SCHEDULE_ID, null);
+
+        handleListHearingRequested(listNewHearing);
+
+        final CourtHearingRequest expected = CourtHearingRequest.courtHearingRequest()
+                .withValuesFrom(roundTrip(listNewHearing))
+                .withWeekCommencingDate(weekCommencingDate)
+                .build();
+        assertThat(asJson(courtHearingRequestCaptor.getValue()), is(asJson(expected)));
+        assertThat(asJson(courtHearingRequestCaptor.getValue()).getJsonObject("weekCommencingDate").toString(), is("{\"duration\":1,\"startDate\":\"2026-11-16\"}"));
+        verify(listingService).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+    }
+
+    @Test
+    public void shouldSendTheRequestUnchangedWhenTheBookedCrownSessionIsNotWeekCommencing() {
+        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(Optional.empty());
+        final CourtHearingRequest listNewHearing = adhocHearingRequest(JurisdictionType.CROWN, BOOKED_COURT_SCHEDULE_ID, null);
+
+        handleListHearingRequested(listNewHearing);
+
+        assertThat(asJson(courtHearingRequestCaptor.getValue()), is(asJson(roundTrip(listNewHearing))));
+    }
+
+    @Test
+    public void shouldNotLookUpTheSessionForMagistrates() {
+        final CourtHearingRequest listNewHearing = adhocHearingRequest(JurisdictionType.MAGISTRATES, BOOKED_COURT_SCHEDULE_ID, null);
+
+        handleListHearingRequested(listNewHearing);
+
+        verify(weekCommencingSessionAdapter, never()).weekCommencingDateOf(any());
+        assertThat(asJson(courtHearingRequestCaptor.getValue()), is(asJson(roundTrip(listNewHearing))));
+    }
+
+    @Test
+    public void shouldKeepTheWeekCommencingDateAlreadyOnTheRequest() {
+        final WeekCommencingDate requested = WeekCommencingDate.weekCommencingDate().withStartDate(LocalDate.parse("2026-11-23")).withDuration(2).build();
+        final CourtHearingRequest listNewHearing = adhocHearingRequest(JurisdictionType.CROWN, BOOKED_COURT_SCHEDULE_ID, requested);
+
+        handleListHearingRequested(listNewHearing);
+
+        verify(weekCommencingSessionAdapter, never()).weekCommencingDateOf(any());
+        assertThat(asJson(courtHearingRequestCaptor.getValue()), is(asJson(roundTrip(listNewHearing))));
+    }
+
+    @Test
+    public void shouldLookUpNoSessionWhenNoBookedSlotHasACourtScheduleId() {
+        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of())).thenReturn(Optional.empty());
+        final CourtHearingRequest listNewHearing = adhocHearingRequest(JurisdictionType.CROWN, " ", null);
+
+        handleListHearingRequested(listNewHearing);
+
+        verify(weekCommencingSessionAdapter).weekCommencingDateOf(List.of());
+        assertThat(asJson(courtHearingRequestCaptor.getValue()), is(asJson(roundTrip(listNewHearing))));
+    }
+
+    @Test
+    public void shouldNotListTheHearingWhenTheSessionLookUpFails() {
+        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID)))
+                .thenThrow(new ServerErrorException("Court schedules by id endpoint returned an error: down", 500));
+        final JsonEnvelope event = listHearingRequestedEvent(adhocHearingRequest(JurisdictionType.CROWN, BOOKED_COURT_SCHEDULE_ID, null));
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.empty());
+
+        assertThrows(ServerErrorException.class, () -> listHearingRequestedProcessor.handle(event));
+
+        verify(listingService, never()).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+        verify(progressionService, never()).updateHearingListingStatusToSentForListing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+    }
+
+    private JsonObject asJson(final CourtHearingRequest courtHearingRequest) {
+        return objectToJsonObjectConverter.convert(courtHearingRequest);
+    }
+
+    private CourtHearingRequest roundTrip(final CourtHearingRequest courtHearingRequest) {
+        return jsonObjectToObjectConverter.convert(asJson(courtHearingRequest), CourtHearingRequest.class);
+    }
+
+    private void handleListHearingRequested(final CourtHearingRequest listNewHearing) {
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.empty());
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), courtHearingRequestCaptor.capture(), any(UUID.class)))
+                .thenReturn(ListCourtHearing.listCourtHearing().build());
+
+        listHearingRequestedProcessor.handle(listHearingRequestedEvent(listNewHearing));
+    }
+
+    private JsonEnvelope listHearingRequestedEvent(final CourtHearingRequest listNewHearing) {
+        final ListHearingRequested listHearingRequested = ListHearingRequested.listHearingRequested()
+                .withHearingId(randomUUID())
+                .withListNewHearing(listNewHearing)
+                .withSendNotificationToParties(false)
+                .build();
+        return envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("progression.event.list-hearing-requested"),
+                objectToJsonObjectConverter.convert(listHearingRequested));
+    }
+
+    private static CourtHearingRequest adhocHearingRequest(final JurisdictionType jurisdictionType, final String courtScheduleId,
+                                                           final WeekCommencingDate weekCommencingDate) {
+        final UUID courtCentreId = UUID.fromString("07e45c88-9e5d-3e44-b664-d5345bb13be2");
+        return CourtHearingRequest.courtHearingRequest()
+                .withHearingType(HearingType.hearingType().withId(UUID.fromString("fb90d7d1-a591-4deb-92a0-4e3d0d469bce")).withDescription("Trial - no witnesses").build())
+                .withEstimatedMinutes(20)
+                .withEarliestStartDateTime(ZonedDateTime.parse("2026-11-16T10:00:00.000Z"))
+                .withJurisdictionType(jurisdictionType)
+                .withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).withName("Croydon Crown Court").build())
+                .withBookedSlots(List.of(RotaSlot.rotaSlot()
+                        .withStartTime(ZonedDateTime.parse("2026-11-16T10:00:00.000Z"))
+                        .withDuration(20)
+                        .withCourtScheduleId(courtScheduleId)
+                        .withSession("AD")
+                        .withOucode("C01CY00")
+                        .withCourtCentreId(courtCentreId.toString())
+                        .build()))
+                .withWeekCommencingDate(weekCommencingDate)
+                .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(randomUUID())
+                        .withDefendantId(randomUUID())
+                        .withDefendantOffences(List.of(randomUUID()))
+                        .build()))
+                .build();
+    }
 
 }

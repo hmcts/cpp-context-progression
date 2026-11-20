@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -13,6 +14,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
@@ -20,6 +22,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.listing.courts.HearingPartiallyUpdated;
 import uk.gov.justice.listing.events.HearingRequestedForListing;
@@ -34,6 +37,7 @@ import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.WeekCommencingSessionAdapter;
 import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
@@ -58,6 +62,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +94,9 @@ public class ListHearingRequestedProcessor {
 
     @Inject
     private HearingNotificationHelper hearingNotificationHelper;
+
+    @Inject
+    private WeekCommencingSessionAdapter weekCommencingSessionAdapter;
 
     @ServiceComponent(EVENT_PROCESSOR)
     @Inject
@@ -339,7 +347,23 @@ public class ListHearingRequestedProcessor {
                 .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(PROSECUTION_CASE), ProsecutionCase.class))
                 .toList();
 
-        return listCourtHearingTransformer.transform(jsonEnvelope, cases, listHearingRequested.getListNewHearing(), listHearingRequested.getHearingId());
+        return listCourtHearingTransformer.transform(jsonEnvelope, cases, withWeekCommencingDateOfBookedSession(listHearingRequested.getListNewHearing()), listHearingRequested.getHearingId());
+    }
+
+    private CourtHearingRequest withWeekCommencingDateOfBookedSession(final CourtHearingRequest courtHearingRequest) {
+        if (!JurisdictionType.CROWN.equals(courtHearingRequest.getJurisdictionType()) || nonNull(courtHearingRequest.getWeekCommencingDate())) {
+            return courtHearingRequest;
+        }
+        final List<String> courtScheduleIds = ofNullable(courtHearingRequest.getBookedSlots()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(RotaSlot::getCourtScheduleId)
+                .filter(StringUtils::isNotBlank)
+                .toList();
+        return weekCommencingSessionAdapter.weekCommencingDateOf(courtScheduleIds)
+                .map(weekCommencingDate -> CourtHearingRequest.courtHearingRequest()
+                        .withValuesFrom(courtHearingRequest)
+                        .withWeekCommencingDate(weekCommencingDate)
+                        .build())
+                .orElse(courtHearingRequest);
     }
 
     private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ListHearingRequested listHearingRequested) {
