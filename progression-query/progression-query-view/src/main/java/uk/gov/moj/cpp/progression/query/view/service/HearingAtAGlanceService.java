@@ -271,42 +271,63 @@ public class HearingAtAGlanceService {
         LOGGER.info("Create hearings for case {}", caseId);
         final List<Hearings> hearingsList = new ArrayList<>();
         hearingEntities.forEach(hearingEntity -> {
-            final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
-            final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
-            LOGGER.info("Create hearing for hearingId {}", hearing.getId());
-            final Hearings hearingsView = Hearings.hearings()
-                    .withId(hearing.getId())
-                    .withType(hearing.getType())
-                    .withJurisdictionType(getJurisdictionType(hearing))
-                    .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                    .withJudiciary(hearing.getJudiciary())
-                    .withHearingDays(hearing.getHearingDays())
-                    .withCourtCentre(hearing.getCourtCentre())
-                    .withProsecutionCounsels(hearing.getProsecutionCounsels())
-                    .withApplicantCounsels(hearing.getApplicantCounsels())
-                    .withRespondentCounsels(hearing.getRespondentCounsels())
-                    .withDefendantAttendance(hearing.getDefendantAttendance())
-                    .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
-                    .withHearingListingStatus(getHearingListingStatus(hearingEntity))
-                    .withHasResultAmended(hasResultAmended(hearing))
-                    .withIsBoxHearing(hearing.getIsBoxHearing())
-                    .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
-                    .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
-                    .withYouthCourt(hearing.getYouthCourt())
-                    .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
-                    .withIsApplicationHearing(CollectionUtils.isNotEmpty(hearing.getCourtApplications()))
-                    .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
-                    .build();
-            hearingsList.add(hearingsView);
+            final Hearing hearing = toHearing(hearingEntity);
+            hearingsList.add(toHearingsView(hearing, getHearingListingStatus(hearingEntity), caseId));
         });
         return hearingsList;
+    }
+
+    /**
+     * Maps SJP decisions (read from Results) to CAAG hearing views, as resulted hearings, the same way as progression's own
+     * hearings (CHD-3311).
+     */
+    public List<Hearings> getSjpDecisionHearings(final List<SjpDecisionHearing> decisionHearings, final UUID caseId) {
+        return decisionHearings.stream()
+                .map(decisionHearing -> toHearingsView(decisionHearing.hearing(), HEARING_RESULTED, caseId))
+                .collect(toList());
+    }
+
+    private Hearing toHearing(final HearingEntity hearingEntity) {
+        final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+        return jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
+    }
+
+    /**
+     * Builds the CAAG view of one core-domain hearing. Takes the hearing and its listing status directly, rather than a
+     * {@link HearingEntity}, so hearings that are not stored in progression (for example SJP decisions read from Results,
+     * CHD-3311) can be mapped the same way as progression's own hearings.
+     */
+    Hearings toHearingsView(final Hearing hearing, final HearingListingStatus hearingListingStatus, final UUID caseId) {
+        LOGGER.info("Create hearing for hearingId {}", hearing.getId());
+        return Hearings.hearings()
+                .withId(hearing.getId())
+                .withType(hearing.getType())
+                .withJurisdictionType(getJurisdictionType(hearing))
+                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
+                .withJudiciary(hearing.getJudiciary())
+                .withHearingDays(hearing.getHearingDays())
+                .withCourtCentre(hearing.getCourtCentre())
+                .withProsecutionCounsels(hearing.getProsecutionCounsels())
+                .withApplicantCounsels(hearing.getApplicantCounsels())
+                .withRespondentCounsels(hearing.getRespondentCounsels())
+                .withDefendantAttendance(hearing.getDefendantAttendance())
+                .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
+                .withHearingListingStatus(hearingListingStatus)
+                .withHasResultAmended(hasResultAmended(hearing))
+                .withIsBoxHearing(hearing.getIsBoxHearing())
+                .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
+                .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
+                .withYouthCourt(hearing.getYouthCourt())
+                .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
+                .withIsApplicationHearing(CollectionUtils.isNotEmpty(hearing.getCourtApplications()))
+                .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
+                .build();
     }
 
     private List<Hearings> toHearings(List<HearingEntity> hearingEntities) {
         final List<Hearings> hearingsList = new ArrayList<>();
         hearingEntities.forEach(hearingEntity -> {
-            final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
-            final uk.gov.justice.core.courts.Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, uk.gov.justice.core.courts.Hearing.class);
+            final Hearing hearing = toHearing(hearingEntity);
 
             final Hearings hearingsView = Hearings.hearings()
                     .withId(hearing.getId())
