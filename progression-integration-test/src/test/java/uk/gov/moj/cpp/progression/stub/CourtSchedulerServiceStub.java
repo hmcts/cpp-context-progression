@@ -21,6 +21,8 @@ public class CourtSchedulerServiceStub {
     private static final String PROVISIONAL_BOOKING = "/provisionalBooking";
     public static final String COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE = "application/vnd.courtscheduler.get.provisional.booking+json";
     public static final String STUB_DATA_PROVISIONAL_BOOKED_SLOTS_FOR_EXISTING_BOOKING_ID_JSON = "stub-data/provisionalBookedSlotsForExistingBookingId.json";
+    private static final String SESSIONS = "/sessions";
+    public static final String COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE = "application/vnd.courtscheduler.search.court-schedules-by-id+json";
 
     static {
         configureFor(HOST, 8080);
@@ -42,6 +44,16 @@ public class CourtSchedulerServiceStub {
                 .withHeader("Accept", containing(COURTSCHEDULER_GET_PROVISIONAL_BOOKING_TYPE))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withBody(getPayload(STUB_DATA_PROVISIONAL_BOOKED_SLOTS_FOR_EXISTING_BOOKING_ID_JSON))
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                ));
+    }
+
+    public static void stubGetCourtSchedulesByIdForUnknownSessions() {
+        stubFor(get(urlPathMatching(COURT_SCHEDULER_ENDPOINT + SESSIONS))
+                .withQueryParam("ids", notMatching(""))
+                .withHeader("Accept", containing(COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withBody("{\"courtSchedules\": []}")
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 ));
     }
