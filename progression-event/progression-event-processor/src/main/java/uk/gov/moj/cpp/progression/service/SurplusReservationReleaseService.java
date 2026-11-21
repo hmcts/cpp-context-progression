@@ -7,6 +7,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.moj.cpp.progression.listing.common.service.CourtSchedulerRequestConfig;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +19,6 @@ import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.ws.rs.core.Response;
 
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -67,14 +67,8 @@ public class SurplusReservationReleaseService {
     @Value(key = "courtscheduler.base.url", defaultValue = "http://localhost:8080/listingcourtscheduler-api/rest/courtscheduler")
     private String baseUri;
 
-    // The initial values are what a test gets when it builds the service without CDI.
     @Inject
-    @Value(key = "courtscheduler.timeout.connect.ms", defaultValue = "5000")
-    protected String connectTimeoutMs = "5000";
-
-    @Inject
-    @Value(key = "courtscheduler.timeout.ms", defaultValue = "10000")
-    protected String socketTimeoutMs = "10000";
+    private CourtSchedulerRequestConfig courtSchedulerRequestConfig;
 
     @Inject
     private SystemUserProvider systemUserProvider;
@@ -123,10 +117,7 @@ public class SurplusReservationReleaseService {
      */
     int execute(final HttpPost httpPost) throws IOException {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setConnectTimeout(Integer.parseInt(connectTimeoutMs))
-                        .setSocketTimeout(Integer.parseInt(socketTimeoutMs))
-                        .build())
+                .setDefaultRequestConfig(courtSchedulerRequestConfig.get())
                 .build();
              CloseableHttpResponse httpResponse = httpClient.execute(httpPost)) {
             EntityUtils.consumeQuietly(httpResponse.getEntity());

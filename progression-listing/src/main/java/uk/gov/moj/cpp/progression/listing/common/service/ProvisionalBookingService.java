@@ -18,10 +18,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -36,6 +37,8 @@ public class ProvisionalBookingService {
     @Inject
     @Value(key = "courtscheduler.base.url", defaultValue = "http://localhost:8080/listingcourtscheduler-api/rest/courtscheduler")
     private String baseUri;
+    @Inject
+    CourtSchedulerRequestConfig courtSchedulerRequestConfig;
     @Inject
     SystemUserProvider systemUserProvider;
     @Inject
@@ -60,25 +63,28 @@ public class ProvisionalBookingService {
             params.forEach(uriBuilder::addParameter);
             httpGet.setURI(uriBuilder.build());
 
-            final HttpResponse httpResponse =  HttpClientBuilder
-                    .create()
-                    .build()
-                    .execute(httpGet);
+            // Runs inside the hearing-resulted event processor: without timeouts a courtscheduler
+            // that accepts the connection and never answers would hold that thread indefinitely.
+            try (CloseableHttpClient httpClient = HttpClientBuilder.create()
+                    .setDefaultRequestConfig(courtSchedulerRequestConfig.get())
+                    .build();
+                 CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
 
-            if (httpResponse.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Retrieve ProvisionalSlots successfully");
+                final String body = httpResponse.getEntity() == null ? "" : EntityUtils.toString(httpResponse.getEntity());
+                if (httpResponse.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("Retrieve ProvisionalSlots successfully");
+                    }
+                    return Response
+                            .status(HttpStatus.SC_OK)
+                            .entity(stringToJsonObjectConverter.convert(body))
+                            .build();
                 }
-                return Response
-                        .status(HttpStatus.SC_OK)
-                        .entity(stringToJsonObjectConverter.convert(EntityUtils.toString(httpResponse.getEntity())))
-                        .build();
-            } else {
                 LOGGER.error("Retrieve ProvisionalSlots failed with status code:{}",
                         httpResponse.getStatusLine().getStatusCode());
                 return Response
                         .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                        .entity(httpResponse.getEntity())
+                        .entity(body)
                         .build();
             }
         } catch (URISyntaxException | IOException ex) {
