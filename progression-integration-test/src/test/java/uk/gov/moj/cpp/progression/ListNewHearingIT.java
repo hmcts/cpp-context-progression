@@ -108,7 +108,7 @@ public class ListNewHearingIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendWeekCommencingDateToListingWhenCrownAdhocHearingBooksWeekCommencingSession() throws IOException, JSONException {
+    public void shouldCreateHearingWithWeekCommencingSessionWithBookingSlot() throws IOException, JSONException {
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         final String prosecutionAuthorityId = randomUUID().toString();
