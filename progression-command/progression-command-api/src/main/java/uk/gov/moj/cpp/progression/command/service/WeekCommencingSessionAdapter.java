@@ -10,10 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -40,22 +38,13 @@ public class WeekCommencingSessionAdapter {
             return empty();
         }
 
-        final Response response = courtSchedulesByIdService.getCourtSchedulesById(courtScheduleIds);
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            final String responsePayload = response.hasEntity() ? response.getEntity().toString() : "";
-            throw new ServerErrorException("Court schedules by id endpoint returned an error: " + responsePayload, response.getStatus());
+        final List<JsonObject> courtSchedules = courtSchedulesFor(courtScheduleIds);
+        if (courtSchedules.size() < courtScheduleIds.stream().distinct().count()) {
+            LOGGER.warn("Court scheduler returned {} court schedules for ids {}, week commencing date is taken from those returned",
+                    courtSchedules.size(), courtScheduleIds);
         }
 
-        final JsonObject responseJson = objectToJsonObjectConverter.convert(response.getEntity());
-        final JsonArray courtSchedules = responseJson.containsKey(COURT_SCHEDULES) && !responseJson.isNull(COURT_SCHEDULES)
-                ? responseJson.getJsonArray(COURT_SCHEDULES)
-                : JsonValue.EMPTY_JSON_ARRAY;
-        if (courtSchedules.isEmpty()) {
-            LOGGER.warn("No court schedules found for ids {}, week commencing date not added", courtScheduleIds);
-            return empty();
-        }
-
-        return courtSchedules.getValuesAs(JsonObject.class).stream()
+        return courtSchedules.stream()
                 .filter(courtSchedule -> courtSchedule.getBoolean(IS_WEEK_COMMENCING, false))
                 .filter(courtSchedule -> courtSchedule.containsKey(SESSION_DATE) && !courtSchedule.isNull(SESSION_DATE))
                 .findFirst()
@@ -63,5 +52,18 @@ public class WeekCommencingSessionAdapter {
                         .add(START_DATE, courtSchedule.getString(SESSION_DATE))
                         .add(DURATION, WEEK_COMMENCING_DURATION_IN_WEEKS)
                         .build());
+    }
+
+    private List<JsonObject> courtSchedulesFor(final List<String> courtScheduleIds) {
+        final Response response = courtSchedulesByIdService.getCourtSchedulesById(courtScheduleIds);
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new InternalServerErrorException("Court schedules by id endpoint returned an error");
+        }
+
+        final JsonObject responseJson = objectToJsonObjectConverter.convert(response.getEntity());
+        if (!responseJson.containsKey(COURT_SCHEDULES) || responseJson.isNull(COURT_SCHEDULES)) {
+            return List.of();
+        }
+        return responseJson.getJsonArray(COURT_SCHEDULES).getValuesAs(JsonObject.class);
     }
 }

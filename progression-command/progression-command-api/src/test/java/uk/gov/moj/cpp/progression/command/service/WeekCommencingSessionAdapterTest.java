@@ -128,7 +128,7 @@ class WeekCommencingSessionAdapterTest {
                 () -> weekCommencingSessionAdapter.weekCommencingDateOf(List.of(WEEK_COMMENCING_SESSION_ID)));
 
         assertThat(exception.getResponse().getStatus(), is(500));
-        assertThat(exception.getMessage(), is("Court schedules by id endpoint returned an error: courtscheduler down"));
+        assertThat(exception.getMessage(), is("Court schedules by id endpoint returned an error"));
     }
 
     private void givenCourtSchedules(final List<String> ids, final JsonObjectBuilder... sessions) {
