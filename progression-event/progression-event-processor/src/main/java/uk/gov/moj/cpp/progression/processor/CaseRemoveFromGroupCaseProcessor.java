@@ -10,8 +10,13 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
+import uk.gov.moj.cpp.progression.events.LastCasesToBeMovedFromGroupRejected;
+
+import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +43,23 @@ public class CaseRemoveFromGroupCaseProcessor {
                                                             .add("caseId", lastCaseToBeRemovedFromGroupCasesRejected.getCaseId().toString())
                                                             .build())
                 .withName("public.progression.remove-last-case-in-group-cases-rejected")
+                .withMetadataFrom(event));
+    }
+
+    @Handles("progression.event.last-cases-to-be-moved-from-group-rejected")
+    public void processMoveRejectedEvent(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event progression.event.last-cases-to-be-moved-from-group-rejected {} ", event.toObfuscatedDebugString());
+        }
+        final LastCasesToBeMovedFromGroupRejected lastCasesToBeMovedFromGroupRejected = jsonObjectConverter.convert(event.payloadAsJsonObject(), LastCasesToBeMovedFromGroupRejected.class);
+        final JsonArrayBuilder caseIdsArrayBuilder = Json.createArrayBuilder();
+        for (final UUID caseId : lastCasesToBeMovedFromGroupRejected.getCaseIds()) {
+            caseIdsArrayBuilder.add(caseId.toString());
+        }
+        sender.send(Enveloper.envelop(createObjectBuilder().add("groupId", lastCasesToBeMovedFromGroupRejected.getGroupId().toString())
+                                                            .add("caseIds", caseIdsArrayBuilder.build())
+                                                            .build())
+                .withName("public.progression.move-last-cases-from-group-rejected")
                 .withMetadataFrom(event));
     }
 }

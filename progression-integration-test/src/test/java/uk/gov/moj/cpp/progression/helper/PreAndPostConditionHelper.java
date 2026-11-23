@@ -18,7 +18,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -1957,6 +1960,30 @@ public class PreAndPostConditionHelper {
 
         return postCommand(getWriteUrl(String.format("/prosecutioncases/%s", caseId)),
                 "application/vnd.progression.remove-case-from-group-cases+json",
+                payload.toString());
+    }
+
+    public static Response moveGroupCases(final UUID currentGroupId, final UUID currentGroupNewLeadCaseId,
+                                          final UUID newGroupId, final List<UUID> movedCaseIds, final UUID newGroupLeadCaseId) {
+        final JsonObjectBuilder currentGroupBuilder = createObjectBuilder().add("groupId", currentGroupId.toString());
+        if (nonNull(currentGroupNewLeadCaseId)) {
+            currentGroupBuilder.add("newLeadCaseId", currentGroupNewLeadCaseId.toString());
+        }
+
+        final JsonArrayBuilder caseIdsBuilder = Json.createArrayBuilder();
+        movedCaseIds.forEach(caseId -> caseIdsBuilder.add(caseId.toString()));
+
+        final JsonObject payload = createObjectBuilder()
+                .add("currentGroup", currentGroupBuilder.build())
+                .add("newGroup", createObjectBuilder()
+                        .add("groupId", newGroupId.toString())
+                        .add("caseIds", caseIdsBuilder.build())
+                        .add("leadCaseId", newGroupLeadCaseId.toString())
+                        .build())
+                .build();
+
+        return postCommand(getWriteUrl("/prosecutioncases"),
+                "application/vnd.progression.move-group-cases+json",
                 payload.toString());
     }
 

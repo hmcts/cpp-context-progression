@@ -9197,4 +9197,51 @@ class CaseAggregateTest {
                 .withPleaDate(LocalDate.now())
                 .build();
     }
+
+    @Test
+    void shouldUpdateCaseGroupInfoPreservingExistingGroupId() {
+        final UUID existingGroupId = randomUUID();
+        final ProsecutionCase caseInGroup = prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withGroupId(existingGroupId)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(false)
+                .build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(caseInGroup, null));
+
+        final List<Object> events = caseAggregate.updateCaseGroupInfo(true, true).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final uk.gov.justice.core.courts.CaseGroupInfoUpdated caseGroupInfoUpdated = (uk.gov.justice.core.courts.CaseGroupInfoUpdated) events.get(0);
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getGroupId(), is(existingGroupId));
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getIsGroupMaster(), is(true));
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getIsGroupMember(), is(true));
+        assertThat(caseAggregate.getProsecutionCase().getGroupId(), is(existingGroupId));
+    }
+
+    @Test
+    void shouldUpdateCaseGroupInfoCarryingCaseToTheProvidedNewGroupId() {
+        final UUID oldGroupId = randomUUID();
+        final UUID newGroupId = randomUUID();
+        final ProsecutionCase caseInOldGroup = prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withGroupId(oldGroupId)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(true)
+                .build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(caseInOldGroup, null));
+
+        final List<Object> events = caseAggregate.updateCaseGroupInfo(false, true, newGroupId).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final uk.gov.justice.core.courts.CaseGroupInfoUpdated caseGroupInfoUpdated = (uk.gov.justice.core.courts.CaseGroupInfoUpdated) events.get(0);
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getGroupId(), is(newGroupId));
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getIsGroupMaster(), is(false));
+        assertThat(caseGroupInfoUpdated.getProsecutionCase().getIsGroupMember(), is(true));
+        assertThat(caseAggregate.getProsecutionCase().getGroupId(), is(newGroupId));
+    }
 }

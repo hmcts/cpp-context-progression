@@ -15,9 +15,13 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 import uk.gov.moj.cpp.progression.events.CaseRemovalFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.events.CaseRemovedFromGroupCases;
+import uk.gov.moj.cpp.progression.events.GroupCreatedFromMovedCases;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
+import uk.gov.moj.cpp.progression.events.LastCasesToBeMovedFromGroupRejected;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
@@ -239,6 +243,134 @@ public class GroupCaseAggregateTest {
 
         assertThat(eventStream.size(), is(0));
         assertThat(aggregate.getMemberCases().size(), is(2));
+    }
+
+    @Test
+    public void shouldAllowMovingOutCasesThatLeaveAtLeastOneMemberBehind() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, true),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, false)));
+
+        assertThat(aggregate.canMoveCasesOut(Set.of(CASE2_ID, CASE3_ID)), is(true));
+    }
+
+    @Test
+    public void shouldNotAllowMovingOutEveryMemberOfTheGroup() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, true),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false),
+                getProsecutionCase(GROUP_ID, CASE3_ID, false)));
+
+        assertThat(aggregate.canMoveCasesOut(Set.of(CASE1_ID, CASE2_ID, CASE3_ID)), is(false));
+    }
+
+    @Test
+    public void shouldRejectMoveThatWouldLeaveGroupEmptyAndKeepMembershipUnchanged() {
+        addCivilCasesToGroup(asList(
+                getProsecutionCase(GROUP_ID, CASE1_ID, true),
+                getProsecutionCase(GROUP_ID, CASE2_ID, false)));
+        final Set<UUID> allCaseIds = Set.of(CASE1_ID, CASE2_ID);
+
+        assertThat(aggregate.canMoveCasesOut(allCaseIds), is(false));
+        final List<Object> eventStream = aggregate.rejectLastCasesToBeMovedFromGroup(GROUP_ID, allCaseIds).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0), instanceOf(LastCasesToBeMovedFromGroupRejected.class));
+        final LastCasesToBeMovedFromGroupRejected rejected = (LastCasesToBeMovedFromGroupRejected) eventStream.get(0);
+        assertThat(rejected.getGroupId(), is(GROUP_ID));
+        assertThat(new HashSet<>(rejected.getCaseIds()), is(allCaseIds));
+        assertThat(aggregate.getMemberCases().size(), is(2));
+        assertThat(aggregate.getGroupMaster(), is(CASE1_ID));
+    }
+
+    @Test
+    public void shouldMoveMultipleCasesOutOfGroupRaisingOneEventPerCase() {
+        final ProsecutionCase case1 = getProsecutionCase(GROUP_ID, CASE1_ID, true);
+        final ProsecutionCase case2 = getProsecutionCase(GROUP_ID, CASE2_ID, false);
+        final ProsecutionCase case3 = getProsecutionCase(GROUP_ID, CASE3_ID, false);
+        final ProsecutionCase case4 = getProsecutionCase(GROUP_ID, CASE4_ID, false);
+
+        addCivilCasesToGroup(asList(case1, case2, case3, case4));
+
+        final List<Object> eventStream = aggregate.moveCasesToNewGroup(GROUP_ID, asList(removed(case2), removed(case3)), null).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        assertThat(aggregate.getMemberCases(), is(Set.of(CASE1_ID, CASE4_ID)));
+        assertThat(aggregate.getGroupMaster(), is(CASE1_ID));
+    }
+
+    @Test
+    public void shouldReassignGroupMasterOnlyOnTheEventForTheMovedMaster() {
+        final ProsecutionCase case1 = getProsecutionCase(GROUP_ID, CASE1_ID, true);
+        final ProsecutionCase case2 = getProsecutionCase(GROUP_ID, CASE2_ID, false);
+        final ProsecutionCase case3 = getProsecutionCase(GROUP_ID, CASE3_ID, false);
+
+        addCivilCasesToGroup(asList(case1, case2, case3));
+
+        final ProsecutionCase newMaster = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(case3)
+                .withIsGroupMember(Boolean.TRUE)
+                .withIsGroupMaster(Boolean.TRUE)
+                .build();
+
+        final List<Object> eventStream = aggregate.moveCasesToNewGroup(GROUP_ID, asList(removed(case1), removed(case2)), newMaster).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        final CaseRemovedFromGroupCases masterRemovalEvent = (CaseRemovedFromGroupCases) eventStream.stream()
+                .filter(e -> ((CaseRemovedFromGroupCases) e).getRemovedCase().getId().equals(CASE1_ID))
+                .findFirst().orElseThrow();
+        assertThat(masterRemovalEvent.getNewGroupMaster().getId(), is(CASE3_ID));
+
+        final CaseRemovedFromGroupCases memberRemovalEvent = (CaseRemovedFromGroupCases) eventStream.stream()
+                .filter(e -> ((CaseRemovedFromGroupCases) e).getRemovedCase().getId().equals(CASE2_ID))
+                .findFirst().orElseThrow();
+        assertThat(memberRemovalEvent.getNewGroupMaster(), nullValue());
+
+        assertThat(aggregate.getMemberCases(), is(Set.of(CASE3_ID)));
+        assertThat(aggregate.getGroupMaster(), is(CASE3_ID));
+    }
+
+    @Test
+    public void shouldSkipCasesAlreadyMovedByAPriorAttemptWithoutRaisingEventsForThem() {
+        final ProsecutionCase case1 = getProsecutionCase(GROUP_ID, CASE1_ID, true);
+        final ProsecutionCase case2 = getProsecutionCase(GROUP_ID, CASE2_ID, false);
+        final ProsecutionCase case3 = getProsecutionCase(GROUP_ID, CASE3_ID, false);
+
+        addCivilCasesToGroup(asList(case1, case2, case3));
+        aggregate.moveCasesToNewGroup(GROUP_ID, singletonList(removed(case2)), null).collect(toList());
+
+        // retried request includes the already-moved case2 again, alongside case3 which hasn't moved yet
+        final List<Object> eventStream = aggregate.moveCasesToNewGroup(GROUP_ID, asList(removed(case2), removed(case3)), null).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(((CaseRemovedFromGroupCases) eventStream.get(0)).getRemovedCase().getId(), is(CASE3_ID));
+        assertThat(aggregate.getMemberCases(), is(Set.of(CASE1_ID)));
+    }
+
+    @Test
+    public void shouldCreateGroupFromMovedCasesSeedingMembershipAndMasterCase() {
+        final UUID newGroupId = randomUUID();
+        final ProsecutionCase leadCase = ProsecutionCase.prosecutionCase()
+                .withId(CASE1_ID)
+                .withGroupId(newGroupId)
+                .withIsCivil(true)
+                .withIsGroupMember(true)
+                .withIsGroupMaster(true)
+                .build();
+
+        final List<Object> eventStream = aggregate.createGroupFromMovedCases(newGroupId, asList(CASE1_ID, CASE2_ID), leadCase).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0), instanceOf(GroupCreatedFromMovedCases.class));
+        final GroupCreatedFromMovedCases event = (GroupCreatedFromMovedCases) eventStream.get(0);
+        assertThat(event.getGroupId(), is(newGroupId));
+        assertThat(new HashSet<>(event.getCaseIds()), is(Set.of(CASE1_ID, CASE2_ID)));
+        assertThat(event.getLeadCase().getId(), is(CASE1_ID));
+
+        assertThat(aggregate.getMemberCases(), is(Set.of(CASE1_ID, CASE2_ID)));
+        assertThat(aggregate.getGroupMaster(), is(CASE1_ID));
+        assertThat(aggregate.getMasterCase().getId(), is(CASE1_ID));
     }
 
     private ProsecutionCase removed(final ProsecutionCase prosecutionCase) {
