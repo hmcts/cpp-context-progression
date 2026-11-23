@@ -101,16 +101,6 @@ public class MoveGroupCasesHandler {
         }
 
         final EventStream newGroupStream = eventSource.getStreamById(newGroupId);
-//        if (newGroupStream.size() > 0) {
-//            final GroupCaseAggregate existingNewGroupAggregate = aggregateService.get(newGroupStream, GroupCaseAggregate.class);
-//            final boolean isExactRetry = equals(existingNewGroupAggregate.getMemberCases(), movedCaseIdSet)
-//                    && equals(existingNewGroupAggregate.getGroupMaster(), newLeadCaseId);
-//            if (isExactRetry) {
-//                LOGGER.info("newGroup.groupId {} already reflects this exact move — treating as an idempotent retry.", newGroupId);
-//                return;
-//            }
-//            throw new IllegalArgumentException("newGroup.groupId is already in use by a different, unrelated group");
-//        }
 
         // One CaseAggregate per moved case, loaded once and reused across both the group-association
         // update and the fee-cloning step below — mirrors RemoveCaseFromGroupCasesHandler's own
