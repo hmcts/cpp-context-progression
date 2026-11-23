@@ -121,6 +121,7 @@ public class ListNewHearingIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourt(caseId, prosecutionAuthorityId, generateUrn(), defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
+        pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         assertThat(listNewCrownHearing(caseId, defendantId).getStatusCode(), is(202));
 
