@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-class CourtSchedulesByIdServiceTest {
+class CourtScheduleServiceTest {
 
     private static final String FIRST_ID = "ccb4af70-e150-479a-954c-1c6ae98d0a34";
     private static final String SECOND_ID = "5b0d3a2e-8f61-4c7b-9e14-2a6f0c9d7e31";
@@ -41,13 +41,13 @@ class CourtSchedulesByIdServiceTest {
     private final UUID systemUserId = randomUUID();
 
     private HttpServer courtScheduler;
-    private CourtSchedulesByIdService service;
+    private CourtScheduleService service;
 
     @BeforeEach
     void setUp() throws IOException {
         courtScheduler = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         courtScheduler.start();
-        service = new CourtSchedulesByIdService();
+        service = new CourtScheduleService();
         service.systemUserProvider = systemUserProvider;
         service.stringToJsonObjectConverter = new StringToJsonObjectConverter();
         setField(service, "baseUri", "http://localhost:" + courtScheduler.getAddress().getPort() + "/courtscheduler");

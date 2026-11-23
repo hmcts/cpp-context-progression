@@ -22,10 +22,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
-import uk.gov.moj.cpp.progression.command.service.WeekCommencingSessionAdapter;
+import uk.gov.moj.cpp.progression.command.service.WeekCommencingSessionService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -54,7 +53,7 @@ public class ListNewHearingApiTest {
     private Sender sender;
 
     @Mock
-    private WeekCommencingSessionAdapter weekCommencingSessionAdapter;
+    private WeekCommencingSessionService weekCommencingSessionService;
 
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
@@ -96,22 +95,35 @@ public class ListNewHearingApiTest {
     }
 
     @Test
-    public void shouldAddWeekCommencingDateWhenTheCrownBookedSessionIsWeekCommencing() {
-        final JsonObject weekCommencingDate = createObjectBuilder().add("startDate", "2026-11-16").add("duration", 1).build();
-        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(Optional.of(weekCommencingDate));
+    public void shouldAddWeekCommencingDateFromTheBookedSlotStartTimeWhenTheCrownBookedSessionIsWeekCommencing() {
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of(BOOKED_COURT_SCHEDULE_ID));
         final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
 
         final JsonObject sent = sentFor(payload);
 
         final JsonObject expected = createObjectBuilder(payload)
-                .add("listNewHearing", createObjectBuilder(payload.getJsonObject("listNewHearing")).add("weekCommencingDate", weekCommencingDate))
+                .add("listNewHearing", createObjectBuilder(payload.getJsonObject("listNewHearing"))
+                        .add("weekCommencingDate", createObjectBuilder().add("startDate", "2026-11-16").add("duration", 1)))
                 .build();
         assertThat(sent, is(expected));
     }
 
     @Test
+    public void shouldTakeTheWeekCommencingDateFromTheSlotBookedIntoTheWeekCommencingSession() {
+        final String ordinaryCourtScheduleId = "5b0d3a2e-8f61-4c7b-9e14-2a6f0c9d7e31";
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(ordinaryCourtScheduleId, BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of(BOOKED_COURT_SCHEDULE_ID));
+        final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder()
+                .add(bookedSlot(ordinaryCourtScheduleId).add("startTime", "2026-11-12T10:00:00.000Z"))
+                .add(bookedSlot(BOOKED_COURT_SCHEDULE_ID).add("startTime", "2026-11-23T10:00:00.000Z"))));
+
+        final JsonObject weekCommencingDate = sentFor(payload).getJsonObject("listNewHearing").getJsonObject("weekCommencingDate");
+
+        assertThat(weekCommencingDate, is(createObjectBuilder().add("startDate", "2026-11-23").add("duration", 1).build()));
+    }
+
+    @Test
     public void shouldSendCrownHearingUnchangedWhenTheBookedSessionIsNotWeekCommencing() {
-        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(Optional.empty());
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of());
         final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
 
         assertThat(sentFor(payload), is(payload));
@@ -122,34 +134,24 @@ public class ListNewHearingApiTest {
         final JsonObject payload = payload(hearing("MAGISTRATES").add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
 
         assertThat(sentFor(payload), is(payload));
-        verify(weekCommencingSessionAdapter, never()).weekCommencingDateOf(any());
-    }
-
-    @Test
-    public void shouldKeepTheWeekCommencingDateAlreadyOnTheRequest() {
-        final JsonObject payload = payload(crownHearing()
-                .add("weekCommencingDate", createObjectBuilder().add("startDate", "2026-11-23").add("duration", 2))
-                .add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
-
-        assertThat(sentFor(payload), is(payload));
-        verify(weekCommencingSessionAdapter, never()).weekCommencingDateOf(any());
+        verify(weekCommencingSessionService, never()).getWeekCommencingSessionIds(any());
     }
 
     @Test
     public void shouldLookUpOnlyBookedSlotsThatHaveACourtScheduleId() {
-        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(Optional.empty());
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of());
         final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder()
-                .add(createObjectBuilder().add("duration", 20))
+                .add(createObjectBuilder().add("duration", 20).add("startTime", "2026-11-16T10:00:00.000Z"))
                 .add(bookedSlot(" "))
                 .add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
 
         assertThat(sentFor(payload), is(payload));
-        verify(weekCommencingSessionAdapter).weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID));
+        verify(weekCommencingSessionService).getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID));
     }
 
     @Test
     public void shouldPassNoIdsWhenTheCrownHearingHasNoBookedSlots() {
-        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of())).thenReturn(Optional.empty());
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of())).thenReturn(List.of());
         final JsonObject payload = payload(crownHearing());
 
         assertThat(sentFor(payload), is(payload));
@@ -157,7 +159,7 @@ public class ListNewHearingApiTest {
 
     @Test
     public void shouldNotSendTheCommandWhenTheSessionLookupFails() {
-        when(weekCommencingSessionAdapter.weekCommencingDateOf(List.of(BOOKED_COURT_SCHEDULE_ID)))
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID)))
                 .thenThrow(new ServerErrorException("courtscheduler down", 500));
         final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
 
@@ -203,6 +205,7 @@ public class ListNewHearingApiTest {
     private static JsonObjectBuilder bookedSlot(final String courtScheduleId) {
         return createObjectBuilder()
                 .add("duration", 20)
+                .add("startTime", "2026-11-16T10:00:00.000Z")
                 .add("courtScheduleId", courtScheduleId);
     }
 }

@@ -15,9 +15,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-public class CourtSchedulesByIdService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CourtSchedulesByIdService.class);
+public class CourtScheduleService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtScheduleService.class);
     private static final String SESSIONS_RESOURCE = "/sessions";
     private static final String IDS = "ids";
     public static final String COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE = "application/vnd.courtscheduler.search.court-schedules-by-id+json";
@@ -55,43 +55,39 @@ public class CourtSchedulesByIdService {
     public Response getCourtSchedulesById(final List<String> courtScheduleIds) {
         LOGGER.info("Retrieve court schedules by id '{}'", courtScheduleIds);
 
-        try {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setConnectTimeout(Integer.parseInt(connectTimeoutMs))
+                        .setSocketTimeout(Integer.parseInt(socketTimeoutMs))
+                        .build())
+                .build()) {
             final URIBuilder uriBuilder = new URIBuilder(baseUri + SESSIONS_RESOURCE)
                     .addParameter(IDS, String.join(",", courtScheduleIds));
             final HttpGet httpGet = new HttpGet(uriBuilder.build());
             httpGet.addHeader(ACCEPT, COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE);
             httpGet.addHeader(CJS_CPP_UID, getUserId().toString());
 
-            return execute(httpGet);
-        } catch (final URISyntaxException | IOException ex) {
-            LOGGER.error("Exception thrown on trying to retrieve court schedules by id", ex);
-            return Response
-                    .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .entity(ex.getMessage())
-                    .build();
-        }
-    }
-
-    private Response execute(final HttpGet httpGet) throws IOException {
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setConnectTimeout(Integer.parseInt(connectTimeoutMs))
-                        .setSocketTimeout(Integer.parseInt(socketTimeoutMs))
-                        .build())
-                .build();
-             CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
-            final int statusCode = httpResponse.getStatusLine().getStatusCode();
+            final HttpResponse httpResponse = httpClient.execute(httpGet);
             final String body = httpResponse.getEntity() == null ? "" : EntityUtils.toString(httpResponse.getEntity());
-            if (statusCode == HttpStatus.SC_OK) {
+
+            if (httpResponse.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
                 return Response
                         .status(HttpStatus.SC_OK)
                         .entity(stringToJsonObjectConverter.convert(body))
                         .build();
+            } else {
+                LOGGER.error("Retrieve court schedules by id failed with status code:{}",
+                        httpResponse.getStatusLine().getStatusCode());
+                return Response
+                        .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                        .entity(body)
+                        .build();
             }
-            LOGGER.error("Retrieve court schedules by id failed with status code:{}", statusCode);
+        } catch (URISyntaxException | IOException ex) {
+            LOGGER.error("Exception thrown on trying to retrieve court schedules by id", ex);
             return Response
                     .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .entity(body)
+                    .entity(ex.getMessage())
                     .build();
         }
     }

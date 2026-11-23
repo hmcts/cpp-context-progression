@@ -113,18 +113,18 @@ public class ListNewHearingIT extends AbstractIT {
         final String defendantId = randomUUID().toString();
         final String prosecutionAuthorityId = randomUUID().toString();
         final String bookedCourtScheduleId = "8e837de0-743a-4a2c-9db3-b2e678c48729";
-        final String monday = "2026-11-16";
+        final String bookedSlotStartDate = "2020-05-21";
 
         stubProsecutorData(prosecutorEmail, prosecutionAuthorityId);
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation-no-email.json", defendantId);
-        stubGetWeekCommencingCourtScheduleById(bookedCourtScheduleId, monday);
+        stubGetWeekCommencingCourtScheduleById(bookedCourtScheduleId, bookedSlotStartDate);
 
         addProsecutionCaseToCrownCourt(caseId, prosecutionAuthorityId, generateUrn(), defendantId);
         verifyPostListCourtHearing(caseId, defendantId);
 
         assertThat(listNewCrownHearing(caseId, defendantId).getStatusCode(), is(202));
 
-        verifyPostListCourtHearingWithWeekCommencingDate(caseId, bookedCourtScheduleId, monday);
+        verifyPostListCourtHearingWithWeekCommencingDate(caseId, bookedCourtScheduleId, bookedSlotStartDate);
     }
 
     @Test
