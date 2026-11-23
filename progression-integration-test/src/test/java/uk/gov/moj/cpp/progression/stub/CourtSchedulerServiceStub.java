@@ -33,6 +33,8 @@ public class CourtSchedulerServiceStub {
     private static final String STUB_DATA_UNCONFIRMED_BOOKINGS_ON_ONE_SESSION_JSON = "stub-data/unconfirmedBookingsOnOneSession.json";
     public static final String COURTSCHEDULER_GET_UNCONFIRMED_BOOKING_TYPE = "application/vnd.courtscheduler.get.unconfirmed.booking+json";
     public static final String STUB_DATA_PROVISIONAL_BOOKED_SLOTS_FOR_EXISTING_BOOKING_ID_JSON = "stub-data/provisionalBookedSlotsForExistingBookingId.json";
+    private static final String SESSIONS = "/sessions";
+    public static final String COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE = "application/vnd.courtscheduler.search.court-schedules-by-id+json";
 
     static {
         configureFor(HOST, 8080);
@@ -87,5 +89,16 @@ public class CourtSchedulerServiceStub {
                 .withRequestBody(containing("\"reason\":\"SURPLUS\""))).stream()
                 .flatMap(request -> JsonPath.from(request.getBodyAsString()).<String>getList("bookingIds").stream())
                 .collect(Collectors.toList());
+    }
+
+    public static void stubGetWeekCommencingCourtScheduleById(final String courtScheduleId, final String sessionDate) {
+        stubFor(get(urlPathEqualTo(COURT_SCHEDULER_ENDPOINT + SESSIONS))
+                .withQueryParam("ids", containing(courtScheduleId))
+                .withHeader("Accept", containing(COURTSCHEDULER_SEARCH_COURT_SCHEDULES_BY_ID_TYPE))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withBody("{\"courtSchedules\": [{\"courtScheduleId\": \"" + courtScheduleId + "\", \"draft\": true, "
+                                + "\"isWeekCommencing\": true, \"sessionDate\": \"" + sessionDate + "\"}]}")
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                ));
     }
 }

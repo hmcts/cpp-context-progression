@@ -129,6 +129,25 @@ public class ListingStub {
         }
     }
 
+    public static void verifyPostListCourtHearingWithWeekCommencingDate(final String caseId, final String courtScheduleId, final String weekCommencingStartDate) {
+        waitAtMost(ofMinutes(1)).until(() ->
+                getListCourtHearingRequestsAsStream()
+                        .anyMatch(payload -> isWeekCommencingListCourtHearing(payload, caseId, courtScheduleId, weekCommencingStartDate)));
+    }
+
+    private static boolean isWeekCommencingListCourtHearing(final JSONObject payload, final String caseId, final String courtScheduleId, final String weekCommencingStartDate) {
+        try {
+            final JSONObject hearing = payload.getJSONArray("hearings").getJSONObject(0);
+            final JSONObject weekCommencingDate = hearing.getJSONObject("weekCommencingDate");
+            return hearing.getJSONArray("prosecutionCases").getJSONObject(0).getString("id").equals(caseId)
+                    && hearing.getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId").equals(courtScheduleId)
+                    && weekCommencingDate.getString("startDate").equals(weekCommencingStartDate)
+                    && weekCommencingDate.getInt("duration") == 1;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
             waitAtMost(ofMinutes(1)).until(() ->
