@@ -8,7 +8,11 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static javax.json.JsonValue.EMPTY_JSON_OBJECT;
 import static java.util.UUID.fromString;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -30,6 +34,7 @@ import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -61,6 +66,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,8 +74,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +139,8 @@ public class CourtlistQueryView {
     private static final String CONVICTED_ON = "convictedOn";
     private static final String ADJOURNED_DATE = "adjournedDate";
     private static final String ADJOURNED_HEARING_TYPE = "adjournedHearingType";
+    private static final String ORDER_INDEX = "orderIndex";
+    private static final String COUNT = "count";
     private static final String ALCOHOL_READING_AMOUNT = "alcoholReadingAmount";
     private static final String ALCOHOL_READING_METHOD_DESCRIPTION = "alcoholReadingMethodDescription";
     private static final String MIDDLE_NAME = "middleName";
@@ -369,7 +379,7 @@ public class CourtlistQueryView {
                 ofNullable(courtApplication.getApplicationParticulars())
                         .ifPresent(particulars -> courtApplicationBuilder.add(APPLICATION_PARTICULARS, particulars));
                 if (nonNull(courtApplication.getApplicant())) {
-                    courtApplicationBuilder.add(APPLICANT, buildApplicantForCourtApplication(courtApplication, offencesForApplications));
+                    courtApplicationBuilder.add(APPLICANT, buildApplicantForCourtApplication(courtApplication, offencesForApplications, hearing.getJurisdictionType()));
                 }
                 ofNullable(courtApplication.getRespondents()).ifPresent(respondents -> {
                     final JsonArrayBuilder respondentsBuilder = createArrayBuilder();
@@ -425,7 +435,7 @@ public class CourtlistQueryView {
         }
     }
 
-    private JsonObject buildApplicantForCourtApplication(final CourtApplication courtApplication, final List<UUID> offencesForApplications) {
+    private JsonObject buildApplicantForCourtApplication(final CourtApplication courtApplication, final List<UUID> offencesForApplications, final JurisdictionType jurisdictionType) {
         final JsonObjectBuilder applicantBuilder = createObjectBuilder();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
 
@@ -458,7 +468,7 @@ public class CourtlistQueryView {
         }
 
         applicantBuilder.add(REPORTING_RESTRICTIONS, buildApplicantReportingRestrictions(courtApplication, offencesForApplications));
-        applicantBuilder.add(OFFENCES, buildApplicationOffences(courtApplication, offencesForApplications));
+        applicantBuilder.add(OFFENCES, buildApplicationOffences(courtApplication, offencesForApplications, jurisdictionType));
         return applicantBuilder.build();
     }
 
@@ -515,29 +525,33 @@ public class CourtlistQueryView {
         }
     }
 
-    private JsonArray buildApplicationOffences(final CourtApplication courtApplication, final List<UUID> offencesForApplications) {
+    private JsonArray buildApplicationOffences(final CourtApplication courtApplication, final List<UUID> offencesForApplications, final JurisdictionType jurisdictionType) {
         final JsonArrayBuilder offencesArray = createArrayBuilder();
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             courtApplication.getCourtApplicationCases().stream()
                     .filter(courtApplicationCase -> isNotEmpty(courtApplicationCase.getOffences()))
                     .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .sorted(courtListOrder(jurisdictionType))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         addOffenceInformation(offenceBuilder, offence);
+                        addOrdering(offenceBuilder, offence, EMPTY_JSON_OBJECT);
                         offencesArray.add(offenceBuilder.build());
                     });
         } else if (nonNull(courtApplication.getCourtOrder()) && isNotEmpty(courtApplication.getCourtOrder().getCourtOrderOffences())) {
             courtApplication.getCourtOrder().getCourtOrderOffences().stream()
                     .map(CourtOrderOffence::getOffence)
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .sorted(courtListOrder(jurisdictionType))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         addOffenceInformation(offenceBuilder, offence);
+                        addOrdering(offenceBuilder, offence, EMPTY_JSON_OBJECT);
                         offencesArray.add(offenceBuilder.build());
                     });
         }
@@ -561,10 +575,12 @@ public class CourtlistQueryView {
                     .filter(courtApplicationCase -> isNotEmpty(courtApplicationCase.getOffences()))
                     .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .sorted(courtListOrder(hearing.getJurisdictionType()))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
+                        addOrdering(offenceBuilder, offence, EMPTY_JSON_OBJECT);
                         offencesArray.add(offenceBuilder.build());
                     });
 
@@ -576,10 +592,12 @@ public class CourtlistQueryView {
             courtApplication.getCourtOrder().getCourtOrderOffences().stream()
                     .map(CourtOrderOffence::getOffence)
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .sorted(courtListOrder(hearing.getJurisdictionType()))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
                         buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
+                        addOrdering(offenceBuilder, offence, EMPTY_JSON_OBJECT);
                         offencesArray.add(offenceBuilder.build());
                     });
         }
@@ -684,6 +702,7 @@ public class CourtlistQueryView {
                                     }
                                     addOffenceInformation(offenceBuilder, offence);
                                     addWelshOffenceTitleFromListingIfMissing(offenceBuilder, offence, offenceFromListing);
+                                    addOrdering(offenceBuilder, offence, offenceFromListing);
                                     offencesArray.add(offenceBuilder.build());
                                 }
                             });
@@ -735,6 +754,39 @@ public class CourtlistQueryView {
         ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add(WELSH_OFFENCE_TITLE, welshOffenceTitle));
         ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add(OFFENCE_LEGISLATION, offenceLegislation));
         ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add(MAX_PENALTY, maxPenalty));
+    }
+
+    /**
+     * LPT-2677: the court list template numbers each offence with its orderIndex, the number Case at a
+     * glance and Manage hearing show. Listing's value comes first because listing sorted the offences
+     * by it; progression's own value covers offences whose orderIndex listing lost.
+     */
+    private void addOrdering(final JsonObjectBuilder offenceBuilder, final Offence offence, final JsonObject offenceFromListing) {
+        ofNullable(intFromListing(offenceFromListing, ORDER_INDEX).orElse(offence.getOrderIndex()))
+                .ifPresent(orderIndex -> offenceBuilder.add(ORDER_INDEX, orderIndex));
+        ofNullable(intFromListing(offenceFromListing, COUNT).orElse(offence.getCount()))
+                .ifPresent(count -> offenceBuilder.add(COUNT, count));
+    }
+
+    /**
+     * LPT-2677: application offences come from progression's own court application in stored array
+     * order, which carries no meaning. Order them as listing orders a case's offences: by orderIndex for
+     * Magistrates; otherwise offences with a count first, by count, then by orderIndex. Missing values last.
+     */
+    private static Comparator<Offence> courtListOrder(final JurisdictionType jurisdictionType) {
+        final Comparator<Offence> byOrderIndex = comparing(Offence::getOrderIndex, nullsLast(naturalOrder()));
+        return JurisdictionType.MAGISTRATES == jurisdictionType
+                ? byOrderIndex
+                : comparing(CourtlistQueryView::countOrNull, nullsLast(Comparator.<Integer>naturalOrder())).thenComparing(byOrderIndex);
+    }
+
+    private static Integer countOrNull(final Offence offence) {
+        return offence.getCount() == null || offence.getCount() == 0 ? null : offence.getCount();
+    }
+
+    private static Optional<Integer> intFromListing(final JsonObject offenceFromListing, final String key) {
+        final JsonValue value = offenceFromListing.get(key);
+        return value instanceof JsonNumber ? Optional.of(((JsonNumber) value).intValue()) : Optional.empty();
     }
 
     private void addWelshOffenceTitleFromListingIfMissing(final JsonObjectBuilder offenceBuilder, final Offence offence, final JsonObject offenceFromListing) {
