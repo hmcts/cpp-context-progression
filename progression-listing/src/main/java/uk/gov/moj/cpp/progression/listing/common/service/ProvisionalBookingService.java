@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.listing.common.service;
 
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 
 import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.core.Response;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
