@@ -1,0 +1,13 @@
+{
+  "currentGroup": {
+    "groupId": "aa254ae6-78cc-11ea-bc55-0242ac130003"
+  },
+  "newGroup": {
+    "groupId": "bb254ae6-78cc-11ea-bc55-0242ac130003",
+    "caseIds": [
+      "cc254ae6-78cc-11ea-bc55-0242ac130003",
+      "dd254ae6-78cc-11ea-bc55-0242ac130003"
+    ],
+    "leadCaseId": "cc254ae6-78cc-11ea-bc55-0242ac130003"
+  }
+}

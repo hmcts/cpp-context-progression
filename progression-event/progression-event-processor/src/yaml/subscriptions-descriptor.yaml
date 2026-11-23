@@ -522,6 +522,12 @@ subscriptions_descriptor:
         - name: progression.event.last-case-to-be-removed-from-group-cases-rejected
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.last-case-to-be-removed-from-group-cases-rejected.json
 
+        - name: progression.event.group-created-from-moved-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.group-created-from-moved-cases.json
+
+        - name: progression.event.last-cases-to-be-moved-from-group-rejected
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.last-cases-to-be-moved-from-group-rejected.json
+
         - name: progression.event.related-reference-added
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-added.json
 

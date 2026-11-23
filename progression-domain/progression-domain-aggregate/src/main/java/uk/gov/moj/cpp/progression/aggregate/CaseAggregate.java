@@ -4191,10 +4191,26 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
+    /**
+     * Preserves the case's existing {@code groupId} — correct for flipping membership flags within
+     * the same group (e.g. leaving a group entirely, or becoming its new master), wrong for moving to
+     * a different group. Use {@link #updateCaseGroupInfo(Boolean, Boolean, UUID)} for that.
+     */
     public Stream<Object> updateCaseGroupInfo(final Boolean isGroupMaster, final Boolean isGroupMember) {
+        return updateCaseGroupInfo(isGroupMaster, isGroupMember, this.prosecutionCase.getGroupId());
+    }
+
+    /**
+     * As {@link #updateCaseGroupInfo(Boolean, Boolean)}, but carries the case's group association to
+     * {@code groupId} instead of preserving whatever it already was — for moving a case to a
+     * different group. {@code CaseGroupInfoUpdatedEventListener} already writes whatever
+     * {@code groupId} the event payload carries, so no downstream change is needed for this.
+     */
+    public Stream<Object> updateCaseGroupInfo(final Boolean isGroupMaster, final Boolean isGroupMember, final UUID groupId) {
         return apply(Stream.of(CaseGroupInfoUpdated.caseGroupInfoUpdated()
                 .withProsecutionCase(ProsecutionCase.prosecutionCase()
                         .withValuesFrom(this.prosecutionCase)
+                        .withGroupId(groupId)
                         .withIsGroupMember(isGroupMember)
                         .withIsGroupMaster(isGroupMaster)
                         .build())

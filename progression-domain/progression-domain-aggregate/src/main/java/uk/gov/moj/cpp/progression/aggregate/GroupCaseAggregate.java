@@ -17,10 +17,14 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.moj.cpp.progression.events.CaseRemovalFromGroupCasesRejected;
 import uk.gov.moj.cpp.progression.events.CaseRemovedFromGroupCases;
 import uk.gov.moj.cpp.progression.events.CivilCaseExists;
+import uk.gov.moj.cpp.progression.events.GroupCreatedFromMovedCases;
 import uk.gov.moj.cpp.progression.events.LastCaseToBeRemovedFromGroupCasesRejected;
+import uk.gov.moj.cpp.progression.events.LastCasesToBeMovedFromGroupRejected;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -61,6 +65,12 @@ public class GroupCaseAggregate implements Aggregate {
                         this.groupMaster = e.getNewGroupMaster().getId();
                         this.masterCase = e.getNewGroupMaster();
                     }
+                }),
+                when(GroupCreatedFromMovedCases.class).apply(e -> {
+                    this.groupCases.addAll(e.getCaseIds());
+                    this.memberCases.addAll(e.getCaseIds());
+                    this.groupMaster = e.getLeadCase().getId();
+                    this.masterCase = e.getLeadCase();
                 }),
                 otherwiseDoNothing()
         );
@@ -116,11 +126,70 @@ public class GroupCaseAggregate implements Aggregate {
                 .count();
     }
 
+    /**
+     * Whether {@code caseIdsToMove} can be moved out of this group without leaving it with zero
+     * members — the bulk analogue of {@link #canBeRemoved}, generalised from "not the last case" to
+     * "not every remaining case".
+     */
+    public boolean canMoveCasesOut(final Set<UUID> caseIdsToMove) {
+        final long remaining = this.memberCases.stream()
+                .filter(caseId -> !caseIdsToMove.contains(caseId))
+                .count();
+        return remaining > 0;
+    }
+
+    /**
+     * Moves {@code movedCases} out of this group, one {@link CaseRemovedFromGroupCases} event per
+     * case still actually a member — reusing {@link #removeCaseFromGroupCases}'s own idempotency
+     * check, so a case already moved by a prior attempt is silently skipped rather than re-raising
+     * an event for it. {@code newGroupMaster} is only attached to the event for whichever moved case
+     * is the current master at the point it's processed; other moved cases don't reassign it.
+     * Callers must check {@link #canMoveCasesOut} first — this method does not guard against leaving
+     * the group empty.
+     */
+    public Stream<Object> moveCasesToNewGroup(final UUID groupId, final List<ProsecutionCase> movedCases, final ProsecutionCase newGroupMaster) {
+        final Stream.Builder<Object> events = Stream.builder();
+        for (final ProsecutionCase movedCase : movedCases) {
+            final boolean isCurrentMaster = movedCase.getId().equals(this.groupMaster);
+            removeCaseFromGroupCases(groupId, movedCase, isCurrentMaster ? newGroupMaster : null)
+                    .forEach(events::add);
+        }
+        return events.build();
+    }
+
     public Stream<Object> rejectLastCaseToBeRemovedFromGroup(final UUID groupId, final UUID removedCaseId) {
         return apply(Stream.of(LastCaseToBeRemovedFromGroupCasesRejected
                 .lastCaseToBeRemovedFromGroupCasesRejected()
                 .withGroupId(groupId)
                 .withCaseId(removedCaseId)
+                .build()));
+    }
+
+    /**
+     * Bulk analogue of {@link #rejectLastCaseToBeRemovedFromGroup} — raised when
+     * {@link #canMoveCasesOut} returns {@code false}, i.e. the requested move would leave this group
+     * with zero members.
+     */
+    public Stream<Object> rejectLastCasesToBeMovedFromGroup(final UUID groupId, final Set<UUID> caseIds) {
+        return apply(Stream.of(LastCasesToBeMovedFromGroupRejected
+                .lastCasesToBeMovedFromGroupRejected()
+                .withGroupId(groupId)
+                .withCaseIds(new ArrayList<>(caseIds))
+                .build()));
+    }
+
+    /**
+     * Seeds a brand-new group from cases that already exist (as {@code CaseAggregate} streams) —
+     * unlike {@link #initiateCourtProceedings}, this does not imply case creation. Callers must
+     * guard against {@code groupId} already having stream history before calling this (see
+     * {@code MoveGroupCasesHandler} — the "Existing Group Id" check).
+     */
+    public Stream<Object> createGroupFromMovedCases(final UUID groupId, final List<UUID> caseIds, final ProsecutionCase leadCase) {
+        return apply(Stream.of(GroupCreatedFromMovedCases
+                .groupCreatedFromMovedCases()
+                .withGroupId(groupId)
+                .withCaseIds(caseIds)
+                .withLeadCase(leadCase)
                 .build()));
     }
 

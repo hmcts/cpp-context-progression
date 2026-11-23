@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/move-group-cases.json",
+  "type": "object",
+  "properties": {
+    "currentGroup": {
+      "id": "http://moj.gov.uk/cpp/progression/command/current-group.json",
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "newLeadCaseId": {
+          "description": "The case that becomes the old group's lead (master) case. Only used when the current lead is among the cases being moved.",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "required": [
+        "groupId"
+      ],
+      "additionalProperties": false
+    },
+    "newGroup": {
+      "id": "http://moj.gov.uk/cpp/progression/command/new-group.json",
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "caseIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "leadCaseId": {
+          "description": "Must be one of caseIds. Becomes the new group's lead (master) case.",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "required": [
+        "groupId",
+        "caseIds",
+        "leadCaseId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "currentGroup",
+    "newGroup"
+  ],
+  "additionalProperties": false
+}
