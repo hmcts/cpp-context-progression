@@ -43,6 +43,7 @@ public class CaseRemovedFromGroupCasesEventProcessorTest {
     public static final String IS_CIVIL = "isCivil";
     public static final String IS_GROUP_MEMBER = "isGroupMember";
     public static final String IS_GROUP_MASTER = "isGroupMaster";
+    public static final String NUMBER_OF_GROUP_CASES = "numberOfGroupCases";
 
     @Mock
     private Sender sender;
@@ -88,6 +89,7 @@ public class CaseRemovedFromGroupCasesEventProcessorTest {
                         .withIsGroupMember(Boolean.TRUE)
                         .withIsGroupMaster(Boolean.TRUE)
                         .build())
+                .withNumberOfGroupCases(2)
                 .build();
 
         final JsonObject payload = objectToJsonObjectConverter.convert(caseRemovedFromGroupCases);
@@ -113,5 +115,6 @@ public class CaseRemovedFromGroupCasesEventProcessorTest {
         assertThat(event1.payload().getJsonObject(NEW_GROUP_MASTER).getBoolean(IS_CIVIL), is(true));
         assertThat(event1.payload().getJsonObject(NEW_GROUP_MASTER).getBoolean(IS_GROUP_MASTER), is(true));
         assertThat(event1.payload().getJsonObject(NEW_GROUP_MASTER).getBoolean(IS_GROUP_MEMBER), is(true));
+        assertThat(event1.payload().getInt(NUMBER_OF_GROUP_CASES), is(2));
     }
 }

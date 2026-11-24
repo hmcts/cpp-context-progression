@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.getLinkedApplicationCaseIds;
 
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -242,6 +243,7 @@ public class RelatedHearingEventProcessor {
         hearingNotificationInputData.setCourtCenterId(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getCourtCentre().getRoomId());
         hearingNotificationInputData.setHearingType(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getType().getDescription());
+        hearingNotificationInputData.setLinkedApplicationCaseIds(getLinkedApplicationCaseIds(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getCourtApplications()));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, hearingNotificationInputData);
 

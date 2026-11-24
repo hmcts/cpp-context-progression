@@ -1,0 +1,15 @@
+{
+  "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "COLC",
+  "oucode": "[OU_CODE]",
+  "shortName": "COLCC",
+  "fullName": "City of London Corporation",
+  "nameWelsh": "City of London Corporation",
+  "cpsFlag": false,
+  "address": {
+    "address1": "Guildhall",
+    "address2": "London",
+    "postcode": "EC2V 7HH"
+  }
+}

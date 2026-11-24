@@ -165,7 +165,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         when(aggregateService.get(feeEventStream, FeeAggregate.class)).thenReturn(feeAggregate);
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
-        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE4_ID, CASE1_ID, null);
+        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE4_ID, CASE1_ID, null, 3);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE4_ID));
     }
@@ -185,7 +185,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID));
 
-        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE3_ID, CASE3_ID, groupCaseAggregate.getGroupMaster());
+        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE3_ID, CASE3_ID, groupCaseAggregate.getGroupMaster(), 2);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(2));
         assertTrue(asList(CASE1_ID, CASE2_ID).contains(groupCaseAggregate.getGroupMaster()));
     }
@@ -207,7 +207,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
-        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE2_ID, CASE1_ID, null);
+        verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE2_ID, CASE1_ID, null, 1);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(1));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE2_ID));
     }
@@ -326,7 +326,8 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     }
 
     private void verifyCaseRemovedFromGroupCasesEventCreated(final UUID groupId, final UUID masterCaseId,
-                                                             final UUID removedCaseId, final UUID newGroupMasterId) throws EventStreamException {
+                                                             final UUID removedCaseId, final UUID newGroupMasterId,
+                                                             final int expectedNumberOfGroupCases) throws EventStreamException {
         ArgumentCaptor<Stream> caseArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
         ArgumentCaptor<Stream> groupArgumentCaptor = ArgumentCaptor.forClass(Stream.class);
 
@@ -353,6 +354,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         assertThat(caseRemovedFromGroupCasesEnvelope.metadata().name(), is("progression.event.case-removed-from-group-cases"));
         assertThat(caseRemovedFromGroupCases.getGroupId(), is(groupId));
         assertThat(caseRemovedFromGroupCases.getMasterCaseId(), is(masterCaseId));
+        assertThat(caseRemovedFromGroupCases.getNumberOfGroupCases(), is(expectedNumberOfGroupCases));
 
         assertCase(caseRemovedFromGroupCases.getRemovedCase(), removedCaseId, groupId, Boolean.FALSE, Boolean.FALSE);
         if (nonNull(newGroupMasterId)) {

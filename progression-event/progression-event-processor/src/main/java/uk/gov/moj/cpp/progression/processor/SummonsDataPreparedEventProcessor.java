@@ -42,6 +42,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicantEmailAddressUtil;
 import uk.gov.moj.cpp.progression.processor.summons.ApplicationSummonsService;
+import uk.gov.moj.cpp.progression.processor.summons.BulkCivilCaseSummonsNotificationService;
 import uk.gov.moj.cpp.progression.processor.summons.CaseDefendantSummonsService;
 import uk.gov.moj.cpp.progression.processor.summons.PublishSummonsDocumentService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsNotificationEmailPayloadService;
@@ -52,8 +53,10 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -103,6 +106,9 @@ public class SummonsDataPreparedEventProcessor {
     @Inject
     private SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService;
 
+    @Inject
+    private BulkCivilCaseSummonsNotificationService bulkCivilCaseSummonsNotificationService;
+
     /**
      * The payload supports a collection of cases and application but summons will only be generated
      * for either a case or an application at a time in a single transaction.
@@ -143,6 +149,8 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private void processApplicationSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> optionalLjaDetails, final boolean isWelsh, final List<UUID> confirmedApplicationIds) {
+        final Set<UUID> notifiedBulkCivilCaseGroupIds = new HashSet<>();
+
         for (final UUID applicationId : confirmedApplicationIds) {
 
             final CourtApplication courtApplicationQueried = getCourtApplication(jsonEnvelope, applicationId);
@@ -152,6 +160,12 @@ public class SummonsDataPreparedEventProcessor {
             if (!optionalSubjectNeeds.isPresent() || !isValidApplicationScenario(optionalSubjectNeeds)) {
                 LOGGER.info("Not generating summons for subject on application with ID '{}'", applicationId);
                 return;
+            }
+
+            if (bulkCivilCaseSummonsNotificationService.isBulkCivilCaseApplication(courtApplicationQueried)) {
+                bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseApplicationSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson,
+                        courtApplicationQueried, optionalSubjectNeeds.get().getSummonsApprovedOutcome(), notifiedBulkCivilCaseGroupIds);
+                continue;
             }
 
             final CourtApplicationPartyListingNeeds subjectNeeds = optionalSubjectNeeds.get();
@@ -190,11 +204,19 @@ public class SummonsDataPreparedEventProcessor {
     }
 
     private void processCaseSummons(final JsonEnvelope jsonEnvelope, final SummonsDataPrepared summonsDataPrepared, final JsonObject courtCentreJson, final Optional<LjaDetails> ljaDetails, final boolean isWelsh, final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds) {
+        final Set<UUID> notifiedBulkCivilCaseGroupIds = new HashSet<>();
+
         for (final ConfirmedProsecutionCaseId confirmedProsecutionCaseId : confirmedProsecutionCaseIds) {
             final UUID caseId = confirmedProsecutionCaseId.getId();
             final ProsecutionCase prosecutionCase = getProsecutionCase(jsonEnvelope, caseId);
-            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier());
             final List<UUID> confirmedDefendantIds = confirmedProsecutionCaseId.getConfirmedDefendantIds();
+
+            if (bulkCivilCaseSummonsNotificationService.isBulkCivilCase(prosecutionCase)) {
+                bulkCivilCaseSummonsNotificationService.handleBulkCivilCaseSummons(jsonEnvelope, summonsDataPrepared, courtCentreJson, prosecutionCase, confirmedDefendantIds, notifiedBulkCivilCaseGroupIds);
+                continue;
+            }
+
+            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier());
             final List<String> combinedDefendantDetailsForEmailChannel = newArrayList();
 
             confirmedDefendantIds.forEach(defendantId -> {
@@ -204,18 +226,20 @@ public class SummonsDataPreparedEventProcessor {
                     LOGGER.info("Not generating summons for defendant with ID '{}' on case '{}' as its not a required scenario", defendantId, caseId);
                     return;
                 }
-                final boolean isExparte = isExparte(prosecutionCase, defendantId);
                 final ListDefendantRequest defendantRequest = optionalDefendantRequest.get();
                 final SummonsType summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
                 final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
-                final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
-                        && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
 
                 final Defendant defendant = prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantId)).findFirst()
                         .orElseThrow(() -> new IllegalArgumentException(String.format("Unable to locate defendant '%s' on case '%s'", defendantId, caseId)));
 
-                final String defendantTemplateName = summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, getSummonsCode(prosecutionCase.getSummonsCode()), isWelsh);
                 final SummonsDocument defendantSummonsDocument = caseDefendantSummonsService.generateSummonsPayloadForDefendant(jsonEnvelope, summonsDataPrepared, prosecutionCase, defendant, defendantRequest, courtCentreJson, ljaDetails, summonProsecutor);
+
+                final boolean isExparte = isExparte(prosecutionCase, defendantId);
+                final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
+                        && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
+
+                final String defendantTemplateName = summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, getSummonsCode(prosecutionCase.getSummonsCode()), isWelsh);
                 final boolean addresseeIsYouth = addresseeIsYouth(summonsDataPrepared.getSummonsData().getHearingDateTime(), defendantSummonsDocument.getDefendant().getDateOfBirth());
                 final UUID materialId = randomUUID();
                 final String prosecutorEmailAddress = getProsecutorEmailAddress(summonsApprovedOutcome);
