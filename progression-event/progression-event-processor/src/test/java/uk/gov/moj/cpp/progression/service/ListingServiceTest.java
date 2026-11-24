@@ -33,6 +33,8 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
+import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -293,6 +295,26 @@ public class ListingServiceTest {
         assertThat(envelopeArgumentCaptor.getValue().payload(), is(listNextHearingsJson));
 
         verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldNotSendBookingReferencesStoredByReserveASlotToListing() {
+        final ArgumentCaptor<ListNextHearingsV3> sent = ArgumentCaptor.forClass(ListNextHearingsV3.class);
+        when(objectToJsonObjectConverter.convert(sent.capture())).thenReturn(createObjectBuilder().build());
+        final UUID hearingId = randomUUID();
+        final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
+                .withHearingId(hearingId)
+                .withBookingReferencesWithCourtScheduleIds(singletonList(BookingReferenceCourtScheduleIds.bookingReferenceCourtScheduleIds()
+                        .withBookingId(randomUUID())
+                        .withCourtScheduleIds(singletonList(randomUUID()))
+                        .build()))
+                .build();
+
+        listingService.listNextCourtHearings(buildJsonEnvelope(), listNextHearings);
+
+        assertThat(sent.getValue().getHearingId(), is(hearingId));
+        assertThat(sent.getValue().getBookingReferencesWithCourtScheduleIds() == null, is(true));
+        verify(sender).send(any());
     }
 
     private List<ListedCase> getListedCases(List<UUID> offenceIds, uk.gov.moj.cpp.progression.listing.domain.CommittingCourt committingCourt) {
