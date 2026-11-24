@@ -103,7 +103,7 @@ public class ListNewHearingApiTest {
 
         final JsonObject expected = createObjectBuilder(payload)
                 .add("listNewHearing", createObjectBuilder(payload.getJsonObject("listNewHearing"))
-                        .add("weekCommencingDate", createObjectBuilder().add("startDate", "2026-11-16").add("duration", 1)))
+                        .add("weekCommencingDate", createObjectBuilder().add("startDate", "2026-11-16")))
                 .build();
         assertThat(sent, is(expected));
     }
@@ -118,7 +118,7 @@ public class ListNewHearingApiTest {
 
         final JsonObject weekCommencingDate = sentFor(payload).getJsonObject("listNewHearing").getJsonObject("weekCommencingDate");
 
-        assertThat(weekCommencingDate, is(createObjectBuilder().add("startDate", "2026-11-23").add("duration", 1).build()));
+        assertThat(weekCommencingDate, is(createObjectBuilder().add("startDate", "2026-11-23").build()));
     }
 
     @Test

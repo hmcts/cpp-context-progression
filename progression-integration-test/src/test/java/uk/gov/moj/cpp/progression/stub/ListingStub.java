@@ -142,7 +142,7 @@ public class ListingStub {
             return hearing.getJSONArray("prosecutionCases").getJSONObject(0).getString("id").equals(caseId)
                     && hearing.getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId").equals(courtScheduleId)
                     && weekCommencingDate.getString("startDate").equals(weekCommencingStartDate)
-                    && weekCommencingDate.getInt("duration") == 1;
+                    && !weekCommencingDate.has("duration");
         } catch (JSONException e) {
             return false;
         }

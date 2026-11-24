@@ -24,8 +24,6 @@ public class ListNewHearingApi {
     private static final String CROWN = "CROWN";
     private static final String WEEK_COMMENCING_DATE = "weekCommencingDate";
     private static final String START_DATE = "startDate";
-    private static final String DURATION = "duration";
-    private static final int WEEK_COMMENCING_DURATION_IN_WEEKS = 1;
     private static final String BOOKED_SLOTS = "bookedSlots";
     private static final String COURT_SCHEDULE_ID = "courtScheduleId";
     private static final String START_TIME = "startTime";
@@ -59,8 +57,7 @@ public class ListNewHearingApi {
                 .map(bookedSlot -> createObjectBuilder(payload)
                         .add(LIST_NEW_HEARING, createObjectBuilder(listNewHearing)
                                 .add(WEEK_COMMENCING_DATE, createObjectBuilder()
-                                        .add(START_DATE, ZonedDateTime.parse(bookedSlot.getString(START_TIME)).toLocalDate().toString())
-                                        .add(DURATION, WEEK_COMMENCING_DURATION_IN_WEEKS)))
+                                        .add(START_DATE, ZonedDateTime.parse(bookedSlot.getString(START_TIME)).toLocalDate().toString())))
                         .build())
                 .orElse(payload);
     }
