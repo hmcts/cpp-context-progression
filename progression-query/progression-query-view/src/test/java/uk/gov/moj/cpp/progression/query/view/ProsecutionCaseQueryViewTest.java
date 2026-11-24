@@ -2837,6 +2837,28 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(defendantJudicialResults.size(), is(4));
         assertThat(defendantJudicialResults.getJsonObject(0).getString("label"), is(LABEL1));
         assertThat(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).getString("updatedOn"), is(notNullValue()));
+        assertThat(response.payloadAsJsonObject().getBoolean("isResultedInSjp"), is(true));
+    }
+
+    @Test
+    public void shouldNotFlagCaseAsResultedInSjpWhenSjpDecisionsHaveNoResults() {
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
+        final UUID caseId = fromString(envelopeWithCaseId.payloadAsJsonObject().getString("caseId"));
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase("SYNTHETIC-URN",
+                defendant().withId(randomUUID()).withMasterDefendantId(randomUUID()).build())).toString());
+        final List<SjpDecisionHearing> decisionHearings = singletonList(new SjpDecisionHearing(
+                uk.gov.justice.core.courts.Hearing.hearing().withId(randomUUID()).build(), ZonedDateTime.now()));
+
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
+        when(sjpDecisionService.getDecisionHearings(eq(envelopeWithCaseId), eq(caseId), any(), anyList())).thenReturn(decisionHearings);
+        when(hearingAtAGlanceService.getSjpDecisionHearings(decisionHearings, caseId)).thenReturn(emptyList());
+
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+
+        assertThat(response.payloadAsJsonObject().getBoolean("isResultedInSjp"), is(false));
     }
 
     @Test
@@ -2852,8 +2874,9 @@ public class ProsecutionCaseQueryViewTest {
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
         when(sjpDecisionService.getDecisionHearings(eq(envelopeWithCaseId), eq(caseId), any(), anyList())).thenReturn(emptyList());
 
-        prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
+        final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
 
         verify(hearingAtAGlanceService, never()).getSjpDecisionHearings(anyList(), any());
+        assertThat(response.payloadAsJsonObject().getBoolean("isResultedInSjp"), is(false));
     }
 }

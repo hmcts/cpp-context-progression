@@ -92,7 +92,6 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -469,15 +468,18 @@ public class ProsecutionCaseQuery {
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             final List<CourtApplication> linkedApplications = toCourtApplications(courtApplicationCaseEntities);
             final List<Hearings> hearingsList = new ArrayList<>(hearingAtAGlanceService.getCaseHearings(caseId.get()));
-            hearingsList.addAll(getSjpDecisionHearings(envelope, caseId.get(), prosecutionCase, linkedApplications));
+            final List<Hearings> sjpDecisionHearings = getSjpDecisionHearings(envelope, caseId.get(), prosecutionCase, linkedApplications);
+            hearingsList.addAll(sjpDecisionHearings);
             final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
             final JsonArray caseDefendantsJsonArray = listToJsonArrayConverter.convert(
                     caseAtAGlanceHelper.getCaagDefendantsList(getDefendantIdAndUpdatedOnMap(linkedApplications)));
+            final boolean isResultedInSjp = isNotEmpty(sjpDecisionHearings);
 
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
+            jsonObjectBuilder.add("isResultedInSjp", isResultedInSjp);
             jsonObjectBuilder.add("prosecutorDetails", prosecutorDetailsJson);
             jsonObjectBuilder.add("defendants", resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
 
