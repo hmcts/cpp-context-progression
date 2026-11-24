@@ -100,8 +100,19 @@ public class GroupCaseAggregate implements Aggregate {
                     .withMasterCaseId(groupMaster)
                     .withRemovedCase(removedCase)
                     .withNewGroupMaster(newGroupMaster)
+                    .withNumberOfGroupCases(numberOfGroupCasesAfterRemoving(removedCase.getId()))
                     .build()));
         }
+    }
+
+    /**
+     * Number of cases left in the group once {@code removedCaseId} is removed. {@code memberCases} holds
+     * every case of the group, the master included, and a new master is already a member.
+     */
+    private int numberOfGroupCasesAfterRemoving(final UUID removedCaseId) {
+        return (int) this.memberCases.stream()
+                .filter(caseId -> !caseId.equals(removedCaseId))
+                .count();
     }
 
     public Stream<Object> rejectLastCaseToBeRemovedFromGroup(final UUID groupId, final UUID removedCaseId) {

@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -41,6 +42,8 @@ import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.model.HearingListing;
+import uk.gov.moj.cpp.progression.service.AvailableHearingSlot;
+import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -81,7 +84,20 @@ public class ListCourtHearingTransformer {
     @Inject
     private ProgressionService progressionService;
 
+    @Inject
+    private ListingService listingService;
+
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
+    private static final String ENFORCEMENT_BUSINESS_TYPE = "ENF";
+    private static final String ENFORCEMENT_AUTO_BUSINESS_TYPE = "ENF_AUTO";
+    private static final String PANEL_ADULT = "ADULT";
+    private static final String PANEL_YOUTH = "YOUTH";
+    // OUCode of the Enforcement prosecuting authority - the same value submitted as
+    // "prosecutingAuthority" on the original stagingcivil.other-case request, echoed back by PCF
+    // Reference Data onto ProsecutionCaseIdentifier.prosecutionAuthorityOUCode. Confirmed from a
+    // live case ("GAPGD00") - not yet signed off by whoever owns that reference data, so this
+    // value may need to change.
+    private static final String ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE = "GAPGD00";
 
     /**
      * Transform a CourtReferral to ListCourtHearing
@@ -290,9 +306,56 @@ public class ListCourtHearingTransformer {
         final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCasesFromSpi(prosecutionCases, listHearingRequest.getListDefendantRequests());
         final ZonedDateTime expectedListingStartDateTime = calculateExpectedStartDate(listHearingRequest);
         final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, listHearingRequest.getListDefendantRequests());
+
+        final Optional<AvailableHearingSlot> availableSlot = isEnforcementCase(listOfProsecutionCase)
+                ? resolveEnforcementSlot(jsonEnvelope, listHearingRequest, listOfProsecutionCase, expectedListingStartDateTime)
+                : Optional.empty();
+
+        // Enforcement OTHER-type cases (single-date "ENF" or date-range "ENF_AUTO") must not fall
+        // back to PCF's generic OUCODE-resolved room when no Enforcement slot is confirmed - that
+        // room has no relation to whether an Enforcement session actually exists there, and would
+        // otherwise let Listing's business-type-blind legacy auto-allocate pipeline book it into an
+        // unrelated (e.g. NCFL) session instead of Unallocated.
+        final boolean isUnconfirmedEnforcementCase = availableSlot.isEmpty()
+                && isEnforcementCase(listOfProsecutionCase)
+                && (nonNull(listHearingRequest.getListedEndDateTime()) || nonNull(listHearingRequest.getListedStartDateTime()));
+
+        final CourtCentre courtCentre = availableSlot
+                .map(slot -> CourtCentre.courtCentre()
+                        .withValuesFrom(listHearingRequest.getCourtCentre())
+                        .withRoomId(UUID.fromString(slot.courtRoomId()))
+                        .build())
+                .orElseGet(() -> isUnconfirmedEnforcementCase && nonNull(listHearingRequest.getCourtCentre())
+                        ? CourtCentre.courtCentre().withValuesFrom(listHearingRequest.getCourtCentre()).withRoomId(null).build()
+                        : listHearingRequest.getCourtCentre());
+        final ZonedDateTime listedStartDateTime = availableSlot
+                .map(AvailableHearingSlot::hearingStartTime)
+                .orElseGet(listHearingRequest::getListedStartDateTime);
+
+        // A confirmed Enforcement slot must be listed into the exact court_schedule row the
+        // read-only search validated (via courtScheduleId), not merely handed to Listing as a
+        // courtRoomId+time pair. Listing's own allocation-candidate path re-derives a room+time
+        // match by re-searching Courtscheduler's atomic search-and-book endpoint, which hardcodes
+        // its own business-type allow-list (defaults to "NCFL" for non-police) with no awareness
+        // of ENF/ENF_AUTO - it would silently rebook into an unrelated NCFL session overlapping
+        // the same room/time instead of the Enforcement session actually found. Passing the exact
+        // courtScheduleId as a bookedSlot makes Listing list directly into that known session
+        // (HearingDaysEnrichmentService.enrichByBookedSlotsIfPresent -> CourtScheduleEnrichmentService's
+        // direct-listing case), bypassing that business-type-blind re-search entirely.
+        final List<RotaSlot> bookedSlots = availableSlot
+                .filter(slot -> nonNull(slot.courtScheduleId()))
+                .map(slot -> List.of(RotaSlot.rotaSlot()
+                        .withCourtScheduleId(slot.courtScheduleId())
+                        .withCourtCentreId(listHearingRequest.getCourtCentre().getId().toString())
+                        .withRoomId(slot.courtRoomId())
+                        .withStartTime(listedStartDateTime)
+                        .withDuration(listHearingRequest.getEstimateMinutes())
+                        .build()))
+                .orElseGet(listHearingRequest::getBookedSlots);
+
         return HearingListingNeeds.hearingListingNeeds()
                 .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
-                .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
+                .withListedStartDateTime(listedStartDateTime)
                 .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
                 .withEstimatedDuration(listHearingRequest.getEstimatedDuration())
                 .withId(hearingId)
@@ -302,18 +365,117 @@ public class ListCourtHearingTransformer {
                 .withType(listHearingRequest.getHearingType())
                 .withListingDirections(listHearingRequest.getListingDirections())
                 .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
-                .withCourtCentre(listHearingRequest.getCourtCentre())
+                .withCourtCentre(courtCentre)
                 .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
                 .withIsGroupProceedings(isGroupProceedings)
                 .withNumberOfGroupCases(isNotEmpty(prosecutionCases) ? prosecutionCases.size() : null)
                 .withWeekCommencingDate(listHearingRequest.getWeekCommencingDate())
-                .withBookedSlots(listHearingRequest.getBookedSlots())
+                .withBookedSlots(bookedSlots)
                 .withBookingType(listHearingRequest.getBookingType())
                 .withJudiciary(listHearingRequest.getJudiciary())
                 .withNonDefaultDays(listHearingRequest.getNonDefaultDays())
                 .withSpecialRequirements(listHearingRequest.getSpecialRequirements())
                 .withPriority(listHearingRequest.getPriority())
                 .build();
+    }
+
+    /**
+     * OTHER-type cases (initiationCode "O") must be allocated only to a genuinely confirmed
+     * Enforcement session - find one by searching Listing's hearing-slots search.
+     *
+     * <p>The submitted courtHearingLocation OUCode tells us whether a specific courtroom was
+     * requested: PCF's reference-data enrichment (see
+     * ProsecutionCaseFileInitialHearingToCCHearingRequestConverter in cpp-context-prosecution-casefile)
+     * only resolves {@code courtCentre.roomId} when the OUCode's last two digits matched a genuine
+     * courtroom (i.e. did not end "00") - an OUCode with no courtroom digits (ends "00") leaves
+     * {@code roomId} null. Per the business rule: no specific courtroom (roomId null) -> search all
+     * courtrooms at that OU for the business type; a specific courtroom (roomId present) -> search
+     * ONLY that courtroom, with no fallback to a different room if it has no Enforcement slot.
+     *
+     * <p>Two submission shapes, two business types: a date range (business type "ENF_AUTO") searches
+     * the whole listedStartDateTime-to-listedEndDateTime span for the first available slot on any
+     * day/time within it (or, when a specific courtroom was requested, within that courtroom only).
+     * A single specific dateOfHearing+timeOfHearing (business type "ENF") searches only that one day,
+     * constrained to a session that genuinely covers that exact time - the found slot's own room is
+     * used, but the hearing keeps its originally-requested exact time rather than whatever time the
+     * matched session-window itself reports (that's just the availability check).
+     */
+    private Optional<AvailableHearingSlot> resolveEnforcementSlot(final JsonEnvelope jsonEnvelope, final ListHearingRequest listHearingRequest,
+                                                                   final List<ProsecutionCase> listOfProsecutionCase, final ZonedDateTime expectedListingStartDateTime) {
+        if (isNull(listHearingRequest.getCourtCentre()) || isNull(listHearingRequest.getCourtCentre().getCode())) {
+            return Optional.empty();
+        }
+        final String ouCode = listHearingRequest.getCourtCentre().getCode();
+        final String panel = resolvePanel(expectedListingStartDateTime, listOfProsecutionCase);
+        final UUID requestedCourtRoomId = listHearingRequest.getCourtCentre().getRoomId();
+        final String courtRoomId = nonNull(requestedCourtRoomId) ? requestedCourtRoomId.toString() : null;
+
+        final ZonedDateTime endDateTime = listHearingRequest.getListedEndDateTime();
+        if (nonNull(endDateTime)) {
+            final ZonedDateTime startDateTime = nonNull(listHearingRequest.getListedStartDateTime())
+                    ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime();
+            if (isNull(startDateTime)) {
+                return Optional.empty();
+            }
+            return listingService.findAvailableHearingSlot(
+                    jsonEnvelope,
+                    ouCode,
+                    ENFORCEMENT_AUTO_BUSINESS_TYPE,
+                    panel,
+                    startDateTime.toLocalDate(),
+                    endDateTime.toLocalDate(),
+                    courtRoomId,
+                    null);
+        }
+
+        final ZonedDateTime exactStartDateTime = listHearingRequest.getListedStartDateTime();
+        if (isNull(exactStartDateTime)) {
+            return Optional.empty();
+        }
+        return listingService.findAvailableHearingSlot(
+                        jsonEnvelope,
+                        ouCode,
+                        ENFORCEMENT_BUSINESS_TYPE,
+                        panel,
+                        exactStartDateTime.toLocalDate(),
+                        exactStartDateTime.toLocalDate(),
+                        courtRoomId,
+                        exactStartDateTime)
+                // The matched session only proves a genuinely-available Enforcement slot exists at
+                // this exact time and which room it's in - the hearing keeps its originally-requested
+                // exact time rather than the session-window's own (coarser) reported start time.
+                .map(slot -> new AvailableHearingSlot(slot.courtRoomId(), exactStartDateTime, slot.courtScheduleId()));
+    }
+
+    /**
+     * Panel is mandatory on Listing's hearing-slots search. Derived the same way the rest of this
+     * transformer already decides youth vs adult ({@link #isDefendantYouth}) - any defendant under
+     * 18 at the expected hearing date means a youth panel is required; defaults to adult when that
+     * can't be determined (no date of birth, or no expected hearing date yet).
+     */
+    private String resolvePanel(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase) {
+        final boolean anyDefendantIsYouth = nonNull(expectedListingStartDateTime) && listOfProsecutionCase.stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .map(this::getDateOfBirth)
+                .flatMap(Optional::stream)
+                .anyMatch(dateOfBirth -> calculateIsYouth(dateOfBirth, expectedListingStartDateTime));
+        return anyDefendantIsYouth ? PANEL_YOUTH : PANEL_ADULT;
+    }
+
+    /**
+     * InitiationCode.O ("other case") alone is not Enforcement-specific - the exact same code is
+     * used for every plain civil "other case" submission (see
+     * ProsecutionCaseToGroupProsecutionConverterForOthers in cpp-context-staging-prosecutors-civil,
+     * which hardcodes InitiationCode "O" regardless of prosecuting authority, since both share the
+     * same submission endpoint). Only cases PCF has resolved to the Enforcement prosecuting
+     * authority may be searched against the Enforcement-only "ENF"/"ENF_AUTO" business types -
+     * anything else (an ordinary civil "other case") must follow the normal civil listing path.
+     */
+    private static boolean isEnforcementCase(final List<ProsecutionCase> prosecutionCases) {
+        return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
+                .allMatch(prosecutionCase -> InitiationCode.O.equals(prosecutionCase.getInitiationCode())
+                        && nonNull(prosecutionCase.getProsecutionCaseIdentifier())
+                        && ENFORCEMENT_PROSECUTION_AUTHORITY_OU_CODE.equals(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityOUCode()));
     }
 
     private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {

@@ -29,8 +29,11 @@ import static java.util.Objects.nonNull;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
@@ -84,13 +87,15 @@ public class UpdateDefendantListingStatusHandler {
         final EventStream stream = eventSource.getStreamById(groupMasterProsecutionCase.getGroupId());
         final GroupCaseAggregate groupCaseAggregate = aggregateService.get(stream, GroupCaseAggregate.class);
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing().withValuesFrom(updateDefendantListingStatus.getHearing());
-        final List<ProsecutionCase> prosecutionCases = new ArrayList<>(updateDefendantListingStatus.getHearing().getProsecutionCases());
+        // keyed by case id: a member case already in the incoming hearing is replaced, not duplicated
+        final Map<UUID, ProsecutionCase> prosecutionCases = new LinkedHashMap<>();
+        updateDefendantListingStatus.getHearing().getProsecutionCases().forEach(prosecutionCase -> prosecutionCases.put(prosecutionCase.getId(), prosecutionCase));
         groupCaseAggregate.getMemberCases().stream().filter(caseId -> groupMasterProsecutionCase.getId().compareTo(caseId) != 0).forEach(caseId -> {
             final EventStream eventStream = eventSource.getStreamById(caseId);
             final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            prosecutionCases.add(caseAggregate.getProsecutionCase());
+            prosecutionCases.put(caseId, caseAggregate.getProsecutionCase());
         });
-        updatedHearingBuilder.withProsecutionCases(prosecutionCases);
+        updatedHearingBuilder.withProsecutionCases(new ArrayList<>(prosecutionCases.values()));
         return UpdateDefendantListingStatusV2.updateDefendantListingStatusV2()
                 .withValuesFrom(updateDefendantListingStatus)
                 .withHearing(updatedHearingBuilder.build()).build();

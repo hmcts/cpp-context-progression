@@ -22,6 +22,14 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
 
     List<ProsecutionCaseEntity> findByGroupId(final UUID groupId);
 
+    @Query(value = """
+    SELECT CAST(count(*) AS integer)
+      FROM prosecution_case p
+      WHERE p.group_id = :groupId
+      AND CAST(p.payload AS jsonb) ->> 'isGroupMember' = 'true'
+    """, isNative = true)
+    Integer countActiveGroupMembers(@QueryParam("groupId") final UUID groupId);
+
     @Query("FROM ProsecutionCaseEntity pce where pce.caseId in (:caseIds)")
     List<ProsecutionCaseEntity> findByProsecutionCaseIds(
             @QueryParam("caseIds") final List<UUID> caseIds);

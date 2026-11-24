@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -655,7 +656,7 @@ public class CourtlistQueryViewTest {
                         .build())
                 .build();
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("name"), is("CPS"));
         assertThat(result.getJsonArray("reportingRestrictions"), notNullValue());
         assertThat(result.getJsonArray("offences"), notNullValue());
@@ -672,7 +673,7 @@ public class CourtlistQueryViewTest {
                         .build())
                 .build();
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("organisationName"), is("Acme Organisation"));
         assertThat(result.getString("welshOrganisationName"), is(""));
         assertThat(result.containsKey("firstName"), is(false));
@@ -698,7 +699,7 @@ public class CourtlistQueryViewTest {
                         .build())
                 .build();
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("firstName"), is("Alice"));
         assertThat(result.getString("surname"), is("Brown"));
         assertThat(result.getString("dateOfBirth"), is("10 Mar 1992"));
@@ -727,7 +728,7 @@ public class CourtlistQueryViewTest {
         final CourtApplication courtApplication = mock(CourtApplication.class);
         when(courtApplication.getApplicant()).thenReturn(applicant);
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("firstName"), is("Bob"));
         assertThat(result.getString("surname"), is("Wilson"));
         assertThat(result.getString("dateOfBirth"), is("5 Jul 1988"));
@@ -752,7 +753,7 @@ public class CourtlistQueryViewTest {
                 .withApplicant(applicant)
                 .build();
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("organisationName"), is("Corporate Defendant Ltd"));
         assertThat(result.containsKey("firstName"), is(false));
         assertThat(result.containsKey("surname"), is(false));
@@ -773,7 +774,7 @@ public class CourtlistQueryViewTest {
                         .build())
                 .build();
         final JsonObject result = invokePrivateMethod("buildApplicantForCourtApplication",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, emptyList());
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, emptyList(), JurisdictionType.MAGISTRATES);
         assertThat(result.getString("name"), is("Solicitors Ltd"));
         assertThat(result.containsKey("organisationName"), is(false));
         assertThat(result.containsKey("asn"), is(false));
@@ -798,7 +799,7 @@ public class CourtlistQueryViewTest {
                 .withCourtApplicationCases(emptyList())
                 .build();
         final JsonArray result = invokePrivateMethod("buildApplicationOffences",
-                new Class<?>[]{CourtApplication.class, List.class}, courtApplication, singletonList(randomUUID()));
+                new Class<?>[]{CourtApplication.class, List.class, JurisdictionType.class}, courtApplication, singletonList(randomUUID()), JurisdictionType.MAGISTRATES);
         assertThat(result.size(), is(0));
     }
 
@@ -917,6 +918,127 @@ public class CourtlistQueryViewTest {
         final JsonObject defendant = firstHearing.getJsonArray("defendants").getJsonObject(0);
         assertThat(defendant.containsKey("offences"), is(true));
         assertThat(defendant.getJsonArray("offences").size(), is(2));
+    }
+
+    /**
+     * LPT-2677: the court list numbers each offence with its orderIndex (the number Case at a glance and
+     * Manage hearing show). The offence rebuilt here must keep listing's orderIndex and count, so a gap
+     * left by a removed offence (1, 3) is printed as 1, 3 and not as positions 1, 2.
+     */
+    @Test
+    public void shouldKeepListingOrderIndexAndCountOnEachOffence() throws IOException {
+        final JsonObject actualOffence = firstOffenceOfCourtList(withOrderingOnListingOffences(
+                getJsonPayload("listing-hearing-with-prosecution-case.json"), 3, 2));
+
+        assertThat(actualOffence.getInt("orderIndex"), is(3));
+        assertThat(actualOffence.getInt("count"), is(2));
+    }
+
+    @Test
+    public void shouldTakeOrderIndexAndCountFromProgressionWhenListingHasNone() throws IOException {
+        final JsonObject actualOffence = firstOffenceOfCourtList(getJsonPayload("listing-hearing-with-prosecution-case.json"));
+
+        assertThat(actualOffence.getInt("orderIndex"), is(1));
+        assertThat(actualOffence.getInt("count"), is(0));
+    }
+
+    private static final String APPLICATION_OFFENCE_A = "072319bf-73c2-41b5-b309-c8c86c9b077b";
+    private static final String APPLICATION_OFFENCE_B = "651fc68b-8b9f-4cf2-912a-0b55d536323c";
+
+    /**
+     * LPT-2677: application offences are built from progression's own court application, in its stored
+     * array order. They are ordered and numbered by orderIndex, as listing orders a case's offences.
+     */
+    @Test
+    public void shouldOrderAndNumberApplicationOffencesByOrderIndexForMagistrates() throws IOException {
+        final List<Hearing> hearings = getHearings("courtlists.hearings.repository.all.json");
+        setApplicationOffenceOrdering(hearings, APPLICATION_OFFENCE_A, 5, 0);
+        setApplicationOffenceOrdering(hearings, APPLICATION_OFFENCE_B, 2, 0);
+
+        final JsonObject courtListHearing = firstHearingOfApplicationCourtList(hearings);
+
+        final JsonArray defendantOffences = courtListHearing.getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");
+        assertThat(idsAndOrderIndexes(defendantOffences), is(List.of(APPLICATION_OFFENCE_B + ":2", APPLICATION_OFFENCE_A + ":5")));
+        final JsonArray applicantOffences = courtListHearing.getJsonObject("courtApplication").getJsonObject("applicant").getJsonArray("offences");
+        assertThat(idsAndOrderIndexes(applicantOffences), is(List.of(APPLICATION_OFFENCE_B + ":2", APPLICATION_OFFENCE_A + ":5")));
+    }
+
+    @Test
+    public void shouldPutApplicationOffencesWithACountFirstForCrown() throws IOException {
+        final List<Hearing> hearings = getHearings("courtlists.hearings.repository.all.json").stream()
+                .map(hearing -> Hearing.hearing().withValuesFrom(hearing).withJurisdictionType(JurisdictionType.CROWN).build())
+                .collect(toList());
+        setApplicationOffenceOrdering(hearings, APPLICATION_OFFENCE_A, 5, 1);
+        setApplicationOffenceOrdering(hearings, APPLICATION_OFFENCE_B, 2, 0);
+
+        final JsonObject courtListHearing = firstHearingOfApplicationCourtList(hearings);
+
+        final JsonArray defendantOffences = courtListHearing.getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");
+        assertThat(idsAndOrderIndexes(defendantOffences), is(List.of(APPLICATION_OFFENCE_A + ":5", APPLICATION_OFFENCE_B + ":2")));
+        assertThat(defendantOffences.getJsonObject(0).getInt("count"), is(1));
+    }
+
+    private JsonObject firstHearingOfApplicationCourtList(final List<Hearing> hearings) throws IOException {
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(Optional.of(getJsonPayload("listing-hearing-with-court-application.json")));
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearings);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.search.court.list").build(),
+                createObjectBuilder().build());
+
+        return courtlistQueryView.searchCourtlist(query).payloadAsJsonObject()
+                .getJsonArray("hearingDates").getJsonObject(0)
+                .getJsonArray("courtRooms").getJsonObject(0)
+                .getJsonArray("timeslots").getJsonObject(0)
+                .getJsonArray("hearings").getJsonObject(0);
+    }
+
+    private static void setApplicationOffenceOrdering(final List<Hearing> hearings, final String offenceId, final int orderIndex, final int count) {
+        hearings.stream()
+                .filter(hearing -> hearing.getCourtApplications() != null)
+                .flatMap(hearing -> hearing.getCourtApplications().stream())
+                .filter(application -> application.getCourtApplicationCases() != null)
+                .flatMap(application -> application.getCourtApplicationCases().stream())
+                .filter(applicationCase -> applicationCase.getOffences() != null)
+                .forEach(applicationCase -> applicationCase.getOffences().replaceAll(offence -> offence.getId().toString().equals(offenceId)
+                        ? Offence.offence().withValuesFrom(offence).withOrderIndex(orderIndex).withCount(count).build()
+                        : offence));
+    }
+
+    private static List<String> idsAndOrderIndexes(final JsonArray offences) {
+        return offences.getValuesAs(JsonObject.class).stream()
+                .map(offence -> offence.getString("id") + ":" + (offence.containsKey("orderIndex") ? offence.get("orderIndex") : "none"))
+                .collect(toList());
+    }
+
+    private JsonObject firstOffenceOfCourtList(final JsonObject listingPayload) throws IOException {
+        final List<Hearing> hearings = getHearings("courtlists.hearings.repository.all.json");
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(hearings.get(0).getProsecutionCases().get(0)).toString());
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(Optional.of(listingPayload));
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearings);
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.search.court.list").build(),
+                createObjectBuilder().build());
+
+        return firstDefendant(courtlistQueryView.searchCourtlist(query).payloadAsJsonObject())
+                .getJsonArray("offences").getJsonObject(0);
+    }
+
+    private static JsonObject firstDefendant(final JsonObject courtList) {
+        return courtList.getJsonArray("hearingDates").getJsonObject(0)
+                .getJsonArray("courtRooms").getJsonObject(0)
+                .getJsonArray("timeslots").getJsonObject(0)
+                .getJsonArray("hearings").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0);
+    }
+
+    private static JsonObject withOrderingOnListingOffences(final JsonObject listingPayload, final int orderIndex, final int count) {
+        final String json = listingPayload.toString().replace("\"id\":\"3789ab16-0bb7-4ef1-87ef-c936bf0364f1\"",
+                "\"id\":\"3789ab16-0bb7-4ef1-87ef-c936bf0364f1\",\"orderIndex\":" + orderIndex + ",\"count\":" + count);
+        return createReader(new ByteArrayInputStream(json.getBytes())).readObject();
     }
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
