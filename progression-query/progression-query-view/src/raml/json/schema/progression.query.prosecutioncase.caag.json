@@ -6,6 +6,10 @@
     "caseId": {
       "type": "string"
     },
+    "isResultedInSjp": {
+      "description": "True when the case shows results of SJP decisions (CHD-3311)",
+      "type": "boolean"
+    },
     "caseDetails": {
       "description": "Describes the case details",
       "type": "object",

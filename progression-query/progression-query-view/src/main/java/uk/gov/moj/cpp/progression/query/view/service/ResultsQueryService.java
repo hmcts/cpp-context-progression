@@ -14,8 +14,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,13 +49,7 @@ public class ResultsQueryService implements SjpDecisionResultsSource {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Override
-    public List<SjpDecisionHearing> getDecisionHearings(final JsonEnvelope envelope, final List<UUID> decisionIds) {
-        final List<SjpDecisionHearing> decisionHearings = new ArrayList<>();
-        decisionIds.forEach(decisionId -> getDecisionHearing(envelope, decisionId).ifPresent(decisionHearings::add));
-        return decisionHearings;
-    }
-
-    private Optional<SjpDecisionHearing> getDecisionHearing(final JsonEnvelope envelope, final UUID decisionId) {
+    public Optional<SjpDecisionHearing> getDecisionHearing(final JsonEnvelope envelope, final UUID decisionId) {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName(RESULTS_GET_HEARING_DETAILS_INTERNAL),
                 createObjectBuilder().add("hearingId", decisionId.toString()).build());
         final JsonEnvelope response = requester.requestAsAdmin(request);

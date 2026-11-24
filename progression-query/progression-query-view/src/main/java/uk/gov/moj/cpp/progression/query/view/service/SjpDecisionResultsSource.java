@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.query.view.service;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -13,8 +13,7 @@ import java.util.UUID;
 public interface SjpDecisionResultsSource {
 
     /**
-     * @return the published hearing for each decision ID that has one, in the order of {@code decisionIds}. Decisions with
-     * no stored results are left out.
+     * @return the published hearing for the decision, or empty if no results are stored for it.
      */
-    List<SjpDecisionHearing> getDecisionHearings(JsonEnvelope envelope, List<UUID> decisionIds);
+    Optional<SjpDecisionHearing> getDecisionHearing(JsonEnvelope envelope, UUID decisionId);
 }

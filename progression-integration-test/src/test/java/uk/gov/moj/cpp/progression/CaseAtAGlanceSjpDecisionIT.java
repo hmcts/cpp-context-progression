@@ -14,6 +14,7 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryApplicationTypeGroups;
 import static uk.gov.moj.cpp.progression.stub.ResultsStub.stubSjpDecisionResults;
 import static uk.gov.moj.cpp.progression.stub.ResultsStub.verifySjpDecisionResultsNotQueried;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.stubSjpCaseWithDecisions;
@@ -30,7 +31,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * CHD-3311: Case at a Glance shows the SJP decision of a case created from SJP (initiation code J) once an in-scope
- * application (here a statutory declaration, MC80528) is linked to it. The decisions come from SJP, their results from
+ * application (here a statutory declaration, MC80528) is linked to it. In-scope application types are the reference
+ * data statdec, appeal and reopen groups. The decisions come from SJP, their results from
  * the payloads Results stored.
  */
 public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
@@ -38,7 +40,10 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
     private static final String SJP_ORIGIN_CASE = "progression.command.initiate-court-proceedings.json";
     private static final String LINKED_APPLICATION = "applications/progression.initiate-court-proceedings-for-generic-linked-application.json";
     private static final String OUT_OF_SCOPE_APPLICATION_TYPE_CODE = "AS14518";
+    private static final String OUT_OF_SCOPE_APPLICATION_TYPE_ID = "e857c8ea-cd95-47d1-842f-2d618e77a9b5";
     private static final String STATUTORY_DECLARATION_TYPE_CODE = "MC80528";
+    // In the statdec group of referencedata.query.application-type-groups.json
+    private static final String STATUTORY_DECLARATION_TYPE_ID = "7375727f-30fc-3f55-99f3-36adc4f0e70e";
 
     private static final String OFFENCE_RESULTS = "$.defendants[0].caagDefendantOffences[0].caagResults";
     private static final String DEFENDANT_RESULTS = "$.defendants[0].defendantJudicialResults";
@@ -53,6 +58,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         defendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
+        stubQueryApplicationTypeGroups("/restResource/referencedata.query.application-type-groups.json");
     }
 
     @Test
@@ -62,7 +68,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         stubSjpDecisionResults(decisionId, caseId, defendantId, "2026-01-05", "2026-01-05T12:30:00.000Z", "100.00");
 
         createSjpOriginCase();
-        linkApplication(STATUTORY_DECLARATION_TYPE_CODE);
+        linkApplication(STATUTORY_DECLARATION_TYPE_ID, STATUTORY_DECLARATION_TYPE_CODE);
 
         assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
@@ -96,7 +102,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         stubSjpDecisionResults(reDecisionId, caseId, defendantId, "2026-02-10", "2026-02-10T12:30:00.000Z", "50.00");
 
         createSjpOriginCase();
-        linkApplication(STATUTORY_DECLARATION_TYPE_CODE);
+        linkApplication(STATUTORY_DECLARATION_TYPE_ID, STATUTORY_DECLARATION_TYPE_CODE);
 
         assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withJsonPath(OFFENCE_RESULTS + ".length()", is(1)),
@@ -115,7 +121,7 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         stubSjpDecisionResults(decisionId, caseId, defendantId, "2026-01-05", "2026-01-05T12:30:00.000Z", "100.00");
 
         createSjpOriginCase();
-        linkApplication(OUT_OF_SCOPE_APPLICATION_TYPE_CODE);
+        linkApplication(OUT_OF_SCOPE_APPLICATION_TYPE_ID, OUT_OF_SCOPE_APPLICATION_TYPE_CODE);
 
         assertThat(pollCaagUntilApplicationIsLinked(), isJson(allOf(
                 withoutJsonPath(OFFENCE_RESULTS + "[0]"),
@@ -141,8 +147,9 @@ public class CaseAtAGlanceSjpDecisionIT extends AbstractIT {
         pollProsecutionCasesProgressionForCAAG(caseId, withJsonPath("$.caseId", equalTo(caseId)));
     }
 
-    private void linkApplication(final String applicationTypeCode) {
+    private void linkApplication(final String applicationTypeId, final String applicationTypeCode) {
         final String payload = getPayload(LINKED_APPLICATION)
+                .replace("\"id\": \"" + OUT_OF_SCOPE_APPLICATION_TYPE_ID + "\"", "\"id\": \"" + applicationTypeId + "\"")
                 .replace("\"code\": \"" + OUT_OF_SCOPE_APPLICATION_TYPE_CODE + "\"", "\"code\": \"" + applicationTypeCode + "\"")
                 .replace("APPLICATION_ID", applicationId)
                 .replace("HEARING_ID", randomUUID().toString())

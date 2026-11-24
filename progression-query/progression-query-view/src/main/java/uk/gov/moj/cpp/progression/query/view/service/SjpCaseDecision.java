@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * The parts of an SJP {@code caseDecisions[]} entry (from {@code sjp.query.case}) needed to pick which decisions to show
- * on CAAG. For a normal SJP case decision, {@code id} is also the hearing ID SJP published the results under.
+ * The SJP case decision (from {@code sjp.query.case}) to show on CAAG. {@code id} is also the hearing ID SJP published
+ * the decision's results under.
  */
-public record SjpCaseDecision(UUID id, ZonedDateTime savedAt, boolean applicationDecision) {
+public record SjpCaseDecision(UUID id, ZonedDateTime savedAt) {
 }

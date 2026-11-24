@@ -55,7 +55,6 @@ import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
-import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionHearing;
 import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
@@ -89,10 +88,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -346,7 +345,8 @@ public class ProsecutionCaseQuery {
 
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
-            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
+            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities,
+                    getApplicationTypeCategories(caseId.get(), courtApplicationCaseEntities), jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
@@ -424,18 +424,28 @@ public class ProsecutionCaseQuery {
 
     }
 
-    private void populateStatdecApplicationStatuses(final UUID caseId, final List<CourtApplicationCaseEntity> courtApplicationCaseEntities, final JsonObjectBuilder jsonObjectBuilder) {
+    /**
+     * The statdec, appeal and reopen application types from reference data, by type id. Empty when the case has no
+     * applications or reference data fails, which leaves out the application statuses and the SJP decision results.
+     */
+    private Map<UUID, StatdecApplicationCategory> getApplicationTypeCategories(final UUID caseId, final List<CourtApplicationCaseEntity> courtApplicationCaseEntities) {
         if (CollectionUtils.isEmpty(courtApplicationCaseEntities)) {
-            return;
+            return Map.of();
         }
-
-        final Map<UUID, StatdecApplicationCategory> applicationTypeCategories;
         try {
-            applicationTypeCategories = referenceDataService.getApplicationTypeGroups(STATDEC_APPLICATION_TYPE_GROUPS)
+            return referenceDataService.getApplicationTypeGroups(STATDEC_APPLICATION_TYPE_GROUPS)
                     .map(StatdecApplicationStatusHelper::getApplicationTypeCategories)
                     .orElse(Map.of());
         } catch (final RuntimeException e) {
-            LOGGER.warn("Unable to get application type groups from reference data, {} left out for caseId '{}'", STATDEC_APPLICATION_STATUSES, caseId, e);
+            LOGGER.warn("Unable to get application type groups from reference data, {} and SJP decision results left out for caseId '{}'", STATDEC_APPLICATION_STATUSES, caseId, e);
+            return Map.of();
+        }
+    }
+
+    private void populateStatdecApplicationStatuses(final UUID caseId, final List<CourtApplicationCaseEntity> courtApplicationCaseEntities,
+                                                    final Map<UUID, StatdecApplicationCategory> applicationTypeCategories,
+                                                    final JsonObjectBuilder jsonObjectBuilder) {
+        if (applicationTypeCategories.isEmpty()) {
             return;
         }
 
@@ -468,16 +478,21 @@ public class ProsecutionCaseQuery {
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             final List<CourtApplication> linkedApplications = toCourtApplications(courtApplicationCaseEntities);
+            final Map<UUID, StatdecApplicationCategory> applicationTypeCategories = getApplicationTypeCategories(caseId.get(), courtApplicationCaseEntities);
             final List<Hearings> hearingsList = new ArrayList<>(hearingAtAGlanceService.getCaseHearings(caseId.get()));
-            hearingsList.addAll(getSjpDecisionHearings(envelope, caseId.get(), prosecutionCase, linkedApplications));
+            final Optional<Hearings> sjpDecisionHearing = getSjpDecisionHearing(envelope, caseId.get(), prosecutionCase, linkedApplications,
+                    applicationTypeCategories.keySet());
+            sjpDecisionHearing.ifPresent(hearingsList::add);
             final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
             final JsonArray caseDefendantsJsonArray = listToJsonArrayConverter.convert(
                     caseAtAGlanceHelper.getCaagDefendantsList(getDefendantIdAndUpdatedOnMap(linkedApplications)));
+            final boolean isResultedInSjp = sjpDecisionHearing.isPresent();
 
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
+            jsonObjectBuilder.add("isResultedInSjp", isResultedInSjp);
             jsonObjectBuilder.add("prosecutorDetails", prosecutorDetailsJson);
             jsonObjectBuilder.add("defendants", resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
 
@@ -495,7 +510,7 @@ public class ProsecutionCaseQuery {
             }
 
             populateAppealLodgedInfo(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
-            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities, jsonObjectBuilder);
+            populateStatdecApplicationStatuses(caseId.get(), courtApplicationCaseEntities, applicationTypeCategories, jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.warn(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
@@ -505,14 +520,14 @@ public class ProsecutionCaseQuery {
     }
 
     /**
-     * The SJP decisions to show on CAAG (CHD-3311), as resulted hearings. They are passed to {@link CaseAtAGlanceHelper}
-     * only, never to the CAAG hearings timeline. Empty unless the case came from SJP and has an in-scope application.
+     * The SJP decision to show on CAAG (CHD-3311), as a resulted hearing. It is passed to {@link CaseAtAGlanceHelper} only,
+     * never to the CAAG hearings timeline. Empty unless the case came from SJP and has an application of one of the
+     * {@code inScopeApplicationTypeIds}.
      */
-    private List<Hearings> getSjpDecisionHearings(final JsonEnvelope envelope, final UUID caseId, final ProsecutionCase prosecutionCase,
-                                                  final List<CourtApplication> linkedApplications) {
-        final List<SjpDecisionHearing> decisionHearings =
-                sjpDecisionService.getDecisionHearings(envelope, caseId, prosecutionCase.getInitiationCode(), linkedApplications);
-        return decisionHearings.isEmpty() ? emptyList() : hearingAtAGlanceService.getSjpDecisionHearings(decisionHearings, caseId);
+    private Optional<Hearings> getSjpDecisionHearing(final JsonEnvelope envelope, final UUID caseId, final ProsecutionCase prosecutionCase,
+                                                     final List<CourtApplication> linkedApplications, final Set<UUID> inScopeApplicationTypeIds) {
+        return sjpDecisionService.getDecisionHearing(envelope, caseId, prosecutionCase.getInitiationCode(), linkedApplications, inScopeApplicationTypeIds)
+                .map(decisionHearing -> hearingAtAGlanceService.getSjpDecisionHearing(decisionHearing, caseId));
     }
 
     private List<CourtApplication> toCourtApplications(final List<CourtApplicationCaseEntity> courtApplicationCaseEntities) {
