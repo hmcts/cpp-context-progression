@@ -477,6 +477,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-deleted-for-prosecution-case
           schema_uri: http://justice.gov.uk/progression/courts/hearing-deleted-for-prosecution-case.json
 
+        - name: progression.events.hearing-removed-for-prosecution-case
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.hearing-removed-for-prosecution-case.json
+
         - name: progression.event.hearing-deleted-for-court-application
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted-for-court-application.json
 

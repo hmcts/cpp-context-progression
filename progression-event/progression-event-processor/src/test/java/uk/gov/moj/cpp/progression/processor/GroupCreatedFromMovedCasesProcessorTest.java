@@ -171,12 +171,28 @@ class GroupCreatedFromMovedCasesProcessorTest {
 
         processor.processEvent(event);
 
-        verify(sender, times(2)).send(envelopeCaptor.capture());
+        verify(sender, times(4)).send(envelopeCaptor.capture());
 
         final List<JsonEnvelope> sentEnvelopes = envelopeCaptor.getAllValues();
         assertThat(sentEnvelopes.get(0).metadata().name(), is("public.progression.group-created-from-moved-cases"));
 
-        final JsonEnvelope listingCommand = sentEnvelopes.get(1);
+        final JsonEnvelope leadCaseDetachCommand = sentEnvelopes.get(1);
+        assertThat(leadCaseDetachCommand, jsonEnvelope(
+                metadata().withName("progression.command.remove-hearing-for-prosecution-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.hearingId", is(oldHearing.getId().toString())),
+                        withJsonPath("$.prosecutionCaseId", is(leadCaseId.toString()))
+                ))));
+
+        final JsonEnvelope otherCaseDetachCommand = sentEnvelopes.get(2);
+        assertThat(otherCaseDetachCommand, jsonEnvelope(
+                metadata().withName("progression.command.remove-hearing-for-prosecution-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.hearingId", is(oldHearing.getId().toString())),
+                        withJsonPath("$.prosecutionCaseId", is(otherCaseId.toString()))
+                ))));
+
+        final JsonEnvelope listingCommand = sentEnvelopes.get(3);
         assertThat(listingCommand, jsonEnvelope(
                 metadata().withName("progression.command.update-defendant-listing-status"),
                 payloadIsJson(allOf(

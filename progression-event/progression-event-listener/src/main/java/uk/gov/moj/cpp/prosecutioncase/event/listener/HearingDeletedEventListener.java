@@ -4,6 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
+import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
@@ -29,6 +30,7 @@ public class HearingDeletedEventListener {
 
     private static final String PROGRESSION_EVENT_HEARING_DELETED = "progression.event.hearing-deleted";
     private static final String PROGRESSION_EVENT_HEARING_DELETED_FOR_PROSECUTION_CASE = "progression.event.hearing-deleted-for-prosecution-case";
+    private static final String PROGRESSION_EVENTS_HEARING_REMOVED_FOR_PROSECUTION_CASE = "progression.events.hearing-removed-for-prosecution-case";
 
     @Inject
     private HearingRepository hearingRepository;
@@ -78,5 +80,17 @@ public class HearingDeletedEventListener {
             caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
             matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
         });
+    }
+
+    @Handles(PROGRESSION_EVENTS_HEARING_REMOVED_FOR_PROSECUTION_CASE)
+    public void handleHearingRemovedForProsecutionCase(final Envelope<HearingRemovedForProsecutionCase> event) {
+        final UUID hearingId = event.payload().getHearingId();
+        final UUID prosecutionCaseId = event.payload().getProsecutionCaseId();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Received event '{}' hearingId: {} prosecutionCaseId: {}", PROGRESSION_EVENTS_HEARING_REMOVED_FOR_PROSECUTION_CASE, hearingId, prosecutionCaseId);
+        }
+
+        caseDefendantHearingRepository.removeByHearingIdAndCaseId(hearingId, prosecutionCaseId);
     }
 }
