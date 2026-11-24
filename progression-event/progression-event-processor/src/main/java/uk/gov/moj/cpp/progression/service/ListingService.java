@@ -95,7 +95,11 @@ public class ListingService {
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
 
-        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
+        // Events stored by the reserve-a-slot release can carry this field; listing on this release rejects it
+        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(ListNextHearingsV3.listNextHearingsV3()
+                .withValuesFrom(listNextHearings)
+                .withBookingReferencesWithCourtScheduleIds(null)
+                .build());
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
         }
