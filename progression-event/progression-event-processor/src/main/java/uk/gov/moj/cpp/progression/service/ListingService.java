@@ -95,11 +95,9 @@ public class ListingService {
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
 
-        // Events stored by the reserve-a-slot release can carry this field; listing on this release rejects it
-        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(ListNextHearingsV3.listNextHearingsV3()
-                .withValuesFrom(listNextHearings)
-                .withBookingReferencesWithCourtScheduleIds(null)
-                .build());
+        // Sent as is: on reserve a slot, listing re-lists a re-share from bookingReferencesWithCourtScheduleIds
+        // when the booking no longer resolves, so it must not be stripped here as team/ccsph2 does.
+        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
         }

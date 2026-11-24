@@ -298,22 +298,23 @@ public class ListingServiceTest {
     }
 
     @Test
-    public void shouldNotSendBookingReferencesStoredByReserveASlotToListing() {
+    public void shouldSendTheBookingReferencesStoredAtAnEarlierShareToListing() {
         final ArgumentCaptor<ListNextHearingsV3> sent = ArgumentCaptor.forClass(ListNextHearingsV3.class);
         when(objectToJsonObjectConverter.convert(sent.capture())).thenReturn(createObjectBuilder().build());
         final UUID hearingId = randomUUID();
+        final List<BookingReferenceCourtScheduleIds> storedAtAnEarlierShare = singletonList(BookingReferenceCourtScheduleIds.bookingReferenceCourtScheduleIds()
+                .withBookingId(randomUUID())
+                .withCourtScheduleIds(singletonList(randomUUID()))
+                .build());
         final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
                 .withHearingId(hearingId)
-                .withBookingReferencesWithCourtScheduleIds(singletonList(BookingReferenceCourtScheduleIds.bookingReferenceCourtScheduleIds()
-                        .withBookingId(randomUUID())
-                        .withCourtScheduleIds(singletonList(randomUUID()))
-                        .build()))
+                .withBookingReferencesWithCourtScheduleIds(storedAtAnEarlierShare)
                 .build();
 
         listingService.listNextCourtHearings(buildJsonEnvelope(), listNextHearings);
 
         assertThat(sent.getValue().getHearingId(), is(hearingId));
-        assertThat(sent.getValue().getBookingReferencesWithCourtScheduleIds() == null, is(true));
+        assertThat(sent.getValue().getBookingReferencesWithCourtScheduleIds(), is(storedAtAnEarlierShare));
         verify(sender).send(any());
     }
 
