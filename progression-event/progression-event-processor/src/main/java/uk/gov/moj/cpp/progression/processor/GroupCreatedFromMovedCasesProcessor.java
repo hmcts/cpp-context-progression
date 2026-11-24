@@ -61,9 +61,12 @@ public class GroupCreatedFromMovedCasesProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupCreatedFromMovedCasesProcessor.class);
 
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
+    private static final String PROGRESSION_COMMAND_REMOVE_HEARING_FOR_PROSECUTION_CASE = "progression.command.remove-hearing-for-prosecution-case";
     private static final String PUBLIC_GROUP_CREATED_FROM_MOVED_CASES = "public.progression.group-created-from-moved-cases";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
     private static final String HEARING = "hearing";
+    private static final String HEARING_ID = "hearingId";
+    private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     private static final String LIST_HEARING_REQUESTS = "listHearingRequests";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
 
@@ -106,6 +109,8 @@ public class GroupCreatedFromMovedCasesProcessor {
         }
 
         final Hearing oldHearing = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(currentHearing.get().getPayload()), Hearing.class);
+
+        detachMovedCasesFromOldHearing(event, oldHearing.getId(), groupCreatedFromMovedCases.getCaseIds());
 
         final List<ProsecutionCase> movedProsecutionCases = groupCreatedFromMovedCases.getCaseIds().stream()
                 .map(this::loadProsecutionCase)
@@ -166,6 +171,22 @@ public class GroupCreatedFromMovedCasesProcessor {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Without this, each moved case's old {@code case_defendant_hearing} viewstore row survives
+     * alongside the new hearing's row, so a case ends up pointing at both hearings at once. Sent per
+     * case rather than relying on the lead case alone, since every moved case — not just the lead —
+     * has its own row against {@code oldHearing}.
+     */
+    private void detachMovedCasesFromOldHearing(final JsonEnvelope event, final UUID oldHearingId, final List<UUID> movedCaseIds) {
+        movedCaseIds.forEach(caseId -> {
+            final JsonObject removeHearingForProsecutionCaseCommand = createObjectBuilder()
+                    .add(HEARING_ID, oldHearingId.toString())
+                    .add(PROSECUTION_CASE_ID, caseId.toString())
+                    .build();
+            sender.send(enveloper.withMetadataFrom(event, PROGRESSION_COMMAND_REMOVE_HEARING_FOR_PROSECUTION_CASE).apply(removeHearingForProsecutionCaseCommand));
+        });
     }
 
     private <T> javax.json.JsonArray toJsonArray(final List<T> items) {
