@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -15,7 +13,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -45,7 +43,7 @@ class SjpQueryServiceTest {
     private ArgumentCaptor<JsonEnvelope> request;
 
     @Test
-    void shouldRequestCaseAsAdminAndReadDecisions() {
+    void shouldRequestCaseAsAdminAndReturnTheMostRecentDecision() {
         final UUID decisionId = UUID.randomUUID();
         final UUID applicationDecisionId = UUID.randomUUID();
         final UUID nullApplicationDecisionId = UUID.randomUUID();
@@ -59,28 +57,69 @@ class SjpQueryServiceTest {
                                 .addNull("applicationDecision")))
                 .build()));
 
-        final List<SjpCaseDecision> decisions = sjpQueryService.getCaseDecisions(QUERY, CASE_ID);
+        final Optional<SjpCaseDecision> decision = sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID);
 
         assertThat(request.getValue().metadata().name(), is(SJP_QUERY_CASE));
         assertThat(request.getValue().payloadAsJsonObject().getString("caseId"), is(CASE_ID.toString()));
-        assertThat(decisions, contains(
-                new SjpCaseDecision(decisionId, ZonedDateTime.parse("2026-01-01T10:00:00.000Z"), false),
-                new SjpCaseDecision(applicationDecisionId, ZonedDateTime.parse("2026-02-01T10:00:00.000Z"), true),
-                new SjpCaseDecision(nullApplicationDecisionId, ZonedDateTime.parse("2026-03-01T10:00:00.000Z"), false)));
+        assertThat(decision, is(Optional.of(
+                new SjpCaseDecision(nullApplicationDecisionId, ZonedDateTime.parse("2026-03-01T10:00:00.000Z"), false))));
     }
 
     @Test
-    void shouldReturnNoDecisionsWhenSjpHasNoCase() {
+    void shouldPickTheMostRecentDecisionBySavedAtWhateverOrderSjpReturnsThemIn() {
+        final UUID adjournment = UUID.randomUUID();
+        final UUID finalDecision = UUID.randomUUID();
+        final UUID earlierAdjournment = UUID.randomUUID();
+        when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder()
+                .add("id", CASE_ID.toString())
+                .add("caseDecisions", createArrayBuilder()
+                        .add(decision(adjournment, "2026-02-01T10:00:00.000Z"))
+                        .add(decision(finalDecision, "2026-03-01T09:30:00.000Z"))
+                        .add(decision(earlierAdjournment, "2026-01-01T10:00:00.000Z")))
+                .build()));
+
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.of(
+                new SjpCaseDecision(finalDecision, ZonedDateTime.parse("2026-03-01T09:30:00.000Z"), false))));
+    }
+
+    @Test
+    void shouldReturnTheSetAsideWhenItIsTheMostRecentDecision() {
+        final UUID decisionId = UUID.randomUUID();
+        final UUID setAsideId = UUID.randomUUID();
+        when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder()
+                .add("id", CASE_ID.toString())
+                .add("caseDecisions", createArrayBuilder()
+                        .add(decision(decisionId, "2026-01-01T10:00:00.000Z"))
+                        .add(decision(setAsideId, "2026-02-01T10:00:00.000Z")
+                                .add("applicationDecision", createObjectBuilder().add("granted", true))))
+                .build()));
+
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.of(
+                new SjpCaseDecision(setAsideId, ZonedDateTime.parse("2026-02-01T10:00:00.000Z"), true))));
+    }
+
+    @Test
+    void shouldReturnNoDecisionWhenSjpHasNoCase() {
         when(requester.requestAsAdmin(request.capture())).thenReturn(envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL));
 
-        assertThat(sjpQueryService.getCaseDecisions(QUERY, CASE_ID), is(empty()));
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.empty()));
     }
 
     @Test
-    void shouldReturnNoDecisionsWhenCaseHasNone() {
+    void shouldReturnNoDecisionWhenCaseHasNone() {
         when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder().add("id", CASE_ID.toString()).build()));
 
-        assertThat(sjpQueryService.getCaseDecisions(QUERY, CASE_ID), is(empty()));
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldReturnNoDecisionWhenCaseDecisionsIsEmpty() {
+        when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder()
+                .add("id", CASE_ID.toString())
+                .add("caseDecisions", createArrayBuilder())
+                .build()));
+
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.empty()));
     }
 
     private static javax.json.JsonObjectBuilder decision(final UUID id, final String savedAt) {

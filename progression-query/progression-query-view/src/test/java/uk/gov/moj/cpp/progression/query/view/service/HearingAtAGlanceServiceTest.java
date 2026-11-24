@@ -1674,15 +1674,14 @@ public class HearingAtAGlanceServiceTest {
     }
 
     @Test
-    public void shouldMapSjpDecisionHearingsAsResultedHearings() {
+    public void shouldMapSjpDecisionHearingAsResultedHearing() {
         final Hearing hearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(HEARING_PAYLOAD), Hearing.class);
 
-        final List<Hearings> hearings = hearingAtAGlanceService.getSjpDecisionHearings(
-                singletonList(new SjpDecisionHearing(hearing, java.time.ZonedDateTime.now())), CASE_ID);
+        final Hearings hearings = hearingAtAGlanceService.getSjpDecisionHearing(
+                new SjpDecisionHearing(hearing, java.time.ZonedDateTime.now()), CASE_ID);
 
-        assertThat(hearings.size(), is(1));
-        assertThat(hearings.get(0).getId(), is(hearing.getId()));
-        assertThat(hearings.get(0).getHearingListingStatus(), is(HEARING_RESULTED));
-        assertThat(hearings.get(0).getDefendants().size(), is(1));
+        assertThat(hearings.getId(), is(hearing.getId()));
+        assertThat(hearings.getHearingListingStatus(), is(HEARING_RESULTED));
+        assertThat(hearings.getDefendants().size(), is(1));
     }
 }

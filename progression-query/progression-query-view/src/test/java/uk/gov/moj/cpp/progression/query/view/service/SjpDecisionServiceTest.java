@@ -1,10 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -21,6 +18,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -47,46 +45,61 @@ class SjpDecisionServiceTest {
     private SjpDecisionService sjpDecisionService;
 
     @Test
-    void shouldFetchResultsForTheDecisionsAfterTheLatestSetAside() {
-        final SjpCaseDecision original = new SjpCaseDecision(UUID.randomUUID(), DAY_1, false);
-        final SjpCaseDecision setAside = new SjpCaseDecision(UUID.randomUUID(), DAY_1.plusDays(1), true);
-        final SjpCaseDecision reDecision = new SjpCaseDecision(UUID.randomUUID(), DAY_1.plusDays(2), false);
-        final List<SjpDecisionHearing> expected = singletonList(new SjpDecisionHearing(Hearing.hearing().withId(reDecision.id()).build(), DAY_1));
-        when(sjpQueryService.getCaseDecisions(QUERY, CASE_ID)).thenReturn(asList(original, setAside, reDecision));
-        when(sjpDecisionResultsSource.getDecisionHearings(QUERY, singletonList(reDecision.id()))).thenReturn(expected);
+    void shouldFetchResultsForTheMostRecentDecision() {
+        final SjpCaseDecision latest = new SjpCaseDecision(UUID.randomUUID(), DAY_1, false);
+        final SjpDecisionHearing expected = new SjpDecisionHearing(Hearing.hearing().withId(latest.id()).build(), DAY_1);
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenReturn(Optional.of(latest));
+        when(sjpDecisionResultsSource.getDecisionHearing(QUERY, latest.id())).thenReturn(Optional.of(expected));
 
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(expected));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.of(expected)));
+    }
+
+    @Test
+    void shouldReturnNoDecisionWhenResultsHasNoneStoredForTheMostRecentDecision() {
+        final SjpCaseDecision latest = new SjpCaseDecision(UUID.randomUUID(), DAY_1, false);
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenReturn(Optional.of(latest));
+        when(sjpDecisionResultsSource.getDecisionHearing(QUERY, latest.id())).thenReturn(Optional.empty());
+
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldNotCallResultsWhenTheMostRecentDecisionIsASetAside() {
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenReturn(Optional.of(new SjpCaseDecision(UUID.randomUUID(), DAY_1, true)));
+
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
+        verifyNoInteractions(sjpDecisionResultsSource);
     }
 
     @Test
     void shouldNotCallSjpOrResultsWhenCaseIsOutOfScope() {
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.C, IN_SCOPE_APPLICATIONS), is(empty()));
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.J, singletonList(application("MC80527"))), is(empty()));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.C, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, singletonList(application("MC80527"))), is(Optional.empty()));
 
         verifyNoInteractions(sjpQueryService, sjpDecisionResultsSource);
     }
 
     @Test
-    void shouldNotCallResultsWhenThereAreNoDecisionsToShow() {
-        when(sjpQueryService.getCaseDecisions(QUERY, CASE_ID)).thenReturn(emptyList());
+    void shouldNotCallResultsWhenSjpHasNoDecision() {
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenReturn(Optional.empty());
 
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(empty()));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
         verifyNoInteractions(sjpDecisionResultsSource);
     }
 
     @Test
-    void shouldReturnNoDecisionsWhenSjpFails() {
-        when(sjpQueryService.getCaseDecisions(QUERY, CASE_ID)).thenThrow(new IllegalStateException("SJP unavailable"));
+    void shouldReturnNoDecisionWhenSjpFails() {
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenThrow(new IllegalStateException("SJP unavailable"));
 
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(empty()));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
     }
 
     @Test
-    void shouldReturnNoDecisionsWhenResultsFails() {
-        when(sjpQueryService.getCaseDecisions(QUERY, CASE_ID)).thenReturn(singletonList(new SjpCaseDecision(UUID.randomUUID(), DAY_1, false)));
-        when(sjpDecisionResultsSource.getDecisionHearings(any(), any())).thenThrow(new IllegalStateException("Results unavailable"));
+    void shouldReturnNoDecisionWhenResultsFails() {
+        when(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID)).thenReturn(Optional.of(new SjpCaseDecision(UUID.randomUUID(), DAY_1, false)));
+        when(sjpDecisionResultsSource.getDecisionHearing(any(), any())).thenThrow(new IllegalStateException("Results unavailable"));
 
-        assertThat(sjpDecisionService.getDecisionHearings(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(empty()));
+        assertThat(sjpDecisionService.getDecisionHearing(QUERY, CASE_ID, InitiationCode.J, IN_SCOPE_APPLICATIONS), is(Optional.empty()));
     }
 
     private static CourtApplication application(final String typeCode) {

@@ -1,8 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -13,7 +12,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -35,22 +34,24 @@ public class SjpQueryService {
     private Requester requester;
 
     /**
-     * @return the case's decisions as SJP holds them, or an empty list if SJP has no such case or no decisions.
+     * Results are shown for the most recent decision only, so only that decision is returned.
+     *
+     * @return the case's most recent decision by {@code savedAt}, or empty if SJP has no such case or no decisions.
      */
-    public List<SjpCaseDecision> getCaseDecisions(final JsonEnvelope envelope, final UUID caseId) {
+    public Optional<SjpCaseDecision> getLatestCaseDecision(final JsonEnvelope envelope, final UUID caseId) {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName(SJP_QUERY_CASE),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
         final JsonEnvelope response = requester.requestAsAdmin(request);
         if (isNull(response) || !(response.payload() instanceof JsonObject)) {
-            return emptyList();
+            return Optional.empty();
         }
         final JsonArray caseDecisions = response.payloadAsJsonObject().getJsonArray(CASE_DECISIONS);
         if (isNull(caseDecisions)) {
-            return emptyList();
+            return Optional.empty();
         }
         return caseDecisions.getValuesAs(JsonObject.class).stream()
                 .map(SjpQueryService::toCaseDecision)
-                .collect(toList());
+                .max(comparing(SjpCaseDecision::savedAt));
     }
 
     private static SjpCaseDecision toCaseDecision(final JsonObject caseDecision) {

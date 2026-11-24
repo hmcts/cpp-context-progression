@@ -1,12 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view.service;
 
-import static java.util.Collections.emptyList;
-
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -15,10 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Gets the SJP decisions to show on Case at a Glance for a case created from SJP (CHD-3300 / CHD-3311): the decision IDs
- * from SJP, cut at the latest set-aside, then each decision's published results.
+ * Gets the SJP decision to show on Case at a Glance for a case created from SJP (CHD-3300 / CHD-3311): the case's most
+ * recent SJP decision, unless it is a set-aside (an application decision), then that decision's published results.
  *
- * <p>Never fails the CAAG page: if SJP or Results is unavailable, it logs and returns no decisions.
+ * <p>Never fails the CAAG page: if SJP or Results is unavailable, it logs and returns no decision.
  */
 public class SjpDecisionService {
 
@@ -30,22 +29,28 @@ public class SjpDecisionService {
     @Inject
     private SjpDecisionResultsSource sjpDecisionResultsSource;
 
-    public List<SjpDecisionHearing> getDecisionHearings(final JsonEnvelope envelope, final UUID caseId,
-                                                        final InitiationCode initiationCode,
-                                                        final List<CourtApplication> linkedApplications) {
+    /**
+     * @return the most recent SJP decision's published results, or empty if the case is out of scope, SJP has no decision
+     * to show, Results has no stored results for it, or SJP or Results fails.
+     */
+    public Optional<SjpDecisionHearing> getDecisionHearing(final JsonEnvelope envelope, final UUID caseId,
+                                                           final InitiationCode initiationCode,
+                                                           final List<CourtApplication> linkedApplications) {
         if (!SjpDecisionScope.isInScope(initiationCode, linkedApplications)) {
-            return emptyList();
+            return Optional.empty();
         }
         try {
-            final List<UUID> decisionIds = SjpDecisionSelector.selectDecisionIds(sjpQueryService.getCaseDecisions(envelope, caseId));
-            if (decisionIds.isEmpty()) {
-                LOGGER.info("No SJP decisions to show on CAAG for case {}", caseId);
-                return emptyList();
+            final Optional<UUID> decisionId = sjpQueryService.getLatestCaseDecision(envelope, caseId)
+                    .filter(decision -> !decision.applicationDecision())
+                    .map(SjpCaseDecision::id);
+            if (decisionId.isEmpty()) {
+                LOGGER.info("No SJP decision to show on CAAG for case {}", caseId);
+                return Optional.empty();
             }
-            return sjpDecisionResultsSource.getDecisionHearings(envelope, decisionIds);
+            return sjpDecisionResultsSource.getDecisionHearing(envelope, decisionId.get());
         } catch (final RuntimeException e) {
-            LOGGER.warn("Unable to get SJP decisions for case {}; CAAG is returned without them", caseId, e);
-            return emptyList();
+            LOGGER.warn("Unable to get the SJP decision for case {}; CAAG is returned without it", caseId, e);
+            return Optional.empty();
         }
     }
 }

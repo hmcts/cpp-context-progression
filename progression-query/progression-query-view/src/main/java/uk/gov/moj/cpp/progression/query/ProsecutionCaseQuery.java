@@ -55,7 +55,6 @@ import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
-import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionHearing;
 import uk.gov.moj.cpp.progression.query.view.service.SjpDecisionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
@@ -468,14 +467,14 @@ public class ProsecutionCaseQuery {
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
             final List<CourtApplication> linkedApplications = toCourtApplications(courtApplicationCaseEntities);
             final List<Hearings> hearingsList = new ArrayList<>(hearingAtAGlanceService.getCaseHearings(caseId.get()));
-            final List<Hearings> sjpDecisionHearings = getSjpDecisionHearings(envelope, caseId.get(), prosecutionCase, linkedApplications);
-            hearingsList.addAll(sjpDecisionHearings);
+            final Optional<Hearings> sjpDecisionHearing = getSjpDecisionHearing(envelope, caseId.get(), prosecutionCase, linkedApplications);
+            sjpDecisionHearing.ifPresent(hearingsList::add);
             final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
             final JsonArray caseDefendantsJsonArray = listToJsonArrayConverter.convert(
                     caseAtAGlanceHelper.getCaagDefendantsList(getDefendantIdAndUpdatedOnMap(linkedApplications)));
-            final boolean isResultedInSjp = isNotEmpty(sjpDecisionHearings);
+            final boolean isResultedInSjp = sjpDecisionHearing.isPresent();
 
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
@@ -507,14 +506,13 @@ public class ProsecutionCaseQuery {
     }
 
     /**
-     * The SJP decisions to show on CAAG (CHD-3311), as resulted hearings. They are passed to {@link CaseAtAGlanceHelper}
-     * only, never to the CAAG hearings timeline. Empty unless the case came from SJP and has an in-scope application.
+     * The SJP decision to show on CAAG (CHD-3311), as a resulted hearing. It is passed to {@link CaseAtAGlanceHelper} only,
+     * never to the CAAG hearings timeline. Empty unless the case came from SJP and has an in-scope application.
      */
-    private List<Hearings> getSjpDecisionHearings(final JsonEnvelope envelope, final UUID caseId, final ProsecutionCase prosecutionCase,
-                                                  final List<CourtApplication> linkedApplications) {
-        final List<SjpDecisionHearing> decisionHearings =
-                sjpDecisionService.getDecisionHearings(envelope, caseId, prosecutionCase.getInitiationCode(), linkedApplications);
-        return decisionHearings.isEmpty() ? emptyList() : hearingAtAGlanceService.getSjpDecisionHearings(decisionHearings, caseId);
+    private Optional<Hearings> getSjpDecisionHearing(final JsonEnvelope envelope, final UUID caseId, final ProsecutionCase prosecutionCase,
+                                                     final List<CourtApplication> linkedApplications) {
+        return sjpDecisionService.getDecisionHearing(envelope, caseId, prosecutionCase.getInitiationCode(), linkedApplications)
+                .map(decisionHearing -> hearingAtAGlanceService.getSjpDecisionHearing(decisionHearing, caseId));
     }
 
     private List<CourtApplication> toCourtApplications(final List<CourtApplicationCaseEntity> courtApplicationCaseEntities) {

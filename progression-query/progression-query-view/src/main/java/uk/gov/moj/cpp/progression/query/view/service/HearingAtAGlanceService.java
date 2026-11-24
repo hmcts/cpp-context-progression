@@ -278,13 +278,11 @@ public class HearingAtAGlanceService {
     }
 
     /**
-     * Maps SJP decisions (read from Results) to CAAG hearing views, as resulted hearings, the same way as progression's own
-     * hearings (CHD-3311).
+     * Maps an SJP decision (read from Results) to a CAAG hearing view, as a resulted hearing, the same way as progression's
+     * own hearings (CHD-3311).
      */
-    public List<Hearings> getSjpDecisionHearings(final List<SjpDecisionHearing> decisionHearings, final UUID caseId) {
-        return decisionHearings.stream()
-                .map(decisionHearing -> toHearingsView(decisionHearing.hearing(), HEARING_RESULTED, caseId))
-                .collect(toList());
+    public Hearings getSjpDecisionHearing(final SjpDecisionHearing decisionHearing, final UUID caseId) {
+        return toHearingsView(decisionHearing.hearing(), HEARING_RESULTED, caseId);
     }
 
     private Hearing toHearing(final HearingEntity hearingEntity) {
