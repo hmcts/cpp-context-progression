@@ -122,6 +122,17 @@ public class ListNewHearingApiTest {
     }
 
     @Test
+    public void shouldTakeTheWeekCommencingDateInUkTimeWhenTheSlotStartsAtMidnightDuringBritishSummerTime() {
+        when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of(BOOKED_COURT_SCHEDULE_ID));
+        final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder()
+                .add(bookedSlot(BOOKED_COURT_SCHEDULE_ID).add("startTime", "2026-06-14T23:00:00.000Z"))));
+
+        final JsonObject weekCommencingDate = sentFor(payload).getJsonObject("listNewHearing").getJsonObject("weekCommencingDate");
+
+        assertThat(weekCommencingDate, is(createObjectBuilder().add("startDate", "2026-06-15").build()));
+    }
+
+    @Test
     public void shouldSendCrownHearingUnchangedWhenTheBookedSessionIsNotWeekCommencing() {
         when(weekCommencingSessionService.getWeekCommencingSessionIds(List.of(BOOKED_COURT_SCHEDULE_ID))).thenReturn(List.of());
         final JsonObject payload = payload(crownHearing().add("bookedSlots", createArrayBuilder().add(bookedSlot(BOOKED_COURT_SCHEDULE_ID))));
