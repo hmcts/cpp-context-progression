@@ -62,7 +62,7 @@ class SjpQueryServiceTest {
         assertThat(request.getValue().metadata().name(), is(SJP_QUERY_CASE));
         assertThat(request.getValue().payloadAsJsonObject().getString("caseId"), is(CASE_ID.toString()));
         assertThat(decision, is(Optional.of(
-                new SjpCaseDecision(nullApplicationDecisionId, ZonedDateTime.parse("2026-03-01T10:00:00.000Z"), false))));
+                new SjpCaseDecision(nullApplicationDecisionId, ZonedDateTime.parse("2026-03-01T10:00:00.000Z")))));
     }
 
     @Test
@@ -79,11 +79,11 @@ class SjpQueryServiceTest {
                 .build()));
 
         assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.of(
-                new SjpCaseDecision(finalDecision, ZonedDateTime.parse("2026-03-01T09:30:00.000Z"), false))));
+                new SjpCaseDecision(finalDecision, ZonedDateTime.parse("2026-03-01T09:30:00.000Z")))));
     }
 
     @Test
-    void shouldReturnTheSetAsideWhenItIsTheMostRecentDecision() {
+    void shouldReturnTheDecisionBeforeTheSetAsideWhenTheSetAsideIsTheMostRecentDecision() {
         final UUID decisionId = UUID.randomUUID();
         final UUID setAsideId = UUID.randomUUID();
         when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder()
@@ -95,7 +95,19 @@ class SjpQueryServiceTest {
                 .build()));
 
         assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.of(
-                new SjpCaseDecision(setAsideId, ZonedDateTime.parse("2026-02-01T10:00:00.000Z"), true))));
+                new SjpCaseDecision(decisionId, ZonedDateTime.parse("2026-01-01T10:00:00.000Z")))));
+    }
+
+    @Test
+    void shouldReturnNoDecisionWhenTheCaseHasOnlySetAsides() {
+        when(requester.requestAsAdmin(request.capture())).thenReturn(response(createObjectBuilder()
+                .add("id", CASE_ID.toString())
+                .add("caseDecisions", createArrayBuilder()
+                        .add(decision(UUID.randomUUID(), "2026-02-01T10:00:00.000Z")
+                                .add("applicationDecision", createObjectBuilder().add("granted", true))))
+                .build()));
+
+        assertThat(sjpQueryService.getLatestCaseDecision(QUERY, CASE_ID), is(Optional.empty()));
     }
 
     @Test

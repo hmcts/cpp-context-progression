@@ -127,6 +127,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -2809,7 +2810,11 @@ public class ProsecutionCaseQueryViewTest {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(caseId);
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(sjpCase).toString());
-        final CourtApplication statDec = getCourtApplicationWithLegalEntityDefendant(defendantId, randomUUID(), masterDefendantId);
+        final UUID statDecTypeId = randomUUID();
+        final CourtApplication statDec = CourtApplication.courtApplication()
+                .withValuesFrom(getCourtApplicationWithLegalEntityDefendant(defendantId, randomUUID(), masterDefendantId))
+                .withType(CourtApplicationType.courtApplicationType().withId(statDecTypeId).withCode("MC80528").build())
+                .build();
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(statDec).toString());
         final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
@@ -2822,7 +2827,14 @@ public class ProsecutionCaseQueryViewTest {
         when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(singletonList(courtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
         when(hearingAtAGlanceService.getCaseHearings(caseId)).thenReturn(emptyList());
-        when(sjpDecisionService.getDecisionHearing(eq(envelopeWithCaseId), eq(caseId), eq(uk.gov.justice.core.courts.InitiationCode.J), anyList()))
+        when(referenceDataService.getApplicationTypeGroups("statdec,appeal,reopen")).thenReturn(Optional.of(createObjectBuilder()
+                .add("groups", createArrayBuilder().add(createObjectBuilder()
+                        .add("groupName", "statdec")
+                        .add("applicationTypes", createArrayBuilder().add(createObjectBuilder()
+                                .add("applicationTypeId", statDecTypeId.toString())))))
+                .build()));
+        when(sjpDecisionService.getDecisionHearing(eq(envelopeWithCaseId), eq(caseId), eq(uk.gov.justice.core.courts.InitiationCode.J), anyList(),
+                eq(Set.of(statDecTypeId))))
                 .thenAnswer(invocation -> {
                     final List<CourtApplication> applications = invocation.getArgument(3);
                     assertThat(applications.size(), is(1));
@@ -2851,7 +2863,7 @@ public class ProsecutionCaseQueryViewTest {
 
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
-        when(sjpDecisionService.getDecisionHearing(eq(envelopeWithCaseId), eq(caseId), any(), anyList())).thenReturn(Optional.empty());
+        when(sjpDecisionService.getDecisionHearing(eq(envelopeWithCaseId), eq(caseId), any(), anyList(), any())).thenReturn(Optional.empty());
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
 

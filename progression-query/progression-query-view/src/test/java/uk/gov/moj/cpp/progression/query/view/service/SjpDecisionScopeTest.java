@@ -12,6 +12,7 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.InitiationCode;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -20,68 +21,77 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class SjpDecisionScopeTest {
 
-    private static final String STAT_DEC_SJP = "MC80528";
-    private static final String STAT_DEC_NON_SJP = "MC80527";
+    private static final UUID STAT_DEC = UUID.randomUUID();
+    private static final UUID APPEAL = UUID.randomUUID();
+    private static final UUID OUT_OF_SCOPE = UUID.randomUUID();
+    private static final Set<UUID> IN_SCOPE_TYPE_IDS = Set.of(STAT_DEC, APPEAL);
 
-    @ParameterizedTest
-    @ValueSource(strings = {"MC80528", "MC80524", "MC80801", "MC80802", "MC80803"})
-    void shouldBeInScopeForSjpCaseWithLiveInScopeApplication(final String typeCode) {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(typeCode, ApplicationStatus.LISTED))), is(true));
+    @Test
+    void shouldBeInScopeForSjpCaseWithLiveApplicationOfAnInScopeType() {
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(STAT_DEC, ApplicationStatus.LISTED)), IN_SCOPE_TYPE_IDS), is(true));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(APPEAL, ApplicationStatus.LISTED)), IN_SCOPE_TYPE_IDS), is(true));
     }
 
     @Test
     void shouldBeInScopeWhenApplicationStatusIsNotSet() {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(STAT_DEC_SJP, null))), is(true));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(STAT_DEC, null)), IN_SCOPE_TYPE_IDS), is(true));
     }
 
     @Test
     void shouldNotBeInScopeWhenOnlyInScopeApplicationIsEjected() {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(STAT_DEC_SJP, ApplicationStatus.EJECTED))), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(STAT_DEC, ApplicationStatus.EJECTED)), IN_SCOPE_TYPE_IDS), is(false));
     }
 
     @Test
     void shouldBeInScopeWhenOneOfSeveralInScopeApplicationsIsNotEjected() {
         final List<CourtApplication> applications = asList(
-                application(STAT_DEC_SJP, ApplicationStatus.EJECTED),
-                application("MC80802", ApplicationStatus.FINALISED));
+                application(STAT_DEC, ApplicationStatus.EJECTED),
+                application(APPEAL, ApplicationStatus.FINALISED));
 
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, applications), is(true));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, applications, IN_SCOPE_TYPE_IDS), is(true));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {STAT_DEC_NON_SJP, "CJ03510", "PC02541"})
-    void shouldNotBeInScopeForSjpCaseWithOnlyOutOfScopeApplications(final String typeCode) {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(typeCode, ApplicationStatus.LISTED))), is(false));
+    @Test
+    void shouldNotBeInScopeForSjpCaseWithOnlyOutOfScopeApplications() {
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(application(OUT_OF_SCOPE, ApplicationStatus.LISTED)), IN_SCOPE_TYPE_IDS), is(false));
+    }
+
+    @Test
+    void shouldNotBeInScopeWhenReferenceDataGaveNoInScopeTypes() {
+        final List<CourtApplication> applications = singletonList(application(STAT_DEC, ApplicationStatus.LISTED));
+
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, applications, Set.of()), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, applications, null), is(false));
     }
 
     @Test
     void shouldNotBeInScopeForSjpCaseWithNoLinkedApplications() {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, emptyList()), is(false));
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, null), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, emptyList(), IN_SCOPE_TYPE_IDS), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, null, IN_SCOPE_TYPE_IDS), is(false));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"C", "O", "Q", "S"})
     void shouldNotBeInScopeForCaseNotFromSjp(final String initiationCode) {
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.valueOf(initiationCode), singletonList(application(STAT_DEC_SJP, ApplicationStatus.LISTED))), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.valueOf(initiationCode), singletonList(application(STAT_DEC, ApplicationStatus.LISTED)), IN_SCOPE_TYPE_IDS), is(false));
     }
 
     @Test
     void shouldNotBeInScopeWhenInitiationCodeMissing() {
-        assertThat(SjpDecisionScope.isInScope(null, singletonList(application(STAT_DEC_SJP, ApplicationStatus.LISTED))), is(false));
+        assertThat(SjpDecisionScope.isInScope(null, singletonList(application(STAT_DEC, ApplicationStatus.LISTED)), IN_SCOPE_TYPE_IDS), is(false));
     }
 
     @Test
     void shouldIgnoreApplicationWithoutType() {
         final CourtApplication noType = CourtApplication.courtApplication().withId(UUID.randomUUID()).build();
 
-        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(noType)), is(false));
+        assertThat(SjpDecisionScope.isInScope(InitiationCode.J, singletonList(noType), IN_SCOPE_TYPE_IDS), is(false));
     }
 
-    private static CourtApplication application(final String typeCode, final ApplicationStatus status) {
+    private static CourtApplication application(final UUID typeId, final ApplicationStatus status) {
         return CourtApplication.courtApplication()
                 .withId(UUID.randomUUID())
-                .withType(CourtApplicationType.courtApplicationType().withCode(typeCode).build())
+                .withType(CourtApplicationType.courtApplicationType().withId(typeId).build())
                 .withApplicationStatus(status)
                 .build();
     }
