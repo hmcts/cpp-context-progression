@@ -95,6 +95,8 @@ public class ListingService {
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
 
+        // Sent as is: on reserve a slot, listing re-lists a re-share from bookingReferencesWithCourtScheduleIds
+        // when the booking no longer resolves, so it must not be stripped here as team/ccsph2 does.
         final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
