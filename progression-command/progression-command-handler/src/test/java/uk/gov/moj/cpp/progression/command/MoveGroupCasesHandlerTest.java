@@ -102,6 +102,9 @@ public class MoveGroupCasesHandlerTest {
     private EventStream feeEventStream;
 
     @Mock
+    private EventStream newFeeEventStream;
+
+    @Mock
     private AggregateService aggregateService;
 
     @Spy
@@ -140,6 +143,12 @@ public class MoveGroupCasesHandlerTest {
         final GroupCaseAggregate oldGroupAggregate = createOldGroup(OLD_GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID, CIVIL_FEE_ID);
         final GroupCaseAggregate newGroupAggregate = new GroupCaseAggregate();
         final FeeAggregate feeAggregate = createFeeAggregate(CIVIL_FEE_ID);
+        final FeeAggregate newFeeAggregate = new FeeAggregate();
+
+        // fallback for the cloned fee's own (randomly-generated, so unknown in advance) stream -
+        // specific stubs below override it for every other, already-known id
+        when(eventSource.getStreamById(any(UUID.class))).thenReturn(newFeeEventStream);
+        when(aggregateService.get(newFeeEventStream, FeeAggregate.class)).thenReturn(newFeeAggregate);
 
         when(eventSource.getStreamById(OLD_GROUP_ID)).thenReturn(oldGroupEventStream);
         when(eventSource.getStreamById(NEW_GROUP_ID)).thenReturn(newGroupEventStream);
@@ -188,9 +197,11 @@ public class MoveGroupCasesHandlerTest {
         assertThat(newGroupAggregate.getGroupMaster(), is(CASE1_ID));
         assertThat(newGroupAggregate.getMemberCases(), is(Set.of(CASE1_ID, CASE2_ID)));
 
-        // civil fee cloned exactly once (shared by the whole new group), with a brand new feeId
+        // civil fee cloned exactly once (shared by the whole new group), with a brand new feeId,
+        // appended to its own fresh stream - the source fee's stream must be left untouched
         final ArgumentCaptor<Stream> feeCaptor = ArgumentCaptor.forClass(Stream.class);
-        verify(feeEventStream, times(1)).append(feeCaptor.capture());
+        verify(newFeeEventStream, times(1)).append(feeCaptor.capture());
+        verify(feeEventStream, never()).append(any());
         final JsonEnvelope feeEnvelope = firstEnvelope(feeCaptor.getValue());
         final CivilFeesAdded civilFeesAdded = jsonObjectToObjectConverter.convert(feeEnvelope.payloadAsJsonObject(), CivilFeesAdded.class);
         assertThat(civilFeesAdded.getFeeId(), is(not(CIVIL_FEE_ID)));
@@ -218,6 +229,10 @@ public class MoveGroupCasesHandlerTest {
         final GroupCaseAggregate oldGroupAggregate = createOldGroup(OLD_GROUP_ID, asList(CASE1_ID, CASE2_ID), CASE1_ID, CIVIL_FEE_ID);
         final GroupCaseAggregate newGroupAggregate = new GroupCaseAggregate();
         final FeeAggregate feeAggregate = createFeeAggregate(CIVIL_FEE_ID);
+        final FeeAggregate newFeeAggregate = new FeeAggregate();
+
+        when(eventSource.getStreamById(any(UUID.class))).thenReturn(newFeeEventStream);
+        when(aggregateService.get(newFeeEventStream, FeeAggregate.class)).thenReturn(newFeeAggregate);
 
         when(eventSource.getStreamById(OLD_GROUP_ID)).thenReturn(oldGroupEventStream);
         when(eventSource.getStreamById(NEW_GROUP_ID)).thenReturn(newGroupEventStream);

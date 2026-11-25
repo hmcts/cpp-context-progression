@@ -145,17 +145,24 @@ public class MoveGroupCasesHandler {
 
         final List<CivilFees> clonedCivilFees = new ArrayList<>();
         for (final CivilFees civilFee : leadCase.getCivilFees()) {
-            final EventStream feeEventStream = eventSource.getStreamById(civilFee.getFeeId());
-            final FeeAggregate feeAggregate = aggregateService.get(feeEventStream, FeeAggregate.class);
+            final EventStream sourceFeeEventStream = eventSource.getStreamById(civilFee.getFeeId());
+            final FeeAggregate sourceFeeAggregate = aggregateService.get(sourceFeeEventStream, FeeAggregate.class);
+            final CivilFees currentCivilFee = nonNull(sourceFeeAggregate.getCivilFees()) ? sourceFeeAggregate.getCivilFees() : civilFee;
 
             final CivilFees newCivilFee = CivilFees.civilFees()
-                    .withValuesFrom(feeAggregate.getCivilFees())
+                    .withValuesFrom(currentCivilFee)
                     .withFeeId(randomUUID())
                     .build();
             clonedCivilFees.add(newCivilFee);
 
-            final Stream<Object> feeEvents = feeAggregate.addCivilFee(newCivilFee);
-            appendEventsToStream(envelope, feeEventStream, feeEvents);
+            // Each fee has its own stream keyed by its feeId, so the clone needs its own fresh
+            // stream (keyed by newCivilFee's id) rather than reusing sourceFeeEventStream -
+            // appending there would overwrite the source fee's own stream with the clone's event
+            // and leave the clone's feeId pointing at a stream that was never created.
+            final EventStream newFeeEventStream = eventSource.getStreamById(newCivilFee.getFeeId());
+            final FeeAggregate newFeeAggregate = aggregateService.get(newFeeEventStream, FeeAggregate.class);
+            final Stream<Object> feeEvents = newFeeAggregate.addCivilFee(newCivilFee);
+            appendEventsToStream(envelope, newFeeEventStream, feeEvents);
         }
 
         for (final UUID caseId : movedCaseIds) {
