@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForH
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithCommittingCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewCrownHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -37,7 +38,9 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetWeekCommencingCourtScheduleById;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingWithWeekCommencingDate;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
@@ -102,6 +105,27 @@ public class ListNewHearingIT extends AbstractIT {
         verifyEmailNotificationIsRaisedWithAttachment(newArrayList(prosecutorEmail));
         verifyCreateLetterRequested(newArrayList("postage", "first", "letterUrl"));
 
+    }
+
+    @Test
+    public void shouldCreateHearingWithWeekCommencingSessionWithBookingSlot() throws IOException, JSONException {
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final String prosecutionAuthorityId = randomUUID().toString();
+        final String bookedCourtScheduleId = "8e837de0-743a-4a2c-9db3-b2e678c48729";
+        final String bookedSlotStartDate = "2020-05-21";
+
+        stubProsecutorData(prosecutorEmail, prosecutionAuthorityId);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation-no-email.json", defendantId);
+        stubGetWeekCommencingCourtScheduleById(bookedCourtScheduleId, bookedSlotStartDate);
+
+        addProsecutionCaseToCrownCourt(caseId, prosecutionAuthorityId, generateUrn(), defendantId);
+        verifyPostListCourtHearing(caseId, defendantId);
+        pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        assertThat(listNewCrownHearing(caseId, defendantId).getStatusCode(), is(202));
+
+        verifyPostListCourtHearingWithWeekCommencingDate(caseId, bookedCourtScheduleId, bookedSlotStartDate);
     }
 
     @Test

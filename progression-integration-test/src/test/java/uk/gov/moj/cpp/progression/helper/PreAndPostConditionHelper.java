@@ -544,6 +544,13 @@ public class PreAndPostConditionHelper {
         return initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
+    public static Response listNewCrownHearing(final String caseId, final String defendantId) throws JSONException {
+        final JSONObject jsonPayload = new JSONObject(getListNewHearingJsonBody(caseId, defendantId));
+        jsonPayload.getJSONObject("listNewHearing").put("jurisdictionType", "CROWN");
+        return postCommand(getWriteUrl("/listnewhearing"),
+                "application/vnd.progression.list-new-hearing+json", jsonPayload.toString());
+    }
+
     public static Response listNewHearing(final String caseId, final String defendantId) throws JSONException {
         final JSONObject jsonPayload = new JSONObject(getListNewHearingJsonBody(caseId, defendantId));
         return postCommand(getWriteUrl("/listnewhearing"),
