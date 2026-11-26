@@ -95,11 +95,9 @@ public class ListingService {
 
     public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
 
-        // Events stored by the reserve-a-slot release can carry this field; listing on this release rejects it
-        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(ListNextHearingsV3.listNextHearingsV3()
-                .withValuesFrom(listNextHearings)
-                .withBookingReferencesWithCourtScheduleIds(null)
-                .build());
+        // Sent as is: listing re-lists a re-share from bookingReferencesWithCourtScheduleIds when the
+        // booking no longer resolves, so it must not be stripped.
+        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
         }
@@ -181,6 +179,7 @@ public class ListingService {
      */
     public Optional<AvailableHearingSlot> findAvailableHearingSlot(final JsonEnvelope jsonEnvelope,
                                                                     final String ouCode,
+                                                                    final JurisdictionType jurisdictionType,
                                                                     final String businessType,
                                                                     final String panel,
                                                                     final LocalDate sessionStartDate,
@@ -192,6 +191,7 @@ public class ListingService {
             final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING_SLOTS);
             final JsonObjectBuilder jsonPayLoadBuilder = Json.createObjectBuilder()
                     .add("ouCode", ouCode)
+                    .add("jurisdiction", jurisdictionType.name())
                     .add("businessType", businessType)
                     .add("panel", panel)
                     .add("sessionStartDate", sessionStartDate.toString())
