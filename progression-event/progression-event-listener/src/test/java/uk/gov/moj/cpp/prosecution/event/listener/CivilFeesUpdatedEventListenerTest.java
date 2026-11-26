@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -125,6 +126,55 @@ public class CivilFeesUpdatedEventListenerTest {
         assertThat(savedEntity.getFeeId(), is(feeId));
         assertThat(savedEntity.getFeeType(), is(FeeType.INITIAL));
         assertThat(savedEntity.getFeeStatus(), is(FeeStatus.OUTSTANDING));
+        assertEquals(paymentRef, savedEntity.getPaymentReference());
+    }
+
+    @Test
+    void addCivilFeesWithNullFeeStatusDoesNotThrow() {
+        final UUID feeId = UUID.randomUUID();
+        final String paymentRef = "TestRef001";
+
+        final CivilFeesAdded event = CivilFeesAdded.civilFeesAdded()
+                .withFeeId(feeId)
+                .withFeeType(FeeType.INITIAL.name())
+                .withPaymentReference(paymentRef)
+                .build();
+
+        listener.processCivilFeeAdded(envelopeFrom(metadataWithRandomUUID("progression.event.civil-fees-added"),
+                objectToJsonObjectConverter.convert(event)));
+
+        final ArgumentCaptor<CivilFeeEntity> argumentCaptor = ArgumentCaptor.forClass(CivilFeeEntity.class);
+        verify(this.civilFeeRepository).save(argumentCaptor.capture());
+        final CivilFeeEntity savedEntity = argumentCaptor.getValue();
+
+        assertThat(savedEntity.getFeeId(), is(feeId));
+        assertThat(savedEntity.getFeeStatus(), is(nullValue()));
+        assertEquals(paymentRef, savedEntity.getPaymentReference());
+    }
+
+    @Test
+    void updateCivilFeesWithNullFeeStatusDoesNotThrow() {
+        final UUID feeId = UUID.randomUUID();
+        final String paymentRef = "TestRef001";
+
+        final CivilFeesUpdated event = CivilFeesUpdated.civilFeesUpdated()
+                .withFeeId(feeId)
+                .withFeeType(FeeType.INITIAL.name())
+                .withPaymentReference(paymentRef)
+                .build();
+        final CivilFeeEntity civilFeeEntity = new CivilFeeEntity(feeId, FeeType.INITIAL, FeeStatus.OUTSTANDING, paymentRef);
+
+        when(civilFeeRepository.findBy(any())).thenReturn(civilFeeEntity);
+
+        listener.processCivilFeesUpdated(envelopeFrom(metadataWithRandomUUID("progression.event.civil-fees-updated"),
+                objectToJsonObjectConverter.convert(event)));
+
+        final ArgumentCaptor<CivilFeeEntity> argumentCaptor = ArgumentCaptor.forClass(CivilFeeEntity.class);
+        verify(this.civilFeeRepository).save(argumentCaptor.capture());
+        final CivilFeeEntity savedEntity = argumentCaptor.getValue();
+
+        assertThat(savedEntity.getFeeId(), is(feeId));
+        assertThat(savedEntity.getFeeStatus(), is(nullValue()));
         assertEquals(paymentRef, savedEntity.getPaymentReference());
     }
 

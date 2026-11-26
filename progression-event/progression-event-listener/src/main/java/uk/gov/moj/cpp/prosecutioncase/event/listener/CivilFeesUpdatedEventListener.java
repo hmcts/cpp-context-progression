@@ -40,7 +40,7 @@ public class CivilFeesUpdatedEventListener {
 
         final CivilFeeEntity civilFeeEntity = civilFeeRepository.findBy(civilFeesUpdated.getFeeId());
         if (nonNull(civilFeeEntity)) {
-            civilFeeEntity.setFeeStatus(FeeStatus.valueOf(civilFeesUpdated.getFeeStatus().name()));
+            civilFeeEntity.setFeeStatus(toDomainFeeStatus(civilFeesUpdated.getFeeStatus()));
             civilFeeEntity.setPaymentReference(civilFeesUpdated.getPaymentReference());
             civilFeeEntity.setFeeType(FeeType.valueOf(civilFeesUpdated.getFeeType()));
             civilFeeRepository.save(civilFeeEntity);
@@ -57,9 +57,13 @@ public class CivilFeesUpdatedEventListener {
 
         final CivilFeeEntity newCivilFeeEntity = new CivilFeeEntity();
         newCivilFeeEntity.setFeeId(civilFeesAdded.getFeeId());
-        newCivilFeeEntity.setFeeStatus(FeeStatus.valueOf(civilFeesAdded.getFeeStatus().name()));
+        newCivilFeeEntity.setFeeStatus(toDomainFeeStatus(civilFeesAdded.getFeeStatus()));
         newCivilFeeEntity.setPaymentReference(civilFeesAdded.getPaymentReference());
         newCivilFeeEntity.setFeeType(FeeType.valueOf(civilFeesAdded.getFeeType()));
         civilFeeRepository.save(newCivilFeeEntity);
+    }
+
+    private FeeStatus toDomainFeeStatus(final uk.gov.justice.core.courts.FeeStatus feeStatus) {
+        return nonNull(feeStatus) ? FeeStatus.valueOf(feeStatus.name()) : null;
     }
 }
