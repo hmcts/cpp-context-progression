@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/split-hearing-command.json",
+  "description": "The split request as received, enriched by the command API with the source hearing id and the offences to remove from it.",
+  "type": "object",
+  "properties": {
+    "listNewHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    },
+    "sendNotificationToParties": {
+      "type": "boolean"
+    },
+    "hearingId": {
+      "description": "The hearing being split - the offences below are removed from it.",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCasesToRemove": {
+      "description": "Computed by the command API from listNewHearing.listDefendantRequests: the offences that move.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "defendantsToRemove": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "defendantId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "offencesToRemove": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "properties": {
+                      "offenceId": {
+                        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                      }
+                    },
+                    "required": [
+                      "offenceId"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "defendantId",
+                "offencesToRemove"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "caseId",
+          "defendantsToRemove"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "listNewHearing",
+    "hearingId",
+    "prosecutionCasesToRemove"
+  ],
+  "additionalProperties": false
+}
