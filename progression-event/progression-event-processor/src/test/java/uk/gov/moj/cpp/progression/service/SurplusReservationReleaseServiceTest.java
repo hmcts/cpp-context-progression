@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.moj.cpp.progression.listing.common.service.CourtSchedulerRequestConfig;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -63,6 +64,7 @@ class SurplusReservationReleaseServiceTest {
         service = spy(new SurplusReservationReleaseService());
         setField(service, "baseUri", BASE_URI);
         setField(service, "systemUserProvider", systemUserProvider);
+        setField(service, "courtSchedulerRequestConfig", new CourtSchedulerRequestConfig(5000, 10000));
     }
 
     /**
@@ -163,7 +165,7 @@ class SurplusReservationReleaseServiceTest {
         server.start();
         try {
             setField(service, "baseUri", "http://127.0.0.1:" + server.getAddress().getPort());
-            setField(service, "socketTimeoutMs", "300");
+            setField(service, "courtSchedulerRequestConfig", new CourtSchedulerRequestConfig(5000, 300));
             when(systemUserProvider.getContextSystemUserId()).thenReturn(of(randomUUID()));
 
             assertTimeoutPreemptively(Duration.ofSeconds(5), () -> service.release(Set.of(randomUUID())));
