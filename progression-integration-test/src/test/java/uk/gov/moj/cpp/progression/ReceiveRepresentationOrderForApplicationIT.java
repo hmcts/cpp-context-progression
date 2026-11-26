@@ -31,6 +31,7 @@ import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.removeStub;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -108,6 +109,8 @@ public class ReceiveRepresentationOrderForApplicationIT extends AbstractIT {
         statusDescription = "Desc";
         applicationReference = "AS145197659";
         stubGetOrganisationDetails(organisationId, organisationName);
+        // Handler resolves the defence org by LAA contract number; without this stub the lookup NPEs and the command rolls back (no event raised).
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, organisationId, organisationName);
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
         stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", statusCode, statusDescription);

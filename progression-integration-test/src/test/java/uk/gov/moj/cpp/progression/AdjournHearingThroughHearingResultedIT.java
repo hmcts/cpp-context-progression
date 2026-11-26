@@ -14,6 +14,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.awaitility.Awaitility.waitAtMost;
+import static java.time.Duration.ofSeconds;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
@@ -27,6 +32,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetProvisionalBookedSlotsForNonExistingBookingId;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubReleaseUnconfirmedBookings;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubUnconfirmedBookingsOnOneSession;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.surplusReleasedBookingIds;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListNextHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -130,6 +138,54 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
     }
 
+
+    /**
+     * Reserve a slot: two result lines picked the same session under two bookings. The share merges
+     * them into one listing need and lists against one booking, so the other holds a slot nothing
+     * will use. Progression must give it back to courtscheduler, with reason SURPLUS.
+     */
+    @Test
+    public void shouldReleaseTheBookingASharedMergedAwayOntoTheSameSession() throws Exception {
+        final String bookingA = randomUUID().toString();
+        final String bookingB = randomUUID().toString();
+        stubUnconfirmedBookingsOnOneSession(randomUUID().toString(), bookingA, bookingB);
+        stubReleaseUnconfirmedBookings();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrnAlsoActingAsRandomReferences);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), caseUrnAlsoActingAsRandomReferences, courtCentreId, courtCentreName);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson));
+
+        final String courtApplicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
+        pollForCourtApplication(courtApplicationId, withJsonPath("$.courtApplication.id", is(courtApplicationId)));
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String adjournedHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, singletonList(hearingId));
+
+        final JsonObject resulted = stringToJsonObjectConverter.convert(getPayload("public.events.hearing.hearing-resulted.two-next-hearings-reserved-on-one-session.json")
+                .replaceAll("BOOKING_A", bookingA)
+                .replaceAll("BOOKING_B", bookingB)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("APPLICATION_ID", courtApplicationId)
+                .replaceAll("ADJOURNED_ID", adjournedHearingId)
+                .replaceAll("APPLICATION_REF", caseUrnAlsoActingAsRandomReferences)
+                .replaceAll("COURT_CENTRE_ID", newCourtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", newCourtCentreName)
+                .replaceAll("OFFENCE_ID", "3789ab16-0bb7-4ef1-87ef-c936bf0364f1")
+                .replaceAll("ORDERED_DATE", "2020-01-01"));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), resulted));
+
+        verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
+
+        // one booking is listed against, the other given back - which one depends on merge order
+        waitAtMost(ofSeconds(30)).until(() -> !surplusReleasedBookingIds().isEmpty());
+        assertThat(surplusReleasedBookingIds(), anyOf(contains(bookingA), contains(bookingB)));
+    }
 
     @Test
     public void shouldAdjournApplicationToNewHearingInMagistrateV2() throws Exception {

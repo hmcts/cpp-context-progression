@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.stub;
 
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -363,6 +365,27 @@ public class ListingStub {
                         return null;
                     }
                 });
+    }
+
+    /**
+     * Returns the first list-court-hearing request whose body contains every required fragment and
+     * none of the forbidden ones. Lets a test tell one hearing's listing call apart from another's
+     * when both name the same case and defendant.
+     */
+    public static String verifyPostListCourtHearingContaining(final List<String> required, final List<String> forbidden) {
+        try {
+            return waitAtMost(ofMinutes(1)).pollInterval(500, MILLISECONDS).until(() ->
+                            getListCourtHearingRequestsAsStream()
+                                    .filter(Objects::nonNull)
+                                    .map(JSONObject::toString)
+                                    .filter(body -> required.stream().allMatch(body::contains))
+                                    .filter(body -> forbidden.stream().noneMatch(body::contains))
+                                    .findFirst()
+                                    .orElse("{}"),
+                    JsonPathMatchers.hasJsonPath("$.hearings"));
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearingContaining failed with: " + e);
+        }
     }
 
     private static Stream<JSONObject> getListCourtHearingRequestsAsStream() {

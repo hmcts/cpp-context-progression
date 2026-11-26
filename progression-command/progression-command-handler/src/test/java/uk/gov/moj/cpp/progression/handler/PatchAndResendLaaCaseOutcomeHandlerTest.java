@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.progression.command.handler.PatchAndResendLaaOutcomeConclu
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +66,8 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandSuccessfullyWhenLAAEventFoundForResultingDateWithEmptyHearingID() throws Exception {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        // UTC: matches how the framework normalises event metadata createdAt; local zone makes this flaky in the 00:00-01:00 BST window.
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(ZoneOffset.UTC);
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
 
@@ -97,7 +99,8 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenNoMatchingEventFoundWithResultingDate() {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        // UTC: matches how the framework normalises event metadata createdAt; local zone makes this flaky in the 00:00-01:00 BST window.
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(ZoneOffset.UTC);
         Stream<JsonEnvelope> eventLogStream = Stream.<JsonEnvelope>builder()
                 .build();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -119,7 +122,8 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenMatchingEventFoundForResultingDateWithHearingID() throws IOException {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        // UTC: matches how the framework normalises event metadata createdAt; local zone makes this flaky in the 00:00-01:00 BST window.
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(ZoneOffset.UTC);
 
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
@@ -146,7 +150,8 @@ class PatchAndResendLaaCaseOutcomeHandlerTest {
 
     @Test
     void shouldHandleCommandWhenMoreThanOneMatchingEventsFound() throws IOException {
-        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now();
+        // UTC: matches how the framework normalises event metadata createdAt; local zone makes this flaky in the 00:00-01:00 BST window.
+        final ZonedDateTime resultSharedDateTime = ZonedDateTime.now(ZoneOffset.UTC);
         final LaaDefendantProceedingConcludedChanged.Builder laaEventBuilder = laaDefendantProceedingConcludedChanged()
                 .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class));
 
