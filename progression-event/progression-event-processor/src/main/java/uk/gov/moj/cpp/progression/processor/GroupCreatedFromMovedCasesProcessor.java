@@ -63,9 +63,11 @@ public class GroupCreatedFromMovedCasesProcessor {
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
     private static final String PROGRESSION_COMMAND_REMOVE_HEARING_FOR_PROSECUTION_CASE = "progression.command.remove-hearing-for-prosecution-case";
     private static final String PUBLIC_GROUP_CREATED_FROM_MOVED_CASES = "public.progression.group-created-from-moved-cases";
+    private static final String PUBLIC_CASE_REMOVED_FROM_HEARING = "public.progression.case-removed-from-hearing";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
     private static final String HEARING = "hearing";
     private static final String HEARING_ID = "hearingId";
+    private static final String CASE_ID = "caseId";
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     private static final String LIST_HEARING_REQUESTS = "listHearingRequests";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
@@ -178,6 +180,11 @@ public class GroupCreatedFromMovedCasesProcessor {
      * alongside the new hearing's row, so a case ends up pointing at both hearings at once. Sent per
      * case rather than relying on the lead case alone, since every moved case — not just the lead —
      * has its own row against {@code oldHearing}.
+     *
+     * <p>Also publishes {@code public.progression.case-removed-from-hearing} per moved case —
+     * additive to, not a replacement for, the private command above: the command still drives
+     * progression's own viewstore cleanup unchanged, while the public event is the external
+     * notification that a case has left its donor hearing.</p>
      */
     private void detachMovedCasesFromOldHearing(final JsonEnvelope event, final UUID oldHearingId, final List<UUID> movedCaseIds) {
         movedCaseIds.forEach(caseId -> {
@@ -186,6 +193,12 @@ public class GroupCreatedFromMovedCasesProcessor {
                     .add(PROSECUTION_CASE_ID, caseId.toString())
                     .build();
             sender.send(enveloper.withMetadataFrom(event, PROGRESSION_COMMAND_REMOVE_HEARING_FOR_PROSECUTION_CASE).apply(removeHearingForProsecutionCaseCommand));
+
+            final JsonObject caseRemovedFromHearingEvent = createObjectBuilder()
+                    .add(HEARING_ID, oldHearingId.toString())
+                    .add(CASE_ID, caseId.toString())
+                    .build();
+            sender.send(enveloper.withMetadataFrom(event, PUBLIC_CASE_REMOVED_FROM_HEARING).apply(caseRemovedFromHearingEvent));
         });
     }
 
