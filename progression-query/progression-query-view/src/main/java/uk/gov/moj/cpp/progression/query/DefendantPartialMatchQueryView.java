@@ -85,18 +85,18 @@ public class DefendantPartialMatchQueryView {
         if (StringUtils.equalsIgnoreCase(sortField, DEFENDANT_NAME)) {
             if (StringUtils.equalsIgnoreCase(sortOrder, DESC)) {
                 LOGGER.info("findAll is called order by DefendantName with DESC");
-                return defendantPartialMatchRepository.findAllOrderByDefendantNameDesc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByDefendantNameDesc(pageSize, page - 1);
             } else {
                 LOGGER.info("findAll is called order by DefendantName with ASC");
-                return defendantPartialMatchRepository.findAllOrderByDefendantNameAsc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByDefendantNameAsc(pageSize, page - 1);
             }
         } else {
             if (StringUtils.equalsIgnoreCase(sortOrder, ASC)) {
                 LOGGER.info("findAll is called order by CaseReceivedDate with ASC");
-                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeAsc(pageSize, page - 1);
             } else {
                 LOGGER.info("findAll is called order by CaseReceivedDate with DESC");
-                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc().withPageSize(pageSize).toPage(page - 1).getResultList();
+                return defendantPartialMatchRepository.findAllOrderByCaseReceivedDatetimeDesc(pageSize, page - 1);
             }
         }
     }

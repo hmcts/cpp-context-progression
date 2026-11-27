@@ -5,10 +5,17 @@
  http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
              version="1.0">
 
-    <persistence-unit name="progression-persistence-unit">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <jta-data-source>java:/DS.progression</jta-data-source>
-        <class>uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail</class>
-    </persistence-unit>
-
+	<persistence-unit name="progression-persistence-unit">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<jta-data-source>java:/DS.progression</jta-data-source>
+		<class>uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail</class>
+		<properties>
+			<!-- CourtRegisterRequestRepository's greatest-per-group queries use HQL's row-value
+				 constructor, "(a.registerTime, a.hearingId) IN (select max(...), ... )". Hibernate 7
+				 rejects that under strict JPA compliance (StrictJpaComplianceViolation), which only
+				 surfaces at runtime on the query - the build and unit tests stay green. Allowing the
+				 extension preserves the queries exactly rather than rewriting them. -->
+			<property name="hibernate.jpa.compliance.query" value="false"/>
+		</properties>
+	</persistence-unit>
 </persistence>

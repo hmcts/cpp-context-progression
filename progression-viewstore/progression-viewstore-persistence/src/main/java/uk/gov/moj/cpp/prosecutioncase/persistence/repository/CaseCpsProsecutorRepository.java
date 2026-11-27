@@ -1,12 +1,22 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
+import uk.gov.moj.cpp.progression.persistence.repository.JpaEntityRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+import javax.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface CaseCpsProsecutorRepository extends EntityRepository<CaseCpsProsecutorEntity, UUID> {
+
+@ApplicationScoped
+public class CaseCpsProsecutorRepository extends JpaEntityRepository<CaseCpsProsecutorEntity, UUID> {
+
+    public CaseCpsProsecutorRepository() {
+        super(CaseCpsProsecutorEntity.class);
+    }
+
+    @Override
+    protected UUID idOf(final CaseCpsProsecutorEntity entity) {
+        return entity.getCaseId();
+    }
 }

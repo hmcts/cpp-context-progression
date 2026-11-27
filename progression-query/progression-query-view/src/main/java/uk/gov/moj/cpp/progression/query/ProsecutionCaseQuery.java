@@ -83,7 +83,6 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -91,6 +90,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -114,7 +114,6 @@ public class ProsecutionCaseQuery {
     private static final String SEARCH_RESULT = "searchResults";
     public static final String OLD_PROSECUTION_AUTHORITY_CODE = "oldProsecutionAuthorityCode";
     public static final String HEARINGS_AT_A_GLANCE = "hearingsAtAGlance";
-    public static final String NUMBER_OF_GROUP_CASES = "numberOfGroupCases";
     public static final String PROSECUTION_CASE = "prosecutionCase";
     public static final String MASTER_CASE = "masterCase";
     public static final String CASE_STATUS = "caseStatus";
@@ -126,7 +125,6 @@ public class ProsecutionCaseQuery {
     public static final String ALL_CASE_HEARINGS = "allCaseHearings";
     public static final String LINKED_APPLICATIONS_SUMMARY = "linkedApplicationsSummary";
     public static final String CIVIL_FEES = "civilFees";
-    public static final String IS_CIVIL = "isCivil";
     public static final String PROSECUTION_CASES = "prosecutionCases";
     public static final String OFFENCE_IDS = "offenceIds";
     public static final String APPEALS_LODGED_INFO = "appealsLodgedInfo";
@@ -277,7 +275,7 @@ public class ProsecutionCaseQuery {
 
             final List<Hearings> hearingsList = hearingAtAGlanceService.getCaseHearings(caseId.get());
             final ProsecutionCase prosecutionCase1 = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase1, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
+            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase1, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository);
             final List<CivilFees> civilFeesList = caseAtAGlanceHelper.getCivilFeeEntity(prosecutionCase1);
 
             JsonArray civilFeesArray = null;
@@ -302,7 +300,6 @@ public class ProsecutionCaseQuery {
 
             final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(getHearingsAtAGlance(jsonObjectBuilder, caseId));
             jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, getCaseAtAGlanceJson);
-            caseAtAGlanceHelper.getNumberOfGroupCases().ifPresent(numberOfGroupCases -> jsonObjectBuilder.add(NUMBER_OF_GROUP_CASES, numberOfGroupCases));
 
             final CaseCpsProsecutorEntity caseCpsProsecutorEntity = caseCpsProsecutorRepository.findBy(caseId.get());
             if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
@@ -430,7 +427,7 @@ public class ProsecutionCaseQuery {
             final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
             final List<Hearings> hearingsList = hearingAtAGlanceService.getCaseHearings(caseId.get());
-            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository, prosecutionCaseRepository);
+            final CaseAtAGlanceHelper caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, hearingsList, referenceDataService, civilFeeRepository, relatedReferenceRepository);
             final JsonObject caseDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getCaseDetails());
             final JsonObject prosecutorDetailsJson = objectToJsonObjectConverter.convert(caseAtAGlanceHelper.getProsecutorDetails());
             final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId.get());
@@ -618,6 +615,20 @@ public class ProsecutionCaseQuery {
     }
 
 
+    /**
+     * Transactional because it reads an entity and then walks a LAZY collection on it.
+     *
+     * DeltaSpike injected a request-scoped EntityManager, so a query view could traverse lazy
+     * associations after the read returned. The JPA migration uses a transaction-scoped
+     * {@code @PersistenceContext}, and the framework does not wrap QUERY_VIEW handlers in a
+     * transaction, so the session closes when findBy returns and getUserGroups() then throws
+     * LazyInitializationException - a 500 on the query, with the build and unit tests green.
+     *
+     * The annotation belongs here rather than on the repository: on the repository the transaction
+     * would commit when findBy returns and the entity would still be detached by the time this
+     * method iterates it.
+     */
+    @Transactional
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchByMaterialId(final JsonEnvelope envelope) {
 
@@ -915,7 +926,6 @@ public class ProsecutionCaseQuery {
             final JsonObjectBuilder caseObjectBuilder = createObjectBuilder();
             caseObjectBuilder.add(CASE_ID, prosecutionCase.getId().toString());
             caseObjectBuilder.add(CASE_STATUS, prosecutionCaseStatus);
-            caseObjectBuilder.add(IS_CIVIL, nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil());
             if (nonNull(prosecutionCase.getProsecutionCaseIdentifier())) {
                 final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
                 final JsonObjectBuilder pciJsonBuilder = createObjectBuilder();

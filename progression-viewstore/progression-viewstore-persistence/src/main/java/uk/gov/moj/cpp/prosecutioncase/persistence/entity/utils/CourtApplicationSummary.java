@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.deltaspike.core.util.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 
 @SuppressWarnings({"squid:S2384", "PMD.BeanMembersShouldSerialize", "squid:S00107"})
 public class CourtApplicationSummary {

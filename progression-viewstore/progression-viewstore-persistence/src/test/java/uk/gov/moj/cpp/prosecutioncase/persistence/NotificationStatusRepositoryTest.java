@@ -15,27 +15,35 @@ import static uk.gov.moj.cpp.progression.domain.constant.NotificationType.PRINT;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.builder.NotificationStatusBuilder.notificationStatusBuilder;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.moj.cpp.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Spy;
 
-@RunWith(CdiTestRunner.class)
 public class NotificationStatusRepositoryTest {
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("progression-test-persistence-unit");
+
     private NotificationStatusRepository notificationStatusRepository;
 
-    @Inject
     private CourtDocumentIndexRepository courtDocumentIndexRepository;
+
+    @BeforeEach
+    void createRepositoriesWithATestEntityManager() {
+        notificationStatusRepository = new NotificationStatusRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(notificationStatusRepository);
+        courtDocumentIndexRepository = new CourtDocumentIndexRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(courtDocumentIndexRepository);
+    }
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -106,7 +114,6 @@ public class NotificationStatusRepositoryTest {
         final UUID notificationId2 = randomUUID();
         final UUID notificationId3 = randomUUID();
         final UUID notificationId4 = randomUUID();
-
 
         final NotificationStatusEntity notificationRequestOrderStatus = notificationStatusBuilder()
                 .withCaseId(randomUUID())
@@ -182,5 +189,39 @@ public class NotificationStatusRepositoryTest {
         notificationStatusRepository.save(notificationRequestOrderStatus);
         assertThat(notificationStatusRepository.findByCaseId(prosecutionCaseId), hasSize(1));
         notificationStatusRepository.remove(notificationRequestOrderStatus);
+    }
+
+    @Test
+    public void shouldFindTheNotificationStatusesRaisedForAnApplication() {
+        final UUID applicationId = randomUUID();
+
+        final NotificationStatusEntity forTheApplication = notificationStatusBuilder()
+                .withApplicationId(applicationId)
+                .withNotificationId(randomUUID())
+                .withNotificationStatus(NOTIFICATION_REQUEST)
+                .withNotificationType(PRINT)
+                .withUpdated(now())
+                .build();
+        final NotificationStatusEntity forAnotherApplication = notificationStatusBuilder()
+                .withApplicationId(randomUUID())
+                .withNotificationId(randomUUID())
+                .withNotificationStatus(NOTIFICATION_REQUEST)
+                .withNotificationType(PRINT)
+                .withUpdated(now())
+                .build();
+
+        notificationStatusRepository.save(forTheApplication);
+        notificationStatusRepository.save(forAnotherApplication);
+
+        assertThat(notificationStatusRepository.findByApplicationId(applicationId),
+                containsInAnyOrder(forTheApplication));
+
+        notificationStatusRepository.remove(forTheApplication);
+        notificationStatusRepository.remove(forAnotherApplication);
+    }
+
+    @Test
+    public void shouldReturnNothingWhenNoNotificationWasRaisedForThatApplication() {
+        assertThat(notificationStatusRepository.findByApplicationId(randomUUID()), hasSize(0));
     }
 }
