@@ -209,6 +209,9 @@ subscriptions_descriptor:
         - name: public.progression.group-created-from-moved-cases
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.group-created-from-moved-cases.json
 
+        - name: public.progression.case-removed-from-hearing
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.case-removed-from-hearing.json
+
         - name: public.progression.events.court-application-deleted
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.events.court-application-deleted.json
 

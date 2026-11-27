@@ -171,7 +171,7 @@ class GroupCreatedFromMovedCasesProcessorTest {
 
         processor.processEvent(event);
 
-        verify(sender, times(4)).send(envelopeCaptor.capture());
+        verify(sender, times(6)).send(envelopeCaptor.capture());
 
         final List<JsonEnvelope> sentEnvelopes = envelopeCaptor.getAllValues();
         assertThat(sentEnvelopes.get(0).metadata().name(), is("public.progression.group-created-from-moved-cases"));
@@ -184,7 +184,15 @@ class GroupCreatedFromMovedCasesProcessorTest {
                         withJsonPath("$.prosecutionCaseId", is(leadCaseId.toString()))
                 ))));
 
-        final JsonEnvelope otherCaseDetachCommand = sentEnvelopes.get(2);
+        final JsonEnvelope leadCaseRemovedFromHearingEvent = sentEnvelopes.get(2);
+        assertThat(leadCaseRemovedFromHearingEvent, jsonEnvelope(
+                metadata().withName("public.progression.case-removed-from-hearing"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.hearingId", is(oldHearing.getId().toString())),
+                        withJsonPath("$.caseId", is(leadCaseId.toString()))
+                ))));
+
+        final JsonEnvelope otherCaseDetachCommand = sentEnvelopes.get(3);
         assertThat(otherCaseDetachCommand, jsonEnvelope(
                 metadata().withName("progression.command.remove-hearing-for-prosecution-case"),
                 payloadIsJson(allOf(
@@ -192,7 +200,15 @@ class GroupCreatedFromMovedCasesProcessorTest {
                         withJsonPath("$.prosecutionCaseId", is(otherCaseId.toString()))
                 ))));
 
-        final JsonEnvelope listingCommand = sentEnvelopes.get(3);
+        final JsonEnvelope otherCaseRemovedFromHearingEvent = sentEnvelopes.get(4);
+        assertThat(otherCaseRemovedFromHearingEvent, jsonEnvelope(
+                metadata().withName("public.progression.case-removed-from-hearing"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.hearingId", is(oldHearing.getId().toString())),
+                        withJsonPath("$.caseId", is(otherCaseId.toString()))
+                ))));
+
+        final JsonEnvelope listingCommand = sentEnvelopes.get(5);
         assertThat(listingCommand, jsonEnvelope(
                 metadata().withName("progression.command.update-defendant-listing-status"),
                 payloadIsJson(allOf(
